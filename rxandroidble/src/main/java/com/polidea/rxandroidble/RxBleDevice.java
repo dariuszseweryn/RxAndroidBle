@@ -6,5 +6,5 @@ public interface RxBleDevice {
 
     Observable<Void> getState();
 
-    Observable<RxBleConnectionImpl> getConnection();
+    Observable<RxBleConnection> getConnection();
 }
