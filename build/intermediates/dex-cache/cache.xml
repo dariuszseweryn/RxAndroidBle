@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/com.android.support-recyclerview-v7-23.1.1_3db740e1c686e4848c5757eb6be7b15b011fc972.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/jars/libs/internal_impl-23.1.1.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/internal_impl-23.1.1_5d714b823e6bcd3195d476f2a76a45eaf2d2591f.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/com.android.support/design/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/com.android.support-design-23.1.1_8382a9f075976d1ac875e361d5d5d85c3baeddb0.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/com.android.support-support-v4-23.1.1_3e148c95281addcc85730865077ce7e4a25e3916.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/com.android.support-appcompat-v7-23.1.1_ea8e24c764d724b65a631a35eef8f22ba84dad57.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/23.1.1/support-annotations-23.1.1.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/support-annotations-23.1.1_75c64f45ee437ba568f700fd0663cbe6953f2332.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/exploded-aar/RxAndroidBLE/rxandroidble/unspecified/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="ecf12c349bac10edc47626a151d6559edf818ebe">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/RxAndroidBLE-rxandroidble-unspecified_8f9402456470b46a58237d64ed9f3f49c8f0a3fe.jar" />
+    </item>
+    <item
+        jar="/Users/dariuszseweryn/.gradle/caches/modules-2/files-2.1/io.reactivex/rxjava/1.1.0/748f0546d5c3c27f1aef07270ffea0c45f0c42a4/rxjava-1.1.0.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="748f0546d5c3c27f1aef07270ffea0c45f0c42a4">
+        <dex dex="/Users/dariuszseweryn/Projects/OpenSource/RxAndroidBLE/app/build/intermediates/pre-dexed/debug/rxjava-1.1.0_c6fe2b0c425cb9b6f58d1c98806053836251275d.jar" />
+    </item>
+
+</items>
