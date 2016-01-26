@@ -14,6 +14,7 @@ buildscript {
 apply plugin: 'me.tatarka.retrolambda'
 version = "0.0.1-SNAPSHOT"
 group = "com.polidea.rxandroidble"
+ext.supportVersion = '23.1.1'
 
 android {
     compileSdkVersion 23
@@ -36,8 +37,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-ext.supportVersion = '23.1.1'
 dependencies {
+    // TODO [PU] If we can we should avoid support-v4, we are using only Pair class.
     compile "com.android.support:support-v4:$supportVersion"
     compile "com.android.support:support-annotations:$supportVersion"
     compile 'io.reactivex:rxjava:1.1.0'
