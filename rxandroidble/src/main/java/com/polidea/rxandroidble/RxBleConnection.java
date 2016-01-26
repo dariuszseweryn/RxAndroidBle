@@ -8,6 +8,7 @@ import rx.Observable;
 
 public interface RxBleConnection {
 
+    // TODO: 26.01.2016 [PU] Why not an enum?
     class RxBleConnectionState {
 
         public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState();
@@ -21,6 +22,7 @@ public interface RxBleConnection {
 
     Observable<RxBleConnection> connect(Context context); // TODO: hide from the user
 
+    // TODO: 26.01.2016 [PU] Consider another layer of abstraction for Services and Characteristics instead of plain UUIDs.
     Observable<Map<UUID, Set<UUID>>> discoverServices();
 
     Observable<Observable<byte[]>> getNotification(UUID characteristicUuid);

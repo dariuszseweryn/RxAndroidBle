@@ -11,7 +11,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
         this.bluetoothDevice = bluetoothDevice;
     }
 
-    public Observable<RxBleConnection.RxBleConnectionState> getState() {
+    public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
         return null;
     }
 

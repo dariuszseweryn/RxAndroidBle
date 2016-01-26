@@ -3,15 +3,13 @@ package com.polidea.rxandroidble;
 public class RxBleScanResult {
 
     private final RxBleDevice bleDevice;
-
     private final int rssi;
-
-    private final byte[] scanRecords;
+    private final byte[] scanRecord;
 
     public RxBleScanResult(RxBleDevice bleDevice, int rssi, byte[] scanRecords) {
         this.bleDevice = bleDevice;
         this.rssi = rssi;
-        this.scanRecords = scanRecords;
+        this.scanRecord = scanRecords;
     }
 
     public RxBleDevice getBleDevice() {
@@ -22,7 +20,7 @@ public class RxBleScanResult {
         return rssi;
     }
 
-    public byte[] getScanRecords() {
-        return scanRecords;
+    public byte[] getScanRecord() {
+        return scanRecord;
     }
 }
