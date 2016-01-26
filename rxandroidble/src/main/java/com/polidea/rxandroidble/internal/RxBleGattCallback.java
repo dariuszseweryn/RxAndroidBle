@@ -224,7 +224,11 @@ public class RxBleGattCallback {
     }
 
     private <T> Observable<T> withHandlingStatusError(Observable<T> observable) {
-        return statusErrorSubject.asObservable().flatMap(aVoid -> observable);
+        //noinspection unchecked
+        return Observable.merge(
+                (Observable<? extends T>) statusErrorSubject.asObservable(), // statusErrorSubject emits only errors
+                observable
+        );
     }
 
     public BluetoothGattCallback getBluetoothGattCallback() {
