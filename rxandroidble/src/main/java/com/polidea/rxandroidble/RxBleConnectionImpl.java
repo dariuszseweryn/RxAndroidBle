@@ -18,6 +18,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     private BluetoothGatt bluetoothGatt;
 
+    private Map<UUID, Set<UUID>> discoveredServices;
+
     public RxBleConnectionImpl(BluetoothDevice bluetoothDevice) {
 
         this.bluetoothDevice = bluetoothDevice;
@@ -35,23 +37,32 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     public Observable<Map<UUID, Set<UUID>>> discoverServices() {
         return Observable.create(subscriber -> {
-            gattCallback.getOnServicesDiscovered().subscribe(subscriber);
+            if (discoveredServices != null) {
+                subscriber.onNext(discoveredServices);
+                subscriber.onCompleted();
+                return;
+            }
+
+            gattCallback
+                    .getOnServicesDiscovered()
+                    .doOnNext(uuidSetMap -> discoveredServices = uuidSetMap)
+                    .subscribe(subscriber);
             bluetoothGatt.discoverServices();
         });
     }
 
     private Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
-        return Observable.create(subscriber -> {
-            discoverServices()
-                    .flatMap(uuidSetMap -> Observable.from(uuidSetMap.entrySet()))
-                    .filter(uuidSetEntry -> uuidSetEntry.getValue().contains(characteristicUuid))
-                    .map(uuidSetEntry -> bluetoothGatt.getService(uuidSetEntry.getKey()).getCharacteristic(characteristicUuid))
-                    .subscribe(subscriber);
-        });
+        return Observable.create(subscriber ->
+                        discoverServices()
+                                .flatMap(uuidSetMap -> Observable.from(uuidSetMap.entrySet()))
+                                .filter(uuidSetEntry -> uuidSetEntry.getValue().contains(characteristicUuid))
+                                .map(uuidSetEntry -> bluetoothGatt.getService(uuidSetEntry.getKey()).getCharacteristic(characteristicUuid))
+                                .subscribe(subscriber)
+        );
     }
 
     public Observable<Observable<byte[]>> getNotification(UUID characteristicUuid) {
-        return null;
+        return null; // TODO
     }
 
     public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
@@ -86,6 +97,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     public Observable<Integer> readRssi() {
-        return null;
+        return Observable.create(subscriber -> {
+            gattCallback.getOnRssiRead().subscribe(subscriber);
+            bluetoothGatt.readRemoteRssi();
+        });
     }
 }

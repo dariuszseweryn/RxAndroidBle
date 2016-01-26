@@ -1,26 +1,27 @@
 package com.polidea.rxandroidble;
 
+import rx.Observable;
+
 public interface RxBleRadio {
 
     class Action {
 
-        Action BLE_SCAN = new Action();
+        Action START_BLE_SCAN = new Action();
+        Action STOP_BLE_SCAN = new Action();
 
-        Action READ = new Action();
+        Action CHARACTERISTIC_READ = new Action();
+        Action CHARACTERISTIC_WRITE = new Action();
+        Action CHARACTEROSTOC_WRITE_RELIABLE = new Action();
 
-        Action WRITE = new Action();
+        Action DESCRIPTOR_READ = new Action();
+        Action DESCRIPTOR_WRITE = new Action();
 
-        Action WRITE_RELIABLE = new Action();
+        Action RSSI_READ = new Action();
 
-        Action READ_DESCRIPTOR = new Action();
-
-        Action WRITE_DESCRIPTOR = new Action();
-
-        Action READ_RSSI = new Action();
-
-        Action CONNECT = new Action();
-
-        Action DISCONNECT = new Action();
+        Action GATT_CONNECT = new Action();
+        Action GATT_DISCONNECT = new Action();
+        Action GATT_CLOSE = new Action();
     }
 
+    <T> Observable<T> scheduleRadioObservable(Observable<T> radioBlockingObservable);
 }

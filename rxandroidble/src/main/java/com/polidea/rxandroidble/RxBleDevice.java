@@ -4,7 +4,7 @@ import rx.Observable;
 
 public interface RxBleDevice {
 
-    Observable<Void> getState();
+    Observable<RxBleConnection.RxBleConnectionState> getState();
 
-    Observable<RxBleConnection> getConnection();
+    Observable<RxBleConnection> establishConnection();
 }

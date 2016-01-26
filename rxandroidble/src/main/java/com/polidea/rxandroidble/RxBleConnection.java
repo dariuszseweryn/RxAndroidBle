@@ -19,7 +19,7 @@ public interface RxBleConnection {
         public static final RxBleConnectionState CONNECTED = new RxBleConnectionState();
     }
 
-    Observable<RxBleConnection> connect(Context context);
+    Observable<RxBleConnection> connect(Context context); // TODO: hide from the user
 
     Observable<Map<UUID, Set<UUID>>> discoverServices();
 

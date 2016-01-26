@@ -11,11 +11,13 @@ public class RxBleDeviceImpl implements RxBleDevice {
         this.bluetoothDevice = bluetoothDevice;
     }
 
-    public Observable<Void> getState() {
+    public Observable<RxBleConnection.RxBleConnectionState> getState() {
         return null;
     }
 
-    public Observable<RxBleConnection> getConnection() {
-        return Observable.create(subscriber -> new RxBleConnectionImpl(bluetoothDevice));
+    public Observable<RxBleConnection> establishConnection() {
+        return Observable.create(subscriber -> {
+//            new RxBleConnectionImpl(bluetoothDevice) TODO
+        });
     }
 }
