@@ -1,6 +1,8 @@
-package com.polidea.rxandroidble;
+package com.polidea.rxandroidble.internal;
 
+import java.util.concurrent.atomic.AtomicReference;
 import rx.Observable;
+import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
 public class RxBleRadioImpl implements RxBleRadio {
@@ -9,14 +11,17 @@ public class RxBleRadioImpl implements RxBleRadio {
 
     @Override
     public <T> Observable<T> scheduleRadioObservable(Observable<T> radioBlockingObservable) {
-        return Observable.create(subscriber -> {
+        AtomicReference<Subscription> subscriptionAtomicReference = new AtomicReference<>();
+        final Observable<T> tObservable = Observable.create(subscriber -> {
             final BehaviorSubject<Boolean> newPreviouslyObservableFinishedSubject = BehaviorSubject.create();
-            previouslyScheduledObservableFinished
+            final Subscription subscription = previouslyScheduledObservableFinished
                     .flatMap(aBoolean -> radioBlockingObservable)
                     .doOnTerminate(() -> newPreviouslyObservableFinishedSubject.onNext(true))
                     .doOnUnsubscribe(() -> newPreviouslyObservableFinishedSubject.onNext(true))
                     .subscribe(subscriber);
+            subscriptionAtomicReference.set(subscription);
             previouslyScheduledObservableFinished = newPreviouslyObservableFinishedSubject;
-        }); // TODO: pass onUnsubscribe
+        });
+        return tObservable.doOnUnsubscribe(() -> subscriptionAtomicReference.get().unsubscribe());
     }
 }
