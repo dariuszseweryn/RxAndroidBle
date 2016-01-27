@@ -42,7 +42,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                             onNext(null);
                             releaseRadio();
                         },
-                        this::onError,
+                        throwable -> onError(throwable),
                         () -> onCompleted() // don't change to method reference - crash on with Retrolambda 3.2.4
                 );
 

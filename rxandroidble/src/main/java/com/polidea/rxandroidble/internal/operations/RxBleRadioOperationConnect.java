@@ -29,6 +29,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
     @Override
     public void run() {
+        //noinspection Convert2MethodRef
         rxBleGattCallback
                 .getOnConnectionStateChange()
                 .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.CONNECTED)
@@ -37,8 +38,8 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                             onNext(rxBleConnection);
                             releaseRadio();
                         },
-                        this::onError,
-                        this::onCompleted
+                        (throwable) -> onError(throwable),
+                        () -> onCompleted()
                 );
 
         bluetoothGatt = bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback());
