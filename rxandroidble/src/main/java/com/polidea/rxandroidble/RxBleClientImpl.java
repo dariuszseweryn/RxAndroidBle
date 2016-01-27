@@ -20,9 +20,9 @@ public class RxBleClientImpl implements RxBleClient {
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
         final RxBleRadioOperationScan rxBleRadioOperationScan = new RxBleRadioOperationScan(bluetoothAdapter, rxBleRadio);
-        rxBleRadio.queue(rxBleRadioOperationScan);
         return rxBleRadioOperationScan
                 .asObservable()
+                .doOnSubscribe(() -> rxBleRadio.queue(rxBleRadioOperationScan))
                 .doOnUnsubscribe(rxBleRadioOperationScan::stop);
     }
 
