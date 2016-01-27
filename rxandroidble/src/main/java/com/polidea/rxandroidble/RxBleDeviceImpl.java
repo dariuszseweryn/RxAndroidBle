@@ -21,7 +21,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection> establishConnection(Context context) {
-        final RxBleConnectionImpl rxBleConnection = new RxBleConnectionImpl(bluetoothDevice, rxBleRadio);
+        final RxBleConnectionImpl rxBleConnection = new RxBleConnectionImpl(bluetoothDevice, rxBleRadio); // TODO: add managing connections
         return rxBleConnection.connect(context);
     }
 

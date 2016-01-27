@@ -2,21 +2,39 @@ package com.polidea.rxandroidble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.support.annotation.Nullable;
+import com.polidea.rxandroidble.internal.RxBleRadio;
+import com.polidea.rxandroidble.internal.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
+import java.util.HashMap;
 import java.util.UUID;
 import rx.Observable;
 
 public class RxBleClientImpl implements RxBleClient {
 
+    private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    private final RxBleRadio rxBleRadio = new RxBleRadioImpl();
+
+    private final HashMap<String, RxBleDevice> availableDevices = new HashMap<>(); // TODO: clean? don't cache?
+
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
-        final BluetoothAdapter defaultAdapter = BluetoothAdapter.getDefaultAdapter();
-        defaultAdapter.startLeScan((device, rssi, scanRecord) -> {
-
-        });
-        return null;
+        final RxBleRadioOperationScan rxBleRadioOperationScan = new RxBleRadioOperationScan(bluetoothAdapter, rxBleRadio);
+        rxBleRadio.queue(rxBleRadioOperationScan);
+        return rxBleRadioOperationScan
+                .asObservable()
+                .doOnUnsubscribe(rxBleRadioOperationScan::stop);
     }
 
-    public RxBleDeviceImpl getBleDevice(String bluetoothAddress) {
-        return null;
+    @Override
+    public RxBleDevice getBleDevice(String bluetoothAddress) {
+        final RxBleDevice rxBleDevice = availableDevices.get(bluetoothAddress);
+        if (rxBleDevice != null) {
+            return rxBleDevice;
+        }
+
+        final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(bluetoothAdapter.getRemoteDevice(bluetoothAddress), rxBleRadio);
+        availableDevices.put(bluetoothAddress, newRxBleDevice);
+        return newRxBleDevice;
     }
 }

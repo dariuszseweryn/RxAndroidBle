@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble.internal;
 
-import rx.Observable;
-
 public interface RxBleRadio {
 
     class Action {
@@ -23,5 +21,5 @@ public interface RxBleRadio {
         Action GATT_CLOSE = new Action();
     }
 
-    <T> Observable<T> scheduleRadioObservable(Observable<T> radioBlockingObservable);
+    void queue(RxBleRadioOperation rxBleRadioOperation);
 }

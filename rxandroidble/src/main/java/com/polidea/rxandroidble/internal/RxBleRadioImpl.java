@@ -1,27 +1,38 @@
 package com.polidea.rxandroidble.internal;
 
-import java.util.concurrent.atomic.AtomicReference;
-import rx.Observable;
-import rx.Subscription;
-import rx.subjects.BehaviorSubject;
+import android.util.Log;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 public class RxBleRadioImpl implements RxBleRadio {
 
-    private BehaviorSubject<Boolean> previouslyScheduledObservableFinished = BehaviorSubject.create(true);
+    private BlockingQueue<RxBleRadioOperation> queue = new LinkedBlockingQueue<>();
+
+    public RxBleRadioImpl() {
+        new Thread(() -> {
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                try {
+                    final RxBleRadioOperation rxBleRadioOperation = queue.take();
+                    Log.d("RxBleRadioImpl", "Running " + rxBleRadioOperation.getClass().getSimpleName());
+
+                    final Semaphore semaphore = new Semaphore(0);
+
+                    rxBleRadioOperation.setRadioBlockingSemaphore(semaphore);
+                    rxBleRadioOperation.run();
+
+                    semaphore.acquire();
+                    Log.d("RxBleRadioImpl", "Finished " + rxBleRadioOperation.getClass().getSimpleName());
+                } catch (InterruptedException e) {
+                    Log.e(getClass().getSimpleName(), "Error while processing RxBleRadioOperation queue", e); // FIXME: introduce Timber?
+                }
+            }
+        }).start();
+    }
 
     @Override
-    public <T> Observable<T> scheduleRadioObservable(Observable<T> radioBlockingObservable) {
-        AtomicReference<Subscription> subscriptionAtomicReference = new AtomicReference<>();
-        final Observable<T> tObservable = Observable.create(subscriber -> {
-            final BehaviorSubject<Boolean> newPreviouslyObservableFinishedSubject = BehaviorSubject.create();
-            final Subscription subscription = previouslyScheduledObservableFinished
-                    .flatMap(aBoolean -> radioBlockingObservable)
-                    .doOnTerminate(() -> newPreviouslyObservableFinishedSubject.onNext(true))
-                    .doOnUnsubscribe(() -> newPreviouslyObservableFinishedSubject.onNext(true))
-                    .subscribe(subscriber);
-            subscriptionAtomicReference.set(subscription);
-            previouslyScheduledObservableFinished = newPreviouslyObservableFinishedSubject;
-        });
-        return tObservable.doOnUnsubscribe(() -> subscriptionAtomicReference.get().unsubscribe());
+    public void queue(RxBleRadioOperation rxBleRadioOperation) {
+        queue.add(rxBleRadioOperation);
     }
 }

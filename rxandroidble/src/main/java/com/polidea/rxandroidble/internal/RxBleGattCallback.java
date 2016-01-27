@@ -31,7 +31,7 @@ public class RxBleGattCallback {
     private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
             RxBleConnection.RxBleConnectionState.DISCONNECTED);
 
-    private BehaviorSubject<Map<UUID, Set<UUID>>> servicesDiscoveredBehaviorSubject = BehaviorSubject.create();
+    private PublishSubject<Map<UUID, Set<UUID>>> servicesDiscoveredPublishSubject = PublishSubject.create();
 
     private PublishSubject<Pair<UUID, byte[]>> readCharacteristicPublishSubject = PublishSubject.create();
 
@@ -103,7 +103,7 @@ public class RxBleGattCallback {
                                     .put(bluetoothGattServiceSetPair.first.getUuid(), bluetoothGattServiceSetPair.second)
                     )
                     .compose(getSubscribeAndObserveOnTransformer())
-                    .subscribe(servicesDiscoveredBehaviorSubject::onNext);
+                    .subscribe(servicesDiscoveredPublishSubject::onNext);
         }
 
         @Override
@@ -240,15 +240,15 @@ public class RxBleGattCallback {
     }
 
     public Observable<Map<UUID, Set<UUID>>> getOnServicesDiscovered() {
-        return withHandlingStatusError(servicesDiscoveredBehaviorSubject);
+        return withHandlingStatusError(servicesDiscoveredPublishSubject.take(1));
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicRead() {
-        return withHandlingStatusError(readCharacteristicPublishSubject);
+        return withHandlingStatusError(readCharacteristicPublishSubject.take(1));
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicWrite() {
-        return withHandlingStatusError(writeCharacteristicPublishSubject);
+        return withHandlingStatusError(writeCharacteristicPublishSubject.take(1));
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicChanged() {
@@ -256,6 +256,6 @@ public class RxBleGattCallback {
     }
 
     public Observable<Integer> getOnRssiRead() {
-        return withHandlingStatusError(readRssiPublishSubject);
+        return withHandlingStatusError(readRssiPublishSubject.take(1));
     }
 }
