@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
-import android.util.Log;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
@@ -18,7 +17,6 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<Map
     public RxBleRadioOperationServicesDiscover(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
-        Log.d("xxx", "constructor " + bluetoothGatt);
     }
 
     @Override
