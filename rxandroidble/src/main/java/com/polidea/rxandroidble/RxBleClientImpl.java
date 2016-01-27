@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.UUIDParser;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
 import java.util.HashMap;
 import java.util.UUID;
@@ -16,10 +17,12 @@ public class RxBleClientImpl implements RxBleClient {
     private final RxBleRadio rxBleRadio = new RxBleRadioImpl();
 
     private final HashMap<String, RxBleDevice> availableDevices = new HashMap<>(); // TODO: clean? don't cache?
+    private final UUIDParser uuidParser = new UUIDParser();
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
-        final RxBleRadioOperationScan rxBleRadioOperationScan = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter, rxBleRadio);
+        final RxBleRadioOperationScan rxBleRadioOperationScan = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter,
+                rxBleRadio, uuidParser);
         return rxBleRadioOperationScan
                 .asObservable()
                 .doOnSubscribe(() -> rxBleRadio.queue(rxBleRadioOperationScan))
