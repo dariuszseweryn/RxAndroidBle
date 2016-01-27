@@ -31,6 +31,11 @@ public class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
+    public String getMacAddress() {
+        return bluetoothDevice.getAddress();
+    }
+
+    @Override
     public String toString() {
         return "RxBleDeviceImpl{" +
                 "bluetoothDevice=" + bluetoothDevice.getName() + '(' + bluetoothDevice.getAddress() + ')' +

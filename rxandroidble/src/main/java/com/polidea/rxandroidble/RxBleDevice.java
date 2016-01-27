@@ -10,4 +10,6 @@ public interface RxBleDevice {
     Observable<RxBleConnection> establishConnection(Context context);
 
     String getName();
+
+    String getMacAddress();
 }
