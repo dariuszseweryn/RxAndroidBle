@@ -37,9 +37,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     public Observable<RxBleConnection> connect(Context context) {
         final RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(context, bluetoothDevice, gattCallback, this);
         final Observable<RxBleConnection> observable = operationConnect.asObservable();
-        rxBleRadio.queue(operationConnect);
         final AtomicReference<RxBleRadioOperationDisconnect> disconnectAtomicReference = new AtomicReference<>();
         return observable
+                .doOnSubscribe(() -> rxBleRadio.queue(operationConnect))
                 .doOnNext(rxBleConnection -> {
                     bluetoothGattAtomicReference.set(operationConnect.getBluetoothGatt());
                     disconnectAtomicReference.set(
@@ -58,8 +58,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
         final BluetoothGatt bluetoothGatt = this.bluetoothGattAtomicReference.get();
         final RxBleRadioOperationServicesDiscover operationServicesDiscover = new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt);
         final Observable<Map<UUID, Set<UUID>>> observable = operationServicesDiscover.asObservable();
-        rxBleRadio.queue(operationServicesDiscover);
-        return observable;
+        return observable.doOnSubscribe(() -> rxBleRadio.queue(operationServicesDiscover));
     }
 
     private Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
@@ -110,7 +109,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
     public Observable<Integer> readRssi() {
         final RxBleRadioOperationReadRssi operationReadRssi = new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattAtomicReference.get());
         final Observable<Integer> observable = operationReadRssi.asObservable();
-        rxBleRadio.queue(operationReadRssi);
-        return observable;
+        return observable.doOnSubscribe(() -> rxBleRadio.queue(operationReadRssi));
     }
 }
