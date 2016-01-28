@@ -38,6 +38,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.rxBleRadio = rxBleRadio;
     }
 
+    @Override
     public Observable<RxBleConnection> connect(Context context) {
         final RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(context, bluetoothDevice, gattCallback, this);
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
@@ -87,10 +88,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
 
+    @Override
     public Observable<Observable<byte[]>> getNotification(UUID characteristicUuid) {
         return null; // TODO
     }
 
+    @Override
     public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(bluetoothGattCharacteristic -> {
@@ -105,6 +108,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
+    @Override
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(bluetoothGattCharacteristic -> {
@@ -120,6 +124,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
+    @Override
     public Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
@@ -131,6 +136,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
+    @Override
     public Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
@@ -142,6 +148,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
+    @Override
     public Observable<Integer> readRssi() {
         final RxBleRadioOperationReadRssi operationReadRssi = new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattAtomicReference.get());
         final Observable<Integer> observable = operationReadRssi.asObservable();
