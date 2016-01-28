@@ -38,9 +38,9 @@ public class RxBleGattCallback {
 
     private PublishSubject<Pair<UUID, byte[]>> reliableWriteCharacteristicPublishSubject = PublishSubject.create();
 
-    private PublishSubject<Pair<UUID, byte[]>> readDescriptorPublishSubject = PublishSubject.create();
+    private PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> readDescriptorPublishSubject = PublishSubject.create();
 
-    private PublishSubject<Pair<UUID, byte[]>> writeDescriptorPublishSubject = PublishSubject.create();
+    private PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> writeDescriptorPublishSubject = PublishSubject.create();
 
     private PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
 
@@ -141,7 +141,7 @@ public class RxBleGattCallback {
             }
 
             Observable.just(descriptor)
-                    .map(gattDescriptor -> new Pair<>(gattDescriptor.getUuid(), gattDescriptor.getValue()))
+                    .map(gattDescriptor -> new Pair<>(descriptor, gattDescriptor.getValue()))
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(readDescriptorPublishSubject::onNext);
         }
@@ -156,7 +156,7 @@ public class RxBleGattCallback {
             }
 
             Observable.just(descriptor)
-                    .map(gattDescriptor -> new Pair<>(gattDescriptor.getUuid(), gattDescriptor.getValue()))
+                    .map(gattDescriptor -> new Pair<>(gattDescriptor, gattDescriptor.getValue()))
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(writeDescriptorPublishSubject::onNext);
         }
@@ -244,6 +244,14 @@ public class RxBleGattCallback {
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicChanged() {
         return withHandlingStatusError(changedCharacteristicPublishSubject);
+    }
+
+    public Observable<Pair<BluetoothGattDescriptor, byte[]>> getOnDescriptorRead() {
+        return withHandlingStatusError(readDescriptorPublishSubject);
+    }
+
+    public Observable<Pair<BluetoothGattDescriptor, byte[]>> getOnDescriptorWrite() {
+        return withHandlingStatusError(writeDescriptorPublishSubject);
     }
 
     public Observable<Integer> getOnRssiRead() {

@@ -42,9 +42,9 @@ public interface RxBleConnection {
 
     Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data);
 
-    Observable<byte[]> readDescriptor(UUID descriptorUuid);
+    Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid);
 
-    Observable<byte[]> writeDescriptor(UUID descriptorUuid, byte[] data);
+    Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data);
 
     Observable<Integer> readRssi();
 }

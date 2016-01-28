@@ -10,6 +10,8 @@ import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorRead;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscoverGetCached;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
@@ -118,12 +120,26 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
-    public Observable<byte[]> readDescriptor(UUID descriptorUuid) {
-        return null;
+    public Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
+        return discoverServices()
+                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
+                .flatMap(bluetoothGattDescriptor -> {
+                    final RxBleRadioOperationDescriptorRead operationDescriptorRead =
+                            new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGattAtomicReference.get(), bluetoothGattDescriptor);
+                    final Observable<byte[]> observable = operationDescriptorRead.asObservable();
+                    return observable.doOnSubscribe(() -> rxBleRadio.queue(operationDescriptorRead));
+                });
     }
 
-    public Observable<byte[]> writeDescriptor(UUID descriptorUuid, byte[] data) {
-        return null;
+    public Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data) {
+        return discoverServices()
+                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
+                .flatMap(bluetoothGattDescriptor -> {
+                    final RxBleRadioOperationDescriptorWrite operationDescriptorWrite =
+                            new RxBleRadioOperationDescriptorWrite(gattCallback, bluetoothGattAtomicReference.get(), bluetoothGattDescriptor, data);
+                    final Observable<byte[]> observable = operationDescriptorWrite.asObservable();
+                    return observable.doOnSubscribe(() -> rxBleRadio.queue(operationDescriptorWrite));
+                });
     }
 
     public Observable<Integer> readRssi() {
