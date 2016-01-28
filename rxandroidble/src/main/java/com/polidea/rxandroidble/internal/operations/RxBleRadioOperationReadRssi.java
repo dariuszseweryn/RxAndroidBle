@@ -19,10 +19,11 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
 
     @Override
     public void run() {
+        //noinspection Convert2MethodRef
         bleGattCallback
                 .getOnRssiRead()
                 .take(1)
-                .doOnNext(integer -> releaseRadio())
+                .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.readRemoteRssi();

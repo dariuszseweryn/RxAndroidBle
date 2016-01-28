@@ -19,15 +19,21 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
 
     @Override
     public void run() {
+        //noinspection Convert2MethodRef
         rxBleGattCallback
                 .getOnServicesDiscovered()
                 .take(1)
-                .doOnNext(uuidSetMap -> releaseRadio())
+                .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.discoverServices();
         if (!success) {
             onError(new BleScanException(BleScanException.BLE_CANNOT_START));
         }
+    }
+
+    @Override
+    protected Priority definedPriority() {
+        return Priority.HIGH;
     }
 }
