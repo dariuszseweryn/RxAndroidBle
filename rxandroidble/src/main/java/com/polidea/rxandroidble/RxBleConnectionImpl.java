@@ -8,6 +8,7 @@ import android.content.Context;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscoverGetCached;
@@ -105,12 +106,15 @@ public class RxBleConnectionImpl implements RxBleConnection {
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(bluetoothGattCharacteristic -> {
-                    bluetoothGattCharacteristic.setValue(data);
-                    bluetoothGattAtomicReference.get().writeCharacteristic(bluetoothGattCharacteristic);
-                    return gattCallback
-                            .getOnCharacteristicWrite()
-                            .filter(uuidPair -> uuidPair.first.equals(characteristicUuid))
-                            .map(uuidPair1 -> uuidPair1.second);
+                    final RxBleRadioOperationCharacteristicWrite operationCharacteristicWrite = new RxBleRadioOperationCharacteristicWrite(
+                            gattCallback,
+                            bluetoothGattAtomicReference.get(),
+                            bluetoothGattCharacteristic,
+                            data
+                    );
+
+                    final Observable<byte[]> observable = operationCharacteristicWrite.asObservable();
+                    return observable.doOnSubscribe(() -> rxBleRadio.queue(operationCharacteristicWrite));
                 });
     }
 
