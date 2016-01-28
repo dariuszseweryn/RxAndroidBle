@@ -4,21 +4,15 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
-import rx.functions.Func0;
-import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
@@ -34,7 +28,7 @@ public class RxBleGattCallback {
     private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
             RxBleConnection.RxBleConnectionState.DISCONNECTED);
 
-    private PublishSubject<Map<UUID, Set<UUID>>> servicesDiscoveredPublishSubject = PublishSubject.create();
+    private PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
 
     private BehaviorSubject<Pair<UUID, byte[]>> readCharacteristicBehaviorSubject = BehaviorSubject.create();
 
@@ -90,23 +84,8 @@ public class RxBleGattCallback {
             }
 
             Observable.just(gatt)
-                    .flatMap(bluetoothGatt -> Observable.from(bluetoothGatt.getServices()))
-                    .flatMap(
-                            bluetoothGattService -> {
-                                final Observable<BluetoothGattCharacteristic> gattCharacteristicObservable =
-                                        Observable.from(bluetoothGattService.getCharacteristics());
-
-                                return gattCharacteristicObservable
-                                        .map(BluetoothGattCharacteristic::getUuid)
-                                        .collect(HashSet::new, HashSet::add);
-                            },
-                            (Func2<BluetoothGattService, Set<UUID>, Pair<BluetoothGattService, Set<UUID>>>) Pair::new
-                    )
-                    .collect(
-                            (Func0<HashMap<UUID, Set<UUID>>>) HashMap::new,
-                            (uuidSetHashMap, bluetoothGattServiceSetPair) -> uuidSetHashMap
-                                    .put(bluetoothGattServiceSetPair.first.getUuid(), bluetoothGattServiceSetPair.second)
-                    )
+                    .map(BluetoothGatt::getServices)
+                    .map(RxBleDeviceServices::new)
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(servicesDiscoveredPublishSubject::onNext);
         }
@@ -252,7 +231,7 @@ public class RxBleGattCallback {
         return withHandlingStatusError(connectionStateBehaviorSubject);
     }
 
-    public Observable<Map<UUID, Set<UUID>>> getOnServicesDiscovered() {
+    public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
         return withHandlingStatusError(servicesDiscoveredPublishSubject);
     }
 

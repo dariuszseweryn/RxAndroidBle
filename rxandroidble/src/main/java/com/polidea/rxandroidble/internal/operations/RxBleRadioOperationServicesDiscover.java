@@ -1,14 +1,12 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
+import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
-public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<Map<UUID,Set<UUID>>> {
+public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxBleDeviceServices> {
 
     private final RxBleGattCallback rxBleGattCallback;
 

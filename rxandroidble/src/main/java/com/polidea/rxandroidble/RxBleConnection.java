@@ -1,8 +1,6 @@
 package com.polidea.rxandroidble;
 
 import android.content.Context;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import rx.Observable;
 
@@ -37,7 +35,7 @@ public interface RxBleConnection {
     Observable<RxBleConnection> connect(Context context); // TODO: hide from the user
 
     // TODO: 26.01.2016 [PU] Consider another layer of abstraction for Services and Characteristics instead of plain UUIDs.
-    Observable<Map<UUID, Set<UUID>>> discoverServices();
+    Observable<RxBleDeviceServices> discoverServices();
 
     Observable<Observable<byte[]>> getNotification(UUID characteristicUuid);
 
