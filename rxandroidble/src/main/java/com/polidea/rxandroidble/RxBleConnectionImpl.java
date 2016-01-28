@@ -37,22 +37,18 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     public Observable<RxBleConnection> connect(Context context) {
         final RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(context, bluetoothDevice, gattCallback, this);
+        final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
+                gattCallback,
+                bluetoothGattAtomicReference,
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
+        );
+
+        operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set);
         final Observable<RxBleConnection> observable = operationConnect.asObservable();
-        final AtomicReference<RxBleRadioOperationDisconnect> disconnectAtomicReference = new AtomicReference<>();
         return observable
                 .doOnSubscribe(() -> rxBleRadio.queue(operationConnect))
-                .doOnNext(rxBleConnection -> {
-                    bluetoothGattAtomicReference.set(operationConnect.getBluetoothGatt());
-                    disconnectAtomicReference.set(
-                            new RxBleRadioOperationDisconnect(
-                                    gattCallback,
-                                    bluetoothGattAtomicReference.get(),
-                                    (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
-                            )
-                    );
-                })
-                .doOnError(throwable -> rxBleRadio.queue(disconnectAtomicReference.get()))
-                .doOnUnsubscribe(() -> rxBleRadio.queue(disconnectAtomicReference.get()));
+                .doOnError(throwable -> rxBleRadio.queue(operationDisconnect))
+                .doOnUnsubscribe(() -> rxBleRadio.queue(operationDisconnect));
     }
 
     @Override

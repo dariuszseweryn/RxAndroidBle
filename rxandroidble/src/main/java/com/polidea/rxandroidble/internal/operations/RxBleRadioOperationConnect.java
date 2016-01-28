@@ -6,6 +6,8 @@ import android.content.Context;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
 
@@ -17,7 +19,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
     private final RxBleConnection rxBleConnection;
 
-    private BluetoothGatt bluetoothGatt;
+    private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
     public RxBleRadioOperationConnect(Context context, BluetoothDevice bluetoothDevice, RxBleGattCallback rxBleGattCallback,
                                       RxBleConnection rxBleConnection) {
@@ -38,14 +40,20 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                             onNext(rxBleConnection);
                             releaseRadio();
                         },
-                        (throwable) -> onError(throwable),
-                        () -> onCompleted()
+                        (throwable) -> {
+                            onError(throwable);
+                            bluetoothGattBehaviorSubject.onCompleted();
+                        },
+                        () -> {
+                            onCompleted();
+                            bluetoothGattBehaviorSubject.onCompleted();
+                        }
                 );
 
-        bluetoothGatt = bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback());
+        bluetoothGattBehaviorSubject.onNext(bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback()));
     }
 
-    public BluetoothGatt getBluetoothGatt() {
-        return bluetoothGatt;
+    public Observable<BluetoothGatt> getBluetoothGatt() {
+        return bluetoothGattBehaviorSubject;
     }
 }
