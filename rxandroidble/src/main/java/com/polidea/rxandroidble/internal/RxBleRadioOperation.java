@@ -44,6 +44,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     }
 
     protected final void onError(Throwable throwable) {
+        releaseRadio();
         publishSubject.onError(throwable);
     }
 
