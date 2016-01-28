@@ -50,7 +50,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, "onConnectionStateChange");
+            Log.d(TAG, String.format("onConnectionStateChange newState=%d status=%d", newState, status));
             super.onConnectionStateChange(gatt, status, newState);
 
             if (isError(status, BleGattOperationType.CONNECTION_STATE)) {
@@ -76,7 +76,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.d(TAG, "onServicesDiscovered");
+            Log.d(TAG, String.format("onServicesDiscovered status=%d", status));
             super.onServicesDiscovered(gatt, status);
 
             if (isError(status, BleGattOperationType.SERVICE_DISCOVERY)) {
@@ -92,7 +92,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(TAG, "onCharacteristicRead");
+            Log.d(TAG, String.format("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status));
             super.onCharacteristicRead(gatt, characteristic, status);
 
             if (isError(status, BleGattOperationType.CHARACTERISTIC_READ)) {
@@ -102,13 +102,12 @@ public class RxBleGattCallback {
             Observable.just(characteristic)
                     .map(bluetoothGattCharacteristic -> new Pair<>(bluetoothGattCharacteristic.getUuid(), bluetoothGattCharacteristic.getValue()))
                     .compose(getSubscribeAndObserveOnTransformer())
-                    .doOnNext(bytes -> Log.d(TAG, "Read ... " + new String(bytes.second)))
                     .subscribe(readCharacteristicBehaviorSubject::onNext);
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(TAG, "onCharacteristicRead");
+            Log.d(TAG, String.format("onCharacteristicWrite characteristic=%s status=%d", characteristic.getUuid(), status));
             super.onCharacteristicWrite(gatt, characteristic, status);
 
             if (isError(status, BleGattOperationType.CHARACTERISTIC_WRITE)) {
@@ -123,7 +122,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "onCharacteristicRead");
+            Log.d(TAG, String.format("onCharacteristicChanged characteristic=%s", characteristic.getUuid()));
             super.onCharacteristicChanged(gatt, characteristic);
 
             Observable.just(characteristic)
@@ -134,7 +133,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.d(TAG, "onCharacteristicRead");
+            Log.d(TAG, String.format("onCharacteristicRead descriptor=%s status=%d", descriptor.getUuid(), status));
             super.onDescriptorRead(gatt, descriptor, status);
 
             if (isError(status, BleGattOperationType.DESCRIPTOR_READ)) {
@@ -149,7 +148,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.d(TAG, "onDescriptorWrite");
+            Log.d(TAG, String.format("onDescriptorWrite descriptor=%s status=%d", descriptor.getUuid(), status));
             super.onDescriptorWrite(gatt, descriptor, status);
 
             if (isError(status, BleGattOperationType.DESCRIPTOR_WRITE)) {
@@ -164,7 +163,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-            Log.d(TAG, "onReliableWriteCompleted");
+            Log.d(TAG, String.format("onReliableWriteCompleted status=%d", status));
             super.onReliableWriteCompleted(gatt, status);
 
             if (isError(status, BleGattOperationType.RELIABLE_WRITE_COMPLETED)) {
@@ -176,7 +175,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            Log.d(TAG, "onReadRemoteRssi");
+            Log.d(TAG, String.format("onReadRemoteRssi rssi=%d status=%d", rssi, status));
             super.onReadRemoteRssi(gatt, rssi, status);
 
             if (isError(status, BleGattOperationType.READ_RSSI)) {
@@ -190,7 +189,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-            Log.d(TAG, "onMtuChanged");
+            Log.d(TAG, String.format("onMtuChanged mtu=%d status=%d", mtu, status));
             super.onMtuChanged(gatt, mtu, status);
 
             if (isError(status, BleGattOperationType.ON_MTU_CHANGED)) {
@@ -236,15 +235,7 @@ public class RxBleGattCallback {
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicRead() {
-        Log.d(TAG, "getOnCharacteristicRead");
-        return withHandlingStatusError(readCharacteristicBehaviorSubject)
-                .doOnSubscribe(() -> Log.d(TAG, "Read . subscribed"))
-                .doOnUnsubscribe(() -> {
-                    Log.d(TAG, "Read . unsubscribed");
-                })
-                .doOnError(throwable -> Log.d(TAG, "Read . errored"))
-                .doOnCompleted(() -> Log.d(TAG, "Read . completed"))
-                .doOnNext(uuidPair -> Log.d(TAG, "Read . onNext"));
+        return withHandlingStatusError(readCharacteristicBehaviorSubject);
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicWrite() {
