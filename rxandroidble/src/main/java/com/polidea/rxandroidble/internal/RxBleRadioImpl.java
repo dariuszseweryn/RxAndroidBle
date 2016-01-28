@@ -2,12 +2,12 @@ package com.polidea.rxandroidble.internal;
 
 import android.util.Log;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class RxBleRadioImpl implements RxBleRadio {
 
-    private BlockingQueue<RxBleRadioOperation> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<RxBleRadioOperation> queue = new PriorityBlockingQueue<>();
 
     public RxBleRadioImpl() {
         new Thread(() -> {
