@@ -1,20 +1,20 @@
 package com.polidea.bleplayground;
 
-import android.support.v4.app.Fragment;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.os.Bundle;
-import android.support.v4.util.Pair;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.polidea.rxandroidble.RxBleClientImpl;
-import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.RxBleDevice;
+import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -39,23 +39,33 @@ public class MainActivityFragment extends Fragment {
         super.onResume();
 
         rxBleClient.scanBleDevices(null)
+                .subscribeOn(Schedulers.io())
                 .doOnNext(scanResult -> Log.d("AAA", "scanned " + scanResult.getBleDevice()))
                 .filter(rxBleScanResult -> rxBleScanResult.getBleDevice().getName() != null)
                 .filter(rxBleScanResult -> rxBleScanResult.getBleDevice().getName().contains("8775"))
                 .take(1)
                 .map(RxBleScanResult::getBleDevice)
+                .subscribeOn(Schedulers.newThread())
                 .doOnNext(rxBleConnection -> Log.d("AAA", "got device"))
                 .flatMap(rxBleDevice -> rxBleDevice.establishConnection(getContext()))
                 .doOnNext(rxBleConnection -> Log.d("AAA", "connected"))
                 .flatMap(rxBleConnection -> Observable.combineLatest(
                         rxBleConnection
                                 .discoverServices()
+                                .observeOn(Schedulers.io())
                                 .doOnCompleted(() -> Log.d("AAA", "DISCOVERY:COMPLETED"))
-                                .doOnNext(uuidSetMap -> {
-                                    for (Map.Entry<UUID, Set<UUID>> entry : uuidSetMap.entrySet()) {
-                                        Log.d("AAA", "service: " + entry.getKey().toString());
-                                        for (UUID characteristic : entry.getValue()) {
-                                            Log.d("AAA", "characteristic: " + characteristic.toString());
+                                .map(RxBleDeviceServices::getBluetoothGattServices)
+                                .doOnNext(serviceList -> {
+                                    for (BluetoothGattService bluetoothGattService : serviceList) {
+                                        Log.d("DISCOVERED", "service: " + bluetoothGattService.getUuid().toString());
+                                        for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
+                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString());
+                                            for (BluetoothGattDescriptor bluetoothGattDescriptor : bluetoothGattCharacteristic.getDescriptors()) {
+                                                Log.d("DISCOVERED", "descriptor: " + bluetoothGattDescriptor.getUuid().toString());
+                                            }
+                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: " +
+                                                    (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")) !=
+                                                            null));
                                         }
                                     }
                                 }),
@@ -63,7 +73,11 @@ public class MainActivityFragment extends Fragment {
                                 .readRssi()
                                 .doOnCompleted(() -> Log.d("AAA", "RSSI:COMPLETED"))
                                 .doOnNext(integer -> Log.d("AAA", "RSSI: " + integer)),
-                        (uuidSetMap1, integer1) -> null
+                        rxBleConnection
+                                .readCharacteristic(UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb"))
+                                .doOnNext(bytes -> Log.d("AAA", "Manufacturer: " + new String(bytes))),
+                        (uuidSetMap1, integer1, bytes1) -> null
+
                 ))
                 .take(1) // TODO: needed for unsubscribing from RxBleDevice.establishConnection()
                 .subscribe(
