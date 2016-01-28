@@ -5,12 +5,12 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.util.Log;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscoverGetCached;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import java.util.UUID;
@@ -55,32 +55,37 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .doOnUnsubscribe(() -> rxBleRadio.queue(disconnectAtomicReference.get()));
     }
 
+    @Override
     public Observable<RxBleDeviceServices> discoverServices() {
-        if (discoveredServicesAtomicReference.get() != null) {
-            return Observable.just(discoveredServicesAtomicReference.get());
-        }
+        return getCachedDiscoveredServices()
+                .flatMap(rxBleDeviceServices -> {
+                    if (rxBleDeviceServices != null) {
+                        return Observable.just(rxBleDeviceServices);
+                    } else {
+                        return actualDiscoverServices();
+                    }
+                });
+    }
 
-        final BluetoothGatt bluetoothGatt = this.bluetoothGattAtomicReference.get();
-        final RxBleRadioOperationServicesDiscover operationServicesDiscover = new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt);
+    private Observable<RxBleDeviceServices> getCachedDiscoveredServices() {
+        final RxBleRadioOperationServicesDiscoverGetCached operationGetDiscoveredServices =
+                new RxBleRadioOperationServicesDiscoverGetCached(discoveredServicesAtomicReference);
+        final Observable<RxBleDeviceServices> observable = operationGetDiscoveredServices.asObservable();
+        return observable.doOnSubscribe(() -> rxBleRadio.queue(operationGetDiscoveredServices));
+    }
+
+    private Observable<RxBleDeviceServices> actualDiscoverServices() {
+        final RxBleRadioOperationServicesDiscover operationServicesDiscover =
+                new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGattAtomicReference.get());
         final Observable<RxBleDeviceServices> observable = operationServicesDiscover.asObservable();
-        return observable.doOnSubscribe(() -> rxBleRadio.queue(operationServicesDiscover))
-                .doOnNext(this.discoveredServicesAtomicReference::set);
+        return observable
+                .doOnSubscribe(() -> rxBleRadio.queue(operationServicesDiscover))
+                .doOnNext(discoveredServicesAtomicReference::set);
     }
 
     private Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
-        return
-                discoverServicesInternal()
-                        .doOnNext(discoveredServices -> Log.d("getCharacteristic", "services got"))
-                        .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
-                        .first()
-                        .doOnNext(bluetoothGattCharacteristic -> Log.d("getCharacteristic", "characteristic delivered"));
-    }
-
-    private Observable<RxBleDeviceServices> discoverServicesInternal() {
-        return Observable.create(subscriber -> {
-            subscriber.onNext(discoveredServicesAtomicReference.get());
-            subscriber.onCompleted();
-        });
+        return discoverServices()
+                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
 
     public Observable<Observable<byte[]>> getNotification(UUID characteristicUuid) {
@@ -88,14 +93,17 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
-        final RxBleRadioOperationCharacteristicRead operationCharacteristicRead =
-                new RxBleRadioOperationCharacteristicRead(
-                        gattCallback,
-                        bluetoothGattAtomicReference.get(),
-                        getCharacteristic(characteristicUuid)
-                );
-        final Observable<byte[]> observable = operationCharacteristicRead.asObservable();
-        return observable.doOnSubscribe(() -> rxBleRadio.queue(operationCharacteristicRead));
+        return getCharacteristic(characteristicUuid)
+                .flatMap(bluetoothGattCharacteristic -> {
+                    final RxBleRadioOperationCharacteristicRead operationCharacteristicRead =
+                            new RxBleRadioOperationCharacteristicRead(
+                                    gattCallback,
+                                    bluetoothGattAtomicReference.get(),
+                                    bluetoothGattCharacteristic
+                            );
+                    final Observable<byte[]> observable = operationCharacteristicRead.asObservable();
+                    return observable.doOnSubscribe(() -> rxBleRadio.queue(operationCharacteristicRead));
+                });
     }
 
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
