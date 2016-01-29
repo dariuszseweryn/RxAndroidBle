@@ -28,6 +28,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
 
         final boolean success = bluetoothGatt.discoverServices();
         if (!success) {
+            // TODO: [PU] 29.01.2016 Exception misused, it should be BleGattException 
             onError(new BleScanException(BleScanException.BLE_CANNOT_START));
         }
     }
