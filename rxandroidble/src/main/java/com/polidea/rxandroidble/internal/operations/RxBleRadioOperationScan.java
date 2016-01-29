@@ -52,7 +52,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
     }
 
     public void stop() {
-        // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503 
+        // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
         bluetoothAdapter.stopLeScan(leScanCallback);
         releaseRadio();
     }
