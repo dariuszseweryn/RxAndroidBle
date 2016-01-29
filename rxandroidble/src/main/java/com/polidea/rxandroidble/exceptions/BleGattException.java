@@ -1,9 +1,8 @@
 package com.polidea.rxandroidble.exceptions;
 
-import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-
 public class BleGattException extends BleException {
 
+    public static final int UNKNOWN_STATUS = -1;
     private final int status;
 
     private final BleGattOperationType bleGattOperationType;
@@ -13,12 +12,16 @@ public class BleGattException extends BleException {
         this.bleGattOperationType = bleGattOperationType;
     }
 
-    public int getStatus() {
-        return status;
+    public BleGattException(BleGattOperationType bleGattOperationType) {
+        this(UNKNOWN_STATUS, bleGattOperationType);
     }
 
     public BleGattOperationType getBleGattOperationType() {
         return bleGattOperationType;
+    }
+
+    public int getStatus() {
+        return status;
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceImpl;
 import com.polidea.rxandroidble.RxBleScanResult;
+import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.UUIDParser;
@@ -43,10 +44,15 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
 
     @Override
     public void run() {
-        bluetoothAdapter.startLeScan(leScanCallback);
+        boolean startLeScanStatus = bluetoothAdapter.startLeScan(leScanCallback);
+
+        if(!startLeScanStatus) {
+            onError(new BleScanException(BleScanException.BLE_CANNOT_START));
+        }
     }
 
     public void stop() {
+        // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503 
         bluetoothAdapter.stopLeScan(leScanCallback);
         releaseRadio();
     }

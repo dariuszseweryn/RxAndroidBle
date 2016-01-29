@@ -28,7 +28,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
         // TODO: [PU] 29.01.2016 Release radio on error as well?
         final boolean success = bluetoothGatt.readRemoteRssi();
         if (!success) {
-            onError(new BleGattException(-1, BleGattOperationType.READ_RSSI));
+            onError(new BleGattException(BleGattOperationType.READ_RSSI));
         }
     }
 }

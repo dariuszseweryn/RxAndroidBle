@@ -1,8 +1,10 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
+
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.exceptions.BleGattException;
+import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
@@ -28,8 +30,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
 
         final boolean success = bluetoothGatt.discoverServices();
         if (!success) {
-            // TODO: [PU] 29.01.2016 Exception misused, it should be BleGattException 
-            onError(new BleScanException(BleScanException.BLE_CANNOT_START));
+            onError(new BleGattException(BleGattOperationType.SERVICE_DISCOVERY));
         }
     }
 
