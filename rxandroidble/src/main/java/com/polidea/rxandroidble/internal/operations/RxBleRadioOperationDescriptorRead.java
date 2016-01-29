@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattDescriptor;
+
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
@@ -25,10 +26,10 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<byte[
         rxBleGattCallback
                 .getOnDescriptorRead()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
-                .first()
+                .take(1)
                 .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second)
                 .subscribe(getSubscriber());
-
+        // TODO: [PU] 29.01.2016 Release radio
         bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
     }
 }

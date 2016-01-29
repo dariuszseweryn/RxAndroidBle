@@ -28,10 +28,10 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte
         rxBleGattCallback
                 .getOnDescriptorWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
-                .first()
+                .take(1)
                 .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second)
                 .subscribe(getSubscriber());
-
+        // TODO: [PU] 29.01.2016 Release radio
         bluetoothGattDescriptor.setValue(data);
         bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
     }

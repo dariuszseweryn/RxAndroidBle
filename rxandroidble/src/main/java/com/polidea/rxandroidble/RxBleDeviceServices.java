@@ -20,15 +20,18 @@ public class RxBleDeviceServices {
     }
 
     public Observable<BluetoothGattService> getService(UUID serviceUuid) {
+        // TODO: [PU] 29.01.2016 Will raise NoSuchElementException if services are empty. It should be mapped to error if not found
         return Observable.from(bluetoothGattServices)
                 .filter(bluetoothGattService -> bluetoothGattService.getUuid().equals(serviceUuid))
                 .first();
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
+        // TODO: [PU] 29.01.2016 Theoretically it may happen that characterisitic UUID in duplicated in another service.
         return Observable.from(bluetoothGattServices)
                 .map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
-                .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null);
+                .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
+                .take(1);
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID serviceUuid, UUID characteristicUuid) {

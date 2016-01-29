@@ -17,7 +17,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public Observable<RxBleConnection> establishConnection(Context context) {

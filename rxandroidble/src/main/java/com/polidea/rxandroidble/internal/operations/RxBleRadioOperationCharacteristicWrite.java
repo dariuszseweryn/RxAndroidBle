@@ -29,10 +29,11 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
         rxBleGattCallback
                 .getOnCharacteristicWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattCharacteristic.getUuid()))
-                .first()
+                .take(1)
                 .map(uuidPair -> uuidPair.second)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
+        // TODO: [PU] 29.01.2016 Release radio on error as well?
 
         bluetoothGattCharacteristic.setValue(data);
         bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
