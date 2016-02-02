@@ -32,8 +32,6 @@ public interface RxBleConnection {
         }
     }
 
-    Observable<RxBleConnection> connect(Context context); // TODO: hide from the user
-
     Observable<RxBleDeviceServices> discoverServices();
 
     Observable<Observable<byte[]>> getNotification(UUID characteristicUuid);

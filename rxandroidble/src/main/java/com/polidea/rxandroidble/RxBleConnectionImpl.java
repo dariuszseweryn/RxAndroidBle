@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+
+import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
@@ -20,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import rx.Observable;
 
-public class RxBleConnectionImpl implements RxBleConnection {
+public class RxBleConnectionImpl implements RxBleConnectibleConnection {
 
     private final BluetoothDevice bluetoothDevice;
 
