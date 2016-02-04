@@ -2,10 +2,13 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.support.v4.util.Pair;
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
-public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte[]> {
+public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<Pair<BluetoothGattDescriptor, byte[]>> {
 
     private final RxBleGattCallback rxBleGattCallback;
 
@@ -25,14 +28,18 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte
 
     @Override
     public void run() {
+        //noinspection Convert2MethodRef
         rxBleGattCallback
                 .getOnDescriptorWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
-                .take(1)
-                .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second)
+                .first()
+                .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
-        // TODO: [PU] 29.01.2016 Release radio
+
         bluetoothGattDescriptor.setValue(data);
-        bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
+        final boolean success = bluetoothGatt.writeDescriptor(bluetoothGattDescriptor);
+        if (!success) {
+            onError(new BleGattCannotStartException(BleGattOperationType.DESCRIPTOR_WRITE));
+        }
     }
 }

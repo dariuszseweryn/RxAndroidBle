@@ -2,6 +2,8 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
@@ -30,8 +32,10 @@ public class RxBleRadioOperationCharacteristicRead extends RxBleRadioOperation<b
                 .map(uuidPair -> uuidPair.second)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
-        // TODO: [PU] 29.01.2016 Release radio on error as well?
 
-        bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);
+        final boolean success = bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);
+        if (!success) {
+            onError(new BleGattCannotStartException(BleGattOperationType.CHARACTERISTIC_READ));
+        }
     }
 }
