@@ -34,8 +34,8 @@ public class RxBleGattCallback {
             RxBleConnection.RxBleConnectionState.DISCONNECTED);
 
     private PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
-    // TODO: [PU] 29.01.2016 Why BehaviorSubject?
-    private BehaviorSubject<Pair<UUID, byte[]>> readCharacteristicBehaviorSubject = BehaviorSubject.create();
+
+    private PublishSubject<Pair<UUID, byte[]>> readCharacteristicPublishSubject = PublishSubject.create();
 
     private PublishSubject<Pair<UUID, byte[]>> writeCharacteristicPublishSubject = PublishSubject.create();
 
@@ -96,7 +96,7 @@ public class RxBleGattCallback {
             Observable.just(characteristic)
                     .map(mapToUUIDAndValuePair())
                     .compose(getSubscribeAndObserveOnTransformer())
-                    .subscribe(readCharacteristicBehaviorSubject::onNext);
+                    .subscribe(readCharacteristicPublishSubject::onNext);
         }
 
         @Override
@@ -250,7 +250,7 @@ public class RxBleGattCallback {
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicRead() {
-        return withHandlingStatusError(readCharacteristicBehaviorSubject);
+        return withHandlingStatusError(readCharacteristicPublishSubject);
     }
 
     public Observable<Pair<UUID, byte[]>> getOnCharacteristicWrite() {
