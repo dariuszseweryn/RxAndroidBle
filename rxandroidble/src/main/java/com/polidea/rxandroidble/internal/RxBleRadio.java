@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble.internal;
 
+import rx.Observable;
+
 public interface RxBleRadio {
 
     class Action {
@@ -21,5 +23,5 @@ public interface RxBleRadio {
         Action GATT_CLOSE = new Action();
     }
 
-    void queue(RxBleRadioOperation rxBleRadioOperation); // TODO: add dequeueing on unsubscribe?
+    <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation); // TODO: add dequeueing on unsubscribe?
 }

@@ -23,9 +23,7 @@ public class RxBleClientImpl implements RxBleClient {
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
         final RxBleRadioOperationScan rxBleRadioOperationScan = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter,
                 rxBleRadio, uuidParser);
-        return rxBleRadioOperationScan
-                .asObservable()
-                .doOnSubscribe(() -> rxBleRadio.queue(rxBleRadioOperationScan))
+        return rxBleRadio.queue(rxBleRadioOperationScan)
                 .doOnUnsubscribe(rxBleRadioOperationScan::stop);
     }
 

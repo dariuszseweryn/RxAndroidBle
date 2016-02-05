@@ -4,8 +4,11 @@ import android.util.Log;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
+import rx.Observable;
 
 public class RxBleRadioImpl implements RxBleRadio {
+
+    private static final String TAG = RxBleRadioImpl.class.getSimpleName();
 
     private BlockingQueue<RxBleRadioOperation> queue = new PriorityBlockingQueue<>();
 
@@ -15,7 +18,7 @@ public class RxBleRadioImpl implements RxBleRadio {
             while (true) {
                 try {
                     final RxBleRadioOperation rxBleRadioOperation = queue.take();
-                    Log.d("RxBleRadioImpl", "Running " + rxBleRadioOperation.getClass().getSimpleName());
+                    log("STARTED", rxBleRadioOperation);
 
                     final Semaphore semaphore = new Semaphore(0);
 
@@ -23,7 +26,7 @@ public class RxBleRadioImpl implements RxBleRadio {
                     rxBleRadioOperation.run();
 
                     semaphore.acquire();
-                    Log.d("RxBleRadioImpl", "Finished " + rxBleRadioOperation.getClass().getSimpleName());
+                    log("FINISHED", rxBleRadioOperation);
                 } catch (InterruptedException e) {
                     Log.e(getClass().getSimpleName(), "Error while processing RxBleRadioOperation queue", e); // FIXME: introduce Timber?
                 }
@@ -31,8 +34,17 @@ public class RxBleRadioImpl implements RxBleRadio {
         }).start();
     }
 
+
     @Override
-    public void queue(RxBleRadioOperation rxBleRadioOperation) {
-        queue.add(rxBleRadioOperation);
+    public <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation) {
+        return Observable.create(subscriber -> {
+            log("QUEUED", rxBleRadioOperation);
+            rxBleRadioOperation.asObservable().subscribe(subscriber);
+            queue.add(rxBleRadioOperation);
+        });
+    }
+
+    private void log(String prefix, RxBleRadioOperation rxBleRadioOperation) {
+        Log.d(TAG, prefix + " " + rxBleRadioOperation.getClass().getSimpleName() + "(" + System.identityHashCode(rxBleRadioOperation) + ")");
     }
 }
