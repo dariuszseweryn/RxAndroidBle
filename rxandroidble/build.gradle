@@ -25,9 +25,9 @@ android {
     }
 }
 dependencies {
-    compile libs.support
-    compile libs.support_annotations
-    compile libs.rxjava
+    compile rootProject.ext.libs.support
+    compile rootProject.ext.libs.support_annotations
+    compile rootProject.ext.libs.rxjava
 
     // Test dependencies
     testCompile 'junit:junit:4.12'
