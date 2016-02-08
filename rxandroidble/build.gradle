@@ -2,12 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
-buildscript {
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.4'
-    }
-}
-
 android {
     compileSdkVersion 23
     buildToolsVersion rootProject.ext.buildToolsVersionVariable

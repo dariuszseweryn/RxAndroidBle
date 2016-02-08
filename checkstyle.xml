@@ -53,7 +53,6 @@
             <property name="format" value="^[A-Z][a-zA-Z0-9_]*$"/>
         </module>
 
-
         <!-- Checks for imports                              -->
         <!-- See http://checkstyle.sf.net/config_import.html -->
         <module name="AvoidStarImport"/>
@@ -67,7 +66,7 @@
         <!-- Checks for Size Violations.                    -->
         <!-- See http://checkstyle.sf.net/config_sizes.html -->
         <module name="LineLength">
-            <property name="max" value="100"/>
+            <property name="max" value="140"/>
         </module>
         <!--<module name="MethodLength"/>-->
         <module name="ParameterNumber"/>
@@ -134,7 +133,7 @@
         <!-- See http://checkstyle.sf.net/config_misc.html -->
         <module name="ArrayTypeStyle"/>
         <!--module name="FinalParameters"/-->
-        <module name="TodoComment"/>
+        <!--<module name="TodoComment"/>-->
         <module name="UpperEll"/>
     </module>
 </module>

@@ -1,12 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 
-buildscript {
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.4'
-    }
-}
-
 android {
     compileSdkVersion 23
     buildToolsVersion rootProject.ext.buildToolsVersionVariable
