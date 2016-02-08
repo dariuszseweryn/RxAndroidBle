@@ -9,6 +9,7 @@ import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
 import java.util.concurrent.atomic.AtomicReference;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
@@ -41,6 +42,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                 .getOnConnectionStateChange()
                 .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
                 .take(1)
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         rxBleConnectionState -> {
                             bluetoothGatt.close();

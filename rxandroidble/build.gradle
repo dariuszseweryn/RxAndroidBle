@@ -41,6 +41,6 @@ dependencies {
     // TODO [PU] If we can we should avoid support-v4, we are using only Pair class.
     compile "com.android.support:support-v4:$supportVersion"
     compile "com.android.support:support-annotations:$supportVersion"
-    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'io.reactivex:rxandroid:1.1.0'
     testCompile 'junit:junit:4.12'
 }
