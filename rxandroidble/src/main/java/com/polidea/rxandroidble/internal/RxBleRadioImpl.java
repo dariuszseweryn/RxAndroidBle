@@ -5,6 +5,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class RxBleRadioImpl implements RxBleRadio {
 
@@ -23,7 +24,10 @@ public class RxBleRadioImpl implements RxBleRadio {
                     final Semaphore semaphore = new Semaphore(0);
 
                     rxBleRadioOperation.setRadioBlockingSemaphore(semaphore);
-                    rxBleRadioOperation.run();
+
+                    Observable.just(rxBleRadioOperation)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(Runnable::run);
 
                     semaphore.acquire();
                     log("FINISHED", rxBleRadioOperation);

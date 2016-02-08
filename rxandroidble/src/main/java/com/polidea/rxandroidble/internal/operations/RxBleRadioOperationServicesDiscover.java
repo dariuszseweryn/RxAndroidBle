@@ -7,6 +7,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import java.util.concurrent.atomic.AtomicReference;
+import rx.Observable;
 
 public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxBleDeviceServices> {
 
@@ -16,7 +17,8 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
 
     private final AtomicReference<RxBleDeviceServices> rxBleDeviceServicesCache;
 
-    public RxBleRadioOperationServicesDiscover(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt, AtomicReference<RxBleDeviceServices> rxBleDeviceServicesCache) {
+    public RxBleRadioOperationServicesDiscover(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
+                                               AtomicReference<RxBleDeviceServices> rxBleDeviceServicesCache) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleDeviceServicesCache = rxBleDeviceServicesCache;
@@ -25,34 +27,31 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
     @Override
     public void run() {
 
-        try {
-            final RxBleDeviceServices rxBleDeviceServices = rxBleDeviceServicesCache.get();
-            if (rxBleDeviceServices != null) {
-                onNext(rxBleDeviceServices);
-                onCompleted();
-                return;
-            }
+        //noinspection Convert2MethodRef
+        Observable.just(rxBleDeviceServicesCache.get())
+                .flatMap(rxBleDeviceServices -> {
+                    if (rxBleDeviceServices != null) {
+                        return Observable.just(rxBleDeviceServices);
+                    } else {
+                        return Observable.empty();
+                    }
+                })
+                .switchIfEmpty(Observable.create(subscriber -> {
 
-            final boolean success = bluetoothGatt.discoverServices();
-            if (!success) {
-                onError(new BleGattException(BleGattOperationType.SERVICE_DISCOVERY));
-                return;
-            }
+                            final boolean success = bluetoothGatt.discoverServices();
+                            if (!success) {
+                                subscriber.onError(new BleGattException(BleGattOperationType.SERVICE_DISCOVERY));
+                                return;
+                            }
 
-            final RxBleDeviceServices bleDeviceServices;
-            try {
-                bleDeviceServices = rxBleGattCallback.getOnServicesDiscovered().toBlocking().first();
-            } catch (Exception e) {
-                onError(e);
-                return;
-            }
-
-            rxBleDeviceServicesCache.set(bleDeviceServices);
-            onNext(bleDeviceServices);
-            onCompleted();
-
-        } finally {
-            releaseRadio();
-        }
+                            rxBleGattCallback
+                                    .getOnServicesDiscovered()
+                                    .first()
+                                    .doOnNext(rxBleDeviceServicesCache::set)
+                                    .subscribe(subscriber);
+                        }
+                ))
+                .doOnTerminate(() -> releaseRadio())
+                .subscribe(getSubscriber());
     }
 }
