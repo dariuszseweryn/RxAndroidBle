@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.polidea.rxandroidble.RxBleClientImpl;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
+
 import java.util.UUID;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -64,8 +65,8 @@ public class MainActivityFragment extends Fragment {
                                                 Log.d("DISCOVERED", "descriptor: " + bluetoothGattDescriptor.getUuid().toString());
                                             }
                                             Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: " +
-                                                    (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")) !=
-                                                            null));
+                                                    Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: "
+                                                            + (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
                                         }
                                     }
                                 }),

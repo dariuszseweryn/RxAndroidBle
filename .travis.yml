@@ -1,0 +1,28 @@
+language: android
+
+android:
+  components:
+    - tools
+    - build-tools-23.0.2
+    - android-23
+    - extra-android-m2repository
+  licenses:
+    - android-sdk-license-5be876d5
+
+jdk:
+  - oraclejdk8
+#
+#after_success:
+#  - .buildscript/deploy_snapshot.sh
+
+#env:
+#  global:
+
+notifications:
+  email: false
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2
