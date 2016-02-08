@@ -1,1 +1,4 @@
-include ':app', ':rxandroidble'
+include ':rxandroidble'
+include ':app'
+
+rootProject.name = 'rxandroidble-parent'
