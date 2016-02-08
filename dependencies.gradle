@@ -1,0 +1,13 @@
+ext {
+    supportVersion = '23.1.1'
+    buildToolsVersionVariable = "23.0.2"
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
+    targetCompatibilityVersion = JavaVersion.VERSION_1_8
+    libs = [
+            /* Application dependencies */
+            retrolambda        : 'me.tatarka:gradle-retrolambda:3.2.4',
+            support            : "com.android.support:support-v4:$supportVersion",
+            support_annotations: "com.android.support:support-annotations:$supportVersion",
+            rxjava             : 'io.reactivex:rxandroid:1.1.0'
+    ]
+}
