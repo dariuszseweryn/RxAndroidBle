@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'groovyx.grooid.groovy-android'
 
 buildscript {
     repositories {
@@ -36,6 +37,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 dependencies {
     // TODO [PU] If we can we should avoid support-v4, we are using only Pair class.
@@ -43,4 +47,8 @@ dependencies {
     compile "com.android.support:support-annotations:$supportVersion"
     compile 'io.reactivex:rxandroid:1.1.0'
     testCompile 'junit:junit:4.12'
+    testCompile 'org.codehaus.groovy:groovy:2.4.5:grooid'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'cglib:cglib-nodep:3.1'
+    testCompile 'org.objenesis:objenesis:2.2'
 }
