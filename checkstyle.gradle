@@ -13,10 +13,10 @@ subprojects { project ->
 
         classpath = files()
     }
-
-    afterEvaluate {
-        if (project.tasks.findByName('check')) {
-            check.dependsOn('checkstyle')
-        }
-    }
+//
+//    afterEvaluate {
+//        if (project.tasks.findByName('check')) {
+//            check.dependsOn('checkstyle')
+//        }
+//    }
 }
