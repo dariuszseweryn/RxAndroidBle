@@ -7,6 +7,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import rx.Subscription;
 
 public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<Pair<BluetoothGattDescriptor, byte[]>> {
 
@@ -26,7 +27,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<Pair<
     @Override
     public void run() {
         //noinspection Convert2MethodRef
-        rxBleGattCallback
+        final Subscription subscription = rxBleGattCallback
                 .getOnDescriptorRead()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
                 .first()
@@ -35,6 +36,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<Pair<
 
         final boolean success = bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
         if (!success) {
+            subscription.unsubscribe();
             onError(new BleGattCannotStartException(BleGattOperationType.DESCRIPTOR_READ));
         }
     }

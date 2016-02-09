@@ -5,6 +5,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import rx.Subscription;
 
 public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
 
@@ -20,7 +21,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
     @Override
     public void run() {
         //noinspection Convert2MethodRef
-        bleGattCallback
+        final Subscription subscription = bleGattCallback
                 .getOnRssiRead()
                 .take(1)
                 .doOnCompleted(() -> releaseRadio())
@@ -28,6 +29,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
         // TODO: [PU] 29.01.2016 Release radio on error as well?
         final boolean success = bluetoothGatt.readRemoteRssi();
         if (!success) {
+            subscription.unsubscribe();
             onError(new BleGattCannotStartException(BleGattOperationType.READ_RSSI));
         }
     }
