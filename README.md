@@ -13,6 +13,25 @@ Disclaimer
 -------
 This library is still under development and may contain bugs. Use snapshot with caution.
 
+Usage
+-------
+
+Maven
+
+```xml
+<dependency>
+  <groupId>com.polidea.rxandroidble</groupId>
+  <artifactId>rxandroidble</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <type>aar</type>
+</dependency>
+```
+
+Gradle
+
+```java
+compile "com.polidea.rxandroidble:rxandroidble:1.0.0-SNAPSHOT"
+```
 Authors
 -------
 Dariusz Seweryn (dariusz.seweryn@polidea.com)
