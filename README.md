@@ -9,9 +9,14 @@ RxJava backed Bluetooth Low Energy support for Android. The library does for you
  
 This is a documentation sneak peak, stay tuned for more.
 
+Disclaimer
+-------
+This library is still under development and may contain bugs. Use snapshot with caution.
+
 Authors
 -------
 Dariusz Seweryn (dariusz.seweryn@polidea.com)
+
 Paweł Urban (pawel.urban@polidea.com)
 
 License
