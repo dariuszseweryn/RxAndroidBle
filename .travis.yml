@@ -2,21 +2,18 @@ language: android
 
 android:
   components:
-    - tools
-    - build-tools-23.0.2
-    - android-23
-    - extra-android-m2repository
+  - tools
+  - build-tools-23.0.2
+  - android-23
+  - extra-android-m2repository
   licenses:
-    - android-sdk-license-5be876d5
+  - android-sdk-license-5be876d5
 
 jdk:
   - oraclejdk8
-#
-#after_success:
-#  - .buildscript/deploy_snapshot.sh
 
-#env:
-#  global:
+after_success:
+  - .buildscript/deploy_snapshot.sh
 
 notifications:
   email: false
@@ -26,3 +23,8 @@ sudo: false
 cache:
   directories:
     - $HOME/.m2
+
+env:
+  global:
+    -   secure: "dyOUA22tgdQIR6oNyF3qSDesjMCpe+8/mbW8ToIgxG9kWtbPZ8ma2R77299kGzPNam64QGkwbGV9IfSDoAyjAJZcf4H8do1gZWeg73/towdAGVvuYjBwg/8zepnK5q6Wlwne3Ewlftdlk1VgX+SJuHhEieimiEFljMJ0ryoLfhO7EGMUuZQcVUXMBGrFHIQSsq79HH9I6OWDXQZ5SitrXv8JxLUpZ7M5X2zwH195c+8xVScBbOqRXAARi4g7oxoxFGlfUZAY+lf/CF6QvEN6w/ihbk6bMPieUW+TNBAhvEQ4DfAz50KgN08lwDY3dnMqTmaharDuuNRAv6VsMGLSi0ZjFaxIcxLyxUGuc7ydj6bO03ADoazBPxB7iVv0EG77eq4GPJy0+y0BbMxlBwOT45U9919iuY112mF1741Pc+3H9xIM0V9d/YMu18nE8cfk3RxRNTPXtLnc1833Ie9wIVyYT3d0YhSJ5gY1FygZ2UzvLYRrasaFwpt07ATUA65nI2hqA/FA4lT+YKQMe/IbpUpzZmNFsiCLtjhwyCBnOc00qThce7P/Im4h5If9tOTU8yd2A54F6lbQ+QlmUb5AllaBwaeErqoWs9eyIFUss/SE0+GkO5NjgE+uASOGMTaXrpdviZfvm2BZqS2jUwmvlUoOtduGujtqRaCnwGhIEYY="
+    -   secure: "Zzf+0+gfn2n6uwrKv4ActBpbdrIgn5F7LkSt44QkZqqy5HiZp1ojfbeYWWz06qjn1mzoCipeyOvTyA1FdMgHhnlwuy64WlpPB6CF5it2l4ipBUVNRMTJYQqiWrOpfINe4bnlDvOaJYRVG3BCk9GIOFmnKkkYD8eUBkq4wphGOAQZtm6asYz7VwsaciapTOHwM+RcShlY+E6DjhQHMIwlogY/ebCQV2OyeHSQYlcRm7gCAZOROgDxCTBrzfwpAFJqJjOvCzuYYQpSJqgZKzT7yziL8v9uaLIkZt3Ei1h1DKskrdCHH6Nwzh8wCgXgn2vm3NoyV9PVyiywnxM3dZoetFTchfwgyvRzwxjA3kVYAnoskzsou1z1Pq4AH0rftg5WE97f1GItHGH9+yNnlQM9IaLGBwEdsfLQjynnDdUETdPYphHHvFf/mOrxgsAhpl97c+2twsf9xhgr/7NNV0fb2xkXBrejytWtdVNcmhNIkdHCTADETayjiVpq5rT47sFJG7hBmXYPz/gZSe0MbkY/3jGX7bxVdrqhLNkoiSH5ZM5IyWkyXspBFPSrFJRWCWo0xSqeV4PksLjpKURJG0yPowm8UjrPg9LWWQy7t33QADRTcRAx9cFtZSy2CutitW7uGbp0xxllqsntF87MevULEZmMWYVsitthhamjIMmmTXU="
