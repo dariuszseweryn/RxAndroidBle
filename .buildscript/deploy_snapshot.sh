@@ -24,5 +24,4 @@ echo "Username:  $SONATYPE_NEXUS_USERNAME"
   echo "Deploying snapshot..."
   ./gradlew uploadArchives
   echo "Snapshot deployed!"
-
 #fi
