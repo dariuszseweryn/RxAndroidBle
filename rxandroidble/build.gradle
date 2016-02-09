@@ -27,6 +27,9 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 dependencies {
     compile rootProject.ext.libs.support
