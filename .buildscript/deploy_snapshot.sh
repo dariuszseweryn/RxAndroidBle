@@ -22,6 +22,6 @@ echo "Username:  $SONATYPE_NEXUS_USERNAME"
 #  echo "Skipping snapshot deployment: wrong branch. Expected '$BRANCH' but was '$TRAVIS_BRANCH'."
 #else
   echo "Deploying snapshot..."
-  ./gradlew uploadArchives -PSONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME -PSONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD
+  ./gradlew uploadArchives
   echo "Snapshot deployed!"
 #fi

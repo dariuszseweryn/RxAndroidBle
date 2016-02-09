@@ -35,7 +35,9 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-    return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
+    def extractedUsername = hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
+    System.out.println("Username: " + extractedUsername);
+    return extractedUsername
 }
 
 def getRepositoryPassword() {
