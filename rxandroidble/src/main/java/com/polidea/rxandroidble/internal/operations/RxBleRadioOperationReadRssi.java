@@ -26,7 +26,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
                 .take(1)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
-        // TODO: [PU] 29.01.2016 Release radio on error as well?
+
         final boolean success = bluetoothGatt.readRemoteRssi();
         if (!success) {
             subscription.unsubscribe();

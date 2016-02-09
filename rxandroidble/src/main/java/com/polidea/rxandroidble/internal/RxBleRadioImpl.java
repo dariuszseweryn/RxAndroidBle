@@ -21,10 +21,20 @@ public class RxBleRadioImpl implements RxBleRadio {
                     final RxBleRadioOperation rxBleRadioOperation = queue.take();
                     log("STARTED", rxBleRadioOperation);
 
+                    /**
+                     * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
+                     * status. Below Semaphore is passed to the RxBleRadioOperation and is meant to be released at appropriate time
+                     * when the next operation should be able to start successfully.
+                     */
                     final Semaphore semaphore = new Semaphore(0);
 
                     rxBleRadioOperation.setRadioBlockingSemaphore(semaphore);
 
+                    /**
+                     * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
+                     * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
+                     * on the main thread.
+                      */
                     Observable.just(rxBleRadioOperation)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(Runnable::run);
@@ -37,7 +47,6 @@ public class RxBleRadioImpl implements RxBleRadio {
             }
         }).start();
     }
-
 
     @Override
     public <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation) {

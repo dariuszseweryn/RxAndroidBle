@@ -32,6 +32,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
     @Override
     public void run() {
         // TODO: [PU] 29.01.2016 If may happen that disconnect callback will be executed even before connect. Will be stuck here?
+        // TODO: [DS] 09.02.2016 True - we need to fix that
         //noinspection Convert2MethodRef
         rxBleGattCallback
                 .getOnConnectionStateChange()
@@ -52,7 +53,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                 );
 
         // TODO: [PU] 29.01.2016 We must consider background connection with autoconnect == true.
-        // TODO: [PU] 29.01.2016 connectGatt should be called on the main thread.
         bluetoothGattBehaviorSubject.onNext(bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback()));
     }
 
