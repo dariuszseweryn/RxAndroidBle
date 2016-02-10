@@ -64,9 +64,8 @@ public class MainActivityFragment extends Fragment {
                                             for (BluetoothGattDescriptor bluetoothGattDescriptor : bluetoothGattCharacteristic.getDescriptors()) {
                                                 Log.d("DISCOVERED", "descriptor: " + bluetoothGattDescriptor.getUuid().toString());
                                             }
-                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: " +
-                                                    Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: "
-                                                            + (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: "
+                                                    + (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))));
                                         }
                                     }
                                 }),
