@@ -35,9 +35,11 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-    def extractedUsername = hasProperty('SONATYPE_NEXUS_USERNAME') ? property('SONATYPE_NEXUS_USERNAME') : ""
-    System.out.println("Username: " + extractedUsername);
-    return extractedUsername
+    return hasProperty('SONATYPE_NEXUS_USERNAME') ? property('SONATYPE_NEXUS_USERNAME') : ""
+}
+
+def isAndroidProject() {
+    return project.getPlugins().hasPlugin('com.android.application') || project.getPlugins().hasPlugin('com.android.library')
 }
 
 def getRepositoryPassword() {
@@ -102,8 +104,7 @@ afterEvaluate {
             sign configurations.archives
         }
 
-        if (project.getPlugins().hasPlugin('com.android.application')
-                || project.getPlugins().hasPlugin('com.android.library')) {
+        if (isAndroidProject()) {
             task install(type: Upload, dependsOn: assemble) {
                 repositories.mavenInstaller {
                     configuration = configurations.archives
@@ -203,8 +204,7 @@ afterEvaluate {
         }
 
         artifacts {
-            if (project.getPlugins().hasPlugin('com.android.application')
-                    ||  project.getPlugins().hasPlugin('com.android.library')) {
+            if (isAndroidProject()) {
                 archives androidSourcesJar
             } else {
                 archives sourcesJar
