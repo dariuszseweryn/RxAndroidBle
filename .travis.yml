@@ -11,12 +11,9 @@ android:
 
 jdk:
   - oraclejdk8
-#
-#after_success:
-#  - .buildscript/deploy_snapshot.sh
 
-#env:
-#  global:
+after_success:
+  - .buildscript/deploy_snapshot.sh
 
 notifications:
   email: false
@@ -25,4 +22,7 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.m2
+  - $HOME/.m2
+
+script:
+  - ./gradlew assembleDebug
