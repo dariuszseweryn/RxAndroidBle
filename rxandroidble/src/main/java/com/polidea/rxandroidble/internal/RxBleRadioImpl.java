@@ -1,8 +1,6 @@
 package com.polidea.rxandroidble.internal;
 
 import android.util.Log;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -11,7 +9,7 @@ public class RxBleRadioImpl implements RxBleRadio {
 
     private static final String TAG = RxBleRadioImpl.class.getSimpleName();
 
-    private BlockingQueue<RxBleRadioOperation> queue = new PriorityBlockingQueue<>();
+    private OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
 
     public RxBleRadioImpl() {
         new Thread(() -> {
@@ -34,7 +32,7 @@ public class RxBleRadioImpl implements RxBleRadio {
                      * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
                      * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
                      * on the main thread.
-                      */
+                     */
                     Observable.just(rxBleRadioOperation)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(Runnable::run);
