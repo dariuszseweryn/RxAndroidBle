@@ -7,6 +7,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import rx.Observable;
+import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
@@ -21,12 +22,24 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
     private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
+    private Subscription bluetoothGattSubscription;
+
     public RxBleRadioOperationConnect(Context context, BluetoothDevice bluetoothDevice, RxBleGattCallback rxBleGattCallback,
                                       RxBleConnection rxBleConnection) {
         this.context = context;
         this.bluetoothDevice = bluetoothDevice;
         this.rxBleGattCallback = rxBleGattCallback;
         this.rxBleConnection = rxBleConnection;
+    }
+
+    @Override
+    public Observable<RxBleConnection> asObservable() {
+        return super.asObservable()
+                .doOnUnsubscribe(() -> {
+                    if (bluetoothGattSubscription != null) {
+                        bluetoothGattSubscription.unsubscribe();
+                    }
+                });
     }
 
     @Override
@@ -52,8 +65,10 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                         }
                 );
 
+        bluetoothGattSubscription = rxBleGattCallback.getBluetoothGatt().subscribe(bluetoothGattBehaviorSubject::onNext);
         // TODO: [PU] 29.01.2016 We must consider background connection with autoconnect == true.
-        bluetoothGattBehaviorSubject.onNext(bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback()));
+        final BluetoothGatt bluetoothGatt = bluetoothDevice.connectGatt(context, false, rxBleGattCallback.getBluetoothGattCallback());
+        bluetoothGattBehaviorSubject.onNext(bluetoothGatt);
     }
 
     public Observable<BluetoothGatt> getBluetoothGatt() {

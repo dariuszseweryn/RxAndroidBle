@@ -3,12 +3,11 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
-
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-
 import java.util.concurrent.atomic.AtomicReference;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
@@ -27,32 +26,43 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     @Override
     public void run() {
-        BluetoothGatt bluetoothGatt = bluetoothGattAtomicReference.get();
-        // TODO: [PU] 29.01.2016 This reference will be null if executed before Connect opertion completes.
-        // TODO: [PU] 29.01.2016 Close operations should be done from the main thread
-        if (bluetoothManager.getConnectionState(bluetoothGatt.getDevice(), BluetoothProfile.GATT) == BluetoothProfile.STATE_DISCONNECTED) {
-            bluetoothGatt.close();
-            onNext(null);
-            releaseRadio();
-            return;
-        }
 
         //noinspection Convert2MethodRef
-        rxBleGattCallback
-                .getOnConnectionStateChange()
-                .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
-                .take(1)
+        Observable.just(bluetoothGattAtomicReference.get())
+                .flatMap(bluetoothGatt ->
+                        bluetoothGatt == null ? Observable.empty() : Observable.just(bluetoothGatt))
+                .flatMap(bluetoothGatt ->
+                        isDisconnected(bluetoothGatt) ? Observable.just(bluetoothGatt) : disconnect(bluetoothGatt))
+                .doOnTerminate(() -> releaseRadio())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        rxBleConnectionState -> {
-                            bluetoothGatt.close();
-                            onNext(null);
-                            releaseRadio();
-                        },
-                        throwable -> onError(throwable),
-                        () -> onCompleted() // don't change to method reference - crash on with Retrolambda 3.2.4
+                        bluetoothGatt -> bluetoothGatt.close(),
+                        throwable1 -> onError(throwable1),
+                        () -> onCompleted()
                 );
+    }
 
-        bluetoothGatt.disconnect();
+    private boolean isDisconnected(BluetoothGatt bluetoothGatt) {
+        return bluetoothManager.getConnectionState(bluetoothGatt.getDevice(), BluetoothProfile.GATT) == BluetoothProfile.STATE_DISCONNECTED;
+    }
+
+    /**
+     * TODO: [DS] 09.02.2016 This operation makes the radio to block until disconnection - maybe it would be better if it would not?
+     * What would happen then if a consecutive call to BluetoothDevice.connectGatt() would be made? What BluetoothGatt would be returned?
+     * 1. A completely fresh BluetoothGatt - would work with the current flow
+     * 2. The same BluetoothGatt - in this situation we should probably cancel the pending BluetoothGatt.close() call
+     */
+    private Observable<BluetoothGatt> disconnect(BluetoothGatt bluetoothGatt) {
+        return Observable.create(subscriber -> {
+            //noinspection Convert2MethodRef
+            rxBleGattCallback
+                    .getOnConnectionStateChange()
+                    .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
+                    .take(1)
+                    .map(rxBleConnectionState -> bluetoothGatt)
+                    .subscribe(subscriber);
+
+            bluetoothGatt.disconnect();
+        });
     }
 }

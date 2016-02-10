@@ -30,6 +30,8 @@ public class RxBleGattCallback {
 
     private BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();
 
+    private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
+
     private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
             RxBleConnection.RxBleConnectionState.DISCONNECTED);
 
@@ -58,6 +60,8 @@ public class RxBleGattCallback {
             Log.d(TAG, String.format("onConnectionStateChange newState=%d status=%d", newState, status));
             super.onConnectionStateChange(gatt, status, newState);
 
+            bluetoothGattBehaviorSubject.onNext(gatt);
+
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CONNECTION_STATE)) {
                 return;
             }
@@ -71,6 +75,8 @@ public class RxBleGattCallback {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.d(TAG, String.format("onServicesDiscovered status=%d", status));
             super.onServicesDiscovered(gatt, status);
+
+            bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.SERVICE_DISCOVERY)) {
                 return;
@@ -89,6 +95,8 @@ public class RxBleGattCallback {
             Log.d(TAG, String.format("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status));
             super.onCharacteristicRead(gatt, characteristic, status);
 
+            bluetoothGattBehaviorSubject.onNext(gatt);
+
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CHARACTERISTIC_READ)) {
                 return;
             }
@@ -103,6 +111,8 @@ public class RxBleGattCallback {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.d(TAG, String.format("onCharacteristicWrite characteristic=%s status=%d", characteristic.getUuid(), status));
             super.onCharacteristicWrite(gatt, characteristic, status);
+
+            bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CHARACTERISTIC_WRITE)) {
                 return;
@@ -119,6 +129,8 @@ public class RxBleGattCallback {
             Log.d(TAG, String.format("onCharacteristicChanged characteristic=%s", characteristic.getUuid()));
             super.onCharacteristicChanged(gatt, characteristic);
 
+            bluetoothGattBehaviorSubject.onNext(gatt);
+
             Observable.just(characteristic)
                     .map(mapToUUIDAndValuePair())
                     .compose(getSubscribeAndObserveOnTransformer())
@@ -129,6 +141,8 @@ public class RxBleGattCallback {
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             Log.d(TAG, String.format("onCharacteristicRead descriptor=%s status=%d", descriptor.getUuid(), status));
             super.onDescriptorRead(gatt, descriptor, status);
+
+            bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.DESCRIPTOR_READ)) {
                 return;
@@ -145,6 +159,8 @@ public class RxBleGattCallback {
             Log.d(TAG, String.format("onDescriptorWrite descriptor=%s status=%d", descriptor.getUuid(), status));
             super.onDescriptorWrite(gatt, descriptor, status);
 
+            bluetoothGattBehaviorSubject.onNext(gatt);
+
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.DESCRIPTOR_WRITE)) {
                 return;
             }
@@ -160,6 +176,8 @@ public class RxBleGattCallback {
             Log.d(TAG, String.format("onReliableWriteCompleted status=%d", status));
             super.onReliableWriteCompleted(gatt, status);
 
+            bluetoothGattBehaviorSubject.onNext(gatt);
+
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.RELIABLE_WRITE_COMPLETED)) {
                 return;
             }
@@ -171,6 +189,8 @@ public class RxBleGattCallback {
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
             Log.d(TAG, String.format("onReadRemoteRssi rssi=%d status=%d", rssi, status));
             super.onReadRemoteRssi(gatt, rssi, status);
+
+            bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.READ_RSSI)) {
                 return;
@@ -185,6 +205,8 @@ public class RxBleGattCallback {
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             Log.d(TAG, String.format("onMtuChanged mtu=%d status=%d", mtu, status));
             super.onMtuChanged(gatt, mtu, status);
+
+            bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.ON_MTU_CHANGED)) {
                 return;
@@ -239,6 +261,10 @@ public class RxBleGattCallback {
 
     public BluetoothGattCallback getBluetoothGattCallback() {
         return bluetoothGattCallback;
+    }
+
+    public Observable<BluetoothGatt> getBluetoothGatt() {
+        return bluetoothGattBehaviorSubject;
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getOnConnectionStateChange() {

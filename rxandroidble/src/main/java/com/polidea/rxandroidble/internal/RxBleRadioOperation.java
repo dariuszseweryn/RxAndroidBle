@@ -24,7 +24,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      * to be run on the main thread in future. When appropriate the call to run() will be executed.
      * This operation is expected to call releaseRadio() at appropriate point after the run() was called.
      */
-    public final Observable<T> asObservable() {
+    public Observable<T> asObservable() {
         return publishSubject;
     }
 
