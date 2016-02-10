@@ -36,7 +36,7 @@ def getSnapshotRepositoryUrl() {
 
 def getRepositoryUsername() {
     def extractedUsername = hasProperty('SONATYPE_NEXUS_USERNAME') ? property('SONATYPE_NEXUS_USERNAME') : ""
-    System.out.println("Username : " + extractedUsername);
+    System.out.println("Username: " + extractedUsername);
     return extractedUsername
 }
 
@@ -44,170 +44,171 @@ def getRepositoryPassword() {
     return hasProperty('SONATYPE_NEXUS_PASSWORD') ? property('SONATYPE_NEXUS_PASSWORD') : ""
 }
 
-afterEvaluate { project ->
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+afterEvaluate {
+    project ->
+        uploadArchives {
+            repositories {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-                pom.groupId = GROUP
-                pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
+                    pom.groupId = GROUP
+                    pom.artifactId = POM_ARTIFACT_ID
+                    pom.version = VERSION_NAME
 
-                repository(url: getReleaseRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-                }
-                snapshotRepository(url: getSnapshotRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-                }
-
-                pom.project {
-                    name POM_NAME
-                    packaging POM_PACKAGING
-                    description POM_DESCRIPTION
-                    url POM_URL
-
-                    scm {
-                        url POM_SCM_URL
-                        connection POM_SCM_CONNECTION
-                        developerConnection POM_SCM_DEV_CONNECTION
+                    repository(url: getReleaseRepositoryUrl()) {
+                        authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                    }
+                    snapshotRepository(url: getSnapshotRepositoryUrl()) {
+                        authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
                     }
 
-                    licenses {
-                        license {
-                            name POM_LICENCE_NAME
-                            url POM_LICENCE_URL
-                            distribution POM_LICENCE_DIST
+                    pom.project {
+                        name POM_NAME
+                        packaging POM_PACKAGING
+                        description POM_DESCRIPTION
+                        url POM_URL
+
+                        scm {
+                            url POM_SCM_URL
+                            connection POM_SCM_CONNECTION
+                            developerConnection POM_SCM_DEV_CONNECTION
                         }
-                    }
 
-                    developers {
-                        developer {
-                            id POM_DEVELOPER_ID
-                            name POM_DEVELOPER_NAME
+                        licenses {
+                            license {
+                                name POM_LICENCE_NAME
+                                url POM_LICENCE_URL
+                                distribution POM_LICENCE_DIST
+                            }
                         }
-                        developer {
-                            id POM_DEVELOPER_ID2
-                            name POM_DEVELOPER_NAME2
-                        }
-                    }
-                }
-            }
-        }
-    }
 
-    signing {
-        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
-    }
-
-    if (project.getPlugins().hasPlugin('com.android.application') ||
-            project.getPlugins().hasPlugin('com.android.library')) {
-        task install(type: Upload, dependsOn: assemble) {
-            repositories.mavenInstaller {
-                configuration = configurations.archives
-
-                pom.groupId = GROUP
-                pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
-
-                pom.project {
-                    name POM_NAME
-                    packaging POM_PACKAGING
-                    description POM_DESCRIPTION
-                    url POM_URL
-
-                    scm {
-                        url POM_SCM_URL
-                        connection POM_SCM_CONNECTION
-                        developerConnection POM_SCM_DEV_CONNECTION
-                    }
-
-                    licenses {
-                        license {
-                            name POM_LICENCE_NAME
-                            url POM_LICENCE_URL
-                            distribution POM_LICENCE_DIST
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id POM_DEVELOPER_ID
-                            name POM_DEVELOPER_NAME
+                        developers {
+                            developer {
+                                id POM_DEVELOPER_ID
+                                name POM_DEVELOPER_NAME
+                            }
+                            developer {
+                                id POM_DEVELOPER_ID2
+                                name POM_DEVELOPER_NAME2
+                            }
                         }
                     }
                 }
             }
         }
 
-        task androidSourcesJar(type: Jar) {
-            classifier = 'sources'
-            from android.sourceSets.main.java.source
+        signing {
+            required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+            sign configurations.archives
         }
-    } else {
-        install {
-            repositories.mavenInstaller {
-                pom.groupId = GROUP
-                pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
 
-                pom.project {
-                    name POM_NAME
-                    packaging POM_PACKAGING
-                    description POM_DESCRIPTION
-                    url POM_URL
+        if (project.getPlugins().hasPlugin('com.android.application')
+                || project.getPlugins().hasPlugin('com.android.library')) {
+            task install(type: Upload, dependsOn: assemble) {
+                repositories.mavenInstaller {
+                    configuration = configurations.archives
 
-                    scm {
-                        url POM_SCM_URL
-                        connection POM_SCM_CONNECTION
-                        developerConnection POM_SCM_DEV_CONNECTION
-                    }
+                    pom.groupId = GROUP
+                    pom.artifactId = POM_ARTIFACT_ID
+                    pom.version = VERSION_NAME
 
-                    licenses {
-                        license {
-                            name POM_LICENCE_NAME
-                            url POM_LICENCE_URL
-                            distribution POM_LICENCE_DIST
+                    pom.project {
+                        name POM_NAME
+                        packaging POM_PACKAGING
+                        description POM_DESCRIPTION
+                        url POM_URL
+
+                        scm {
+                            url POM_SCM_URL
+                            connection POM_SCM_CONNECTION
+                            developerConnection POM_SCM_DEV_CONNECTION
                         }
-                    }
 
-                    developers {
-                        developer {
-                            id POM_DEVELOPER_ID
-                            name POM_DEVELOPER_NAME
+                        licenses {
+                            license {
+                                name POM_LICENCE_NAME
+                                url POM_LICENCE_URL
+                                distribution POM_LICENCE_DIST
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id POM_DEVELOPER_ID
+                                name POM_DEVELOPER_NAME
+                            }
                         }
                     }
                 }
             }
-        }
 
-        task sourcesJar(type: Jar, dependsOn:classes) {
-            classifier = 'sources'
-            from sourceSets.main.allSource
-        }
-
-        task javadocJar(type: Jar, dependsOn:javadoc) {
-            classifier = 'javadoc'
-            from javadoc.destinationDir
-        }
-    }
-
-    if (JavaVersion.current().isJava8Compatible()) {
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addStringOption('Xdoclint:none', '-quiet')
+            task androidSourcesJar(type: Jar) {
+                classifier = 'sources'
+                from android.sourceSets.main.java.source
             }
-        }
-    }
-
-    artifacts {
-        if (project.getPlugins().hasPlugin('com.android.application') ||
-                project.getPlugins().hasPlugin('com.android.library')) {
-            archives androidSourcesJar
         } else {
-            archives sourcesJar
-            archives javadocJar
+            install {
+                repositories.mavenInstaller {
+                    pom.groupId = GROUP
+                    pom.artifactId = POM_ARTIFACT_ID
+                    pom.version = VERSION_NAME
+
+                    pom.project {
+                        name POM_NAME
+                        packaging POM_PACKAGING
+                        description POM_DESCRIPTION
+                        url POM_URL
+
+                        scm {
+                            url POM_SCM_URL
+                            connection POM_SCM_CONNECTION
+                            developerConnection POM_SCM_DEV_CONNECTION
+                        }
+
+                        licenses {
+                            license {
+                                name POM_LICENCE_NAME
+                                url POM_LICENCE_URL
+                                distribution POM_LICENCE_DIST
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id POM_DEVELOPER_ID
+                                name POM_DEVELOPER_NAME
+                            }
+                        }
+                    }
+                }
+            }
+
+            task sourcesJar(type: Jar, dependsOn: classes) {
+                classifier = 'sources'
+                from sourceSets.main.allSource
+            }
+
+            task javadocJar(type: Jar, dependsOn: javadoc) {
+                classifier = 'javadoc'
+                from javadoc.destinationDir
+            }
         }
-    }
+
+        if (JavaVersion.current().isJava8Compatible()) {
+            allprojects {
+                tasks.withType(Javadoc) {
+                    options.addStringOption('Xdoclint:none', '-quiet')
+                }
+            }
+        }
+
+        artifacts {
+            if (project.getPlugins().hasPlugin('com.android.application')
+                    ||  project.getPlugins().hasPlugin('com.android.library')) {
+                archives androidSourcesJar
+            } else {
+                archives sourcesJar
+                archives javadocJar
+            }
+        }
 }
