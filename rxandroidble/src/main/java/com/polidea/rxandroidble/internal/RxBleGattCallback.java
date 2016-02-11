@@ -7,14 +7,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.util.Log;
-
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-
 import java.util.UUID;
-
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
@@ -101,8 +98,8 @@ public class RxBleGattCallback {
                 return;
             }
 
-            Observable.just(characteristic)
-                    .map(mapToUUIDAndValuePair())
+            just(characteristic)
+                    .map(mapCharacteristicPairToUuid())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(readCharacteristicPublishSubject::onNext);
         }
@@ -118,8 +115,8 @@ public class RxBleGattCallback {
                 return;
             }
 
-            Observable.just(characteristic)
-                    .map(mapToUUIDAndValuePair())
+            just(characteristic)
+                    .map(mapCharacteristicPairToUuid())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(writeCharacteristicPublishSubject::onNext);
         }
@@ -131,8 +128,8 @@ public class RxBleGattCallback {
 
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            Observable.just(characteristic)
-                    .map(mapToUUIDAndValuePair())
+            just(characteristic)
+                    .map(mapCharacteristicPairToUuid())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(changedCharacteristicPublishSubject::onNext);
         }
@@ -148,8 +145,7 @@ public class RxBleGattCallback {
                 return;
             }
 
-            Observable.just(descriptor)
-                    .map(gattDescriptor -> new Pair<>(descriptor, gattDescriptor.getValue()))
+            just(descriptor)
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(readDescriptorPublishSubject::onNext);
         }
@@ -165,8 +161,7 @@ public class RxBleGattCallback {
                 return;
             }
 
-            Observable.just(descriptor)
-                    .map(gattDescriptor -> new Pair<>(gattDescriptor, gattDescriptor.getValue()))
+            just(descriptor)
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(writeDescriptorPublishSubject::onNext);
         }
@@ -219,8 +214,20 @@ public class RxBleGattCallback {
     };
 
     @NonNull
-    private Func1<BluetoothGattCharacteristic, Pair<UUID, byte[]>> mapToUUIDAndValuePair() {
-        return bluetoothGattCharacteristic -> new Pair<>(bluetoothGattCharacteristic.getUuid(), bluetoothGattCharacteristic.getValue());
+    private Observable<Pair<BluetoothGattCharacteristic, byte[]>> just(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        final byte[] value = bluetoothGattCharacteristic.getValue();
+        return Observable.defer(() -> Observable.just(Pair.create(bluetoothGattCharacteristic, value)));
+    }
+
+    @NonNull
+    private Func1<Pair<BluetoothGattCharacteristic, byte[]>, Pair<UUID, byte[]>> mapCharacteristicPairToUuid() {
+        return pair -> new Pair<>(pair.first.getUuid(), pair.second);
+    }
+
+    @NonNull
+    private Observable<Pair<BluetoothGattDescriptor, byte[]>> just(BluetoothGattDescriptor bluetoothGattDescriptor) {
+        final byte[] value = bluetoothGattDescriptor.getValue();
+        return Observable.defer(() -> Observable.just(Pair.create(bluetoothGattDescriptor, value)));
     }
 
     private RxBleConnection.RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
