@@ -23,5 +23,5 @@ public interface RxBleRadio {
         Action GATT_CLOSE = new Action();
     }
 
-    <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation); // TODO: add dequeueing on unsubscribe?
+    <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation);
 }

@@ -20,6 +20,15 @@ public class OperationPriorityFifoBlockingQueue {
         return q.isEmpty();
     }
 
+    public void remove(RxBleRadioOperation rxBleRadioOperation) {
+        for (FIFOEntry entry : q) {
+            if (entry.getEntry() == rxBleRadioOperation) {
+                q.remove(entry);
+                return;
+            }
+        }
+    }
+
     private static class FIFOEntry implements Comparable<FIFOEntry> {
 
         static final AtomicLong seq = new AtomicLong(0);
