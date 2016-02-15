@@ -3,7 +3,6 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
-
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceImpl;
 import com.polidea.rxandroidble.RxBleScanResult;
@@ -11,11 +10,11 @@ import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.UUIDParser;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult> {
@@ -25,6 +24,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
     private final UUIDParser uuidParser;
     private final AtomicReference<RxBleRadio> rxBleRadioAtomicReference = new AtomicReference<>();
     private final Map<String, RxBleDevice> availableDevices = new HashMap<>();
+    private final AtomicBoolean isScanning = new AtomicBoolean(false);
 
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
@@ -44,6 +44,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
 
     @Override
     public void run() {
+        isScanning.set(true);
         boolean startLeScanStatus = bluetoothAdapter.startLeScan(leScanCallback);
 
         if(!startLeScanStatus) {
@@ -52,9 +53,12 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
     }
 
     public void stop() {
-        // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-        bluetoothAdapter.stopLeScan(leScanCallback);
-        releaseRadio();
+        if (isScanning.compareAndSet(true, false)) {
+            // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
+            bluetoothAdapter.stopLeScan(leScanCallback);
+            isScanning.set(false);
+            releaseRadio();
+        }
     }
 
     private boolean containsDesiredServiceIds(byte[] scanRecord) {
