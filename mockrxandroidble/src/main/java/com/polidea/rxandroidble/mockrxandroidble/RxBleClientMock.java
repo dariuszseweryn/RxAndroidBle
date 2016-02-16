@@ -65,9 +65,11 @@ public class RxBleClientMock implements RxBleClient {
             this.bluetoothGattServices = new ArrayList<>();
         }
 
-        public ServicesBuilder addService(UUID uuid, BluetoothGattCharacteristic characteristic) {
+        public ServicesBuilder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
             BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
-            bluetoothGattService.addCharacteristic(characteristic);
+            for(BluetoothGattCharacteristic characteristic : characteristics) {
+                bluetoothGattService.addCharacteristic(characteristic);
+            }
             bluetoothGattServices.add(bluetoothGattService);
             return this;
         }
@@ -80,27 +82,44 @@ public class RxBleClientMock implements RxBleClient {
 
     public static class CharacteristicsBuilder {
 
-        private List<BluetoothGattDescriptor> bluetoothGattDescriptors;
-        private BluetoothGattCharacteristic bluetoothGattCharacteristic;
+        private List<BluetoothGattCharacteristic> bluetoothGattCharacteristics;
 
-        public CharacteristicsBuilder(UUID uuid, byte[] data) {
-            this.bluetoothGattDescriptors = new ArrayList<>();
-            this.bluetoothGattCharacteristic = new BluetoothGattCharacteristic(uuid, 0, 0);
-            this.bluetoothGattCharacteristic.setValue(data);
+        public CharacteristicsBuilder() {
+            this.bluetoothGattCharacteristics = new ArrayList<>();
         }
 
-        public CharacteristicsBuilder addDescriptor(UUID uuid, byte[] data) {
+        public CharacteristicsBuilder addCharacteristic(UUID uuid, byte[] data, List<BluetoothGattDescriptor> descriptors) {
+            BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, 0, 0);
+            for(BluetoothGattDescriptor descriptor : descriptors) {
+                characteristic.addDescriptor(descriptor);
+            }
+            characteristic.setValue(data);
+            this.bluetoothGattCharacteristics.add(characteristic);
+            return this;
+        }
+
+        public List<BluetoothGattCharacteristic> build() {
+            return bluetoothGattCharacteristics;
+        }
+    }
+
+    public static class DescriptorsBuilder {
+
+        private List<BluetoothGattDescriptor> bluetoothGattDescriptors;
+
+        public DescriptorsBuilder() {
+            this.bluetoothGattDescriptors = new ArrayList<>();
+        }
+
+        public DescriptorsBuilder addDescriptor(UUID uuid, byte[] data) {
             BluetoothGattDescriptor bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, 0);
             bluetoothGattDescriptor.setValue(data);
             bluetoothGattDescriptors.add(bluetoothGattDescriptor);
             return this;
         }
 
-        public BluetoothGattCharacteristic build() {
-            for (BluetoothGattDescriptor descriptor : bluetoothGattDescriptors) {
-                bluetoothGattCharacteristic.addDescriptor(descriptor);
-            }
-            return bluetoothGattCharacteristic;
+        public List<BluetoothGattDescriptor> build() {
+            return bluetoothGattDescriptors;
         }
     }
 
