@@ -21,9 +21,14 @@ public class RxBleClientMockTest extends Specification {
                 new RxBleClientMock.ServicesBuilder()
                         .addService(
                             serviceUUID,
-                            new RxBleClientMock.CharacteristicsBuilder(characteristicUUID, characteristicData)
-                                    .addDescriptor(descriptorUUID, descriptorData)
-                                    .build()
+                            new RxBleClientMock.CharacteristicsBuilder()
+                                    .addCharacteristic(
+                                        characteristicUUID,
+                                        characteristicData,
+                                        new RxBleClientMock.DescriptorsBuilder()
+                                            .addDescriptor(descriptorUUID, descriptorData)
+                                            .build()
+                            ).build()
                 ).build()
         ).build();
     }
