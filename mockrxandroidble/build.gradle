@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+apply plugin: 'groovyx.grooid.groovy-android'
+apply plugin: 'me.tatarka.retrolambda'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion rootProject.ext.buildToolsVersionVariable
+
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 23
+        versionCode 1
+        versionName VERSION_NAME
+    }
+    compileOptions {
+        sourceCompatibility rootProject.ext.targetCompatibilityVersion
+        targetCompatibility rootProject.ext.targetCompatibilityVersion
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile project(':rxandroidble')
+
+    // Test dependencies
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.codehaus.groovy:groovy:2.4.5:grooid'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'cglib:cglib-nodep:3.1'
+    testCompile 'org.objenesis:objenesis:2.2'
+}
