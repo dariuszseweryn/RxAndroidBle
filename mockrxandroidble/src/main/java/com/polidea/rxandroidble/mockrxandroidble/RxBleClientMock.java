@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.mockrxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleClient;
@@ -24,61 +25,48 @@ public class RxBleClientMock implements RxBleClient {
         private String deviceName;
         private String deviceMacAddress;
         private byte[] scanRecord;
-
         private RxBleDeviceServices rxBleDeviceServices;
 
+        public Builder() {
+            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<>());
+        }
+
+        public Builder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
+            BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                bluetoothGattService.addCharacteristic(characteristic);
+            }
+            rxBleDeviceServices.getBluetoothGattServices().add(bluetoothGattService);
+            return this;
+        }
+
         public RxBleClientMock build() {
+            if (this.rssi == null) throw new IllegalStateException("rssi can't be null");
+            if (this.deviceMacAddress == null) throw new IllegalStateException("deviceMacAddress can't be null");
+            if (this.scanRecord == null) throw new IllegalStateException("scanRecord can't be null");
             return new RxBleClientMock(this);
         }
 
-        public Builder deviceMacAddress(String deviceMacAddress) {
+        public Builder deviceMacAddress(@NonNull String deviceMacAddress) {
             this.deviceMacAddress = deviceMacAddress;
             return this;
         }
 
-        public Builder deviceName(String deviceName) {
+        public Builder deviceName(@NonNull String deviceName) {
             this.deviceName = deviceName;
             return this;
         }
 
-        public Builder rssi(Integer rssi) {
+        public Builder rssi(@NonNull Integer rssi) {
             this.rssi = rssi;
             return this;
         }
 
-        public Builder rxBleDeviceServices(RxBleDeviceServices rxBleDeviceServices) {
-            this.rxBleDeviceServices = rxBleDeviceServices;
-            return this;
-        }
-
-        public Builder scanRecord(byte[] scanRecord) {
+        public Builder scanRecord(@NonNull byte[] scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
     }
-
-    public static class ServicesBuilder {
-
-        private List<BluetoothGattService> bluetoothGattServices;
-
-        public ServicesBuilder() {
-            this.bluetoothGattServices = new ArrayList<>();
-        }
-
-        public ServicesBuilder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
-            BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
-            for(BluetoothGattCharacteristic characteristic : characteristics) {
-                bluetoothGattService.addCharacteristic(characteristic);
-            }
-            bluetoothGattServices.add(bluetoothGattService);
-            return this;
-        }
-
-        public RxBleDeviceServices build() {
-            return new RxBleDeviceServices(bluetoothGattServices);
-        }
-    }
-
 
     public static class CharacteristicsBuilder {
 
@@ -88,9 +76,9 @@ public class RxBleClientMock implements RxBleClient {
             this.bluetoothGattCharacteristics = new ArrayList<>();
         }
 
-        public CharacteristicsBuilder addCharacteristic(UUID uuid, byte[] data, List<BluetoothGattDescriptor> descriptors) {
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid, @NonNull byte[] data, List<BluetoothGattDescriptor> descriptors) {
             BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, 0, 0);
-            for(BluetoothGattDescriptor descriptor : descriptors) {
+            for (BluetoothGattDescriptor descriptor : descriptors) {
                 characteristic.addDescriptor(descriptor);
             }
             characteristic.setValue(data);
@@ -111,7 +99,7 @@ public class RxBleClientMock implements RxBleClient {
             this.bluetoothGattDescriptors = new ArrayList<>();
         }
 
-        public DescriptorsBuilder addDescriptor(UUID uuid, byte[] data) {
+        public DescriptorsBuilder addDescriptor(@NonNull UUID uuid, @NonNull byte[] data) {
             BluetoothGattDescriptor bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, 0);
             bluetoothGattDescriptor.setValue(data);
             bluetoothGattDescriptors.add(bluetoothGattDescriptor);

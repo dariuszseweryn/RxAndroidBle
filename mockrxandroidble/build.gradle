@@ -25,12 +25,12 @@ android {
 }
 
 dependencies {
-    compile project(':rxandroidble')
+    compile "com.polidea.rxandroidble:rxandroidble:1.0.0-SNAPSHOT"
 
     // Test dependencies
     testCompile 'junit:junit:4.12'
     testCompile 'org.codehaus.groovy:groovy:2.4.5:grooid'
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'org.robospock:robospock:1.0.0'
     testCompile 'cglib:cglib-nodep:3.1'
     testCompile 'org.objenesis:objenesis:2.2'
 }
