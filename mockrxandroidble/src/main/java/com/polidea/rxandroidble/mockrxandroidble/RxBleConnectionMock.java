@@ -48,8 +48,7 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
 
     @Override
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
-        getCharacteristic(characteristicUuid).map(characteristic -> characteristic.setValue(data)).subscribe();
-        return Observable.just(data);
+        return getCharacteristic(characteristicUuid).map(characteristic -> characteristic.setValue(data)).flatMap(ignored -> Observable.just(data));
     }
 
     @Override
@@ -61,10 +60,9 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
 
     @Override
     public Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data) {
-        discoverServices()
+        return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
-                .map(bluetoothGattDescriptor -> bluetoothGattDescriptor.setValue(data)).subscribe();
-        return Observable.just(data);
+                .map(bluetoothGattDescriptor -> bluetoothGattDescriptor.setValue(data)).flatMap(ignored -> Observable.just(data));
     }
 
     @Override
