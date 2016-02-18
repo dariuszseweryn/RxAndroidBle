@@ -4,16 +4,20 @@ import android.os.Build
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
+import rx.observers.TestSubscriber
+import rx.subjects.PublishSubject
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends RoboSpecification {
 
     def serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
     def characteristicUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
+    def characteristicNotifiedUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
     def characteristicData = "Polidea".getBytes()
-    def descriptorUUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    def descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb");
     def descriptorData = "Config".getBytes();
     def rxBleClient
+    def PublishSubject characteristicNotificationSubject = PublishSubject.create()
 
     def setup() {
         rxBleClient = new RxBleClientMock.Builder()
@@ -21,6 +25,7 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .deviceName("TestDevice")
                 .scanRecord("ScanRecord".getBytes())
                 .rssi(42)
+                .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
                 .addService(
                 serviceUUID,
                 new RxBleClientMock.CharacteristicsBuilder()
@@ -36,48 +41,49 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def "should return the BluetoothDevice name"() {
         given:
-        def deviceName = ""
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
                 .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .subscribe { bleDevice -> deviceName = bleDevice.getName() }
+                .map { scanResult -> scanResult.getBleDevice().getName() }
+                .subscribe(testSubscriber)
 
         then:
-        deviceName == "TestDevice"
+        testSubscriber.assertValue("TestDevice")
     }
 
     def "should return the BluetoothDevice address"() {
         given:
-        def macAddress = ""
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
                 .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .subscribe { bleDevice -> macAddress = bleDevice.getMacAddress() }
+                .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
+                .subscribe(testSubscriber)
 
         then:
-        macAddress == "AA:BB:CC:DD:EE:FF"
+        testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
     }
 
     def "should return the BluetoothDevice rssi"() {
         given:
-        def rssi = -1
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
                 .take(1)
-                .subscribe { scanResult -> rssi = scanResult.getRssi() }
+                .map { scanResult -> scanResult.getRssi() }
+                .subscribe(testSubscriber)
 
         then:
-        rssi == 42
+        testSubscriber.assertValue(42)
     }
 
     def "should return services list"() {
         given:
-        def size = -1;
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
@@ -90,15 +96,15 @@ public class RxBleClientMockTest extends RoboSpecification {
                     .map { rxBleDeviceServices -> rxBleDeviceServices.getBluetoothGattServices() }
                     .map { servicesList -> servicesList.size() }
         }
-        .subscribe { listSize -> size = listSize }
+        .subscribe(testSubscriber)
 
         then:
-        size == 1;
+        testSubscriber.assertValue(1)
     }
 
     def "should return characteristic data"() {
         given:
-        def data = ""
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
@@ -106,15 +112,16 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application) }
                 .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
-                .subscribe { characteristicData -> data = characteristicData }
+                .map { data -> new String(data) }
+                .subscribe(testSubscriber)
 
         then:
-        new String(data) == "Polidea"
+        testSubscriber.assertValue("Polidea")
     }
 
     def "should return descriptor data"() {
         given:
-        def data = ""
+        def testSubscriber = TestSubscriber.create()
 
         when:
         rxBleClient.scanBleDevices(null)
@@ -122,9 +129,27 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application) }
                 .flatMap { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
-                .subscribe { descriptorData -> data = descriptorData }
+                .map { data -> new String(data) }
+                .subscribe(testSubscriber)
 
         then:
-        new String(data) == "Config"
+        testSubscriber.assertValue("Config")
+    }
+
+    def "should return notification data"() {
+        given:
+        def testSubscriber = TestSubscriber.create()
+        rxBleClient.scanBleDevices(null)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application) }
+                .flatMap { rxBleConnection -> rxBleConnection.getNotification(characteristicNotifiedUUID) }
+                .subscribe { obs -> obs.map { data -> new String(data) } subscribe(testSubscriber) }
+
+        when:
+        characteristicNotificationSubject.onNext("NotificationData".getBytes())
+
+        then:
+        testSubscriber.assertValue("NotificationData")
     }
 }

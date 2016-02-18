@@ -12,7 +12,9 @@ import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import rx.Observable;
@@ -26,9 +28,11 @@ public class RxBleClientMock implements RxBleClient {
         private String deviceMacAddress;
         private byte[] scanRecord;
         private RxBleDeviceServices rxBleDeviceServices;
+        private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
         public Builder() {
             this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<>());
+            this.characteristicNotificationSources = new HashMap<>();
         }
 
         public Builder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
@@ -54,6 +58,11 @@ public class RxBleClientMock implements RxBleClient {
 
         public Builder deviceName(@NonNull String deviceName) {
             this.deviceName = deviceName;
+            return this;
+        }
+
+        public Builder notificationSource(UUID characteristicUUID, Observable<byte[]> sourceObservable) {
+            characteristicNotificationSources.put(characteristicUUID, sourceObservable);
             return this;
         }
 
@@ -117,7 +126,7 @@ public class RxBleClientMock implements RxBleClient {
 
 
     private RxBleClientMock(Builder builder) {
-        rxBleDevice = new RxBleDeviceMock(builder.deviceName, builder.deviceMacAddress, new RxBleConnectionMock(builder.rxBleDeviceServices, builder.rssi));
+        rxBleDevice = new RxBleDeviceMock(builder.deviceName, builder.deviceMacAddress, new RxBleConnectionMock(builder.rxBleDeviceServices, builder.rssi, builder.characteristicNotificationSources));
         rssi = builder.rssi;
         scanRecord = builder.scanRecord;
     }
