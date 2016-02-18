@@ -44,11 +44,16 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
 
     @Override
     public void run() {
-        isScanning.set(true);
-        boolean startLeScanStatus = bluetoothAdapter.startLeScan(leScanCallback);
 
-        if(!startLeScanStatus) {
-            onError(new BleScanException(BleScanException.BLE_CANNOT_START));
+        try {
+            isScanning.set(true);
+            boolean startLeScanStatus = bluetoothAdapter.startLeScan(leScanCallback);
+
+            if (!startLeScanStatus) {
+                onError(new BleScanException(BleScanException.BLE_CANNOT_START));
+            }
+        } finally {
+            releaseRadio();
         }
     }
 
@@ -57,7 +62,6 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
             // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
             bluetoothAdapter.stopLeScan(leScanCallback);
             isScanning.set(false);
-            releaseRadio();
         }
     }
 
