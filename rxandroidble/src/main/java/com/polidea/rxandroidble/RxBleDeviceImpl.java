@@ -33,9 +33,10 @@ public class RxBleDeviceImpl implements RxBleDevice {
             final Observable<RxBleConnection> newConnectionObservable =
                     new RxBleConnectionImpl(bluetoothDevice, rxBleRadio)
                             .connect(context)
+                            .doOnUnsubscribe(() -> connectionObservable.set(null)) //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
                             .replay()
-                            .refCount()
-                            .doOnUnsubscribe(() -> connectionObservable.set(null)); //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
+                            .refCount();
+
             connectionObservable.set(newConnectionObservable);
             return newConnectionObservable;
         }
