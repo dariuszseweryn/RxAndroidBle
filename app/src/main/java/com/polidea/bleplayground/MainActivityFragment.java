@@ -48,7 +48,7 @@ public class MainActivityFragment extends Fragment {
                 .map(RxBleScanResult::getBleDevice)
                 .subscribeOn(Schedulers.newThread())
                 .doOnNext(rxBleConnection -> Log.d("AAA", "got device"))
-                .flatMap(rxBleDevice -> rxBleDevice.establishConnection(getContext()))
+                .flatMap(rxBleDevice -> rxBleDevice.establishConnection(getContext(), false))
                 .doOnNext(rxBleConnection -> Log.d("AAA", "connected"))
                 .flatMap(rxBleConnection -> Observable.combineLatest(
                         rxBleConnection

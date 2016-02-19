@@ -49,8 +49,8 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
     }
 
     @Override
-    public Observable<RxBleConnection> connect(Context context) {
-        final RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(context, bluetoothDevice, gattCallback, this);
+    public Observable<RxBleConnection> connect(Context context, boolean autoConnect) {
+        final RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(context, bluetoothDevice, gattCallback, this, autoConnect);
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
                 gattCallback,
                 bluetoothGattAtomicReference,
