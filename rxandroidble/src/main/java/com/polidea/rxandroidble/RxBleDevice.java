@@ -7,7 +7,7 @@ public interface RxBleDevice {
 
     Observable<RxBleConnection.RxBleConnectionState> getConnectionState();
 
-    Observable<RxBleConnection> establishConnection(Context context);
+    Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect);
 
     String getName();
 

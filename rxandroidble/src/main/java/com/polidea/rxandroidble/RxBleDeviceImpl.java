@@ -23,7 +23,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public Observable<RxBleConnection> establishConnection(Context context) {
+    public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         synchronized (connectionObservable) {
             final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
             if (rxBleConnectionObservable != null) {
@@ -32,7 +32,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
 
             final Observable<RxBleConnection> newConnectionObservable =
                     new RxBleConnectionImpl(bluetoothDevice, rxBleRadio)
-                            .connect(context)
+                            .connect(context, autoConnect)
                             .doOnUnsubscribe(() -> connectionObservable.set(null)) //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
                             .replay()
                             .refCount();
