@@ -11,7 +11,6 @@ import android.util.Log;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble.internal.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
@@ -28,6 +27,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONN
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
 import static rx.Observable.error;
+import static rx.Observable.just;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
 
@@ -82,7 +82,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                     if (rxBleConnectionState == DISCONNECTED || rxBleConnectionState == DISCONNECTING) {
                         return error(new BleDisconnectedException());
                     } else {
-                        return ObservableUtil.justOnNext(rxBleConnectionState);
+                        return just(rxBleConnectionState);
                     }
                 })
                 .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED)

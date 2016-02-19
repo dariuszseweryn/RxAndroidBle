@@ -29,7 +29,7 @@ public class RxBleGattCallback {
 
     private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
-    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = PublishSubject.create();
+    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
 
     private PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
 
@@ -64,7 +64,7 @@ public class RxBleGattCallback {
 
             Observable.just(mapConnectionStateToRxBleConnectionStatus(newState))
                     .compose(getSubscribeAndObserveOnTransformer())
-                    .subscribe(connectionStateBehaviorSubject::onNext);
+                    .subscribe(connectionStatePublishSubject::onNext);
         }
 
         @Override
@@ -274,7 +274,7 @@ public class RxBleGattCallback {
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getOnConnectionStateChange() {
-        return withHandlingStatusError(connectionStateBehaviorSubject);
+        return withHandlingStatusError(connectionStatePublishSubject);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
