@@ -20,7 +20,7 @@ class RxBleDeviceMock implements RxBleDevice {
     }
 
     @Override
-    public Observable<RxBleConnection> establishConnection(Context context) {
+    public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.just(rxBleConnection);
     }
 
