@@ -8,16 +8,26 @@ import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.internal.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import rx.Observable;
 import rx.Subscription;
 import rx.subjects.BehaviorSubject;
+
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
+import static rx.Observable.error;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
 
@@ -67,7 +77,15 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
         rxBleGattCallback
                 .getOnConnectionStateChange()
-                .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.CONNECTED)
+                .flatMap(rxBleConnectionState -> {
+
+                    if (rxBleConnectionState == DISCONNECTED || rxBleConnectionState == DISCONNECTING) {
+                        return error(new BleDisconnectedException());
+                    } else {
+                        return ObservableUtil.justOnNext(rxBleConnectionState);
+                    }
+                })
+                .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED)
                 .subscribe(
                         rxBleConnectionState -> {
                             onNext(rxBleConnection);

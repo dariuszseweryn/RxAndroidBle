@@ -29,8 +29,7 @@ public class RxBleGattCallback {
 
     private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
-    private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
-            RxBleConnection.RxBleConnectionState.DISCONNECTED);
+    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = PublishSubject.create();
 
     private PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
 

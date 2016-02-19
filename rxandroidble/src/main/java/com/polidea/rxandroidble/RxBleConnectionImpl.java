@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
+import com.polidea.rxandroidble.internal.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadio;
@@ -24,6 +25,7 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesD
 
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
@@ -39,6 +41,8 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference = new AtomicReference<>();
 
     private final AtomicReference<RxBleDeviceServices> discoveredServicesAtomicReference = new AtomicReference<>();
+
+    private AtomicBoolean isDisconnectEnqueued = new AtomicBoolean(false);
 
     private final HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
 
@@ -59,8 +63,8 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
         // TODO: [PU] 29.01.2016 Will crash if onError will be passed through the subject.
         operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set);
         return rxBleRadio.queue(operationConnect)
-                .doOnError(throwable -> rxBleRadio.queue(operationDisconnect).subscribe(ignored -> {}, ignored -> {}))
-                .doOnUnsubscribe(() -> rxBleRadio.queue(operationDisconnect).subscribe(ignored -> {}, ignored -> {}));
+                .doOnError(throwable -> enqueueDisconnect(operationDisconnect))
+                .doOnUnsubscribe(() -> enqueueDisconnect(operationDisconnect));
     }
 
     @Override
@@ -101,7 +105,7 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
                     }
                     return writeDescriptor(bluetoothGattDescriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 })
-                .flatMap(bluetoothGattDescriptorPair -> Observable.create(subscriber -> subscriber.onNext(bluetoothGattDescriptorPair)))
+                .flatMap(bluetoothGattDescriptorPair -> ObservableUtil.justOnNext(bluetoothGattDescriptorPair))
                 .map(bluetoothGattDescriptorPair ->
                                 gattCallback.getOnCharacteristicChanged()
                                         .filter(uuidPair -> uuidPair.first.equals(characteristicUuid))
@@ -193,5 +197,15 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
     @Override
     public Observable<Integer> readRssi() {
         return rxBleRadio.queue(new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattAtomicReference.get()));
+    }
+
+    private void enqueueDisconnect(RxBleRadioOperationDisconnect operationDisconnect) {
+
+        if (isDisconnectEnqueued.compareAndSet(false, true)) {
+            rxBleRadio.queue(operationDisconnect)
+                    .subscribe(ignored -> {
+                    }, ignored -> {
+                    });
+        }
     }
 }

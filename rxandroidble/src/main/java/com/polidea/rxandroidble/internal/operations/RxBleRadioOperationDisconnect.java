@@ -6,12 +6,17 @@ import android.bluetooth.BluetoothProfile;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
+import static rx.Observable.just;
+
 public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
+    private static final int TIMEOUT_DISCONNECT = 10;
     private final RxBleGattCallback rxBleGattCallback;
 
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference;
@@ -28,11 +33,11 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     public void run() {
 
         //noinspection Convert2MethodRef
-        Observable.just(bluetoothGattAtomicReference.get())
+        just(bluetoothGattAtomicReference.get())
                 .flatMap(bluetoothGatt ->
-                        bluetoothGatt == null ? Observable.empty() : Observable.just(bluetoothGatt))
+                        bluetoothGatt == null ? Observable.empty() : just(bluetoothGatt))
                 .flatMap(bluetoothGatt ->
-                        isDisconnected(bluetoothGatt) ? Observable.just(bluetoothGatt) : disconnect(bluetoothGatt))
+                        isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
                 .doOnTerminate(() -> releaseRadio())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -57,6 +62,8 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             //noinspection Convert2MethodRef
             rxBleGattCallback
                     .getOnConnectionStateChange()
+                    // It should never happen because if connection was never acquired then it will complete earlier. Just in case timeout here.
+                    .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
                     .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
                     .take(1)
                     .map(rxBleConnectionState -> bluetoothGatt)
