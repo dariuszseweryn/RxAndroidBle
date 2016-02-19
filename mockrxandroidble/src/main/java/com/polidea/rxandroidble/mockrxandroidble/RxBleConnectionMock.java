@@ -33,7 +33,6 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
 
     @Override
     public Observable<RxBleConnection> connect(Context context, boolean autoConnect) {
-        //TODO: implement mocking connection states and suport for autoConnecting
         return Observable.just((RxBleConnection) this);
     }
 
