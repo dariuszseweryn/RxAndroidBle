@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleClient;
-import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
@@ -19,7 +18,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import rx.Observable;
-import rx.subjects.Subject;
 
 public class RxBleClientMock implements RxBleClient {
 
@@ -31,7 +29,6 @@ public class RxBleClientMock implements RxBleClient {
         private byte[] scanRecord;
         private RxBleDeviceServices rxBleDeviceServices;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
-        private Subject<RxBleConnection.RxBleConnectionState, RxBleConnection.RxBleConnectionState> connectionStateSource;
 
         public Builder() {
             this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<>());
@@ -52,11 +49,6 @@ public class RxBleClientMock implements RxBleClient {
             if (this.deviceMacAddress == null) throw new IllegalStateException("deviceMacAddress can't be null");
             if (this.scanRecord == null) throw new IllegalStateException("scanRecord can't be null");
             return new RxBleClientMock(this);
-        }
-
-        public Builder connectionStateSource(Subject<RxBleConnection.RxBleConnectionState, RxBleConnection.RxBleConnectionState> connectionStateSource) {
-            this.connectionStateSource = connectionStateSource;
-            return this;
         }
 
         public Builder deviceMacAddress(@NonNull String deviceMacAddress) {
@@ -131,12 +123,17 @@ public class RxBleClientMock implements RxBleClient {
     private RxBleDevice rxBleDevice;
     private Integer rssi;
     private byte[] scanRecord;
-
+    private RxBleConnectionMock rxBleConnectionMock;
 
     private RxBleClientMock(Builder builder) {
-        rxBleDevice = new RxBleDeviceMock(builder.deviceName, builder.deviceMacAddress, builder.connectionStateSource, new RxBleConnectionMock(builder.rxBleDeviceServices, builder.rssi, builder.characteristicNotificationSources));
+        rxBleConnectionMock = new RxBleConnectionMock(builder.rxBleDeviceServices, builder.rssi, builder.characteristicNotificationSources);
+        rxBleDevice = new RxBleDeviceMock(builder.deviceName, builder.deviceMacAddress, rxBleConnectionMock);
         rssi = builder.rssi;
         scanRecord = builder.scanRecord;
+    }
+
+    public void disconnect() {
+        rxBleConnectionMock.simulateDeviceDisconnect();
     }
 
     @Override

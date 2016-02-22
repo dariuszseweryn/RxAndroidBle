@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.mockrxandroidble
 
 import android.os.Build
 import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
@@ -19,7 +20,6 @@ public class RxBleClientMockTest extends RoboSpecification {
     def descriptorData = "Config".getBytes();
     def rxBleClient
     def PublishSubject characteristicNotificationSubject = PublishSubject.create()
-    def PublishSubject connectionStateSourceSubject = PublishSubject.create()
 
     def setup() {
         rxBleClient = new RxBleClientMock.Builder()
@@ -28,7 +28,6 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .scanRecord("ScanRecord".getBytes())
                 .rssi(42)
                 .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
-                .connectionStateSource(connectionStateSourceSubject)
                 .addService(
                 serviceUUID,
                 new RxBleClientMock.CharacteristicsBuilder()
@@ -156,49 +155,60 @@ public class RxBleClientMockTest extends RoboSpecification {
         testSubscriber.assertValue("NotificationData")
     }
 
-    def "should return connection state"() {
+    def "should return connected state when subscribed"() {
         given:
-        def testSubscriber = TestSubscriber.create()
-        rxBleClient.scanBleDevices(null)
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice ->
-            rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
-            rxBleDevice.getConnectionState()
-        }
-        .subscribe(testSubscriber)
-
-        when:
-        connectionStateSourceSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTING)
-        connectionStateSourceSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTED)
-        connectionStateSourceSubject.onNext(RxBleConnection.RxBleConnectionState.DISCONNECTING)
-        connectionStateSourceSubject.onNext(RxBleConnection.RxBleConnectionState.DISCONNECTED)
-
-        then:
-        testSubscriber.assertValues(RxBleConnection.RxBleConnectionState.CONNECTING,
-                RxBleConnection.RxBleConnectionState.CONNECTED,
-                RxBleConnection.RxBleConnectionState.DISCONNECTING,
-                RxBleConnection.RxBleConnectionState.DISCONNECTED)
-    }
-
-    def "should return disconnected state when unsubscribed"() {
-        given:
-        def testConnectionSubscriber = TestSubscriber.create()
         def testStateSubscriber = TestSubscriber.create()
-        rxBleClient.scanBleDevices(null)
+        def obs = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice ->
             def connection = rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
             rxBleDevice.getConnectionState().subscribe(testStateSubscriber)
             connection
-        }
-        .subscribe(testConnectionSubscriber)
+        };
 
         when:
-        testConnectionSubscriber.unsubscribe()
+        obs.subscribe()
 
         then:
-        testStateSubscriber.assertValue(RxBleConnection.RxBleConnectionState.DISCONNECTED)
+        testStateSubscriber.assertValues(RxBleConnection.RxBleConnectionState.CONNECTED)
+    }
+
+    def "should return disconnected state when unsubscribed"() {
+        given:
+        def subscription;
+        def testStateSubscriber = TestSubscriber.create()
+        def obs = rxBleClient.scanBleDevices(null)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice ->
+            def connection = rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
+            rxBleDevice.getConnectionState().subscribe(testStateSubscriber)
+            connection
+        };
+
+        when:
+        subscription = obs.subscribe()
+        subscription.unsubscribe()
+
+        then:
+        testStateSubscriber.assertValues(RxBleConnection.RxBleConnectionState.CONNECTED, RxBleConnection.RxBleConnectionState.DISCONNECTED)
+    }
+
+    def "should return error when disconnect is simulated"() {
+        given:
+        def testConnectionSubscriber = TestSubscriber.create()
+        rxBleClient.scanBleDevices(null)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice ->
+            rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
+        }.subscribe(testConnectionSubscriber)
+
+        when:
+        rxBleClient.disconnect()
+
+        then:
+        testConnectionSubscriber.assertError(BleDisconnectedException.class);
     }
 }

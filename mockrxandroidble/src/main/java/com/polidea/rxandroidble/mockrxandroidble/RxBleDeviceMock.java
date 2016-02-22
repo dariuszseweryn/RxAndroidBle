@@ -7,25 +7,26 @@ import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
 
 import rx.Observable;
-import rx.subjects.Subject;
+import rx.subjects.PublishSubject;
 
 class RxBleDeviceMock implements RxBleDevice {
 
     private String name;
     private String macAddress;
     private RxBleConnectibleConnection rxBleConnection;
-    private Subject<RxBleConnection.RxBleConnectionState, RxBleConnection.RxBleConnectionState> connectionStateSubject;
+    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStateSubject;
 
-    public RxBleDeviceMock(String name, String macAddress, Subject<RxBleConnection.RxBleConnectionState, RxBleConnection.RxBleConnectionState> connectionStateSubject, RxBleConnectibleConnection rxBleConnection) {
+    public RxBleDeviceMock(String name, String macAddress, RxBleConnectibleConnection rxBleConnection) {
         this.name = name;
         this.macAddress = macAddress;
         this.rxBleConnection = rxBleConnection;
-        this.connectionStateSubject = connectionStateSubject;
+        this.connectionStateSubject = PublishSubject.create();
     }
 
     @Override
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return rxBleConnection.connect(context, autoConnect)
+                .doOnSubscribe(() -> connectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTED))
                 .doOnError(t -> connectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.DISCONNECTED))
                 .doOnUnsubscribe(() -> connectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.DISCONNECTED));
     }

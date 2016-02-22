@@ -8,6 +8,7 @@ import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
 
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.subjects.BehaviorSubject;
 
 class RxBleConnectionMock implements RxBleConnectibleConnection {
 
@@ -23,17 +25,20 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private Integer rssid;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
+    private BehaviorSubject<RxBleConnection> connectionSubject;
 
 
     public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices, Integer rssid, Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
         this.rxBleDeviceServices = rxBleDeviceServices;
         this.rssid = rssid;
         this.characteristicNotificationSources = characteristicNotificationSources;
+        this.connectionSubject = BehaviorSubject.create();
+        this.connectionSubject.onNext(this);
     }
 
     @Override
     public Observable<RxBleConnection> connect(Context context, boolean autoConnect) {
-        return Observable.just((RxBleConnection) this);
+        return connectionSubject;
     }
 
     @Override
@@ -72,6 +77,10 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
     @Override
     public Observable<Integer> readRssi() {
         return Observable.just(rssid);
+    }
+
+    public void simulateDeviceDisconnect() {
+        connectionSubject.onError(new BleDisconnectedException());
     }
 
     @Override
