@@ -3,6 +3,7 @@ package com.polidea.bleplayground;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -22,10 +23,16 @@ import rx.schedulers.Schedulers;
  */
 public class MainActivityFragment extends Fragment {
 
-    private final RxBleClientImpl rxBleClient;
+    private RxBleClientImpl rxBleClient;
 
     public MainActivityFragment() {
-        rxBleClient = new RxBleClientImpl();
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        rxBleClient = new RxBleClientImpl(context);
     }
 
     @Override
