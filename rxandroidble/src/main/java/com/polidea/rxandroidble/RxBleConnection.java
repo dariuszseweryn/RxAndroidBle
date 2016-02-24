@@ -1,27 +1,27 @@
 package com.polidea.rxandroidble;
 
-import android.content.Context;
 import java.util.UUID;
+
 import rx.Observable;
 
 public interface RxBleConnection {
 
-    // TODO: 26.01.2016 [PU] Why not an enum?
     class RxBleConnectionState {
 
-        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING");
-
-        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED");
-
-        public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING");
-
-        public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED");
-
+        public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING", false);
+        public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED", true);
+        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED", false);
+        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING", false);
         private final String description;
+        private final boolean isUsable;
 
-        public RxBleConnectionState(String description) {
-
+        RxBleConnectionState(String description, boolean isUsable) {
             this.description = description;
+            this.isUsable = isUsable;
+        }
+
+        public boolean isUsable() {
+            return this.isUsable;
         }
 
         @Override

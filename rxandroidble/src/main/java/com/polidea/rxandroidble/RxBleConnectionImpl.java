@@ -60,7 +60,7 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
                 bluetoothGattAtomicReference,
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
         );
-        // TODO: [PU] 29.01.2016 Will crash if onError will be passed through the subject.
+
         operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set);
         return rxBleRadio.queue(operationConnect)
                 .doOnError(throwable -> enqueueDisconnect(operationDisconnect))

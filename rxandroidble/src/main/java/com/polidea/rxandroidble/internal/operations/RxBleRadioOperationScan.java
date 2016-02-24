@@ -1,45 +1,35 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.support.annotation.NonNull;
-import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleDeviceImpl;
-import com.polidea.rxandroidble.RxBleScanResult;
+
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RxBleRadio;
+import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.UUIDParser;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult> {
+public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalScanResult> {
 
     private final UUID[] filterServiceUUIDs;
     private final BluetoothAdapter bluetoothAdapter;
     private final UUIDParser uuidParser;
-    private final AtomicReference<RxBleRadio> rxBleRadioAtomicReference = new AtomicReference<>();
-    private final Map<String, RxBleDevice> availableDevices = new HashMap<>();
     private final AtomicBoolean isScanning = new AtomicBoolean(false);
 
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
         if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
-            onNext(new RxBleScanResult(createOrRetrieveDevice(device), rssi, scanRecord));
+            onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
         }
     };
 
-    public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, BluetoothAdapter bluetoothAdapter,
-                                   RxBleRadio rxBleRadio, UUIDParser uuidParser) {
+    public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, BluetoothAdapter bluetoothAdapter, UUIDParser uuidParser) {
 
         this.filterServiceUUIDs = filterServiceUUIDs;
         this.bluetoothAdapter = bluetoothAdapter;
         this.uuidParser = uuidParser;
-        this.rxBleRadioAtomicReference.set(rxBleRadio);
     }
 
     @Override
@@ -76,19 +66,6 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleScanResult
         }
 
         return false;
-    }
-
-    @NonNull
-    private RxBleDevice createOrRetrieveDevice(BluetoothDevice device) {
-        final RxBleDevice availableDevice = availableDevices.get(device.getAddress());
-
-        if (availableDevice == null) {
-            final RxBleDevice returnDevice = new RxBleDeviceImpl(device, rxBleRadioAtomicReference.get());
-            availableDevices.put(device.getAddress(), returnDevice);
-            return returnDevice;
-        } else {
-            return availableDevice;
-        }
     }
 
     private boolean hasDefinedFilter() {
