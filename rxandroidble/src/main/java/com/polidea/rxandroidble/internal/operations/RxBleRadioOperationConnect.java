@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
+import com.polidea.rxandroidble.internal.RxBleLog;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
@@ -30,8 +30,6 @@ import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
-
-    private static final String TAG = RxBleRadioOperationConnect.class.getSimpleName();
 
     private final Context context;
 
@@ -128,25 +126,25 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
          */
 
         try {
-            Log.i(TAG, "Trying to connectGatt using reflection.");
+            RxBleLog.v("Trying to connectGatt using reflection.");
             Object iBluetoothGatt = getIBluetoothGatt(getIBluetoothManager());
 
             if (iBluetoothGatt == null) {
-                Log.w(TAG, "Couldn't get iBluetoothGatt object");
+                RxBleLog.w("Couldn't get iBluetoothGatt object");
                 return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
             }
 
             BluetoothGatt bluetoothGatt = createBluetoothGatt(iBluetoothGatt, remoteDevice);
 
             if (bluetoothGatt == null) {
-                Log.w(TAG, "Couldn't create BluetoothGatt object");
+                RxBleLog.w("Couldn't create BluetoothGatt object");
                 return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
             }
 
             boolean connectedSuccessfully = connectUsingReflection(bluetoothGatt, bluetoothGattCallback, true);
 
             if (!connectedSuccessfully) {
-                Log.w(TAG, "Connection using reflection failed, closing gatt");
+                RxBleLog.w("Connection using reflection failed, closing gatt");
                 bluetoothGatt.close();
             }
 
@@ -158,13 +156,13 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                 InstantiationException |
                 NoSuchFieldException exception) {
 
-            Log.w(TAG, "Error during reflection", exception);
+            RxBleLog.w(exception, "Error during reflection");
             return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
         }
     }
 
     private BluetoothGatt connectGattCompat(BluetoothGattCallback bluetoothGattCallback, BluetoothDevice remoteDevice, boolean autoConnect) {
-        Log.i(TAG, "Connecting without reflection");
+        RxBleLog.v("Connecting without reflection");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return remoteDevice.connectGatt(context, autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
@@ -175,7 +173,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
     private boolean connectUsingReflection(BluetoothGatt bluetoothGatt, BluetoothGattCallback bluetoothGattCallback, boolean autoConnect)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        Log.i(TAG, "Connecting using reflection");
+        RxBleLog.v("Connecting using reflection");
         setAutoConnectValue(bluetoothGatt, autoConnect);
         Method connectMethod = bluetoothGatt.getClass().getDeclaredMethod("connect", Boolean.class, BluetoothGattCallback.class);
         connectMethod.setAccessible(true);
@@ -187,7 +185,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
             throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor bluetoothGattConstructor = BluetoothGatt.class.getDeclaredConstructors()[0];
         bluetoothGattConstructor.setAccessible(true);
-        Log.i(TAG, "Found constructor with args count = " + bluetoothGattConstructor.getParameterTypes().length);
+        RxBleLog.v("Found constructor with args count = " + bluetoothGattConstructor.getParameterTypes().length);
 
         if (bluetoothGattConstructor.getParameterTypes().length == 4) {
             return (BluetoothGatt) (bluetoothGattConstructor.newInstance(context, iBluetoothGatt, remoteDevice, BluetoothDevice.TRANSPORT_LE));

@@ -1,12 +1,20 @@
 package com.polidea.rxandroidble;
 
 import android.support.annotation.Nullable;
-
+import com.polidea.rxandroidble.internal.RxBleLog;
 import java.util.UUID;
-
 import rx.Observable;
 
 public interface RxBleClient {
+
+    /**
+     * A convenience method.
+     * Sets the log level that will be printed out in the console. Default is LogLevel.NONE which logs nothing.
+     * @param logLevel the minimum log level to log
+     */
+    static void setLogLevel(@RxBleLog.LogLevel int logLevel) {
+        RxBleLog.setLogLevel(logLevel);
+    }
 
     RxBleDevice getBleDevice(String bluetoothAddress);
 
