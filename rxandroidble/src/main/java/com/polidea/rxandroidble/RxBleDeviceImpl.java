@@ -53,6 +53,26 @@ public class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RxBleDeviceImpl)) {
+            return false;
+        }
+
+        RxBleDeviceImpl that = (RxBleDeviceImpl) o;
+
+        return bluetoothDevice.equals(that.bluetoothDevice);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return bluetoothDevice.hashCode();
+    }
+
+    @Override
     public String toString() {
         return "RxBleDeviceImpl{" +
                 "bluetoothDevice=" + bluetoothDevice.getName() + '(' + bluetoothDevice.getAddress() + ')' +
