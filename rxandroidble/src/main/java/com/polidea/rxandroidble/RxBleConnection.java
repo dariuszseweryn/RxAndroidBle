@@ -32,6 +32,8 @@ public interface RxBleConnection {
         }
     }
 
+    Observable<RxBleConnectionState> getConnectionState();
+
     Observable<RxBleDeviceServices> discoverServices();
 
     Observable<Observable<byte[]>> getNotification(UUID characteristicUuid);

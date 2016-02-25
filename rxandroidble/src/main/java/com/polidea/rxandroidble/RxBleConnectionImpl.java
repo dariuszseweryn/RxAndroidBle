@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.internal.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
@@ -22,12 +21,10 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescripto
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
-
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
 import rx.Observable;
 
 public class RxBleConnectionImpl implements RxBleConnectibleConnection {
@@ -65,6 +62,11 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
         return rxBleRadio.queue(operationConnect)
                 .doOnError(throwable -> enqueueDisconnect(operationDisconnect))
                 .doOnUnsubscribe(() -> enqueueDisconnect(operationDisconnect));
+    }
+
+    @Override
+    public Observable<RxBleConnectionState> getConnectionState() {
+        return gattCallback.getOnConnectionStateChange();
     }
 
     @Override
