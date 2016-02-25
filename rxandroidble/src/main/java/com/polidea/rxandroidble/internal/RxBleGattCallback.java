@@ -84,7 +84,6 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            // TODO: [PU] 29.01.2016 String formatting will cause huge delays in big-throughput.
             RxBleLog.d("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status);
             super.onCharacteristicRead(gatt, characteristic, status);
 
