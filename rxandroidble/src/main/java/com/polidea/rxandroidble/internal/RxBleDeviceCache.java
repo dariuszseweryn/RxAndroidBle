@@ -96,7 +96,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
         }
 
         public boolean isEmpty() {
-            return get() != null;
+            return get() == null;
         }
     }
 
