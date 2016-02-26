@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import rx.Observable;
 
-class RxBleClientImpl implements RxBleClient {
+class RxBleClientImpl extends RxBleClient {
 
     private static RxBleClientImpl CLIENT_INSTANCE;
     private final BluetoothAdapter bluetoothAdapter;
@@ -34,7 +34,7 @@ class RxBleClientImpl implements RxBleClient {
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final Context context;
 
-    static RxBleClientImpl getInstance(Context context) {
+    public static RxBleClientImpl getInstance(Context context) {
 
         if (CLIENT_INSTANCE == null) {
 

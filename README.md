@@ -34,7 +34,6 @@ compile "com.polidea.rxandroidble:rxandroidble:1.0.0-SNAPSHOT"
 ```
 Authors
 -------
-
 Dariusz Seweryn (dariusz.seweryn@polidea.com)
 
 Paweł Urban (pawel.urban@polidea.com)
