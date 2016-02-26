@@ -26,6 +26,7 @@ import rx.Observable;
 
 class RxBleClientImpl implements RxBleClient {
 
+    private static RxBleClientImpl CLIENT_INSTANCE;
     private final BluetoothAdapter bluetoothAdapter;
     private final RxBleRadio rxBleRadio;
     private final UUIDParser uuidParser;
@@ -33,8 +34,23 @@ class RxBleClientImpl implements RxBleClient {
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final Context context;
 
+    static RxBleClientImpl getInstance(Context context) {
+
+        if (CLIENT_INSTANCE == null) {
+
+            synchronized (RxBleClient.class) {
+
+                if (CLIENT_INSTANCE == null) {
+                    CLIENT_INSTANCE = new RxBleClientImpl(context.getApplicationContext());
+                }
+            }
+        }
+
+        return CLIENT_INSTANCE;
+    }
+
     public RxBleClientImpl(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context;
         uuidParser = new UUIDParser();
         rxBleRadio = new RxBleRadioImpl();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

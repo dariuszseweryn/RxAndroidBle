@@ -20,8 +20,14 @@ public interface RxBleClient {
         RxBleLog.setLogLevel(logLevel);
     }
 
-    static RxBleClient createInstance(Context context) {
-        return new RxBleClientImpl(context);
+    /**
+     * Returns singleton instance on RxBleClient using application context.
+     *
+     * @param context Any context
+     * @return BLE client instance.
+     */
+    static RxBleClient getInstance(Context context) {
+        return RxBleClientImpl.getInstance(context);
     }
 
     RxBleDevice getBleDevice(String bluetoothAddress);

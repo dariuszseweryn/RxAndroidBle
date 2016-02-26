@@ -10,11 +10,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.polidea.rxandroidble.RxBleClientImpl;
+
+import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
 
 import java.util.UUID;
+
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -23,7 +25,7 @@ import rx.schedulers.Schedulers;
  */
 public class MainActivityFragment extends Fragment {
 
-    private RxBleClientImpl rxBleClient;
+    private RxBleClient rxBleClient;
 
     public MainActivityFragment() {
 
@@ -32,7 +34,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        rxBleClient = new RxBleClientImpl(context);
+        rxBleClient = RxBleClient.getInstance(context);
     }
 
     @Override
