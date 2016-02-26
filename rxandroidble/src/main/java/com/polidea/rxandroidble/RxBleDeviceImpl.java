@@ -1,15 +1,18 @@
 package com.polidea.rxandroidble;
 
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
-
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+
 import com.polidea.rxandroidble.internal.RxBleRadio;
+
 import java.util.concurrent.atomic.AtomicReference;
+
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.subjects.BehaviorSubject;
+
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
 public class RxBleDeviceImpl implements RxBleDevice {
 
@@ -33,33 +36,36 @@ public class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
-        synchronized (connectionObservable) {
-            final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
-            if (rxBleConnectionObservable != null) {
-                return rxBleConnectionObservable;
+        return Observable.defer(() -> {
+
+            synchronized (connectionObservable) {
+                final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
+                if (rxBleConnectionObservable != null) {
+                    return rxBleConnectionObservable;
+                }
+
+                final RxBleConnectionImpl rxBleConnection = new RxBleConnectionImpl(bluetoothDevice, rxBleRadio);
+                final Subscription connectionStateSubscription = subscribeToConnectionStateChanges(rxBleConnection);
+
+                final Observable<RxBleConnection> newConnectionObservable =
+                        rxBleConnection
+                                .connect(context, autoConnect)
+                                .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTING))
+                                .doOnUnsubscribe(() -> {
+                                    synchronized (connectionObservable) {
+                                        connectionObservable
+                                                .set(null); //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
+                                    }
+                                    connectionStateBehaviorSubject.onNext(DISCONNECTED);
+                                    connectionStateSubscription.unsubscribe();
+                                })
+                                .replay()
+                                .refCount();
+
+                connectionObservable.set(newConnectionObservable);
+                return newConnectionObservable;
             }
-
-            final RxBleConnectionImpl rxBleConnection = new RxBleConnectionImpl(bluetoothDevice, rxBleRadio);
-            final Subscription connectionStateSubscription = subscribeToConnectionStateChanges(rxBleConnection);
-
-            final Observable<RxBleConnection> newConnectionObservable =
-                    rxBleConnection
-                            .connect(context, autoConnect)
-                            .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTING))
-                            .doOnUnsubscribe(() -> {
-                                synchronized (connectionObservable) {
-                                    connectionObservable
-                                            .set(null); //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
-                                }
-                                connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                                connectionStateSubscription.unsubscribe();
-                            })
-                            .replay()
-                            .refCount();
-
-            connectionObservable.set(newConnectionObservable);
-            return newConnectionObservable;
-        }
+        });
     }
 
     private Subscription subscribeToConnectionStateChanges(RxBleConnectionImpl rxBleConnection) {
