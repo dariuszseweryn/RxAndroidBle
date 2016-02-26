@@ -31,7 +31,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
     }
 
     public RxBleAdapterStateObservable(Context context) {
-        super(subscriber -> onSubscribe(context, subscriber));
+        super(subscriber -> onSubscribe(context.getApplicationContext(), subscriber));
     }
 
     private static void onSubscribe(Context context, final Subscriber<? super BleAdapterState> subscriber) {

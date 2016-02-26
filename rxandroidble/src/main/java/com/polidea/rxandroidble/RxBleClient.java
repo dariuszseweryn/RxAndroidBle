@@ -1,8 +1,12 @@
 package com.polidea.rxandroidble;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
+
 import com.polidea.rxandroidble.internal.RxBleLog;
+
 import java.util.UUID;
+
 import rx.Observable;
 
 public interface RxBleClient {
@@ -14,6 +18,10 @@ public interface RxBleClient {
      */
     static void setLogLevel(@RxBleLog.LogLevel int logLevel) {
         RxBleLog.setLogLevel(logLevel);
+    }
+
+    static RxBleClient createInstance(Context context) {
+        return new RxBleClientImpl(context);
     }
 
     RxBleDevice getBleDevice(String bluetoothAddress);

@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import rx.Observable;
 
-public class RxBleClientImpl implements RxBleClient {
+class RxBleClientImpl implements RxBleClient {
 
     private final BluetoothAdapter bluetoothAdapter;
     private final RxBleRadio rxBleRadio;
@@ -34,7 +34,7 @@ public class RxBleClientImpl implements RxBleClient {
     private final Context context;
 
     public RxBleClientImpl(Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         uuidParser = new UUIDParser();
         rxBleRadio = new RxBleRadioImpl();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
