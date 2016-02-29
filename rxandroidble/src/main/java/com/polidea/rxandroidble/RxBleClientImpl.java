@@ -12,12 +12,10 @@ import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioImpl;
-import com.polidea.rxandroidble.internal.UUIDParser;
+import com.polidea.rxandroidble.internal.UUIDUtil;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,7 +27,7 @@ class RxBleClientImpl extends RxBleClient {
     private static RxBleClientImpl CLIENT_INSTANCE;
     private final BluetoothAdapter bluetoothAdapter;
     private final RxBleRadio rxBleRadio;
-    private final UUIDParser uuidParser;
+    private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final Context context;
@@ -51,7 +49,7 @@ class RxBleClientImpl extends RxBleClient {
 
     public RxBleClientImpl(Context context) {
         this.context = context;
-        uuidParser = new UUIDParser();
+        uuidUtil = new UUIDUtil();
         rxBleRadio = new RxBleRadioImpl();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         rxBleDeviceProvider = new RxBleDeviceProvider(bluetoothAdapter, rxBleRadio);
@@ -60,12 +58,11 @@ class RxBleClientImpl extends RxBleClient {
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
         return getMatchingQueuedScan(filterServiceUUIDs)
-                .switchIfEmpty(startFreshScan(filterServiceUUIDs));
+                .switchIfEmpty(createScanOperation(filterServiceUUIDs));
     }
 
-    public Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.just(filterServiceUUIDs)
-                .map(this::toSet)
+    private Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
+        return Observable.from(uuidUtil.toDistinctSet(filterServiceUUIDs))
                 .map(queuedScanOperations::get)
                 .filter(rxBleScanResultObservable -> rxBleScanResultObservable != null)
                 .flatMap(rxBleScanResultObservable -> rxBleScanResultObservable);
@@ -79,10 +76,10 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @NonNull
-    private Observable<RxBleScanResult> startFreshScan(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
         return Observable.defer(() -> {
-            final Set<UUID> filteredUUIDs = toSet(filterServiceUUIDs);
-            final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter, uuidParser);
+            final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+            final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter, uuidUtil);
 
             final Observable<RxBleScanResult> scanResultObservable = rxBleRadio.queue(scanOperation)
                     .doOnUnsubscribe(() -> {
@@ -103,14 +100,8 @@ class RxBleClientImpl extends RxBleClient {
         return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
     }
 
-    @NonNull
-    private Set<UUID> toSet(@Nullable UUID[] uuids) {
-        if (uuids == null) uuids = new UUID[0];
-        return new HashSet<>(Arrays.asList(uuids));
-    }
-
     @Override
-    public RxBleDevice getBleDevice(String macAddress) {
+    public RxBleDevice getBleDevice(@NonNull String macAddress) {
         return rxBleDeviceProvider.getBleDevice(macAddress);
     }
 }
