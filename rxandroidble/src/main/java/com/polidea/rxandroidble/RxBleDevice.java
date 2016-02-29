@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble;
 
 import android.content.Context;
+
 import rx.Observable;
 
 public interface RxBleDevice {

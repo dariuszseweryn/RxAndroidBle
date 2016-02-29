@@ -1,17 +1,23 @@
 package com.polidea.rxandroidble.internal;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * @link http://stackoverflow.com/questions/31668791/how-can-i-read-uuids-from-advertisement-data-ios-overflow-area-in-android
  */
-public class UUIDParser {
+public class UUIDUtil {
 
-    public UUIDParser() {
+    public UUIDUtil() {
     }
 
     public List<UUID> extractUUIDs(byte[] scanResult) {
@@ -50,5 +56,11 @@ public class UUIDParser {
         }
 
         return uuids;
+    }
+
+    @NonNull
+    public Set<UUID> toDistinctSet(@Nullable UUID[] uuids) {
+        if (uuids == null) uuids = new UUID[0];
+        return new HashSet<>(Arrays.asList(uuids));
     }
 }
