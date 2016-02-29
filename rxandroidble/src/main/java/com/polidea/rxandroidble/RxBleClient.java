@@ -48,7 +48,6 @@ public abstract class RxBleClient {
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      * @throws com.polidea.rxandroidble.exceptions.BleScanException         in case of error starting the scan
-     * @throws com.polidea.rxandroidble.exceptions.BleNotAvailableException in case of Bluetooth not available or not enabled
      */
     public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs);
 }
