@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-import com.polidea.rxandroidble.internal.UUIDParser;
+import com.polidea.rxandroidble.internal.UUIDUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +15,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
 
     private final UUID[] filterServiceUUIDs;
     private final BluetoothAdapter bluetoothAdapter;
-    private final UUIDParser uuidParser;
+    private final UUIDUtil uuidUtil;
     private final AtomicBoolean isScanning = new AtomicBoolean(false);
 
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
@@ -25,11 +25,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
         }
     };
 
-    public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, BluetoothAdapter bluetoothAdapter, UUIDParser uuidParser) {
+    public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, BluetoothAdapter bluetoothAdapter, UUIDUtil uuidUtil) {
 
         this.filterServiceUUIDs = filterServiceUUIDs;
         this.bluetoothAdapter = bluetoothAdapter;
-        this.uuidParser = uuidParser;
+        this.uuidUtil = uuidUtil;
     }
 
     @Override
@@ -48,6 +48,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     public void stop() {
+
         if (isScanning.compareAndSet(true, false)) {
             // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
             bluetoothAdapter.stopLeScan(leScanCallback);
@@ -56,7 +57,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     private boolean containsDesiredServiceIds(byte[] scanRecord) {
-        List<UUID> advertisedUUIDs = uuidParser.extractUUIDs(scanRecord);
+        List<UUID> advertisedUUIDs = uuidUtil.extractUUIDs(scanRecord);
 
         for (UUID desiredUUID : filterServiceUUIDs) {
 

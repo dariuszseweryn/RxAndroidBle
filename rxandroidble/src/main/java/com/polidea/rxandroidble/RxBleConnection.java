@@ -8,20 +8,14 @@ public interface RxBleConnection {
 
     class RxBleConnectionState {
 
-        public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING", false);
-        public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED", true);
-        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED", false);
-        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING", false);
+        public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING");
+        public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED");
+        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED");
+        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING");
         private final String description;
-        private final boolean isUsable;
 
-        RxBleConnectionState(String description, boolean isUsable) {
+        RxBleConnectionState(String description) {
             this.description = description;
-            this.isUsable = isUsable;
-        }
-
-        public boolean isUsable() {
-            return this.isUsable;
         }
 
         @Override
