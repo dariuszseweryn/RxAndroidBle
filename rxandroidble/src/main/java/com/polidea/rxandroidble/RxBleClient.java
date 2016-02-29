@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.internal.RxBleLog;
@@ -12,34 +13,42 @@ import rx.Observable;
 public abstract class RxBleClient {
 
     /**
-     * A convenience method.
-     * Sets the log level that will be printed out in the console. Default is LogLevel.NONE which logs nothing.
-     * @param logLevel the minimum log level to log
-     */
-    static void setLogLevel(@RxBleLog.LogLevel int logLevel) {
-        RxBleLog.setLogLevel(logLevel);
-    }
-
-    /**
      * Returns singleton instance on RxBleClient using application context.
      *
      * @param context Any context
      * @return BLE client instance.
      */
-    public static RxBleClient getInstance(Context context) {
+    public static RxBleClient getInstance(@NonNull Context context) {
         return RxBleClientImpl.getInstance(context);
     }
 
-    public abstract RxBleDevice getBleDevice(String bluetoothAddress);
+    /**
+     * A convenience method.
+     * Sets the log level that will be printed out in the console. Default is LogLevel.NONE which logs nothing.
+     *
+     * @param logLevel the minimum log level to log
+     */
+    public static void setLogLevel(@RxBleLog.LogLevel int logLevel) {
+        RxBleLog.setLogLevel(logLevel);
+    }
 
     /**
-     * Returns an infinite observable returning BLE scan results. Scan is automatically started and stopped based on the Observable lifecycle.
+     * Obtain instance of RxBleDevice for provided MAC address.
+     *
+     * @param macAddress Bluetooth LE device MAC address.
+     * @return Handle for Bluetooth LE operations.
+     */
+    public abstract RxBleDevice getBleDevice(@NonNull String macAddress);
+
+    /**
+     * Returns an infinite observable emitting BLE scan results. Scan is automatically started and stopped based on the Observable lifecycle.
+     * Scan is started on subscribe and stopped on unsubscribe. You can safely subscribe multiple observers to this observable.
+     * <p>
+     * The library automatically handles Bluetooth adapter state changes but you are supposed to prompt the user to enable it if it's disabled.
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      * @throws com.polidea.rxandroidble.exceptions.BleScanException         in case of error starting the scan
      * @throws com.polidea.rxandroidble.exceptions.BleNotAvailableException in case of Bluetooth not available or not enabled
      */
-    public abstract Observable<RxBleScanResult> scanBleDevices(
-            @Nullable UUID[] filterServiceUUIDs
-    );
+    public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs);
 }
