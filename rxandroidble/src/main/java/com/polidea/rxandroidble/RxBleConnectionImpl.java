@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnec
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,7 +39,7 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
 
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference = new AtomicReference<>();
 
-    private final AtomicReference<RxBleDeviceServices> discoveredServicesAtomicReference = new AtomicReference<>();
+    private final AtomicReference<Observable<RxBleDeviceServices>> discoveredServicesCache = new AtomicReference<>();
 
     private AtomicBoolean isDisconnectEnqueued = new AtomicBoolean(false);
 
@@ -71,9 +73,25 @@ public class RxBleConnectionImpl implements RxBleConnectibleConnection {
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
-        final RxBleRadioOperationServicesDiscover operationServicesDiscover =
-                new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGattAtomicReference.get(), discoveredServicesAtomicReference);
-        return rxBleRadio.queue(operationServicesDiscover);
+        synchronized (discoveredServicesCache) {
+            // checking if there are already cached services
+            final Observable<RxBleDeviceServices> sharedObservable = this.discoveredServicesCache.get();
+            if (sharedObservable != null) {
+                return sharedObservable;
+            }
+
+            final BluetoothGatt bluetoothGatt = bluetoothGattAtomicReference.get();
+            final List<BluetoothGattService> services = bluetoothGatt.getServices();
+            final Observable<RxBleDeviceServices> newObservable;
+            if (services.size() > 0) { // checking if bluetoothGatt has already discovered services (internal cache?)
+                newObservable = Observable.just(new RxBleDeviceServices(services));
+            } else { // performing actual discovery
+                newObservable = rxBleRadio.queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt)).cache(1);
+            }
+
+            discoveredServicesCache.set(newObservable);
+            return newObservable;
+        }
     }
 
     private Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
