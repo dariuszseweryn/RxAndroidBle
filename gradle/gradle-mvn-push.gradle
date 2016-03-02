@@ -138,9 +138,23 @@ afterEvaluate {
                                 id POM_DEVELOPER_ID
                                 name POM_DEVELOPER_NAME
                             }
+                            developer {
+                                id POM_DEVELOPER_ID2
+                                name POM_DEVELOPER_NAME2
+                            }
                         }
                     }
                 }
+            }
+
+            task androidJavadocs(type: Javadoc) {
+                source = android.sourceSets.main.java.source
+                classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+            }
+
+            task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+                classifier = 'javadoc'
+                from androidJavadocs.destinationDir
             }
 
             task androidSourcesJar(type: Jar) {
@@ -179,6 +193,10 @@ afterEvaluate {
                                 id POM_DEVELOPER_ID
                                 name POM_DEVELOPER_NAME
                             }
+                            developer {
+                                id POM_DEVELOPER_ID2
+                                name POM_DEVELOPER_NAME2
+                            }
                         }
                     }
                 }
@@ -206,6 +224,7 @@ afterEvaluate {
         artifacts {
             if (isAndroidProject()) {
                 archives androidSourcesJar
+                archives androidJavadocsJar
             } else {
                 archives sourcesJar
                 archives javadocJar
