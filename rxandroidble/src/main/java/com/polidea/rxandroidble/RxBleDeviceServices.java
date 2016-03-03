@@ -31,7 +31,7 @@ public class RxBleDeviceServices {
         return Observable.from(bluetoothGattServices)
                 .map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
                 .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
-                .take(1);
+                .first();
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID serviceUuid, UUID characteristicUuid) {
