@@ -1,10 +1,12 @@
 package com.polidea.rxandroidble.internal;
 
 import android.support.annotation.NonNull;
+
 import java.util.concurrent.Semaphore;
+
 import rx.Observable;
 import rx.Subscriber;
-import rx.subjects.PublishSubject;
+import rx.subjects.ReplaySubject;
 
 /**
  * The base class for all operations that are executed on the Bluetooth Radio.
@@ -14,7 +16,11 @@ import rx.subjects.PublishSubject;
  */
 public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxBleRadioOperation> {
 
-    private PublishSubject<T> publishSubject = PublishSubject.create();
+    /**
+     * Operation may start emission even before anyone is looking for it's values. It is safe to replay here as this subject is subscribed
+     * only once, after queueing.
+     */
+    private ReplaySubject<T> replaySubject = ReplaySubject.create();
 
     private Semaphore radioBlockingSemaphore;
 
@@ -25,7 +31,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      * This operation is expected to call releaseRadio() at appropriate point after the run() was called.
      */
     public Observable<T> asObservable() {
-        return publishSubject;
+        return replaySubject;
     }
 
     /**
@@ -55,14 +61,14 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      * @param next the next value
      */
     protected final void onNext(T next) {
-        publishSubject.onNext(next);
+        replaySubject.onNext(next);
     }
 
     /**
      * A convenience method for calling the Subscriber's onCompleted()
      */
     protected final void onCompleted() {
-        publishSubject.onCompleted();
+        replaySubject.onCompleted();
     }
 
     /**
@@ -72,7 +78,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      */
     protected final void onError(Throwable throwable) {
         releaseRadio();
-        publishSubject.onError(throwable);
+        replaySubject.onError(throwable);
     }
 
     /**

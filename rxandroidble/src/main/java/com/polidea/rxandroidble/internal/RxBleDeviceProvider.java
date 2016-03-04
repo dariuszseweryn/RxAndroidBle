@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble.internal;
 
-import android.bluetooth.BluetoothAdapter;
-
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceImpl;
 
@@ -10,11 +8,11 @@ import java.util.Map;
 public class RxBleDeviceProvider {
 
     private final Map<String, RxBleDevice> availableDevices = new RxBleDeviceCache();
-    private final BluetoothAdapter bluetoothAdapter;
+    private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final RxBleRadio rxBleRadio;
 
-    public RxBleDeviceProvider(BluetoothAdapter bluetoothAdapter, RxBleRadio rxBleRadio) {
-        this.bluetoothAdapter = bluetoothAdapter;
+    public RxBleDeviceProvider(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio) {
+        this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleRadio = rxBleRadio;
     }
 
@@ -32,7 +30,7 @@ public class RxBleDeviceProvider {
                 return secondCheckRxBleDevice;
             }
 
-            final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(bluetoothAdapter.getRemoteDevice(macAddress), rxBleRadio);
+            final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(rxBleAdapterWrapper.getRemoteDevice(macAddress), rxBleRadio);
             availableDevices.put(macAddress, newRxBleDevice);
             return newRxBleDevice;
         }

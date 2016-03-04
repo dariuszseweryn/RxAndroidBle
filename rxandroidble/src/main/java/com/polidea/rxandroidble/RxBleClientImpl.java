@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.internal.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
@@ -25,21 +26,26 @@ import rx.Observable;
 class RxBleClientImpl extends RxBleClient {
 
     private static RxBleClientImpl CLIENT_INSTANCE;
-    private final BluetoothAdapter bluetoothAdapter;
     private final RxBleRadio rxBleRadio;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
-    private final Context context;
+    private final RxBleAdapterWrapper rxBleAdapterWrapper;
+    private final Observable<BleAdapterState> rxBleAdapterStateObservable;
 
-    public static RxBleClientImpl getInstance(Context context) {
+    public static RxBleClientImpl getInstance(@NonNull Context context) {
 
         if (CLIENT_INSTANCE == null) {
 
             synchronized (RxBleClient.class) {
 
                 if (CLIENT_INSTANCE == null) {
-                    CLIENT_INSTANCE = new RxBleClientImpl(context.getApplicationContext());
+                    final Context applicationContext = context.getApplicationContext();
+                    CLIENT_INSTANCE = new RxBleClientImpl(
+                            new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
+                            new RxBleRadioImpl(),
+                            new RxBleAdapterStateObservable(applicationContext),
+                            new UUIDUtil());
                 }
             }
         }
@@ -47,29 +53,36 @@ class RxBleClientImpl extends RxBleClient {
         return CLIENT_INSTANCE;
     }
 
-    public RxBleClientImpl(Context context) {
-        this.context = context;
-        uuidUtil = new UUIDUtil();
-        rxBleRadio = new RxBleRadioImpl();
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        rxBleDeviceProvider = new RxBleDeviceProvider(bluetoothAdapter, rxBleRadio);
+    public RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio,
+                           Observable<BleAdapterState> adapterStateObservable, UUIDUtil uuidUtil) {
+        this.uuidUtil = uuidUtil;
+        this.rxBleRadio = rxBleRadio;
+        this.rxBleAdapterWrapper = rxBleAdapterWrapper;
+        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio);
+        rxBleAdapterStateObservable = adapterStateObservable;
     }
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
-        return getMatchingQueuedScan(filterServiceUUIDs)
-                .switchIfEmpty(createScanOperation(filterServiceUUIDs));
+
+        if (rxBleAdapterWrapper.hasBluetoothAdapter()) {
+            return getMatchingQueuedScan(filterServiceUUIDs)
+                    .switchIfEmpty(createScanOperation(filterServiceUUIDs));
+        } else {
+            return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
+        }
     }
 
     private Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.from(uuidUtil.toDistinctSet(filterServiceUUIDs))
+        return Observable.just(filterServiceUUIDs)
+                .map(uuidUtil::toDistinctSet)
                 .map(queuedScanOperations::get)
                 .filter(rxBleScanResultObservable -> rxBleScanResultObservable != null)
                 .flatMap(rxBleScanResultObservable -> rxBleScanResultObservable);
     }
 
     private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
-        return new RxBleAdapterStateObservable(context)
+        return rxBleAdapterStateObservable
                 .filter(state -> state != BleAdapterState.STATE_ON)
                 .first()
                 .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
@@ -79,7 +92,7 @@ class RxBleClientImpl extends RxBleClient {
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
         return Observable.defer(() -> {
             final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
-            final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, bluetoothAdapter, uuidUtil);
+            final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
 
             final Observable<RxBleScanResult> scanResultObservable = rxBleRadio.queue(scanOperation)
                     .doOnUnsubscribe(() -> {

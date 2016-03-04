@@ -1,0 +1,3 @@
+moduleName = testsubscriber-module
+moduleVersion = 1.0
+extensionClasses = com.polidea.rxandroidble.extensions.TestSubscriberExtension
