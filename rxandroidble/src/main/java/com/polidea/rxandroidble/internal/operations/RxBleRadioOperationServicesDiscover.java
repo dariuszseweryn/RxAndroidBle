@@ -4,9 +4,8 @@ import android.bluetooth.BluetoothGatt;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-import java.util.concurrent.atomic.AtomicReference;
 import rx.Observable;
 import rx.Subscription;
 

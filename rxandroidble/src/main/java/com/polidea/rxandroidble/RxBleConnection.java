@@ -1,10 +1,15 @@
 package com.polidea.rxandroidble;
 
+import android.content.Context;
 import java.util.UUID;
 
 import rx.Observable;
 
 public interface RxBleConnection {
+
+    interface Connector {
+        Observable<RxBleConnection> prepareConnection(Context context, boolean autoConnect);
+    }
 
     class RxBleConnectionState {
 

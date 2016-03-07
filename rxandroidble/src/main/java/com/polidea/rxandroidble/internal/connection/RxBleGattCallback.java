@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -8,8 +8,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
@@ -19,6 +21,10 @@ import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class RxBleGattCallback {
+
+    public interface Provider {
+        RxBleGattCallback provide();
+    }
     
     private Scheduler callbackScheduler = Schedulers.newThread();
 
@@ -45,6 +51,18 @@ public class RxBleGattCallback {
     private PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
 
     private PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
+
+    private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
+            .flatMap(rxBleConnectionState -> {
+                if (rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED ||
+                        rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTING) {
+                    return Observable.error(new BleDisconnectedException());
+                } else {
+                    return Observable.empty();
+                }
+            })
+            .filter(ignored -> false)
+            .cache(1);
 
     private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
@@ -267,6 +285,11 @@ public class RxBleGattCallback {
 
     public Observable<BluetoothGatt> getBluetoothGatt() {
         return bluetoothGattBehaviorSubject;
+    }
+
+    public <T> Observable<T> disconnectedErrorObservable() {
+        //noinspection unchecked
+        return disconnectedErrorObservable;
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getOnConnectionStateChange() {

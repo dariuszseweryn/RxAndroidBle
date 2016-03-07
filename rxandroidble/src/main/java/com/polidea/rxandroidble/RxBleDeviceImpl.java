@@ -1,24 +1,20 @@
 package com.polidea.rxandroidble;
 
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*;
+
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-
-import com.polidea.rxandroidble.internal.RxBleRadio;
-
 import java.util.concurrent.atomic.AtomicReference;
-
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
-
 public class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
 
-    private final RxBleRadio rxBleRadio;
+    private final RxBleConnection.Connector connector;
 
     private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
 
@@ -26,9 +22,9 @@ public class RxBleDeviceImpl implements RxBleDevice {
             DISCONNECTED
     );
 
-    public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleRadio rxBleRadio) {
+    public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
         this.bluetoothDevice = bluetoothDevice;
-        this.rxBleRadio = rxBleRadio;
+        this.connector = connector;
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
@@ -44,20 +40,25 @@ public class RxBleDeviceImpl implements RxBleDevice {
                     return rxBleConnectionObservable;
                 }
 
-                final RxBleConnectionImpl rxBleConnection = new RxBleConnectionImpl(bluetoothDevice, rxBleRadio);
-                final Subscription connectionStateSubscription = subscribeToConnectionStateChanges(rxBleConnection);
+                final AtomicReference<Subscription> connectionStateSubscription = new AtomicReference<>();
 
                 final Observable<RxBleConnection> newConnectionObservable =
-                        rxBleConnection
-                                .connect(context, autoConnect)
-                                .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTING))
+                        connector.prepareConnection(context, autoConnect)
+                                .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
+                                .doOnNext(rxBleConnection -> {
+                                    connectionStateBehaviorSubject.onNext(CONNECTED);
+                                    connectionStateSubscription.set(subscribeToConnectionStateChanges(rxBleConnection));
+                                })
                                 .doOnUnsubscribe(() -> {
                                     synchronized (connectionObservable) {
                                         connectionObservable
                                                 .set(null); //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
                                     }
                                     connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                                    connectionStateSubscription.unsubscribe();
+                                    final Subscription subscription = connectionStateSubscription.get();
+                                    if (subscription != null) {
+                                        subscription.unsubscribe();
+                                    }
                                 })
                                 .replay()
                                 .refCount();
@@ -68,7 +69,7 @@ public class RxBleDeviceImpl implements RxBleDevice {
         });
     }
 
-    private Subscription subscribeToConnectionStateChanges(RxBleConnectionImpl rxBleConnection) {
+    private Subscription subscribeToConnectionStateChanges(RxBleConnection rxBleConnection) {
         return rxBleConnection
                 .getConnectionState()
                 .<RxBleConnection.RxBleConnectionState>lift(subscriber -> new Subscriber<RxBleConnection.RxBleConnectionState>() {
