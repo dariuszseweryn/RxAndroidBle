@@ -10,12 +10,14 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.internal.RxBleDeviceCache;
+import com.polidea.rxandroidble.internal.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
@@ -24,10 +26,39 @@ import rx.Observable;
  * A mocked ble client. Callers supply device parameters such as services,
  * characteristics and descriptors the mocked client returns them upon request
  */
-public class RxBleClientMock implements RxBleClient {
+public class RxBleClientMock extends RxBleClient {
 
 
     public static class Builder {
+
+        private Map<String, RxBleDevice> availableDevices;
+
+        /**
+         * Build a new {@link RxBleClientMock}.
+         */
+        public Builder() {
+            this.availableDevices = new RxBleDeviceCache();
+        }
+
+        /**
+         * Add a {@link RxBleDevice} to the mock client.
+         *
+         * @param rxBleDevice device that the mocked client should contain. Use {@link DeviceBuilder} to create them.
+         */
+        public Builder addDevice(RxBleDevice rxBleDevice) {
+            availableDevices.put(rxBleDevice.getMacAddress(), rxBleDevice);
+            return this;
+        }
+
+        /**
+         * Create the {@link RxBleClientMock} instance using the configured values.
+         */
+        public RxBleClientMock build() {
+            return new RxBleClientMock(this);
+        }
+    }
+
+    public static class DeviceBuilder {
 
         private Integer rssi;
         private String deviceName;
@@ -37,12 +68,12 @@ public class RxBleClientMock implements RxBleClient {
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
         /**
-         * Build a new {@link RxBleClientMock}.
+         * Build a new {@link RxBleDevice}.
          * <p>
-         * Calling {@link #rssi}, {@link #deviceMacAddress} and {@link #scanRecord} is required before calling {@link #build()}. All other methods
+         * Calling {@link #scanRecord}, {@link #rssi} and {@link #deviceMacAddress} is required before calling {@link #build()}. All other methods
          * are optional.
          */
-        public Builder() {
+        public DeviceBuilder() {
             this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<>());
             this.characteristicNotificationSources = new HashMap<>();
         }
@@ -53,7 +84,7 @@ public class RxBleClientMock implements RxBleClient {
          * @param uuid            service UUID
          * @param characteristics characteristics that the service should report. Use {@link CharacteristicsBuilder} to create them.
          */
-        public Builder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
+        public DeviceBuilder addService(UUID uuid, List<BluetoothGattCharacteristic> characteristics) {
             BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
             for (BluetoothGattCharacteristic characteristic : characteristics) {
                 bluetoothGattService.addCharacteristic(characteristic);
@@ -65,17 +96,22 @@ public class RxBleClientMock implements RxBleClient {
         /**
          * Create the {@link RxBleClientMock} instance using the configured values.
          */
-        public RxBleClientMock build() {
+        public RxBleDeviceMock build() {
             if (this.rssi == null) throw new IllegalStateException("Rssi required");
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required");
             if (this.scanRecord == null) throw new IllegalStateException("ScanRecord required");
-            return new RxBleClientMock(this);
+            RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName, deviceMacAddress, scanRecord, rssi, rxBleDeviceServices, characteristicNotificationSources);
+
+            for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
+                rxBleDeviceMock.getAdvertisedUUIDs().add(service.getUuid());
+            }
+            return rxBleDeviceMock;
         }
 
         /**
          * Set a device mac address.
          */
-        public Builder deviceMacAddress(@NonNull String deviceMacAddress) {
+        public DeviceBuilder deviceMacAddress(@NonNull String deviceMacAddress) {
             this.deviceMacAddress = deviceMacAddress;
             return this;
         }
@@ -83,7 +119,7 @@ public class RxBleClientMock implements RxBleClient {
         /**
          * Set a device name.
          */
-        public Builder deviceName(@NonNull String deviceName) {
+        public DeviceBuilder deviceName(@NonNull String deviceName) {
             this.deviceName = deviceName;
             return this;
         }
@@ -94,7 +130,7 @@ public class RxBleClientMock implements RxBleClient {
          * @param characteristicUUID UUID of the characteristic that will be observed for notifications
          * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications
          */
-        public Builder notificationSource(UUID characteristicUUID, Observable<byte[]> sourceObservable) {
+        public DeviceBuilder notificationSource(UUID characteristicUUID, Observable<byte[]> sourceObservable) {
             characteristicNotificationSources.put(characteristicUUID, sourceObservable);
             return this;
         }
@@ -102,15 +138,16 @@ public class RxBleClientMock implements RxBleClient {
         /**
          * Set a rssi that will be reported.
          */
-        public Builder rssi(@NonNull Integer rssi) {
+        public DeviceBuilder rssi(@NonNull Integer rssi) {
             this.rssi = rssi;
             return this;
         }
 
+
         /**
          * Set a BLE scan record.
          */
-        public Builder scanRecord(@NonNull byte[] scanRecord) {
+        public DeviceBuilder scanRecord(@NonNull byte[] scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
@@ -122,7 +159,7 @@ public class RxBleClientMock implements RxBleClient {
 
         /**
          * Build a new {@link BluetoothGattCharacteristic} list.
-         * Should be used in pair with {@link Builder#addService}
+         * Should be used in pair with {@link DeviceBuilder#addService}
          */
         public CharacteristicsBuilder() {
             this.bluetoothGattCharacteristics = new ArrayList<>();
@@ -131,8 +168,8 @@ public class RxBleClientMock implements RxBleClient {
         /**
          * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
          *
-         * @param uuid characteristic UUID
-         * @param data  locally stored value of the characteristic
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
          * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
          */
         public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid, @NonNull byte[] data, List<BluetoothGattDescriptor> descriptors) {
@@ -169,7 +206,7 @@ public class RxBleClientMock implements RxBleClient {
          * Adds a {@link BluetoothGattDescriptor} with specified parameters.
          *
          * @param uuid descriptor UUID
-         * @param data  locally stored value of the descriptor
+         * @param data locally stored value of the descriptor
          */
         public DescriptorsBuilder addDescriptor(@NonNull UUID uuid, @NonNull byte[] data) {
             BluetoothGattDescriptor bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, 0);
@@ -185,37 +222,49 @@ public class RxBleClientMock implements RxBleClient {
             return bluetoothGattDescriptors;
         }
     }
-
-    private RxBleDevice rxBleDevice;
-    private Integer rssi;
-    private byte[] scanRecord;
-    private RxBleConnectionMock rxBleConnectionMock;
+    private final Map<String, RxBleDevice> availableDevices;
 
     private RxBleClientMock(Builder builder) {
-        rxBleConnectionMock = new RxBleConnectionMock(builder.rxBleDeviceServices, builder.rssi, builder.characteristicNotificationSources);
-        rxBleDevice = new RxBleDeviceMock(builder.deviceName, builder.deviceMacAddress, rxBleConnectionMock);
-        rssi = builder.rssi;
-        scanRecord = builder.scanRecord;
-    }
-
-    /**
-     * Allows to simulate a situation when the Bluetooth device disconnected itself
-     * i.e. because of an error.
-     * After calling this method, {@link RxBleDevice} status will be changed to <i>DISCONNECTED</i>
-     * and all of the observers that are subscribed to {@link com.polidea.rxandroidble.RxBleConnection} will get an <b>onError()</b> call
-     * with {@link BleDisconnectedException}
-     */
-    public void disconnect() {
-        rxBleConnectionMock.simulateDeviceDisconnect();
+        availableDevices = builder.availableDevices;
     }
 
     @Override
-    public RxBleDevice getBleDevice(String bluetoothAddress) {
-        return rxBleDevice;
+    public RxBleDevice getBleDevice(@NonNull String macAddress) {
+        return availableDevices.get(macAddress);
     }
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.just(new RxBleScanResult(rxBleDevice, rssi, scanRecord));
+        return createScanOperation(filterServiceUUIDs);
+    }
+
+    private RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
+        return new RxBleScanResult(bleDevice, rssi, scanRecord);
+    }
+
+    @NonNull
+    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+        return Observable.defer(() -> Observable.from(getFilteredDevicesList(filterServiceUUIDs))
+                .map(rxBleDevice -> {
+                    RxBleDeviceMock rxBleDeviceMock = (RxBleDeviceMock) rxBleDevice;
+                    return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
+                })
+                .share());
+    }
+
+    private List<RxBleDevice> getFilteredDevicesList(UUID[] filterServiceUUIDs) {
+        List<RxBleDevice> filteredDevices = new ArrayList<>();
+
+        for (RxBleDevice device : availableDevices.values()) {
+            List<UUID> advertisedUUIDs = ((RxBleDeviceMock) device).getAdvertisedUUIDs();
+
+            for (UUID desiredUUID : filterServiceUUIDs) {
+
+                if (!advertisedUUIDs.contains(desiredUUID)) {
+                    filteredDevices.add(device);
+                }
+            }
+        }
+        return filteredDevices;
     }
 }

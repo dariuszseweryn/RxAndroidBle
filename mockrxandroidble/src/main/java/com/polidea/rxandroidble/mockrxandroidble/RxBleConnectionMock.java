@@ -2,14 +2,11 @@ package com.polidea.rxandroidble.mockrxandroidble;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble.internal.RxBleConnectibleConnection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,31 +16,30 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.subjects.BehaviorSubject;
 
-class RxBleConnectionMock implements RxBleConnectibleConnection {
+class RxBleConnectionMock implements RxBleConnection {
 
     private final HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
     private RxBleDeviceServices rxBleDeviceServices;
     private Integer rssid;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
-    private BehaviorSubject<RxBleConnection> connectionSubject;
+    private BehaviorSubject<RxBleConnectionState> connectionStatePublishSubject;
 
 
-    public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices, Integer rssid, Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
+    public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices, Integer rssid, Map<UUID, Observable<byte[]>> characteristicNotificationSources, BehaviorSubject<RxBleConnectionState> connectionStatePublishSubject) {
         this.rxBleDeviceServices = rxBleDeviceServices;
         this.rssid = rssid;
         this.characteristicNotificationSources = characteristicNotificationSources;
-        this.connectionSubject = BehaviorSubject.create();
-        this.connectionSubject.onNext(this);
-    }
-
-    @Override
-    public Observable<RxBleConnection> connect(Context context, boolean autoConnect) {
-        return connectionSubject;
+        this.connectionStatePublishSubject = connectionStatePublishSubject;
     }
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
         return Observable.just(rxBleDeviceServices);
+    }
+
+    @Override
+    public Observable<RxBleConnectionState> getConnectionState() {
+        return connectionStatePublishSubject;
     }
 
     @Override
@@ -77,10 +73,6 @@ class RxBleConnectionMock implements RxBleConnectibleConnection {
     @Override
     public Observable<Integer> readRssi() {
         return Observable.just(rssid);
-    }
-
-    public void simulateDeviceDisconnect() {
-        connectionSubject.onError(new BleDisconnectedException());
     }
 
     @Override
