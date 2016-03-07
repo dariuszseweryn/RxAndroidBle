@@ -123,49 +123,6 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.startLeScan(_) >> true
     }
 
-    def "should emit test results without filtering"() {
-        given:
-        TestSubscriber testSubscriber = new TestSubscriber<>()
-        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 0, scanRecord: [] as byte[]
-
-        when:
-        objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertValueCount 1
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 0 && scanResult.bleDevice.getMacAddress() == "AA:AA:AA:AA:AA:AA"
-        }
-    }
-
-    def "should emit test results without filtering for more than one item"() {
-        given:
-        TestSubscriber testSubscriber = new TestSubscriber<>()
-        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 0, scanRecord: [] as byte[]
-        bluetoothDeviceDiscovered deviceMac: "BB:BB:BB:BB:BB:BB", rssi: 50, scanRecord: [] as byte[]
-
-        when:
-        objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertValueCount 2
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 0 && scanResult.bleDevice.getMacAddress() == "AA:AA:AA:AA:AA:AA"
-        }
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 50 && scanResult.bleDevice.getMacAddress() == "BB:BB:BB:BB:BB:BB"
-        }
-    }
-
     def "should not replay scan results to second observer if it subscribed after scan emission"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
@@ -229,32 +186,34 @@ class RxBleClientTest extends Specification {
     @Unroll
     def "should emit devices only if matching filter (#description)"() {
         given:
-        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        TestSubscriber testSubscriber = new TestSubscriber<>()
         addressList.each { bluetoothDeviceDiscovered deviceMac: it, rssi: 0, scanRecord: [] as byte[] }
         uuidParserSpy.extractUUIDs(_) >>> publicServices
 
         when:
-        objectUnderTest.scanBleDevices(filter as UUID[]).subscribe(firstSubscriber)
+        objectUnderTest.scanBleDevices(filter as UUID[]).subscribe(testSubscriber)
 
         then:
-        firstSubscriber.assertValueCount expectedCount
+        testSubscriber.assertValueCount expectedDevices.size()
+        testSubscriber.assertScanRecordsByMacWithOrder(expectedDevices)
 
         where:
-        addressList                                | publicServices                       | filter                | expectedCount | description
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | []                    | 1             | 'Empty filter, one public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | []                    | 1             | 'Empty filter, two public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | []                    | 1             | 'Empty filter, no public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | null                  | 1             | 'No filter, one public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | null                  | 1             | 'No filter, two public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | null                  | 1             | 'No filter, no public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | [someUUID]            | 0             | 'One filter, device without public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | [someUUID]            | 1             | 'One filter, device with matching public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | [someUUID]            | 1             | 'One filter, device with matching public service and one more not matching'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [someUUID]]             | [someUUID]            | 2             | 'One filter, two devices, both with one matching service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], [someUUID]]                     | [someUUID]            | 1             | 'One filter, two devices, one without public services, second with matching service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], []]                             | [someUUID, otherUUID] | 0             | 'Two filtered UUIDs, two devices without public services'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [otherUUID]]            | [someUUID, otherUUID] | 0             | 'Two filtered UUIDs, two devices, both matches only by one service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, otherUUID], [otherUUID]] | [someUUID, otherUUID] | 1             | 'Two filtered UUIDs, two devices, one matches by both services, second matching only partially'
+        addressList                                | publicServices                       | filter                | expectedDevices                            | description
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, one public service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, someUUID]]               | []                    | ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | 'Empty filter, one public service, two devices'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, two public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, no public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, one public service'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, two public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, no public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | [someUUID]            | []                                         | 'One filter, device without public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | [someUUID]            | ["AA:AA:AA:AA:AA:AA"]                      | 'One filter, device with matching public service'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | [someUUID]            | ["AA:AA:AA:AA:AA:AA"]                      | 'One filter, device with matching public service and one more not matching'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [someUUID]]             | [someUUID]            | ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | 'One filter, two devices, both with one matching service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], [someUUID]]                     | [someUUID]            | ["AA:AA:AA:AA:AA:BB"]                      | 'One filter, two devices, one without public services, second with matching service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], []]                             | [someUUID, otherUUID] | []                                         | 'Two filtered UUIDs, two devices without public services'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [otherUUID]]            | [someUUID, otherUUID] | []                                         | 'Two filtered UUIDs, two devices, both matches only by one service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, otherUUID], [otherUUID]] | [someUUID, otherUUID] | ["AA:AA:AA:AA:AA:AA"]                      | 'Two filtered UUIDs, two devices, one matches by both services, second matching only partially'
     }
 
     def "should emit device if has matching public service plus some more not defined in filter"() {

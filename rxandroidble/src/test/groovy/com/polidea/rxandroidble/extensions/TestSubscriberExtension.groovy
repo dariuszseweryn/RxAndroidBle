@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.extensions
 
+import com.polidea.rxandroidble.RxBleScanResult
 import rx.observers.TestSubscriber
 
 class TestSubscriberExtension {
@@ -14,6 +15,17 @@ class TestSubscriberExtension {
 
     static boolean assertErrorClosure(final TestSubscriber subscriber, Closure<Boolean> closure) {
         subscriber.onErrorEvents?.any closure
+    }
+
+    static boolean assertScanRecord(final TestSubscriber<RxBleScanResult> subscriber, int rssi, String macAddress, byte[] scanRecord) {
+        assertAnyOnNext(subscriber, {
+            it.rssi == rssi && it.bleDevice.macAddress == macAddress && scanRecord == it.scanRecord
+        })
+    }
+
+    static boolean assertScanRecordsByMacWithOrder(final TestSubscriber<RxBleScanResult> subscriber, List<String> expectedDevices) {
+        subscriber.assertValueCount(expectedDevices.size())
+        expectedDevices == subscriber.onNextEvents*.bleDevice.macAddress
     }
 
     static boolean assertSubscribed(final TestSubscriber subscriber) {
