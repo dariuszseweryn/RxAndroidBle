@@ -2,11 +2,12 @@ package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothDevice;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleDeviceImpl;
 
 import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorImpl;
 import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
+
 import java.util.Map;
 
 public class RxBleDeviceProvider {

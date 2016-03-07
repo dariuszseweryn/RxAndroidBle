@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.util;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

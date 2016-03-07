@@ -1,6 +1,8 @@
-package com.polidea.rxandroidble
+package com.polidea.rxandroidble.internal
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.exceptions.BleGattException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import rx.Observable
@@ -14,17 +16,11 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
 public class RxBleDeviceTest extends Specification {
 
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
-
     RxBleConnection.Connector mockConnector = Mock RxBleConnection.Connector
-
-    PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
-
     RxBleConnection mockConnection = Mock RxBleConnection
-
+    PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
     PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create()
-
     RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector)
-
     TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
 
     def setup() {

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.util;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

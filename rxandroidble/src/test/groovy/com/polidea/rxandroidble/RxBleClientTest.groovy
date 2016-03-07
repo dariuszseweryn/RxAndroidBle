@@ -3,7 +3,7 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.UUIDUtil
+import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll

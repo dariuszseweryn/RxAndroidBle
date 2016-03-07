@@ -8,12 +8,12 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RxBleAdapterWrapper;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.RxBleRadioImpl;
-import com.polidea.rxandroidble.internal.UUIDUtil;
+import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
 
 import java.util.HashMap;

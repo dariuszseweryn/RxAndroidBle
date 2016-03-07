@@ -3,10 +3,10 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothAdapter;
 
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RxBleAdapterWrapper;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-import com.polidea.rxandroidble.internal.UUIDUtil;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.List;
 import java.util.UUID;

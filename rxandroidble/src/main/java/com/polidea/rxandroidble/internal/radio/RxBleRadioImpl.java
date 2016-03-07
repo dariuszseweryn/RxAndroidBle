@@ -1,6 +1,11 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.radio;
+
+import com.polidea.rxandroidble.internal.RxBleLog;
+import com.polidea.rxandroidble.internal.RxBleRadio;
+import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
 import java.util.concurrent.Semaphore;
+
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 

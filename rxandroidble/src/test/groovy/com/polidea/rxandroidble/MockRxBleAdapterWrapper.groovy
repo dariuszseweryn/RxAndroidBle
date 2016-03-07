@@ -2,7 +2,7 @@ package com.polidea.rxandroidble
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import com.polidea.rxandroidble.internal.RxBleAdapterWrapper
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 
 class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
 

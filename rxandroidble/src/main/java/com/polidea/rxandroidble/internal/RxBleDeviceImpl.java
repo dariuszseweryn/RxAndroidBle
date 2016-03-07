@@ -1,7 +1,10 @@
-package com.polidea.rxandroidble;
+package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+
+import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.RxBleDevice;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -12,7 +15,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONN
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
-public class RxBleDeviceImpl implements RxBleDevice {
+class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
 

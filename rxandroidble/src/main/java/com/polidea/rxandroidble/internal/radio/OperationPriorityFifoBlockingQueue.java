@@ -1,10 +1,13 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.radio;
 
 import android.support.annotation.NonNull;
+
+import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class OperationPriorityFifoBlockingQueue {
+class OperationPriorityFifoBlockingQueue {
 
     private final PriorityBlockingQueue<FIFOEntry> q = new PriorityBlockingQueue<>();
 

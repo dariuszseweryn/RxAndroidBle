@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal
 
+import com.polidea.rxandroidble.internal.radio.OperationPriorityFifoBlockingQueue
 import spock.lang.Specification
 import spock.lang.Unroll
 
