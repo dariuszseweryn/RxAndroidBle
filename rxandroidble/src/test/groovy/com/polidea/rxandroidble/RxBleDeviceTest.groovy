@@ -1,16 +1,15 @@
 package com.polidea.rxandroidble
-
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
-
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.polidea.rxandroidble.exceptions.BleGattException
+import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
 
 public class RxBleDeviceTest extends Specification {
 
@@ -54,10 +53,10 @@ public class RxBleDeviceTest extends Specification {
     def "equals() should return true when compared to a different RxBleDevice instance with the same underlying BluetoothDevice"() {
 
         given:
-        def differentRxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, null)
+        def differentRxBleDeviceWithSameBluetoothDevice = new RxBleDeviceImpl(mockBluetoothDevice, null)
 
         expect:
-        rxBleDevice.equals(differentRxBleDevice)
+        rxBleDevice.equals(differentRxBleDeviceWithSameBluetoothDevice)
     }
 
     def "hashCode() should return the same value as a different RxBleDevice instance hashCode() with the same underlying BluetoothDevice"() {
@@ -108,6 +107,7 @@ public class RxBleDeviceTest extends Specification {
     }
 
     def "getConnectionState() should emit DISCONNECTED, CONNECTING state on subscribing to establishConnection()"() {
+
         given:
         rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
 
@@ -122,7 +122,7 @@ public class RxBleDeviceTest extends Specification {
 
         given:
         startConnecting()
-        connectingSuccess()
+        notifyConnectionWasEstablished()
 
         when:
         rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
@@ -134,14 +134,14 @@ public class RxBleDeviceTest extends Specification {
     def "getConnectionState() should emit CONNECTING and CONNECTED state when subscribed after subscribing establishConnection() and before it emits RxBleConnection"() {
 
         given:
-        startConnecting()
         rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
 
         when:
-        connectingSuccess()
+        startConnecting()
+        notifyConnectionWasEstablished()
 
         then:
-        deviceConnectionStateSubscriber.assertValues(CONNECTING, CONNECTED)
+        deviceConnectionStateSubscriber.assertValues(DISCONNECTED, CONNECTING, CONNECTED)
     }
 
     def "getConnectionState() should emit DISCONNECTED state on unsubscribing from establishConnection()"() {
@@ -149,7 +149,7 @@ public class RxBleDeviceTest extends Specification {
         given:
         def connectionTestSubscriber = new TestSubscriber()
         rxStartConnecting().subscribe(connectionTestSubscriber)
-        connectingSuccess()
+        notifyConnectionWasEstablished()
         connectionTestSubscriber.unsubscribe()
 
         when:
@@ -159,35 +159,124 @@ public class RxBleDeviceTest extends Specification {
         deviceConnectionStateSubscriber.assertValue(DISCONNECTED)
     }
 
+    def "getConnectionState() should emit DISCONNECTED state when connection was broken"() {
+
+        given:
+        rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
+        rxStartConnecting().subscribe({ RxBleConnection ignored -> }, { Throwable ignored -> })
+        notifyConnectionWasEstablished()
+
+        when:
+        dropConnection()
+
+        then:
+        deviceConnectionStateSubscriber.assertValues(DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTED)
+    }
+
     def "getConnectionState() should not propagate RxBleConnection.getConnectionState() errors"() {
         given:
         rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
         startConnecting()
-        connectingSuccess()
+        notifyConnectionWasEstablished()
 
         when:
-        emitConnectionStateError()
+        emitConnectionStateErrorThroughConnectionStatus()
 
         then:
         deviceConnectionStateSubscriber.assertNoErrors()
-
-        and:
-        deviceConnectionStateSubscriber.assertValues(DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTED)
     }
-    
+
+    def "getConnectionState() should not unsubscribe if connection was dropped"() {
+        given:
+        rxBleDevice.getConnectionState().subscribe(deviceConnectionStateSubscriber)
+        startConnecting()
+        notifyConnectionWasEstablished()
+
+        when:
+        emitConnectionStateErrorThroughConnectionStatus()
+
+        then:
+        deviceConnectionStateSubscriber.assertNoTerminalEvent()
+    }
+
+    def "should emit connection and stay subscribed after it was established"() {
+
+        given:
+        def testSubscriber = new TestSubscriber()
+
+        when:
+        rxStartConnecting().subscribe(testSubscriber)
+        notifyConnectionWasEstablished()
+
+        then:
+        testSubscriber.assertSubscribed()
+        testSubscriber.assertValueCount 1
+    }
+
+    def "should reuse connection if subscribed with second subscriber"() {
+
+        given:
+        def firstSubscriber = new TestSubscriber()
+        def secondSubscriber = new TestSubscriber()
+        rxStartConnecting().subscribe(firstSubscriber)
+        notifyConnectionWasEstablished()
+
+        when:
+        rxStartConnecting().subscribe(secondSubscriber)
+
+        then:
+        firstSubscriber.assertValueCount 1
+        firstSubscriber.assertReceivedOnNext(secondSubscriber.onNextEvents)
+    }
+
+    def "should create new connection if previous connection was established and released before second subscriber has subscribed"() {
+
+        given:
+        def firstSubscriber = new TestSubscriber()
+        def secondSubscriber = new TestSubscriber()
+        def subscription = rxStartConnecting().subscribe(firstSubscriber)
+        notifyConnectionWasEstablished()
+        subscription.unsubscribe()
+
+        when:
+        rxBleDevice.establishConnection(Mock(Context), false).subscribe(secondSubscriber)
+
+        then:
+        firstSubscriber.assertValueCount 1
+        firstSubscriber.assertReceivedOnNextNot(secondSubscriber.onNextEvents)
+    }
+
+    def "should unsubscribe from connection if it was dropped"() {
+
+        given:
+        def connectionTestSubscriber = new TestSubscriber()
+        rxStartConnecting().subscribe(connectionTestSubscriber)
+        notifyConnectionWasEstablished()
+
+        when:
+        dropConnection()
+
+        then:
+        connectionTestSubscriber.isUnsubscribed()
+    }
+
     public void startConnecting() {
-        rxBleDevice.establishConnection(null, false).subscribe()
+        rxStartConnecting().subscribe()
     }
 
     public Observable<RxBleConnection> rxStartConnecting() {
-        return rxBleDevice.establishConnection(null, false)
+        return rxBleDevice.establishConnection(Mock(Context), false)
     }
 
-    public void connectingSuccess() {
+    public void notifyConnectionWasEstablished() {
         mockConnectorEstablishConnectionPublishSubject.onNext(mockConnection)
     }
 
-    public void emitConnectionStateError() {
+    public void dropConnection() {
+        mockConnectorEstablishConnectionPublishSubject.onError(new BleGattException(BleGattOperationType.CONNECTION_STATE))
+    }
+
+    public void emitConnectionStateErrorThroughConnectionStatus() {
         connectionStatePublishSubject.onError(new Throwable("test"))
     }
 }
