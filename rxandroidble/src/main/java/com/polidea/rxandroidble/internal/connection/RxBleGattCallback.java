@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -6,11 +6,12 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.util.Log;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
@@ -20,16 +21,18 @@ import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class RxBleGattCallback {
-    
-    private final String TAG = "RxBleGattCallback(" + System.identityHashCode(this) + ')';
 
+    public interface Provider {
+        RxBleGattCallback provide();
+    }
+    
     private Scheduler callbackScheduler = Schedulers.newThread();
 
     private BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();
 
     private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
-    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = PublishSubject.create();
+    private PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
 
     private PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
 
@@ -49,11 +52,23 @@ public class RxBleGattCallback {
 
     private PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
 
+    private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
+            .flatMap(rxBleConnectionState -> {
+                if (rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED ||
+                        rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTING) {
+                    return Observable.error(new BleDisconnectedException());
+                } else {
+                    return Observable.empty();
+                }
+            })
+            .filter(ignored -> false)
+            .cache(1);
+
     private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, String.format("onConnectionStateChange newState=%d status=%d", newState, status));
+            RxBleLog.d("onConnectionStateChange newState=%d status=%d", newState, status);
             super.onConnectionStateChange(gatt, status, newState);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -64,12 +79,12 @@ public class RxBleGattCallback {
 
             Observable.just(mapConnectionStateToRxBleConnectionStatus(newState))
                     .compose(getSubscribeAndObserveOnTransformer())
-                    .subscribe(connectionStateBehaviorSubject::onNext);
+                    .subscribe(connectionStatePublishSubject::onNext);
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.d(TAG, String.format("onServicesDiscovered status=%d", status));
+            RxBleLog.d("onServicesDiscovered status=%d", status);
             super.onServicesDiscovered(gatt, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -87,8 +102,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            // TODO: [PU] 29.01.2016 String formatting will cause huge delays in big-throughput.
-            Log.d(TAG, String.format("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status));
+            RxBleLog.d("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status);
             super.onCharacteristicRead(gatt, characteristic, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -105,7 +119,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(TAG, String.format("onCharacteristicWrite characteristic=%s status=%d", characteristic.getUuid(), status));
+            RxBleLog.d("onCharacteristicWrite characteristic=%s status=%d", characteristic.getUuid(), status);
             super.onCharacteristicWrite(gatt, characteristic, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -122,7 +136,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, String.format("onCharacteristicChanged characteristic=%s", characteristic.getUuid()));
+            RxBleLog.d("onCharacteristicChanged characteristic=%s", characteristic.getUuid());
             super.onCharacteristicChanged(gatt, characteristic);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -135,7 +149,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.d(TAG, String.format("onCharacteristicRead descriptor=%s status=%d", descriptor.getUuid(), status));
+            RxBleLog.d("onCharacteristicRead descriptor=%s status=%d", descriptor.getUuid(), status);
             super.onDescriptorRead(gatt, descriptor, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -151,7 +165,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.d(TAG, String.format("onDescriptorWrite descriptor=%s status=%d", descriptor.getUuid(), status));
+            RxBleLog.d("onDescriptorWrite descriptor=%s status=%d", descriptor.getUuid(), status);
             super.onDescriptorWrite(gatt, descriptor, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -167,7 +181,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-            Log.d(TAG, String.format("onReliableWriteCompleted status=%d", status));
+            RxBleLog.d("onReliableWriteCompleted status=%d", status);
             super.onReliableWriteCompleted(gatt, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -181,7 +195,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            Log.d(TAG, String.format("onReadRemoteRssi rssi=%d status=%d", rssi, status));
+            RxBleLog.d("onReadRemoteRssi rssi=%d status=%d", rssi, status);
             super.onReadRemoteRssi(gatt, rssi, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -197,7 +211,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-            Log.d(TAG, String.format("onMtuChanged mtu=%d status=%d", mtu, status));
+            RxBleLog.d("onMtuChanged mtu=%d status=%d", mtu, status);
             super.onMtuChanged(gatt, mtu, status);
 
             bluetoothGattBehaviorSubject.onNext(gatt);
@@ -273,8 +287,13 @@ public class RxBleGattCallback {
         return bluetoothGattBehaviorSubject;
     }
 
+    public <T> Observable<T> disconnectedErrorObservable() {
+        //noinspection unchecked
+        return disconnectedErrorObservable;
+    }
+
     public Observable<RxBleConnection.RxBleConnectionState> getOnConnectionStateChange() {
-        return withHandlingStatusError(connectionStateBehaviorSubject);
+        return withHandlingStatusError(connectionStatePublishSubject);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {

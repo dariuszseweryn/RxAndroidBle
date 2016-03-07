@@ -2,25 +2,24 @@ package com.polidea.rxandroidble;
 
 import android.content.Context;
 import java.util.UUID;
+
 import rx.Observable;
 
 public interface RxBleConnection {
 
-    // TODO: 26.01.2016 [PU] Why not an enum?
+    interface Connector {
+        Observable<RxBleConnection> prepareConnection(Context context, boolean autoConnect);
+    }
+
     class RxBleConnectionState {
 
-        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING");
-
-        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED");
-
         public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING");
-
         public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED");
-
+        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED");
+        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING");
         private final String description;
 
-        public RxBleConnectionState(String description) {
-
+        RxBleConnectionState(String description) {
             this.description = description;
         }
 
@@ -31,6 +30,8 @@ public interface RxBleConnection {
                     '}';
         }
     }
+
+    Observable<RxBleConnectionState> getConnectionState();
 
     Observable<RxBleDeviceServices> discoverServices();
 

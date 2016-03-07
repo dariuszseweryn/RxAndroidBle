@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble.internal.operations;
 
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
+
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -7,39 +9,25 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
-
-import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble.internal.ObservableUtil;
-import com.polidea.rxandroidble.internal.RxBleGattCallback;
+import android.support.annotation.NonNull;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import rx.Observable;
 import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
-import static rx.Observable.error;
-
-public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnection> {
-
-    private static final String TAG = RxBleRadioOperationConnect.class.getSimpleName();
+public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
 
     private final Context context;
 
     private final BluetoothDevice bluetoothDevice;
 
     private final RxBleGattCallback rxBleGattCallback;
-
-    private final RxBleConnection rxBleConnection;
 
     private final boolean autoConnect;
 
@@ -48,16 +36,15 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
     private Subscription bluetoothGattSubscription;
 
     public RxBleRadioOperationConnect(Context context, BluetoothDevice bluetoothDevice, RxBleGattCallback rxBleGattCallback,
-                                      RxBleConnection rxBleConnection, boolean autoConnect) {
+                                      boolean autoConnect) {
         this.context = context;
         this.bluetoothDevice = bluetoothDevice;
         this.rxBleGattCallback = rxBleGattCallback;
-        this.rxBleConnection = rxBleConnection;
         this.autoConnect = autoConnect;
     }
 
     @Override
-    public Observable<RxBleConnection> asObservable() {
+    public Observable<BluetoothGatt> asObservable() {
         return super.asObservable()
                 .doOnUnsubscribe(() -> {
                     if (bluetoothGattSubscription != null) {
@@ -75,20 +62,10 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
         final Runnable onNextRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
 
-        rxBleGattCallback
-                .getOnConnectionStateChange()
-                .flatMap(rxBleConnectionState -> {
-
-                    if (rxBleConnectionState == DISCONNECTED || rxBleConnectionState == DISCONNECTING) {
-                        return error(new BleDisconnectedException());
-                    } else {
-                        return ObservableUtil.justOnNext(rxBleConnectionState);
-                    }
-                })
-                .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED)
+        getConnectedBluetoothGattObservable()
                 .subscribe(
-                        rxBleConnectionState -> {
-                            onNext(rxBleConnection);
+                        bluetoothGatt -> {
+                            onNext(bluetoothGatt);
                             onNextRunnable.run();
                         },
                         (throwable) -> {
@@ -105,6 +82,19 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
         final BluetoothGatt bluetoothGatt = connectGatt(bluetoothDevice, autoConnect, rxBleGattCallback.getBluetoothGattCallback());
         bluetoothGattBehaviorSubject.onNext(bluetoothGatt);
         onConnectCalledRunnable.run();
+    }
+
+    @NonNull
+    private Observable<BluetoothGatt> getConnectedBluetoothGattObservable() {
+        return Observable.combineLatest(
+                rxBleGattCallback
+                        .getOnConnectionStateChange()
+                        .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED), // waiting for connected state
+                getBluetoothGatt(), // using latest BluetoothGatt
+                (rxBleConnectionState, bluetoothGatt) -> bluetoothGatt
+        )
+                .mergeWith(rxBleGattCallback.disconnectedErrorObservable()) // if gatt will disconnect during connecting emit error
+                .first(); // using first
     }
 
     public Observable<BluetoothGatt> getBluetoothGatt() {
@@ -128,25 +118,25 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
          */
 
         try {
-            Log.i(TAG, "Trying to connectGatt using reflection.");
+            RxBleLog.v("Trying to connectGatt using reflection.");
             Object iBluetoothGatt = getIBluetoothGatt(getIBluetoothManager());
 
             if (iBluetoothGatt == null) {
-                Log.w(TAG, "Couldn't get iBluetoothGatt object");
+                RxBleLog.w("Couldn't get iBluetoothGatt object");
                 return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
             }
 
             BluetoothGatt bluetoothGatt = createBluetoothGatt(iBluetoothGatt, remoteDevice);
 
             if (bluetoothGatt == null) {
-                Log.w(TAG, "Couldn't create BluetoothGatt object");
+                RxBleLog.w("Couldn't create BluetoothGatt object");
                 return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
             }
 
             boolean connectedSuccessfully = connectUsingReflection(bluetoothGatt, bluetoothGattCallback, true);
 
             if (!connectedSuccessfully) {
-                Log.w(TAG, "Connection using reflection failed, closing gatt");
+                RxBleLog.w("Connection using reflection failed, closing gatt");
                 bluetoothGatt.close();
             }
 
@@ -158,13 +148,13 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
                 InstantiationException |
                 NoSuchFieldException exception) {
 
-            Log.w(TAG, "Error during reflection", exception);
+            RxBleLog.w(exception, "Error during reflection");
             return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
         }
     }
 
     private BluetoothGatt connectGattCompat(BluetoothGattCallback bluetoothGattCallback, BluetoothDevice remoteDevice, boolean autoConnect) {
-        Log.i(TAG, "Connecting without reflection");
+        RxBleLog.v("Connecting without reflection");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return remoteDevice.connectGatt(context, autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
@@ -175,7 +165,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
 
     private boolean connectUsingReflection(BluetoothGatt bluetoothGatt, BluetoothGattCallback bluetoothGattCallback, boolean autoConnect)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        Log.i(TAG, "Connecting using reflection");
+        RxBleLog.v("Connecting using reflection");
         setAutoConnectValue(bluetoothGatt, autoConnect);
         Method connectMethod = bluetoothGatt.getClass().getDeclaredMethod("connect", Boolean.class, BluetoothGattCallback.class);
         connectMethod.setAccessible(true);
@@ -187,7 +177,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<RxBleConnect
             throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor bluetoothGattConstructor = BluetoothGatt.class.getDeclaredConstructors()[0];
         bluetoothGattConstructor.setAccessible(true);
-        Log.i(TAG, "Found constructor with args count = " + bluetoothGattConstructor.getParameterTypes().length);
+        RxBleLog.v("Found constructor with args count = " + bluetoothGattConstructor.getParameterTypes().length);
 
         if (bluetoothGattConstructor.getParameterTypes().length == 4) {
             return (BluetoothGatt) (bluetoothGattConstructor.newInstance(context, iBluetoothGatt, remoteDevice, BluetoothDevice.TRANSPORT_LE));

@@ -1,13 +1,10 @@
 package com.polidea.rxandroidble.internal;
 
-import android.util.Log;
 import java.util.concurrent.Semaphore;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class RxBleRadioImpl implements RxBleRadio {
-
-    private static final String TAG = RxBleRadioImpl.class.getSimpleName();
 
     private OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
 
@@ -40,7 +37,7 @@ public class RxBleRadioImpl implements RxBleRadio {
                     semaphore.acquire();
                     log("FINISHED", rxBleRadioOperation);
                 } catch (InterruptedException e) {
-                    Log.e(getClass().getSimpleName(), "Error while processing RxBleRadioOperation queue", e); // FIXME: introduce Timber?
+                    RxBleLog.e(e, "Error while processing RxBleRadioOperation queue");
                 }
             }
         }).start();
@@ -58,6 +55,6 @@ public class RxBleRadioImpl implements RxBleRadio {
     }
 
     private void log(String prefix, RxBleRadioOperation rxBleRadioOperation) {
-        Log.d(TAG, prefix + " " + rxBleRadioOperation.getClass().getSimpleName() + "(" + System.identityHashCode(rxBleRadioOperation) + ")");
+        RxBleLog.d("%8s %s(%d)", prefix, rxBleRadioOperation.getClass().getSimpleName(), System.identityHashCode(rxBleRadioOperation));
     }
 }

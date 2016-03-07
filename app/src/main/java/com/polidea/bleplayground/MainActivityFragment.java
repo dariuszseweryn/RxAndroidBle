@@ -3,17 +3,20 @@ package com.polidea.bleplayground;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.polidea.rxandroidble.RxBleClientImpl;
+
+import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
 
 import java.util.UUID;
+
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -22,10 +25,16 @@ import rx.schedulers.Schedulers;
  */
 public class MainActivityFragment extends Fragment {
 
-    private final RxBleClientImpl rxBleClient;
+    private RxBleClient rxBleClient;
 
     public MainActivityFragment() {
-        rxBleClient = new RxBleClientImpl();
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        rxBleClient = RxBleClient.getInstance(context);
     }
 
     @Override

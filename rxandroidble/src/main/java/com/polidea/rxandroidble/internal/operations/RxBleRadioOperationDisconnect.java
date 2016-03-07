@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 
 import java.util.concurrent.TimeUnit;
