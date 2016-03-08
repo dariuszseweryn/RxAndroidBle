@@ -1,39 +1,28 @@
-package com.polidea.rxandroidble.internal
+package com.polidea.rxandroidble.internal.radio
 
-import com.polidea.rxandroidble.internal.radio.OperationPriorityFifoBlockingQueue
+import com.polidea.rxandroidble.MockOperation
+import com.polidea.rxandroidble.internal.RxBleRadioOperation
 import spock.lang.Specification
 import spock.lang.Unroll
 
 public class OperationPriorityFifoBlockingQueueTest extends Specification {
 
     def static LOW = RxBleRadioOperation.Priority.LOW
-
     def static NORMAL = RxBleRadioOperation.Priority.NORMAL
-
     def static HIGH = RxBleRadioOperation.Priority.HIGH
-
-    def static lowPriority0 = mockOperation(LOW)
-
-    def static lowPriority1 = mockOperation(LOW)
-
-    def static lowPriority2 = mockOperation(LOW)
-
-    def static normalPriority0 = mockOperation(NORMAL)
-
-    def static normalPriority1 = mockOperation(NORMAL)
-
-    def static normalPriority2 = mockOperation(NORMAL)
-
-    def static highPriority0 = mockOperation(HIGH)
-
-    def static highPriority1 = mockOperation(HIGH)
-
-    def static highPriority2 = mockOperation(HIGH)
-
-    def queue
+    def static lowPriority0 = MockOperation.mockOperation(LOW)
+    def static lowPriority1 = MockOperation.mockOperation(LOW)
+    def static lowPriority2 = MockOperation.mockOperation(LOW)
+    def static normalPriority0 = MockOperation.mockOperation(NORMAL)
+    def static normalPriority1 = MockOperation.mockOperation(NORMAL)
+    def static normalPriority2 = MockOperation.mockOperation(NORMAL)
+    def static highPriority0 = MockOperation.mockOperation(HIGH)
+    def static highPriority1 = MockOperation.mockOperation(HIGH)
+    def static highPriority2 = MockOperation.mockOperation(HIGH)
+    OperationPriorityFifoBlockingQueue objectUnderTest
 
     def setup() {
-        queue = new OperationPriorityFifoBlockingQueue()
+        objectUnderTest = new OperationPriorityFifoBlockingQueue()
     }
 
     @Unroll
@@ -41,20 +30,11 @@ public class OperationPriorityFifoBlockingQueueTest extends Specification {
 
         given:
         for (RxBleRadioOperation operation : entryOrder) {
-            queue.add(operation)
+            objectUnderTest.add(operation)
         }
 
-        when:
-        def operationsQueueList = new ArrayList<RxBleRadioOperation>()
-        while (!queue.isEmpty()) {
-            operationsQueueList.add(queue.take())
-        }
-
-        then:
-        for (int i = 0; i < entryOrder.size(); i++) {
-            def operation = entryOrder.get(i)
-            assert properOrder.indexOf(operation) == operationsQueueList.indexOf(operation)
-        }
+        expect:
+        dumpQueue() == properOrder
 
         where:
         id | entryOrder                                                                                  | properOrder
@@ -74,17 +54,36 @@ public class OperationPriorityFifoBlockingQueueTest extends Specification {
         13 | [lowPriority0, normalPriority0, lowPriority1, lowPriority2, highPriority0, normalPriority1] | [highPriority0, normalPriority0, normalPriority1, lowPriority0, lowPriority1, lowPriority2]
     }
 
-    private static def mockOperation(RxBleRadioOperation.Priority priority) {
-        return new RxBleRadioOperation<Void>() {
-
-            protected RxBleRadioOperation.Priority definedPriority() {
-                return priority
-            }
-
-            @Override
-            void run() {
-
-            }
+    @Unroll
+    def "should not return item if it was removed"() {
+        given:
+        addedItems.each {
+            objectUnderTest.add(it)
         }
+
+        when:
+        removedItems.each {
+            objectUnderTest.remove(it)
+        }
+
+        then:
+        dumpQueue() == expectedItems
+
+        where:
+        addedItems                         | removedItems                       | expectedItems
+        [normalPriority0]                  | [normalPriority0]                  | []
+        [normalPriority0]                  | []                                 | [normalPriority0]
+        [normalPriority0, normalPriority1] | [normalPriority0]                  | [normalPriority1]
+        [normalPriority0, normalPriority1] | [normalPriority1, normalPriority0] | []
+    }
+
+    private List<RxBleRadioOperation> dumpQueue() {
+        def operationsQueueList = new ArrayList<RxBleRadioOperation>()
+
+        while (!objectUnderTest.isEmpty()) {
+            operationsQueueList.add(objectUnderTest.take())
+        }
+
+        return operationsQueueList
     }
 }
