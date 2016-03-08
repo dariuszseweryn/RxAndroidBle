@@ -1,4 +1,4 @@
-RxAndroidBle
+RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle)
 ============
 
 RxJava backed Bluetooth Low Energy support for Android. The library does for you:
@@ -8,6 +8,10 @@ RxJava backed Bluetooth Low Energy support for Android. The library does for you
  * Connection error handling
  
 This is a documentation sneak peak, stay tuned for more.
+
+Coverage
+-------
+![codecov.io](https://codecov.io/github/Polidea/RxAndroidBle/branch.svg?branch=master)
 
 Disclaimer
 -------
@@ -22,7 +26,7 @@ Maven
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.0.1</version>
   <type>aar</type>
 </dependency>
 ```
@@ -30,7 +34,7 @@ Maven
 Gradle
 
 ```java
-compile "com.polidea.rxandroidble:rxandroidble:1.0.0-SNAPSHOT"
+compile "com.polidea.rxandroidble:rxandroidble:0.0.1"
 ```
 Authors
 -------

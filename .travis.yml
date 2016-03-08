@@ -12,7 +12,11 @@ android:
 jdk:
   - oraclejdk8
 
+before_script:
+  - pip install --user codecov
+
 after_success:
+  - codecov
   - .buildscript/deploy_snapshot.sh
 
 notifications:
@@ -25,4 +29,4 @@ cache:
   - $HOME/.m2
 
 script:
-  - ./gradlew assembleDebug
+  - ./gradlew assembleRelease test

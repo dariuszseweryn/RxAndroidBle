@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'groovyx.grooid.groovy-android'
 apply plugin: 'me.tatarka.retrolambda'
+apply from: rootProject.file('gradle/jacoco.gradle')
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
@@ -15,7 +16,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
+            testCoverageEnabled = true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -26,6 +31,13 @@ android {
     }
     testOptions {
         unitTests.returnDefaultValues = true
+        unitTests.all {
+            testLogging {
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen {false}
+                showStandardStreams = true
+            }
+        }
     }
     lintOptions {
         abortOnError false
