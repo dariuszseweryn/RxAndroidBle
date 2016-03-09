@@ -5,7 +5,6 @@ android:
     - tools
     - build-tools-23.0.2
     - android-23
-    - extra-android-m2repository
   licenses:
     - android-sdk-license-5be876d5
 
@@ -13,7 +12,6 @@ jdk:
   - oraclejdk8
 
 before_script:
-  - android list sdk --no-ui --all --extended
   - pip install --user codecov
 
 after_success:
@@ -25,9 +23,14 @@ notifications:
 
 sudo: false
 
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
 
 script:
   - ./gradlew assembleRelease test
