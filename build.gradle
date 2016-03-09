@@ -18,6 +18,7 @@ buildscript {
 
 allprojects {
     apply plugin: 'com.github.ben-manes.versions'
+    
     repositories {
         jcenter()
     }
