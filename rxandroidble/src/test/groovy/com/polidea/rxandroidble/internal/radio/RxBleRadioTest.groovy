@@ -147,7 +147,7 @@ class RxBleRadioTest extends Specification {
     }
 
     public waitForThreadsToCompleteWork() {
-        Thread.sleep(100) // Nasty :<
+        Thread.sleep(200) // Nasty :<
         true
     }
 
