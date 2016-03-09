@@ -62,7 +62,7 @@ class RxBleRadioTest extends Specification {
 
         and:
         semaphore.release()
-        waitForOperationsToFinishRunning(firstOperation)
+        waitForOperationsToFinishRunning(secondOperation)
         secondOperation.wasRan()
     }
 
