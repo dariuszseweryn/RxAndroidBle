@@ -56,6 +56,7 @@ public class RxBleGattCallback {
             .flatMap(rxBleConnectionState -> {
                 if (rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED ||
                         rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTING) {
+                    bluetoothGattBehaviorSubject.onCompleted();
                     return Observable.error(new BleDisconnectedException());
                 } else {
                     return Observable.empty();
@@ -266,6 +267,7 @@ public class RxBleGattCallback {
 
         if (isError) {
             statusErrorSubject.onError(new BleGattException(status, operationType));
+            bluetoothGattBehaviorSubject.onCompleted();
         }
 
         return isError;

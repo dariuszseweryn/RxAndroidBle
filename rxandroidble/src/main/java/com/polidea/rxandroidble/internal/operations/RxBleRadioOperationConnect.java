@@ -62,23 +62,24 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
         final Runnable onNextRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
 
+        //noinspection Convert2MethodRef
         getConnectedBluetoothGattObservable()
                 .subscribe(
                         bluetoothGatt -> {
                             onNext(bluetoothGatt);
                             onNextRunnable.run();
                         },
-                        (throwable) -> {
-                            onError(throwable);
-                            bluetoothGattBehaviorSubject.onCompleted();
-                        },
-                        () -> {
-                            onCompleted();
-                            bluetoothGattBehaviorSubject.onCompleted();
-                        }
+                        (throwable) -> onError(throwable),
+                        () -> onCompleted()
                 );
 
-        bluetoothGattSubscription = rxBleGattCallback.getBluetoothGatt().subscribe(bluetoothGattBehaviorSubject::onNext);
+        bluetoothGattSubscription = rxBleGattCallback.getBluetoothGatt()
+                .subscribe(
+                        bluetoothGattBehaviorSubject::onNext,
+                        ignored -> bluetoothGattBehaviorSubject.onCompleted(),
+                        bluetoothGattBehaviorSubject::onCompleted
+                );
+
         final BluetoothGatt bluetoothGatt = connectGatt(bluetoothDevice, autoConnect, rxBleGattCallback.getBluetoothGattCallback());
         bluetoothGattBehaviorSubject.onNext(bluetoothGatt);
         onConnectCalledRunnable.run();
