@@ -24,6 +24,10 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
         super(null)
     }
 
+    MockRxBleAdapterWrapper(BluetoothAdapter bluetoothAdapter) {
+        super(bluetoothAdapter)
+    }
+
     def addScanResult(BluetoothDevice bluetoothDevice, int rssi, byte[] scanResult) {
         scanDataList.add(new ScanData(bluetoothDevice, rssi, scanResult))
     }

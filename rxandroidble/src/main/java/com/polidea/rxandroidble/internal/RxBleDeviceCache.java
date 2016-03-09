@@ -25,9 +25,9 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
         private final DeviceWeakReference deviceWeakReference;
 
-        private CacheEntry(String string, RxBleDevice device) {
+        private CacheEntry(String string, DeviceWeakReference deviceWeakReference) {
             this.string = string;
-            this.deviceWeakReference = new DeviceWeakReference(device);
+            this.deviceWeakReference = deviceWeakReference;
         }
 
         @Override
@@ -68,10 +68,15 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
         }
     }
 
-    private static class DeviceWeakReference extends WeakReference<RxBleDevice> {
+    static class DeviceWeakReference extends WeakReference<RxBleDevice> {
 
-        public DeviceWeakReference(RxBleDevice r) {
-            super(r);
+        public interface Provider {
+
+            DeviceWeakReference provide(RxBleDevice rxBleDevice);
+        }
+
+        public DeviceWeakReference(RxBleDevice device) {
+            super(device);
         }
 
         @SuppressWarnings("unused")
@@ -101,6 +106,15 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
     }
 
     private final HashMap<String, DeviceWeakReference> cache = new HashMap<>();
+    private final DeviceWeakReference.Provider deviceReferenceProvider;
+
+    public RxBleDeviceCache() {
+        this(DeviceWeakReference::new);
+    }
+
+    RxBleDeviceCache(DeviceWeakReference.Provider provider) {
+        deviceReferenceProvider = provider;
+    }
 
     @Override
     public void clear() {
@@ -109,7 +123,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     @Override
     public boolean containsKey(Object key) {
-        return cache.containsKey(key);
+        return cache.containsKey(key) && get(key) != null;
     }
 
     @Override
@@ -129,7 +143,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
                 .filter(stringDeviceWeakReferenceEntry -> !stringDeviceWeakReferenceEntry.getValue().isEmpty())
                 .map(stringDeviceWeakReferenceEntry -> new CacheEntry(
                         stringDeviceWeakReferenceEntry.getKey(),
-                        stringDeviceWeakReferenceEntry.getValue().get()
+                        deviceReferenceProvider.provide(stringDeviceWeakReferenceEntry.getValue().get())
                 ))
                 .collect((Func0<HashSet<Entry<String, RxBleDevice>>>) HashSet::new, HashSet::add)
                 .toBlocking().first();
@@ -144,6 +158,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     @Override
     public boolean isEmpty() {
+        evictEmptyReferences();
         return cache.isEmpty();
     }
 
@@ -154,7 +169,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     @Override
     public RxBleDevice put(String key, RxBleDevice value) {
-        cache.put(key, new DeviceWeakReference(value));
+        cache.put(key, deviceReferenceProvider.provide(value));
         evictEmptyReferences();
         return value;
     }
@@ -175,6 +190,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     @Override
     public int size() {
+        evictEmptyReferences();
         return cache.size();
     }
 

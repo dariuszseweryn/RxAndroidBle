@@ -12,12 +12,12 @@ public class RxBleAdapterWrapper {
         this.bluetoothAdapter = bluetoothAdapter;
     }
 
-    public boolean hasBluetoothAdapter() {
-        return bluetoothAdapter != null;
-    }
-
     public BluetoothDevice getRemoteDevice(String macAddress) {
         return bluetoothAdapter.getRemoteDevice(macAddress);
+    }
+
+    public boolean hasBluetoothAdapter() {
+        return bluetoothAdapter != null;
     }
 
     public boolean startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
