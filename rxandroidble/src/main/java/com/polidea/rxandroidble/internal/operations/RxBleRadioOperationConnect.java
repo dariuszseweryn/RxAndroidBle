@@ -74,6 +74,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                 );
 
         bluetoothGattSubscription = rxBleGattCallback.getBluetoothGatt()
+                .doOnUnsubscribe(bluetoothGattBehaviorSubject::onCompleted)
                 .subscribe(
                         bluetoothGattBehaviorSubject::onNext,
                         ignored -> bluetoothGattBehaviorSubject.onCompleted(),
