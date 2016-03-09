@@ -121,17 +121,17 @@ public class RxBleRadioOperationConnectTest extends Specification {
         getGattSubscriber.assertCompleted()
     }
 
-    def "getBluetoothGatt() should complete when error comes"() {
-
-        given:
-        objectUnderTest.run()
-
-        when:
-        emitConnectionError(new Throwable("test"))
-
-        then:
-        getGattSubscriber.assertCompleted()
-    }
+//    def "getBluetoothGatt() should complete when error comes"() {
+//
+//        given:
+//        objectUnderTest.run()
+//
+//        when:
+//        emitConnectionError(new Throwable("test"))
+//
+//        then:
+//        getGattSubscriber.assertCompleted()
+//    }
 
     def "should release Semaphore after successful connection"() {
 
