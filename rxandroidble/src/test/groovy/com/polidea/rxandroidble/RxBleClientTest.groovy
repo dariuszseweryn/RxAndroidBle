@@ -244,6 +244,18 @@ class RxBleClientTest extends Specification {
 
     }
 
+    def "should emit result with all parameters"() {
+        given:
+        TestSubscriber subscriber = new TestSubscriber<>()
+        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 10, scanRecord: [1, 2, 3] as byte[]
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(subscriber)
+
+        then:
+        subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
+    }
+
     def bluetoothDeviceDiscovered(Map scanData) {
         def mock = Mock(BluetoothDevice)
         mock.getAddress() >> scanData['deviceMac']
