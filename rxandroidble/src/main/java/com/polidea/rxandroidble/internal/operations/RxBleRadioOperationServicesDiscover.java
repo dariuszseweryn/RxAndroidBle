@@ -1,11 +1,13 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
+
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.exceptions.BleGattException;
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+
 import rx.Observable;
 import rx.Subscription;
 
@@ -34,7 +36,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
                     final boolean success = bluetoothGatt.discoverServices();
                     if (!success) {
                         subscription.unsubscribe();
-                        subscriber.onError(new BleGattException(BleGattOperationType.SERVICE_DISCOVERY));
+                        subscriber.onError(new BleGattCannotStartException(BleGattOperationType.SERVICE_DISCOVERY));
                     }
                 }
         )

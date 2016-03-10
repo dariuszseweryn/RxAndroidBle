@@ -1,5 +1,4 @@
 package com.polidea.rxandroidble.internal.connection
-
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
@@ -7,7 +6,8 @@ import android.support.v4.util.Pair
 import com.polidea.rxandroidble.FlatRxBleRadio
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDeviceServices
-import com.polidea.rxandroidble.exceptions.BleGattException
+import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import rx.Observable
 import rx.observers.TestSubscriber
@@ -15,8 +15,6 @@ import rx.subjects.BehaviorSubject
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-import static com.polidea.rxandroidble.exceptions.BleGattOperationType.CHARACTERISTIC_READ
-import static com.polidea.rxandroidble.exceptions.BleGattOperationType.CHARACTERISTIC_WRITE
 import static java.util.Collections.emptyList
 import static rx.Observable.just
 
@@ -61,7 +59,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.discoverServices().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleGattException)
+        testSubscriber.assertError(BleGattCannotStartException)
         testSubscriber.assertErrorClosure {
             it.bleGattOperationType == BleGattOperationType.SERVICE_DISCOVERY
         }
@@ -123,7 +121,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.readCharacteristic(uuid).subscribe(testSubscriber)
 
         then:
-        assertCharacteristicNotFoundDuringOperation(CHARACTERISTIC_READ)
+        testSubscriber.assertError(BleCharacteristicNotFoundException)
     }
 
     def "should emit empty observable if characteristic was not found during read operation"() {
@@ -138,7 +136,8 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.readCharacteristic(uuid).subscribe(testSubscriber)
 
         then:
-        assertCharacteristicNotFoundDuringOperation(CHARACTERISTIC_READ)
+        testSubscriber.assertError(BleCharacteristicNotFoundException)
+        testSubscriber.assertErrorClosure {it.charactersisticUUID == uuid}
     }
 
     def "should read first found characteristic with matching UUID"() {
@@ -174,7 +173,8 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.writeCharacteristic(uuid, dataToWrite).subscribe(testSubscriber)
 
         then:
-        assertCharacteristicNotFoundDuringOperation(CHARACTERISTIC_WRITE)
+        testSubscriber.assertError(BleCharacteristicNotFoundException)
+        testSubscriber.assertErrorClosure {it.charactersisticUUID == uuid}
     }
 
     def "should emit empty observable if characteristic was not found during write operation"() {
@@ -190,13 +190,43 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.writeCharacteristic(uuid, dataToWrite).subscribe(testSubscriber)
 
         then:
-        assertCharacteristicNotFoundDuringOperation(CHARACTERISTIC_WRITE)
+        testSubscriber.assertError(BleCharacteristicNotFoundException)
+        testSubscriber.assertErrorClosure {it.charactersisticUUID == uuid}
     }
 
-    public assertCharacteristicNotFoundDuringOperation(operationType) {
-        testSubscriber.assertError(BleGattException)
-        testSubscriber.assertErrorClosure { BleGattException exception ->
-            exception.bleGattOperationType == operationType && exception.status == BleGattException.CHARACTERISTIC_NOT_FOUND
+    def "should emit error if failed to start retrieving rssi"() {
+        given:
+        callback.getOnRssiRead() >> PublishSubject.create()
+        bluetoothGattMock.readRemoteRssi() >> false
+
+        when:
+        objectUnderTest.readRssi().subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError(BleGattCannotStartException)
+        testSubscriber.assertErrorClosure {
+            it.bleGattOperationType == BleGattOperationType.READ_RSSI
+        }
+    }
+
+    def "should emit retrieved rssi"() {
+        given:
+        def expectedRssiValue = 5
+        shouldGattReturnRssi { it.onNext(expectedRssiValue) }
+
+        when:
+        objectUnderTest.readRssi().subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertValue(expectedRssiValue)
+    }
+
+    def shouldGattReturnRssi(Closure<PublishSubject<Integer>> closure) {
+        def rssiSubject = PublishSubject.create()
+        callback.getOnRssiRead() >> rssiSubject
+        bluetoothGattMock.readRemoteRssi() >> {
+            closure?.call(rssiSubject)
+            true
         }
     }
 
