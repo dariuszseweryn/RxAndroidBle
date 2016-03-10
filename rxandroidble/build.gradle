@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'groovyx.grooid.groovy-android'
 apply plugin: 'me.tatarka.retrolambda'
-apply from: rootProject.file('gradle/jacoco.gradle')
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
@@ -14,13 +13,8 @@ android {
         versionCode 1
         versionName VERSION_NAME
     }
-
     buildTypes {
-        debug {
-            testCoverageEnabled true
-        }
         release {
-            testCoverageEnabled = true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
