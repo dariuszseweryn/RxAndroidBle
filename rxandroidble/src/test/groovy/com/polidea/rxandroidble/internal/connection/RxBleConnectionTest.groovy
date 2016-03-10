@@ -66,9 +66,9 @@ class RxBleConnectionTest extends Specification {
         given:
         def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
         shouldSuccessfullyStartDiscovery()
-        objectUnderTest.discoverServices().subscribe()
 
         when:
+        objectUnderTest.discoverServices().subscribe() // <-- it must be here hence mocks are not configured yet in given block.
         objectUnderTest.discoverServices().subscribe(testSubscriber)
 
         then:
