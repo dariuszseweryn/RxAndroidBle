@@ -6,10 +6,12 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
+
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
-import com.polidea.rxandroidble.internal.util.ObservableUtil;
+import com.polidea.rxandroidble.exceptions.BleGattException;
+import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
@@ -17,11 +19,18 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescripto
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
+import com.polidea.rxandroidble.internal.util.ObservableUtil;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+
 import rx.Observable;
+
+import static com.polidea.rxandroidble.exceptions.BleGattException.*;
+import static rx.Observable.error;
+import static rx.Observable.just;
 
 public class RxBleConnectionImpl implements RxBleConnection {
 
@@ -59,7 +68,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
             final List<BluetoothGattService> services = bluetoothGatt.getServices();
             final Observable<RxBleDeviceServices> newObservable;
             if (services.size() > 0) { // checking if bluetoothGatt has already discovered services (internal cache?)
-                newObservable = Observable.just(new RxBleDeviceServices(services));
+                newObservable = just(new RxBleDeviceServices(services));
             } else { // performing actual discovery
                 newObservable = rxBleRadio.queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt)).cache(1);
             }
@@ -135,6 +144,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
+                .switchIfEmpty(error(new BleGattException(CHARACTERISTIC_NOT_FOUND, BleGattOperationType.CHARACTERISTIC_READ)))
                 .flatMap(bluetoothGattCharacteristic -> {
                     final RxBleRadioOperationCharacteristicRead operationCharacteristicRead =
                             new RxBleRadioOperationCharacteristicRead(
@@ -149,6 +159,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
         return getCharacteristic(characteristicUuid)
+                .switchIfEmpty(error(new BleGattException(CHARACTERISTIC_NOT_FOUND, BleGattOperationType.CHARACTERISTIC_WRITE)))
                 .flatMap(bluetoothGattCharacteristic -> {
                     final RxBleRadioOperationCharacteristicWrite operationCharacteristicWrite = new RxBleRadioOperationCharacteristicWrite(
                             gattCallback,

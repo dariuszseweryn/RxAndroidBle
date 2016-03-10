@@ -27,11 +27,11 @@ public class RxBleDeviceServices {
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
-        // TODO: [PU] 29.01.2016 Theoretically it may happen that characterisitic UUID in duplicated in another service.
+        // TODO: [PU] 29.01.2016 Theoretically it may happen that characteristic UUID in duplicated in another service.
         return Observable.from(bluetoothGattServices)
                 .map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
                 .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
-                .first();
+                .take(1); // Services may be empty
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID serviceUuid, UUID characteristicUuid) {

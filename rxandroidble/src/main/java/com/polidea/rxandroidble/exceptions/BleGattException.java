@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.exceptions;
 public class BleGattException extends BleException {
 
     public static final int UNKNOWN_STATUS = -1;
+    public static final int CHARACTERISTIC_NOT_FOUND = 1;
     private final int status;
 
     private final BleGattOperationType bleGattOperationType;
