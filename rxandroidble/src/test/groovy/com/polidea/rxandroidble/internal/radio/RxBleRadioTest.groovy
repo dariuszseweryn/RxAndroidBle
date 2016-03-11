@@ -141,7 +141,7 @@ class RxBleRadioTest extends Specification {
         testSubscriber.assertError(Throwable)
 
         and:
-        testSubscriber.assertErrorClosure {
+        testSubscriber.assertError {
             it.message == "Some throwable"
         }
     }

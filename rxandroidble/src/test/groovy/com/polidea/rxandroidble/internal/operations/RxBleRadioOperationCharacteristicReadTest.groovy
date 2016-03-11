@@ -64,7 +64,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         testSubscriber.assertError BleGattCannotStartException
 
         and:
-        testSubscriber.assertErrorClosure {
+        testSubscriber.assertError {
             it.getBleGattOperationType() == BleGattOperationType.CHARACTERISTIC_READ
         }
     }

@@ -150,7 +150,7 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertErrorClosure {
+        firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLE_CANNOT_START
         }
     }
@@ -164,7 +164,7 @@ class RxBleClientTest extends Specification {
         adapterStateObservable.disableBluetooth()
 
         then:
-        firstSubscriber.assertErrorClosure {
+        firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
         }
     }
@@ -178,7 +178,7 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertErrorClosure {
+        firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_NOT_AVAILABLE
         }
     }

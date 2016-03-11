@@ -15,7 +15,7 @@ class TestSubscriberExtension {
         subscriber.onNextEvents.count(closure) == 1
     }
 
-    static boolean assertErrorClosure(final TestSubscriber subscriber, Closure<Boolean> closure) {
+    static boolean assertError(final TestSubscriber subscriber, Closure<Boolean> closure) {
         subscriber.onErrorEvents?.any closure
     }
 
@@ -42,5 +42,9 @@ class TestSubscriberExtension {
         assertAnyOnNext(subscriber, {
             it.bluetoothGattServices == services
         })
+    }
+
+    static public <T> void assertValues(final TestSubscriber<T> subscriber, List<T> values) {
+        subscriber.assertReceivedOnNext(values);
     }
 }

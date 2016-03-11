@@ -29,12 +29,13 @@ import rx.Observable;
 
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+import static rx.Observable.create;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class RxBleConnectionImpl implements RxBleConnection {
 
-    private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     private final RxBleRadio rxBleRadio;
     private final RxBleGattCallback gattCallback;
     private final BluetoothGatt bluetoothGatt;
@@ -90,18 +91,18 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
             final Observable<Observable<byte[]>> newObservable = createCharacteristicNotificationObservable(characteristicUuid)
                     .doOnUnsubscribe(() -> dismissCharacteristicNotification(characteristicUuid))
-                    .cache(1)
-                    .share();
+                    .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
+                    .replay(1)
+                    .refCount();
             notificationObservableMap.put(characteristicUuid, newObservable);
             return newObservable;
         }
     }
 
-    private Observable<Observable<byte[]>> createCharacteristicNotificationObservable(UUID characteristicUuid) {
+    private Observable<byte[]> createCharacteristicNotificationObservable(UUID characteristicUuid) {
         return getClientConfigurationDescriptor(characteristicUuid)
                 .flatMap(descriptor -> setupCharacteristicNotification(descriptor, true))
-                .flatMap(ObservableUtil::justOnNext)
-                .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid));
+                .flatMap(ObservableUtil::justOnNext);
     }
 
     @NonNull
@@ -129,17 +130,34 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @NonNull
     private Observable<byte[]> setupCharacteristicNotification(BluetoothGattDescriptor bluetoothGattDescriptor, boolean enabled) {
-        final BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattDescriptor.getCharacteristic();
-        return bluetoothGatt.setCharacteristicNotification(bluetoothGattCharacteristic, enabled)
-                ? writeDescriptor(bluetoothGattDescriptor, enabled ? ENABLE_NOTIFICATION_VALUE : DISABLE_NOTIFICATION_VALUE)
-                : Observable.error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic));
+        final BluetoothGattCharacteristic characteristic = bluetoothGattDescriptor.getCharacteristic();
+
+        if (bluetoothGatt.setCharacteristicNotification(characteristic, enabled)) {
+            return writeDescriptor(bluetoothGattDescriptor, enabled ? ENABLE_NOTIFICATION_VALUE : DISABLE_NOTIFICATION_VALUE)
+                    .onErrorResumeNext(throwable -> error(new BleCannotSetCharacteristicNotificationException(characteristic)));
+        } else {
+            return error(new BleCannotSetCharacteristicNotificationException(characteristic));
+        }
     }
 
     @NonNull
     private Observable<BluetoothGattDescriptor> getClientConfigurationDescriptor(UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
                 .switchIfEmpty(error(new BleCharacteristicNotFoundException(characteristicUuid)))
-                .map(bluetoothGattCharacteristic -> bluetoothGattCharacteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID));
+                .flatMap(this::getClientCharacteristicConfig);
+    }
+
+    private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(BluetoothGattCharacteristic characteristic) {
+        return create(subscriber -> {
+            final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
+
+            if (descriptor == null) {
+                subscriber.onError(new BleCannotSetCharacteristicNotificationException(characteristic));
+            } else {
+                subscriber.onNext(descriptor);
+                subscriber.onCompleted();
+            }
+        });
     }
 
     @Override
