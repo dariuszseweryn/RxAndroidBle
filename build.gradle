@@ -10,7 +10,6 @@ buildscript {
         classpath 'me.tatarka:gradle-retrolambda:3.2.5'
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
         classpath 'org.codehaus.groovy:gradle-groovy-android-plugin:0.3.8'
-        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
     }
 
     configurations.classpath.exclude group: 'com.android.tools.external.lombok'
