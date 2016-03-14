@@ -38,9 +38,9 @@ android {
     }
 }
 dependencies {
+    compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.support
     compile rootProject.ext.libs.support_annotations
-    compile rootProject.ext.libs.rxjava
 
     // Test dependencies
     testCompile 'junit:junit:4.12'
@@ -49,4 +49,5 @@ dependencies {
     testCompile 'cglib:cglib-nodep:3.2.1'
     testCompile 'org.objenesis:objenesis:2.2'
     testCompile 'org.robospock:robospock:1.0.0'
+    testCompile rootProject.ext.libs.support
 }

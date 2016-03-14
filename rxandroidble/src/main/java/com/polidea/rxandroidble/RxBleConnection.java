@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import java.util.UUID;
 
@@ -37,9 +38,13 @@ public interface RxBleConnection {
 
     Observable<Observable<byte[]>> getNotification(UUID characteristicUuid);
 
+    Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid);
+
     Observable<byte[]> readCharacteristic(UUID characteristicUuid);
 
     Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data);
+
+    Observable<BluetoothGattCharacteristic> writeCharacteristic(BluetoothGattCharacteristic bluetoothGattCharacteristic);
 
     Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid);
 

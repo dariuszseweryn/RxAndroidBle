@@ -49,11 +49,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<RxBleConnectionState> getConnectionState() {
-        return gattCallback.getOnConnectionStateChange();
-    }
-
-    @Override
     public Observable<RxBleDeviceServices> discoverServices() {
         synchronized (discoveredServicesCache) {
             // checking if there are already cached services
@@ -75,9 +70,15 @@ public class RxBleConnectionImpl implements RxBleConnection {
         }
     }
 
-    private Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
+    @Override
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
+    }
+
+    @Override
+    public Observable<RxBleConnectionState> getConnectionState() {
+        return gattCallback.getOnConnectionStateChange();
     }
 
     @Override
@@ -105,7 +106,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(ObservableUtil::justOnNext);
     }
 
-    @NonNull
     private void dismissCharacteristicNotification(UUID characteristicUuid) {
 
         synchronized (notificationObservableMap) {
@@ -179,16 +179,18 @@ public class RxBleConnectionImpl implements RxBleConnection {
     public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .switchIfEmpty(error(new BleCharacteristicNotFoundException(characteristicUuid)))
-                .flatMap(bluetoothGattCharacteristic -> {
-                    final RxBleRadioOperationCharacteristicWrite operationCharacteristicWrite = new RxBleRadioOperationCharacteristicWrite(
-                            gattCallback,
-                            bluetoothGatt,
-                            bluetoothGattCharacteristic,
-                            data
-                    );
+                .doOnNext(characteristic -> characteristic.setValue(data))
+                .flatMap(this::writeCharacteristic)
+                .map(BluetoothGattCharacteristic::getValue);
+    }
 
-                    return rxBleRadio.queue(operationCharacteristicWrite);
-                });
+    @Override
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
+                gattCallback,
+                bluetoothGatt,
+                bluetoothGattCharacteristic
+        ));
     }
 
     @Override
