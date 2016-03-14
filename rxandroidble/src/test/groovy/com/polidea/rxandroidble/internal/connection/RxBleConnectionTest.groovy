@@ -25,8 +25,8 @@ import static rx.Observable.just
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 class RxBleConnectionTest extends GradleRoboSpecification {
-    public static final CHARACTERISTIC_UUID = UUID.randomUUID()
-    public static final OTHER_UUID = UUID.randomUUID()
+    public static final CHARACTERISTIC_UUID = UUID.fromString("f301f518-5414-471c-8a7b-2ef6d1b7373d")
+    public static final OTHER_UUID = UUID.fromString("ab906173-5daa-4d6b-8604-c2be69122d57")
     public static final byte[] EMPTY_DATA = [] as byte[]
     public static final byte[] NOT_EMPTY_DATA = [1, 2, 3] as byte[]
     public static final byte[] OTHER_DATA = [2, 2, 3] as byte[]
@@ -151,21 +151,19 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
     def "should read first found characteristic with matching UUID"() {
         given:
-        def firstCharacteristicUUID = UUID.randomUUID()
-        def secondCharacteristicUUID = UUID.randomUUID()
         def firstCharacteristicValue = [1, 2, 3] as byte[]
         def secondCharacteristicValue = [3, 4, 5] as byte[]
         def service = Mock BluetoothGattService
-        shouldServiceContainCharacteristic(service, firstCharacteristicUUID, firstCharacteristicValue)
-        shouldServiceContainCharacteristic(service, secondCharacteristicUUID, secondCharacteristicValue)
+        shouldServiceContainCharacteristic(service, CHARACTERISTIC_UUID, firstCharacteristicValue)
+        shouldServiceContainCharacteristic(service, OTHER_UUID, secondCharacteristicValue)
         shouldGattCallbackReturnServicesOnDiscovery([service])
         shouldGattContainServices([service])
         shouldGattCallbackReturnDataOnRead(
-                [uuid: secondCharacteristicUUID, value: secondCharacteristicValue],
-                [uuid: firstCharacteristicUUID, value: firstCharacteristicValue])
+                [uuid: OTHER_UUID, value: secondCharacteristicValue],
+                [uuid: CHARACTERISTIC_UUID, value: firstCharacteristicValue])
 
         when:
-        objectUnderTest.readCharacteristic(firstCharacteristicUUID).subscribe(testSubscriber)
+        objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue(firstCharacteristicValue)
