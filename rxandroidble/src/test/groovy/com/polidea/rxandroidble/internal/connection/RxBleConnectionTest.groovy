@@ -1,4 +1,5 @@
 package com.polidea.rxandroidble.internal.connection
+
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
@@ -12,7 +13,6 @@ import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.*
 import org.robolectric.annotation.Config
 import org.robospock.GradleRoboSpecification
-import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.BehaviorSubject
 import rx.subjects.PublishSubject
@@ -122,7 +122,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         1 * bluetoothGattMock.discoverServices() >> true
     }
 
-    def "should emit empty there are no services during read operation"() {
+    def "should emit BleCharacteristicNotFoundException if there are no services during read operation"() {
         given:
         shouldGattCallbackReturnServicesOnDiscovery([])
         shouldGattContainNoServices()
@@ -134,7 +134,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertError(BleCharacteristicNotFoundException)
     }
 
-    def "should emit empty observable if characteristic was not found during read operation"() {
+    def "should emit BleCharacteristicNotFoundException if characteristic was not found during read operation"() {
         given:
         def service = Mock BluetoothGattService
         shouldGattCallbackReturnServicesOnDiscovery([service])
@@ -171,7 +171,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertValue(firstCharacteristicValue)
     }
 
-    def "should emit empty there are no services during write operation"() {
+    def "should emit BleCharacteristicNotFoundException if there are no services during write operation"() {
         given:
         def dataToWrite = [1, 2, 3] as byte[]
         shouldGattCallbackReturnServicesOnDiscovery([])
@@ -185,7 +185,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
-    def "should emit empty observable if characteristic was not found during write operation"() {
+    def "should emit BleCharacteristicNotFoundException if observable if characteristic was not found during write operation"() {
         given:
         def dataToWrite = [1, 2, 3] as byte[]
         shouldGattContainServiceWithCharacteristic(null, CHARACTERISTIC_UUID)
@@ -427,14 +427,13 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         service
     }
 
-    public shouldReturnStartingStatusAndEmitRssiValueThroughCallback(Closure<PublishSubject<Integer>> closure) {
+    public shouldReturnStartingStatusAndEmitRssiValueThroughCallback(Closure<Boolean> closure) {
         def rssiSubject = PublishSubject.create()
         callback.getOnRssiRead() >> rssiSubject
         bluetoothGattMock.readRemoteRssi() >> { closure?.call(rssiSubject) }
     }
 
-    public shouldReturnStartingStatusAndEmitDescriptorWriteCallback(BluetoothGattDescriptor descriptor,
-                                                                    Closure<PublishSubject<Pair<BluetoothGattDescriptor, byte[]>>> closure) {
+    public shouldReturnStartingStatusAndEmitDescriptorWriteCallback(BluetoothGattDescriptor descriptor, Closure<Boolean> closure) {
         def descriptorSubject = PublishSubject.create()
         callback.getOnDescriptorWrite() >> descriptorSubject
         bluetoothGattMock.writeDescriptor(descriptor) >> { closure?.call(descriptorSubject) }
@@ -445,9 +444,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     }
 
     public shouldGattCallbackReturnDataOnRead(Map... parameters) {
-        callback.getOnCharacteristicRead() >> {
-            Observable.from(parameters.collect { Pair.create it['uuid'], it['value'] })
-        }
+        callback.getOnCharacteristicRead() >> { from(parameters.collect { Pair.create it['uuid'], it['value'] }) }
     }
 
     public mockCharacteristicWithValue(Map characteristicData) {
