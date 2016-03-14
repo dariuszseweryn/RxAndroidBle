@@ -34,4 +34,4 @@ cache:
   - $HOME/.gradle/wrapper/
 
 script:
-  - ./gradlew assembleRelease testReleaseUnitTestCoverage
+  - ./gradlew assembleRelease test
