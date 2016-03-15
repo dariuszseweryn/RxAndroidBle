@@ -30,19 +30,21 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     public static final byte[] EMPTY_DATA = [] as byte[]
     public static final byte[] NOT_EMPTY_DATA = [1, 2, 3] as byte[]
     public static final byte[] OTHER_DATA = [2, 2, 3] as byte[]
+    public static final int EXPECTED_RSSI_VALUE = 5
     def flatRadio = new FlatRxBleRadio()
-    def callback = Mock RxBleGattCallback
+    def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
-    def objectUnderTest = new RxBleConnectionImpl(flatRadio, callback, bluetoothGattMock)
+    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock)
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
 
     def setup() {
         testSubscriber = new TestSubscriber()
-        callback.getOnConnectionStateChange() >> connectionStateChange
+        gattCallback.getOnConnectionStateChange() >> connectionStateChange
     }
 
-    def "should proxy connection state"() {
+    @Unroll
+    def "should proxy connection state from gatt callback"() {
         given:
         connectionStateChange.onNext(pushedStatus)
 
@@ -60,9 +62,9 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         RxBleConnection.RxBleConnectionState.DISCONNECTING | RxBleConnection.RxBleConnectionState.DISCONNECTING
     }
 
-    def "should emit error if failed to start retrieving services"() {
+    def "should emit BleGattCannotStartException if failed to start retrieving services"() {
         given:
-        callback.getOnServicesDiscovered() >> PublishSubject.create()
+        gattCallback.getOnServicesDiscovered() >> PublishSubject.create()
         shouldGattContainNoServices()
         shouldFailStartingDiscovery()
 
@@ -70,15 +72,68 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         objectUnderTest.discoverServices().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleGattCannotStartException)
-        testSubscriber.assertError {
-            it.bleGattOperationType == BleGattOperationType.SERVICE_DISCOVERY
-        }
+        testSubscriber.assertError BleGattCannotStartException
+        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.SERVICE_DISCOVERY }
     }
 
-    def "should return cached services"() {
+    def "should emit BleGattCannotStartException if failed to start writing characteristic directly"() {
         given:
-        def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
+        gattCallback.getOnCharacteristicWrite() >> PublishSubject.create()
+        shouldFailStartingCharacteristicWrite()
+
+        when:
+        objectUnderTest.writeCharacteristic(Mock(BluetoothGattCharacteristic)).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError BleGattCannotStartException
+        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_WRITE }
+    }
+
+    def "should emit BleGattCannotStartException if failed to start writing characteristic"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: OTHER_DATA)
+        shouldGattContainServiceWithCharacteristic(characteristic, CHARACTERISTIC_UUID)
+        gattCallback.getOnCharacteristicWrite() >> PublishSubject.create()
+        shouldFailStartingCharacteristicWrite()
+
+        when:
+        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, OTHER_DATA).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError BleGattCannotStartException
+        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_WRITE }
+    }
+
+    def "should emit BleGattCannotStartException if failed to start reading characteristic"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: OTHER_DATA)
+        shouldGattContainServiceWithCharacteristic(characteristic, CHARACTERISTIC_UUID)
+        gattCallback.getOnCharacteristicRead() >> PublishSubject.create()
+        shouldFailStartingCharacteristicRead()
+
+        when:
+        objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError BleGattCannotStartException
+        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_READ }
+    }
+
+    def "should emit BleGattCannotStartException if failed to start retrieving rssi"() {
+        given:
+        shouldReturnStartingStatusAndEmitRssiValueThroughCallback { false }
+
+        when:
+        objectUnderTest.readRssi().subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError BleGattCannotStartException
+        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.READ_RSSI }
+    }
+
+    def "should return cached services during service discovery"() {
+        given:
+        def expectedServices = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
         shouldSuccessfullyStartDiscovery()
 
         when:
@@ -86,13 +141,13 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         objectUnderTest.discoverServices().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertServices services
+        testSubscriber.assertServices expectedServices
         testSubscriber.assertCompleted()
         (_..1) * bluetoothGattMock.getServices() >> emptyList()
-        1 * callback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
+        1 * gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(expectedServices))
     }
 
-    def "should return services instantly if they were already discovered"() {
+    def "should return services instantly if they were already discovered and are in BluetoothGatt cache"() {
         given:
         def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
         bluetoothGattMock.getServices() >> services
@@ -106,12 +161,12 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         0 * bluetoothGattMock.discoverServices()
     }
 
-    def "should try to discover services if cached services are empty"() {
+    def "should try to discover services if there are no services cached within BluetoothGatt"() {
         given:
         def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
         shouldSuccessfullyStartDiscovery()
         shouldGattContainNoServices()
-        callback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
+        gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
 
         when:
         objectUnderTest.discoverServices().subscribe(testSubscriber)
@@ -122,7 +177,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         1 * bluetoothGattMock.discoverServices() >> true
     }
 
-    def "should emit BleCharacteristicNotFoundException if there are no services during read operation"() {
+    def "should emit BleCharacteristicNotFoundException during read operation if no services were found"() {
         given:
         shouldGattCallbackReturnServicesOnDiscovery([])
         shouldGattContainNoServices()
@@ -131,10 +186,10 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCharacteristicNotFoundException)
+        testSubscriber.assertError BleCharacteristicNotFoundException
     }
 
-    def "should emit BleCharacteristicNotFoundException if characteristic was not found during read operation"() {
+    def "should emit BleCharacteristicNotFoundException during read operation if characteristic was not found"() {
         given:
         def service = Mock BluetoothGattService
         shouldGattCallbackReturnServicesOnDiscovery([service])
@@ -145,74 +200,79 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCharacteristicNotFoundException)
+        testSubscriber.assertError BleCharacteristicNotFoundException
         testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
     def "should read first found characteristic with matching UUID"() {
         given:
-        def firstCharacteristicValue = [1, 2, 3] as byte[]
-        def secondCharacteristicValue = [3, 4, 5] as byte[]
         def service = Mock BluetoothGattService
-        shouldServiceContainCharacteristic(service, CHARACTERISTIC_UUID, firstCharacteristicValue)
-        shouldServiceContainCharacteristic(service, OTHER_UUID, secondCharacteristicValue)
+        shouldServiceContainCharacteristic(service, CHARACTERISTIC_UUID, NOT_EMPTY_DATA)
+        shouldServiceContainCharacteristic(service, OTHER_UUID, OTHER_DATA)
         shouldGattCallbackReturnServicesOnDiscovery([service])
-        shouldGattContainServices([service])
+        shouldGattContainNoServices()
         shouldGattCallbackReturnDataOnRead(
-                [uuid: OTHER_UUID, value: secondCharacteristicValue],
-                [uuid: CHARACTERISTIC_UUID, value: firstCharacteristicValue])
+                [uuid: OTHER_UUID, value: OTHER_DATA],
+                [uuid: CHARACTERISTIC_UUID, value: NOT_EMPTY_DATA])
 
         when:
         objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertValue(firstCharacteristicValue)
+        testSubscriber.assertValue NOT_EMPTY_DATA
     }
 
     def "should emit BleCharacteristicNotFoundException if there are no services during write operation"() {
         given:
-        def dataToWrite = [1, 2, 3] as byte[]
         shouldGattCallbackReturnServicesOnDiscovery([])
         shouldGattContainNoServices()
 
         when:
-        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, dataToWrite).subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertError(BleCharacteristicNotFoundException)
-        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
-    }
-
-    def "should emit BleCharacteristicNotFoundException if observable if characteristic was not found during write operation"() {
-        given:
-        def dataToWrite = [1, 2, 3] as byte[]
-        shouldGattContainServiceWithCharacteristic(null, CHARACTERISTIC_UUID)
-
-        when:
-        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, dataToWrite).subscribe(testSubscriber)
+        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleCharacteristicNotFoundException
         testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
-    def "should emit error if failed to start retrieving rssi"() {
+    def "should emit BleCharacteristicNotFoundException if characteristic was not found during write operation"() {
         given:
-        shouldReturnStartingStatusAndEmitRssiValueThroughCallback { false }
+        shouldGattContainServiceWithCharacteristic(null)
 
         when:
-        objectUnderTest.readRssi().subscribe(testSubscriber)
+        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleGattCannotStartException
-        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.READ_RSSI }
+        testSubscriber.assertError BleCharacteristicNotFoundException
+        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+    }
+
+
+    def "should write characteristic and return written value"() {
+        given:
+        def mockedCharacteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: OTHER_DATA)
+        shouldGattContainServiceWithCharacteristic(mockedCharacteristic, CHARACTERISTIC_UUID)
+        def onWriteSubject = PublishSubject.create()
+        gattCallback.getOnCharacteristicWrite() >> onWriteSubject
+
+        when:
+        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, OTHER_DATA).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertValue(OTHER_DATA)
+
+        and:
+        1 * bluetoothGattMock.writeCharacteristic({ it.getValue() == OTHER_DATA }) >> {
+            BluetoothGattCharacteristic characteristic ->
+                onWriteSubject.onNext(Pair.create(characteristic.getUuid(), characteristic.getValue()))
+                true
+        }
     }
 
     def "should emit retrieved rssi"() {
         given:
-        def expectedRssiValue = 5
         shouldReturnStartingStatusAndEmitRssiValueThroughCallback {
-            it.onNext(expectedRssiValue)
+            it.onNext(EXPECTED_RSSI_VALUE)
             true
         }
 
@@ -220,7 +280,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         objectUnderTest.readRssi().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertValue(expectedRssiValue)
+        testSubscriber.assertValue(EXPECTED_RSSI_VALUE)
     }
 
     def "should emit CharacteristicNotFoundException if matching characteristic wasn't found"() {
@@ -311,7 +371,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should notify about value change and stay subscribed"() {
         given:
         shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
-        callback.getOnCharacteristicChanged() >> from(changeNotifications.collect { Pair.create(CHARACTERISTIC_UUID, it) })
+        gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect { Pair.create(CHARACTERISTIC_UUID, it) })
 
         when:
         objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
@@ -329,7 +389,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should not notify about value change if UUID is not matching"() {
         given:
         shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
-        callback.getOnCharacteristicChanged() >> just(Pair.create(OTHER_UUID, NOT_EMPTY_DATA))
+        gattCallback.getOnCharacteristicChanged() >> just(Pair.create(OTHER_UUID, NOT_EMPTY_DATA))
 
         when:
         objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
@@ -357,7 +417,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         given:
         shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
         def characteristicChangeSubject = PublishSubject.create()
-        callback.getOnCharacteristicChanged() >> characteristicChangeSubject
+        gattCallback.getOnCharacteristicChanged() >> characteristicChangeSubject
         def secondSubscriber = new TestSubscriber()
         objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
         objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
@@ -373,7 +433,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should unregister notifications after all observers are unsubscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
-        callback.getOnCharacteristicChanged() >> PublishSubject.create()
+        gattCallback.getOnCharacteristicChanged() >> PublishSubject.create()
         def secondSubscriber = new TestSubscriber()
         def firstSubscription = objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
         def secondSubscription = objectUnderTest.getNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
@@ -414,7 +474,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         descriptor
     }
 
-    public shouldGattContainServiceWithCharacteristic(BluetoothGattCharacteristic characteristic, UUID characteristicUUID) {
+    public shouldGattContainServiceWithCharacteristic(BluetoothGattCharacteristic characteristic, UUID characteristicUUID = CHARACTERISTIC_UUID) {
         shouldContainOneServiceWithoutCharacteristics().getCharacteristic(characteristicUUID) >> characteristic
     }
 
@@ -427,13 +487,13 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
     public shouldReturnStartingStatusAndEmitRssiValueThroughCallback(Closure<Boolean> closure) {
         def rssiSubject = PublishSubject.create()
-        callback.getOnRssiRead() >> rssiSubject
+        gattCallback.getOnRssiRead() >> rssiSubject
         bluetoothGattMock.readRemoteRssi() >> { closure?.call(rssiSubject) }
     }
 
     public shouldReturnStartingStatusAndEmitDescriptorWriteCallback(BluetoothGattDescriptor descriptor, Closure<Boolean> closure) {
         def descriptorSubject = PublishSubject.create()
-        callback.getOnDescriptorWrite() >> descriptorSubject
+        gattCallback.getOnDescriptorWrite() >> descriptorSubject
         bluetoothGattMock.writeDescriptor(descriptor) >> { closure?.call(descriptorSubject) }
     }
 
@@ -442,7 +502,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     }
 
     public shouldGattCallbackReturnDataOnRead(Map... parameters) {
-        callback.getOnCharacteristicRead() >> { from(parameters.collect { Pair.create it['uuid'], it['value'] }) }
+        gattCallback.getOnCharacteristicRead() >> { from(parameters.collect { Pair.create it['uuid'], it['value'] }) }
     }
 
     public mockCharacteristicWithValue(Map characteristicData) {
@@ -470,6 +530,15 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
     public shouldGattCallbackReturnServicesOnDiscovery(ArrayList<BluetoothGattService> services) {
         bluetoothGattMock.discoverServices() >> true
-        callback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
+        gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
     }
+
+    public shouldFailStartingCharacteristicWrite() {
+        bluetoothGattMock.writeCharacteristic(_) >> false
+    }
+
+    public shouldFailStartingCharacteristicRead() {
+        bluetoothGattMock.readCharacteristic(_) >> false
+    }
+
 }
