@@ -118,7 +118,7 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     private void evictEmptyReferences() {
 
-        for (Iterator<Entry<String, DeviceWeakReference>> iterator = cache.entrySet().iterator(); iterator.hasNext(); ) {
+        for (Iterator<Entry<String, DeviceWeakReference>> iterator = cache.entrySet().iterator(); iterator.hasNext();) {
             final Entry<String, DeviceWeakReference> next = iterator.next();
 
             if (next.getValue().isEmpty()) {

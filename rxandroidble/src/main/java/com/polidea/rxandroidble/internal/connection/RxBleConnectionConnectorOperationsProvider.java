@@ -20,7 +20,10 @@ public class RxBleConnectionConnectorOperationsProvider {
                                                                                    BleConnectionCompat connectionCompat,
                                                                                    RxBleGattCallback gattCallback) {
         AtomicReference<BluetoothGatt> bluetoothGattAtomicReference = new AtomicReference<>();
-        RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(bluetoothDevice, gattCallback, connectionCompat, autoConnect);
+        RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(bluetoothDevice,
+                gattCallback,
+                connectionCompat,
+                autoConnect);
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
                 gattCallback,
                 bluetoothGattAtomicReference,

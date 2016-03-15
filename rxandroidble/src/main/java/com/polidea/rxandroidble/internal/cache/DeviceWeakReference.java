@@ -37,6 +37,11 @@ class DeviceWeakReference extends WeakReference<RxBleDevice> {
         return thisDevice != null && thisDevice.equals(otherThing);
     }
 
+    @Override
+    public int hashCode() {
+        return get() != null ? get().hashCode() : 0;
+    }
+
     public boolean isEmpty() {
         return get() == null;
     }

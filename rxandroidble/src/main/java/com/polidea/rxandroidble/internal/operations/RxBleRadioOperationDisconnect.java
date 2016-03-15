@@ -20,12 +20,11 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     private static final int TIMEOUT_DISCONNECT = 10;
     private final RxBleGattCallback rxBleGattCallback;
-
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference;
-
     private final BluetoothManager bluetoothManager;
 
-    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, AtomicReference<BluetoothGatt> bluetoothGattAtomicReference, BluetoothManager bluetoothManager) {
+    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, AtomicReference<BluetoothGatt> bluetoothGattAtomicReference,
+                                         BluetoothManager bluetoothManager) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattAtomicReference = bluetoothGattAtomicReference;
         this.bluetoothManager = bluetoothManager;
@@ -64,7 +63,8 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             //noinspection Convert2MethodRef
             rxBleGattCallback
                     .getOnConnectionStateChange()
-                            // It should never happen because if connection was never acquired then it will complete earlier. Just in case timeout here.
+                            // It should never happen because if connection was never acquired then it will complete earlier.
+                            // Just in case timeout here.
                     .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
                     .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
                     .take(1)

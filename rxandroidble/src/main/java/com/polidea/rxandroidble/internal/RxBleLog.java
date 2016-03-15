@@ -26,6 +26,10 @@ public class RxBleLog {
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
     private static int logLevel = Integer.MAX_VALUE;
 
+    private RxBleLog() {
+
+    }
+
     public static void setLogLevel(@LogLevel int logLevel) {
         RxBleLog.logLevel = logLevel;
     }

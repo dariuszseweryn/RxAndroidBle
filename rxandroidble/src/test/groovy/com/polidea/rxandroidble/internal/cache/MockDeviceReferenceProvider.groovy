@@ -1,14 +1,13 @@
-package com.polidea.rxandroidble.internal
+package com.polidea.rxandroidble.internal.cache
 
 import com.polidea.rxandroidble.RxBleDevice
-import com.polidea.rxandroidble.internal.cache.RxBleDeviceCache
 
-class MockDeviceReferenceProvider implements RxBleDeviceCache.DeviceWeakReference.Provider {
+class MockDeviceReferenceProvider implements DeviceWeakReference.Provider {
 
 
     private final HashMap<RxBleDevice, List<MockDeviceWeakReference>> devices = new HashMap<>()
 
-    class MockDeviceWeakReference extends RxBleDeviceCache.DeviceWeakReference {
+    class MockDeviceWeakReference extends DeviceWeakReference {
 
         MockDeviceWeakReference(RxBleDevice device) {
             super(device)
@@ -25,17 +24,14 @@ class MockDeviceReferenceProvider implements RxBleDeviceCache.DeviceWeakReferenc
     }
 
     @Override
-    RxBleDeviceCache.DeviceWeakReference provide(RxBleDevice rxBleDevice) {
+    DeviceWeakReference provide(RxBleDevice rxBleDevice) {
         def reference = new MockDeviceWeakReference(rxBleDevice)
         storeReference(rxBleDevice, reference)
         return reference
     }
 
     public releaseReferenceFor(RxBleDevice rxBleDevice) {
-
-        devices.get(rxBleDevice)?.each {
-            it.release()
-        }
+        devices.get(rxBleDevice)?.each { it.release() }
     }
 
     private storeReference(RxBleDevice rxBleDevice, MockDeviceWeakReference reference) {

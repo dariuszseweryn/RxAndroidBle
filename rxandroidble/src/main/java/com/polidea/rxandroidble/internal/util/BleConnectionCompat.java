@@ -15,6 +15,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
+
 public class BleConnectionCompat {
 
     private final Context context;
@@ -63,25 +65,24 @@ public class BleConnectionCompat {
             }
 
             return bluetoothGatt;
-        } catch (NoSuchMethodException |
-                IllegalAccessException |
-                IllegalArgumentException |
-                InvocationTargetException |
-                InstantiationException |
-                NoSuchFieldException exception) {
-
+        } catch (NoSuchMethodException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException
+                | InstantiationException
+                | NoSuchFieldException exception) {
             RxBleLog.w(exception, "Error during reflection");
             return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
         }
     }
 
-    private BluetoothGatt connectGattCompat(BluetoothGattCallback bluetoothGattCallback, BluetoothDevice remoteDevice, boolean autoConnect) {
+    private BluetoothGatt connectGattCompat(BluetoothGattCallback bluetoothGattCallback, BluetoothDevice device, boolean autoConnect) {
         RxBleLog.v("Connecting without reflection");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return remoteDevice.connectGatt(context, autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
+            return device.connectGatt(context, autoConnect, bluetoothGattCallback, TRANSPORT_LE);
         } else {
-            return remoteDevice.connectGatt(context, autoConnect, bluetoothGattCallback);
+            return device.connectGatt(context, autoConnect, bluetoothGattCallback);
         }
     }
 
@@ -102,13 +103,14 @@ public class BleConnectionCompat {
         RxBleLog.v("Found constructor with args count = " + bluetoothGattConstructor.getParameterTypes().length);
 
         if (bluetoothGattConstructor.getParameterTypes().length == 4) {
-            return (BluetoothGatt) (bluetoothGattConstructor.newInstance(context, iBluetoothGatt, remoteDevice, BluetoothDevice.TRANSPORT_LE));
+            return (BluetoothGatt) (bluetoothGattConstructor.newInstance(context, iBluetoothGatt, remoteDevice, TRANSPORT_LE));
         } else {
             return (BluetoothGatt) (bluetoothGattConstructor.newInstance(context, iBluetoothGatt, remoteDevice));
         }
     }
 
-    private Object getIBluetoothGatt(Object iBluetoothManager) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private Object getIBluetoothGatt(Object iBluetoothManager)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         if (iBluetoothManager == null) {
             return null;

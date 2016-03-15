@@ -20,8 +20,6 @@ public class BleGattOperationType {
 
     @Override
     public String toString() {
-        return "BleGattOperation{" +
-                "description='" + description + '\'' +
-                '}';
+        return "BleGattOperation{" + "description='" + description + '\'' + '}';
     }
 }

@@ -16,8 +16,6 @@ public class BleCharacteristicNotFoundException extends BleException {
 
     @Override
     public String toString() {
-        return "BleCharacteristicNotFoundException{" +
-                "charactersisticUUID=" + charactersisticUUID +
-                '}';
+        return "BleCharacteristicNotFoundException{" + "charactersisticUUID=" + charactersisticUUID + '}';
     }
 }

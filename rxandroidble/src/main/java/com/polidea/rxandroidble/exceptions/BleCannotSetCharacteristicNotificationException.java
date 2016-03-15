@@ -16,8 +16,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
 
     @Override
     public String toString() {
-        return "BleCannotSetCharacteristicNotificationException{" +
-                "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid() +
-                '}';
+        return "BleCannotSetCharacteristicNotificationException{"
+                + "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid() + '}';
     }
 }

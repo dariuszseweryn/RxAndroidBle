@@ -15,6 +15,7 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
 
+import java.util.List;
 import java.util.UUID;
 
 import rx.Observable;
@@ -65,19 +66,7 @@ public class MainActivityFragment extends Fragment {
                                 .observeOn(Schedulers.io())
                                 .doOnCompleted(() -> Log.d("AAA", "DISCOVERY:COMPLETED"))
                                 .map(RxBleDeviceServices::getBluetoothGattServices)
-                                .doOnNext(serviceList -> {
-                                    for (BluetoothGattService bluetoothGattService : serviceList) {
-                                        Log.d("DISCOVERED", "service: " + bluetoothGattService.getUuid().toString());
-                                        for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
-                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString());
-                                            for (BluetoothGattDescriptor bluetoothGattDescriptor : bluetoothGattCharacteristic.getDescriptors()) {
-                                                Log.d("DISCOVERED", "descriptor: " + bluetoothGattDescriptor.getUuid().toString());
-                                            }
-                                            Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: "
-                                                    + (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))));
-                                        }
-                                    }
-                                }),
+                                .doOnNext(this::logServices),
                         rxBleConnection
                                 .readRssi()
                                 .doOnCompleted(() -> Log.d("AAA", "RSSI:COMPLETED"))
@@ -94,5 +83,19 @@ public class MainActivityFragment extends Fragment {
                         throwable -> Log.e("AAA", "an error", throwable),
                         () -> Log.d("AAA", "completed")
                 );
+    }
+
+    private void logServices(List<BluetoothGattService> serviceList) {
+        for (BluetoothGattService bluetoothGattService : serviceList) {
+            Log.d("DISCOVERED", "service: " + bluetoothGattService.getUuid().toString());
+            for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
+                Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString());
+                for (BluetoothGattDescriptor bluetoothGattDescriptor : bluetoothGattCharacteristic.getDescriptors()) {
+                    Log.d("DISCOVERED", "descriptor: " + bluetoothGattDescriptor.getUuid().toString());
+                }
+                Log.d("DISCOVERED", "characteristic: " + bluetoothGattCharacteristic.getUuid().toString() + " has config: "
+                        + (bluetoothGattCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))));
+            }
+        }
     }
 }

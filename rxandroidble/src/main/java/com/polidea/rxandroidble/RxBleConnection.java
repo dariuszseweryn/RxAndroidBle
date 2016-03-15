@@ -28,9 +28,7 @@ public interface RxBleConnection {
 
         @Override
         public String toString() {
-            return "RxBleConnectionState{" +
-                    description +
-                    '}';
+            return "RxBleConnectionState{" + description + '}';
         }
     }
 

@@ -25,9 +25,6 @@ public class BleGattException extends BleException {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '{' +
-                "status=" + status +
-                ", bleGattOperation=" + bleGattOperationType +
-                '}';
+        return getClass().getSimpleName() + '{' + "status=" + status + ", bleGattOperation=" + bleGattOperationType + '}';
     }
 }

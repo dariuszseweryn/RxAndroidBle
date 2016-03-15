@@ -41,10 +41,12 @@ public abstract class RxBleClient {
     public abstract RxBleDevice getBleDevice(@NonNull String macAddress);
 
     /**
-     * Returns an infinite observable emitting BLE scan results. Scan is automatically started and stopped based on the Observable lifecycle.
+     * Returns an infinite observable emitting BLE scan results.
+     * Scan is automatically started and stopped based on the Observable lifecycle.
      * Scan is started on subscribe and stopped on unsubscribe. You can safely subscribe multiple observers to this observable.
      * <p>
-     * The library automatically handles Bluetooth adapter state changes but you are supposed to prompt the user to enable it if it's disabled.
+     * The library automatically handles Bluetooth adapter state changes but you are supposed to prompt
+     * the user to enable it if it's disabled.
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      * @throws com.polidea.rxandroidble.exceptions.BleScanException in case of error starting the scan

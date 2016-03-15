@@ -45,10 +45,7 @@ class RxBleDeviceImpl implements RxBleDevice {
                                 .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
                                 .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
                                 .doOnUnsubscribe(() -> {
-                                    synchronized (connectionObservable) {
-                                        //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
-                                        connectionObservable.set(null);
-                                    }
+                                    clearConnectionObservable();
                                     connectionStateSubject.onNext(DISCONNECTED);
                                 })
                                 .replay()
@@ -58,6 +55,14 @@ class RxBleDeviceImpl implements RxBleDevice {
                 return newConnectionObservable;
             }
         });
+    }
+
+    private void clearConnectionObservable() {
+        synchronized (connectionObservable) {
+            //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would
+            // like to just after the previous one has unsubscribed
+            connectionObservable.set(null);
+        }
     }
 
     @Override
@@ -90,8 +95,6 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     @Override
     public String toString() {
-        return "RxBleDeviceImpl{" +
-                "bluetoothDevice=" + bluetoothDevice.getName() + '(' + bluetoothDevice.getAddress() + ')' +
-                '}';
+        return "RxBleDeviceImpl{" + "bluetoothDevice=" + bluetoothDevice.getName() + '(' + bluetoothDevice.getAddress() + ')' + '}';
     }
 }

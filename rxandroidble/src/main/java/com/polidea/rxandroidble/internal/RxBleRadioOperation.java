@@ -128,12 +128,9 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      */
     public static class Priority {
 
-        public static Priority HIGH = new Priority(100);
-
-        public static Priority NORMAL = new Priority(50);
-
-        public static Priority LOW = new Priority(0);
-
+        public static final Priority HIGH = new Priority(100);
+        public static final Priority NORMAL = new Priority(50);
+        public static final Priority LOW = new Priority(0);
         private final int priority;
 
         private Priority(int priority) {

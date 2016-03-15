@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal
 
 import com.polidea.rxandroidble.RxBleDevice
+import com.polidea.rxandroidble.internal.cache.MockDeviceReferenceProvider
 import com.polidea.rxandroidble.internal.cache.RxBleDeviceCache
 import spock.lang.Specification
 

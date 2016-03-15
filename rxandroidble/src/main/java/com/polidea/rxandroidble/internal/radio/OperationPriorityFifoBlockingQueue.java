@@ -34,14 +34,14 @@ class OperationPriorityFifoBlockingQueue {
 
     private static class FIFOEntry implements Comparable<FIFOEntry> {
 
-        static final AtomicLong seq = new AtomicLong(0);
+        static final AtomicLong SEQUENCE = new AtomicLong(0);
 
         final long seqNum;
 
         final RxBleRadioOperation entry;
 
         public FIFOEntry(RxBleRadioOperation entry) {
-            seqNum = seq.getAndIncrement();
+            seqNum = SEQUENCE.getAndIncrement();
             this.entry = entry;
         }
 
