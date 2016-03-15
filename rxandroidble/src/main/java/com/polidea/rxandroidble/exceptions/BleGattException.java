@@ -4,7 +4,6 @@ public class BleGattException extends BleException {
 
     public static final int UNKNOWN_STATUS = -1;
     private final int status;
-
     private final BleGattOperationType bleGattOperationType;
 
     public BleGattException(int status, BleGattOperationType bleGattOperationType) {

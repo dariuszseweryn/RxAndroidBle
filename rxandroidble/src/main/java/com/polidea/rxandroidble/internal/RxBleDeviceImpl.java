@@ -18,14 +18,9 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISC
 class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
-
     private final RxBleConnection.Connector connector;
-
     private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
-
-    private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
-            DISCONNECTED
-    );
+    private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateSubject = BehaviorSubject.create(DISCONNECTED);
 
     public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
         this.bluetoothDevice = bluetoothDevice;
@@ -33,7 +28,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
-        return connectionStateBehaviorSubject.distinctUntilChanged();
+        return connectionStateSubject.distinctUntilChanged();
     }
 
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
@@ -47,14 +42,14 @@ class RxBleDeviceImpl implements RxBleDevice {
 
                 final Observable<RxBleConnection> newConnectionObservable =
                         connector.prepareConnection(context, autoConnect)
-                                .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
-                                .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
+                                .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
+                                .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
                                 .doOnUnsubscribe(() -> {
                                     synchronized (connectionObservable) {
                                         //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would like to just after the previous one has unsubscribed
                                         connectionObservable.set(null);
                                     }
-                                    connectionStateBehaviorSubject.onNext(DISCONNECTED);
+                                    connectionStateSubject.onNext(DISCONNECTED);
                                 })
                                 .replay()
                                 .refCount();
@@ -85,9 +80,7 @@ class RxBleDeviceImpl implements RxBleDevice {
         }
 
         RxBleDeviceImpl that = (RxBleDeviceImpl) o;
-
         return bluetoothDevice.equals(that.bluetoothDevice);
-
     }
 
     @Override

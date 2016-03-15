@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import rx.Observable;
 
+// TODO: [PU] 15.03.2016 Documentation
 public class RxBleDeviceServices {
 
     private final List<BluetoothGattService> bluetoothGattServices;
@@ -22,24 +23,28 @@ public class RxBleDeviceServices {
     }
 
     public Observable<BluetoothGattService> getService(UUID serviceUuid) {
-        // TODO: [PU] 29.01.2016 Will raise NoSuchElementException if services are empty. It should be mapped to error if not found
         return Observable.from(bluetoothGattServices)
                 .filter(bluetoothGattService -> bluetoothGattService.getUuid().equals(serviceUuid))
-                .first();
+                .take(1);
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
-        // TODO: [PU] 29.01.2016 Theoretically it may happen that characteristic UUID in duplicated in another service.
-        return Observable.from(bluetoothGattServices)
-                .map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
-                .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
-                .take(1); // Services may be empty
+        return Observable.from(bluetoothGattServices).compose(extractCharacteristic(characteristicUuid));
     }
 
     public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID serviceUuid, UUID characteristicUuid) {
-        return getService(serviceUuid).map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid));
+        return getService(serviceUuid).compose(extractCharacteristic(characteristicUuid));
     }
 
+    private Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic> extractCharacteristic(UUID characteristicUuid) {
+        return source -> {
+            return source.map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
+                    .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
+                    .take(1); // Services may be empty;
+        };
+    }
+
+    // TODO: [PU] 15.03.2016 Consider moving getDescriptor to the characteristic
     public Observable<BluetoothGattDescriptor> getDescriptor(UUID characteristicUuid, UUID descriptorUuid) {
         return getCharacteristic(characteristicUuid)
                 .map(bluetoothGattCharacteristic -> bluetoothGattCharacteristic.getDescriptor(descriptorUuid))

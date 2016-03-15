@@ -14,6 +14,7 @@ public interface RxBleDevice {
      */
     Observable<RxBleConnection.RxBleConnectionState> getConnectionState();
 
+    // TODO: [PU] 15.03.2016 Document how multiple connections are handled, when connection is connected and disconnected.
     Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect);
 
     String getName();

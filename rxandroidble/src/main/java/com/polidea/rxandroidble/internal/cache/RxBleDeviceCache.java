@@ -1,12 +1,10 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.cache;
 
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleDevice;
 
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,92 +16,6 @@ import rx.Observable;
 import rx.functions.Func0;
 
 public class RxBleDeviceCache implements Map<String, RxBleDevice> {
-
-    private static class CacheEntry implements Map.Entry<String, RxBleDevice> {
-
-        private final String string;
-
-        private final DeviceWeakReference deviceWeakReference;
-
-        private CacheEntry(String string, DeviceWeakReference deviceWeakReference) {
-            this.string = string;
-            this.deviceWeakReference = deviceWeakReference;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof CacheEntry)) {
-                return false;
-            }
-
-            CacheEntry that = (CacheEntry) o;
-
-            return string.equals(that.getKey()) && deviceWeakReference.equals(that.deviceWeakReference);
-
-        }
-
-        @Override
-        public String getKey() {
-            return string;
-        }
-
-        @Override
-        public RxBleDevice getValue() {
-            return deviceWeakReference.get();
-        }
-
-        @Override
-        public int hashCode() {
-            int result = string.hashCode();
-            result = 31 * result + deviceWeakReference.hashCode();
-            return result;
-        }
-
-        @Override
-        public RxBleDevice setValue(RxBleDevice object) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
-    }
-
-    static class DeviceWeakReference extends WeakReference<RxBleDevice> {
-
-        public interface Provider {
-
-            DeviceWeakReference provide(RxBleDevice rxBleDevice);
-        }
-
-        public DeviceWeakReference(RxBleDevice device) {
-            super(device);
-        }
-
-        @SuppressWarnings("unused")
-        public DeviceWeakReference(RxBleDevice r, ReferenceQueue<? super RxBleDevice> q) {
-            super(r, q);
-        }
-
-        public boolean contains(Object object) {
-            final RxBleDevice thisDevice = get();
-            return thisDevice != null && thisDevice == object;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof WeakReference)) {
-                return false;
-            }
-            WeakReference aWeakReference = (WeakReference) o;
-            final RxBleDevice thisDevice = get();
-            final Object otherThing = aWeakReference.get();
-            return thisDevice != null && thisDevice.equals(otherThing);
-        }
-
-        public boolean isEmpty() {
-            return get() == null;
-        }
-    }
 
     private final HashMap<String, DeviceWeakReference> cache = new HashMap<>();
     private final DeviceWeakReference.Provider deviceReferenceProvider;

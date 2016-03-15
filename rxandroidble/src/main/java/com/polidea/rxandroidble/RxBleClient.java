@@ -13,9 +13,9 @@ import rx.Observable;
 public abstract class RxBleClient {
 
     /**
-     * Returns singleton instance on RxBleClient using application context.
+     * Returns instance of RxBleClient using application context. It is required by the client to maintain single instance of RxBleClient.
      *
-     * @param context Any context
+     * @param context Any Android context
      * @return BLE client instance.
      */
     public static RxBleClient getInstance(@NonNull Context context) {

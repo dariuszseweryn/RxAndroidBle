@@ -22,11 +22,8 @@ public class RxBleLog {
     public static final int WARN = Log.WARN;
     public static final int ERROR = Log.ERROR;
     public static final int NONE = Integer.MAX_VALUE;
-
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
-
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
-
     private static int logLevel = Integer.MAX_VALUE;
 
     public static void setLogLevel(@LogLevel int logLevel) {

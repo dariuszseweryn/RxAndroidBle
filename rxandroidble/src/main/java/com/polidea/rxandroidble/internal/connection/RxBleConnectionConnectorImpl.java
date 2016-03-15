@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.support.v4.util.Pair;
 
@@ -9,9 +10,11 @@ import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
-import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import rx.Observable;
+import rx.Subscription;
+
+import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 
 public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
 
@@ -42,21 +45,26 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             final RxBleRadioOperationDisconnect operationDisconnect = operationsPair.second;
 
             return rxBleRadio.queue(operationConnect)
-                    .<RxBleConnection>flatMap(bluetoothGatt -> ObservableUtil
-                                    .justOnNext(new RxBleConnectionImpl(rxBleRadio, gattCallback, bluetoothGatt))
-                                    .mergeWith(gattCallback.disconnectedErrorObservable())
-                    )
-                    .doOnUnsubscribe(() ->
-                                    rxBleRadio
-                                            .queue(operationDisconnect)
-                                            .subscribe(
-                                                    ignored -> {
-                                                    },
-                                                    ignored -> {
-                                                    }
-                                            )
-                    );
+                    .flatMap(bluetoothGatt -> createBleConnection(gattCallback, bluetoothGatt))
+                    .cast(RxBleConnection.class)
+                    .doOnUnsubscribe(() -> enqueueDisconnectOperation(operationDisconnect));
         });
+    }
+
+    private Observable<RxBleConnectionImpl> createBleConnection(RxBleGattCallback gattCallback, BluetoothGatt bluetoothGatt) {
+        return justOnNext(new RxBleConnectionImpl(rxBleRadio, gattCallback, bluetoothGatt))
+                .mergeWith(gattCallback.disconnectedErrorObservable());
+    }
+
+    private Subscription enqueueDisconnectOperation(RxBleRadioOperationDisconnect operationDisconnect) {
+        return rxBleRadio
+                .queue(operationDisconnect)
+                .subscribe(
+                        ignored -> {
+                        },
+                        ignored -> {
+                        }
+                );
     }
 
 }

@@ -24,9 +24,9 @@ import java.util.UUID;
 
 import rx.Observable;
 
+// TODO: [PU] 15.03.2016 Documentation
 class RxBleClientImpl extends RxBleClient {
 
-    private static RxBleClientImpl CLIENT_INSTANCE;
     private final RxBleRadio rxBleRadio;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
@@ -35,41 +35,31 @@ class RxBleClientImpl extends RxBleClient {
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
 
     public static RxBleClientImpl getInstance(@NonNull Context context) {
-
-        if (CLIENT_INSTANCE == null) {
-
-            synchronized (RxBleClient.class) {
-
-                if (CLIENT_INSTANCE == null) {
-                    final Context applicationContext = context.getApplicationContext();
-                    CLIENT_INSTANCE = new RxBleClientImpl(
-                            new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
-                            new RxBleRadioImpl(),
-                            new RxBleAdapterStateObservable(applicationContext),
-                            new UUIDUtil(),
-                            new BleConnectionCompat(context));
-                }
-            }
-        }
-
-        return CLIENT_INSTANCE;
+        return new RxBleClientImpl(
+                new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
+                new RxBleRadioImpl(),
+                new RxBleAdapterStateObservable(context.getApplicationContext()),
+                new UUIDUtil(),
+                new BleConnectionCompat(context));
     }
 
-    public RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio,
-                           Observable<BleAdapterState> adapterStateObservable, UUIDUtil uuidUtil, BleConnectionCompat bleConnectionCompat) {
+    RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
+                    RxBleRadio rxBleRadio,
+                    Observable<BleAdapterState> adapterStateObservable,
+                    UUIDUtil uuidUtil,
+                    BleConnectionCompat bleConnectionCompat) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
+        this.rxBleAdapterStateObservable = adapterStateObservable;
         rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio, bleConnectionCompat);
-        rxBleAdapterStateObservable = adapterStateObservable;
     }
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
 
         if (rxBleAdapterWrapper.hasBluetoothAdapter()) {
-            return getMatchingQueuedScan(filterServiceUUIDs)
-                    .switchIfEmpty(createScanOperation(filterServiceUUIDs));
+            return getMatchingQueuedScan(filterServiceUUIDs).switchIfEmpty(createScanOperation(filterServiceUUIDs));
         } else {
             return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
         }
@@ -90,7 +80,6 @@ class RxBleClientImpl extends RxBleClient {
                 .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
     }
 
-    @NonNull
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
         return Observable.defer(() -> {
             final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);

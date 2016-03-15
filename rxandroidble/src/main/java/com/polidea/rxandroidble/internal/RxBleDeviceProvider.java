@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.internal;
 import android.bluetooth.BluetoothDevice;
 
 import com.polidea.rxandroidble.RxBleDevice;
+import com.polidea.rxandroidble.internal.cache.RxBleDeviceCache;
 import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorImpl;
 import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;

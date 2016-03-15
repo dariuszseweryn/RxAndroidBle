@@ -42,9 +42,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
             }
         };
         context.registerReceiver(receiver, createFilter());
-        subscriber.add(Subscriptions.create(() -> {
-            context.unregisterReceiver(receiver);
-        }));
+        subscriber.add(Subscriptions.create(() -> context.unregisterReceiver(receiver)));
     }
 
     private static void onStateBroadcastReceived(Intent intent, Subscriber<? super BleAdapterState> subscriber) {

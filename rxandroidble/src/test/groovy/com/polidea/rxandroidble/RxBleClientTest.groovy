@@ -28,15 +28,6 @@ class RxBleClientTest extends Specification {
         objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio, adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat))
     }
 
-    def "should return same instance of client"() {
-        given:
-        def firstClient = RxBleClient.getInstance(contextMock)
-        def secondClient = RxBleClient.getInstance(contextMock);
-
-        expect:
-        firstClient == secondClient
-    }
-
     def "should start BLE scan if subscriber subscribes to the scan observable"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()

@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble;
 
+// TODO: [PU] 15.03.2016 Documentation
 public class RxBleScanResult {
 
     private final RxBleDevice bleDevice;
