@@ -3,12 +3,14 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -62,7 +64,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             //noinspection Convert2MethodRef
             rxBleGattCallback
                     .getOnConnectionStateChange()
-                    // It should never happen because if connection was never acquired then it will complete earlier. Just in case timeout here.
+                            // It should never happen because if connection was never acquired then it will complete earlier. Just in case timeout here.
                     .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
                     .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
                     .take(1)

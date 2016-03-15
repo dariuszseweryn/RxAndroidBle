@@ -1,4 +1,5 @@
 package com.polidea.rxandroidble.internal
+
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection

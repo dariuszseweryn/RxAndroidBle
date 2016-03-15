@@ -3,8 +3,10 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+
 import java.util.List;
 import java.util.UUID;
+
 import rx.Observable;
 
 public class RxBleDeviceServices {

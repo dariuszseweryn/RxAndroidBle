@@ -47,7 +47,7 @@ public abstract class RxBleClient {
      * The library automatically handles Bluetooth adapter state changes but you are supposed to prompt the user to enable it if it's disabled.
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
-     * @throws com.polidea.rxandroidble.exceptions.BleScanException         in case of error starting the scan
+     * @throws com.polidea.rxandroidble.exceptions.BleScanException in case of error starting the scan
      */
     public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs);
 }

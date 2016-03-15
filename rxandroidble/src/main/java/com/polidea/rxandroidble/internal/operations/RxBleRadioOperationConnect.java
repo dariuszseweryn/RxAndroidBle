@@ -45,7 +45,8 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     public void run() {
         //noinspection Convert2MethodRef
         final Runnable releaseRadioRunnable = () -> releaseRadio();
-        final Runnable emptyRunnable = () -> {};
+        final Runnable emptyRunnable = () -> {
+        };
 
         final Runnable onNextRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;

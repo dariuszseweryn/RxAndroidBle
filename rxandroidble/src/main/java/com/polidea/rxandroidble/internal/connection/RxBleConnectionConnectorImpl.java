@@ -3,12 +3,13 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.v4.util.Pair;
+
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
-import com.polidea.rxandroidble.internal.util.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import rx.Observable;
 

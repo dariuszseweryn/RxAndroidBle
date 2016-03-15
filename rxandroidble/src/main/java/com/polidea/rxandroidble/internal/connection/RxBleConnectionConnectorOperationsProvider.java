@@ -26,7 +26,8 @@ public class RxBleConnectionConnectorOperationsProvider {
                 bluetoothGattAtomicReference,
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
         );
-        operationConnect.getBluetoothGatt().first().subscribe(bluetoothGattAtomicReference::set, ignored -> {});
+        operationConnect.getBluetoothGatt().first().subscribe(bluetoothGattAtomicReference::set, ignored -> {
+        });
         return new Pair<>(operationConnect, operationDisconnect);
     }
 }

@@ -6,11 +6,11 @@ import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
-
-import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
+
+import java.util.concurrent.Semaphore
 
 public class RxBleRadioOperationConnectTest extends Specification {
 

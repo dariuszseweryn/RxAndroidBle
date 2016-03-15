@@ -13,7 +13,7 @@ class MockDeviceReferenceProvider implements RxBleDeviceCache.DeviceWeakReferenc
             super(device)
         }
 
-        public release(){
+        public release() {
             clear()
         }
 

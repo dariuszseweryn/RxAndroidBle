@@ -6,13 +6,16 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
+
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
+
 import java.util.UUID;
+
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
@@ -23,9 +26,10 @@ import rx.subjects.PublishSubject;
 public class RxBleGattCallback {
 
     public interface Provider {
+
         RxBleGattCallback provide();
     }
-    
+
     private Scheduler callbackScheduler = Schedulers.newThread();
 
     private BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();

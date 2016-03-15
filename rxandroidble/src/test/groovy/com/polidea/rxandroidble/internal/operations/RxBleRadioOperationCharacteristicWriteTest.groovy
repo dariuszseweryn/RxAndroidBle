@@ -6,10 +6,11 @@ import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
+
+import java.util.concurrent.Semaphore
 
 public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
 
