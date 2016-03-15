@@ -7,6 +7,7 @@ import android.support.v4.util.Pair
 import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import rx.Observable
 import rx.observers.TestSubscriber
 import spock.lang.Specification
@@ -32,7 +33,10 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
     RxBleConnectionConnectorImpl objectUnderTest
 
+    BleConnectionCompat mockConnectionCompat
+
     def setup() {
+        mockConnectionCompat = Mock BleConnectionCompat
         mockRadio = Mock RxBleRadio
         mockContext = Mock Context
         mockDevice = Mock BluetoothDevice
@@ -44,9 +48,9 @@ public class RxBleConnectionConnectorImplTest extends Specification {
         mockConnect = Mock RxBleRadioOperationConnect
         mockDisconnect = Mock RxBleRadioOperationDisconnect
         mockOperationsProvider = Mock RxBleConnectionConnectorOperationsProvider
-        mockOperationsProvider.provide(_, _, _, _) >> new Pair<>(mockConnect, mockDisconnect)
+        mockOperationsProvider.provide(_, _, _, _, _) >> new Pair<>(mockConnect, mockDisconnect)
 
-        objectUnderTest = new RxBleConnectionConnectorImpl(mockDevice, mockCallbackProvider, mockOperationsProvider, mockRadio)
+        objectUnderTest = new RxBleConnectionConnectorImpl(mockDevice, mockCallbackProvider, mockOperationsProvider, mockRadio, mockConnectionCompat)
     }
 
     @Unroll
@@ -59,7 +63,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
         objectUnderTest.prepareConnection(contextObject, autoConnectValue).subscribe(testSubscriber)
 
         then:
-        1 * mockOperationsProvider.provide(contextObject, mockDevice, autoConnectValue, mockCallback)
+        1 * mockOperationsProvider.provide(contextObject, mockDevice, autoConnectValue, mockConnectionCompat, mockCallback)
 
         where:
         contextObject | autoConnectValue

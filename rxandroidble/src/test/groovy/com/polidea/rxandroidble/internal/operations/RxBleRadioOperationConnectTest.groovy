@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGatt
 import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat
+
 import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
@@ -13,6 +15,7 @@ import spock.lang.Specification
 public class RxBleRadioOperationConnectTest extends Specification {
 
     Context mockContext = Mock Context
+    BleConnectionCompat connectionCompat = new BleConnectionCompat(mockContext)
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     BluetoothGatt mockGatt = Mock BluetoothGatt
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
@@ -30,7 +33,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     }
 
     def prepareObjectUnderTest(boolean autoConnect) {
-        objectUnderTest = new RxBleRadioOperationConnect(mockContext, mockBluetoothDevice, mockCallback, autoConnect)
+        objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockCallback, connectionCompat, autoConnect)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
         objectUnderTest.getBluetoothGatt().subscribe(getGattSubscriber)

@@ -8,13 +8,14 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
-import com.polidea.rxandroidble.internal.util.UUIDUtil;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
+import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,8 @@ class RxBleClientImpl extends RxBleClient {
                             new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
                             new RxBleRadioImpl(),
                             new RxBleAdapterStateObservable(applicationContext),
-                            new UUIDUtil());
+                            new UUIDUtil(),
+                            new BleConnectionCompat(context));
                 }
             }
         }
@@ -54,11 +56,11 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     public RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio,
-                           Observable<BleAdapterState> adapterStateObservable, UUIDUtil uuidUtil) {
+                           Observable<BleAdapterState> adapterStateObservable, UUIDUtil uuidUtil, BleConnectionCompat bleConnectionCompat) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
-        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio);
+        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio, bleConnectionCompat);
         rxBleAdapterStateObservable = adapterStateObservable;
     }
 

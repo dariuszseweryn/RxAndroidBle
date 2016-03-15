@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
@@ -14,19 +15,19 @@ import rx.Observable;
 public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
 
     private final BluetoothDevice bluetoothDevice;
-
     private final RxBleGattCallback.Provider gattCallbackProvider;
-
     private final RxBleConnectionConnectorOperationsProvider operationsProvider;
-
     private final RxBleRadio rxBleRadio;
+    private final BleConnectionCompat connectionCompat;
 
     public RxBleConnectionConnectorImpl(BluetoothDevice bluetoothDevice, RxBleGattCallback.Provider gattCallbackProvider,
-                                        RxBleConnectionConnectorOperationsProvider operationsProvider, RxBleRadio rxBleRadio) {
+                                        RxBleConnectionConnectorOperationsProvider operationsProvider, RxBleRadio rxBleRadio,
+                                        BleConnectionCompat connectionCompat) {
         this.bluetoothDevice = bluetoothDevice; // TODO: pass in prepareConnection?
         this.gattCallbackProvider = gattCallbackProvider;
         this.operationsProvider = operationsProvider;
         this.rxBleRadio = rxBleRadio;
+        this.connectionCompat = connectionCompat;
     }
 
     @Override
@@ -34,7 +35,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
         return Observable.defer(() -> {
             final RxBleGattCallback gattCallback = gattCallbackProvider.provide();
             final Pair<RxBleRadioOperationConnect, RxBleRadioOperationDisconnect> operationsPair =
-                    operationsProvider.provide(context, bluetoothDevice, autoConnect, gattCallback);
+                    operationsProvider.provide(context, bluetoothDevice, autoConnect, connectionCompat, gattCallback);
 
             final RxBleRadioOperationConnect operationConnect = operationsPair.first;
             final RxBleRadioOperationDisconnect operationDisconnect = operationsPair.second;

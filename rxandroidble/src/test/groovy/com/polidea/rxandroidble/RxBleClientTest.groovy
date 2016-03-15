@@ -3,6 +3,7 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.observers.TestSubscriber
 import spock.lang.Specification
@@ -24,7 +25,7 @@ class RxBleClientTest extends Specification {
     def setup() {
         contextMock.getApplicationContext() >> contextMock
         rxBleRadio = new FlatRxBleRadio()
-        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio, adapterStateObservable.asObservable(), uuidParserSpy)
+        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio, adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat))
     }
 
     def "should return same instance of client"() {

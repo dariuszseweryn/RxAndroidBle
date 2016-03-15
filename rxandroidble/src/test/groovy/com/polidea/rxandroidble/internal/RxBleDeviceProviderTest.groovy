@@ -3,12 +3,13 @@ package com.polidea.rxandroidble.internal
 import android.bluetooth.BluetoothDevice
 import com.polidea.rxandroidble.FlatRxBleRadio
 import com.polidea.rxandroidble.MockRxBleAdapterWrapper
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import spock.lang.Specification
 
 class RxBleDeviceProviderTest extends Specification {
     def mockRadio = new FlatRxBleRadio()
     def mockAdapterWrapper = Mock MockRxBleAdapterWrapper
-    def objectUnderTest = new RxBleDeviceProvider(mockAdapterWrapper, mockRadio)
+    def objectUnderTest = new RxBleDeviceProvider(mockAdapterWrapper, mockRadio, Mock(BleConnectionCompat))
 
     def setup() {
         mockAdapterWrapper.getRemoteDevice(_) >> {
