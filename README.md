@@ -58,5 +58,5 @@ Paweł Urban (pawel.urban@polidea.com)
 
 ## Maintained by
 
-[![Polidea](https://github.com/Polidea/RxAndroidBle/blob/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
+[![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
 
