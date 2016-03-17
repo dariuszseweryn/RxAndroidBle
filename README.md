@@ -10,7 +10,7 @@ RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headach
 For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
 
 ## Usage
-TBD 
+TBD x
 
 ## Download
 ### Gradle
