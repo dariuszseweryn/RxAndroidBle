@@ -10,7 +10,7 @@ RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headach
 For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
 
 ## Usage
-TBD
+TBD 
 
 ## Download
 ### Gradle
@@ -40,7 +40,7 @@ Paweł Urban (pawel.urban@polidea.com)
 
 ## License
 
-    Copyright 2016 Polidea Sp. z o.o 
+    Copyright 2016 Polidea Sp. z o.o
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -53,10 +53,9 @@ Paweł Urban (pawel.urban@polidea.com)
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-    
-    
+
+
 
 ## Maintained by
 
 [![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
-
