@@ -1,22 +1,24 @@
-RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle)
-========================================================================================================================================
+# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle)
+## Introduction
 
-RxJava backed Bluetooth Low Energy support for Android. The library does for you:
+RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
 
- * Fancy asynchronous operations support
- * Threading management
- * Connection error handling
- 
-This is a documentation sneak peak, stay tuned for more.
+ * Fancy asynchronous operations support (read, write, notifications)
+ * Threading management in order to meet Android contracts
+ * Connection and operation error handling
 
-Disclaimer
--------
-This library is still under development and may contain bugs. Use snapshot with caution.
+For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
 
-Usage
--------
+# Usage
+TBD
 
-Maven
+# Download
+### Gradle
+
+```java
+compile "com.polidea.rxandroidble:rxandroidble:0.0.1"
+```
+### Maven
 
 ```xml
 <dependency>
@@ -26,20 +28,17 @@ Maven
   <type>aar</type>
 </dependency>
 ```
+# Contributing
+If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
 
-Gradle
+When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible. Please also make sure your code compiles by running ```gradle clean checkstyle test```.
 
-```java
-compile "com.polidea.rxandroidble:rxandroidble:0.0.1"
-```
-Authors
--------
+# Maintainers
 Dariusz Seweryn (dariusz.seweryn@polidea.com)
 
 Paweł Urban (pawel.urban@polidea.com)
 
-License
--------
+# License
 
     Copyright 2016 Polidea Sp. z o.o 
 
@@ -54,3 +53,10 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+    
+    
+
+# Maintained by
+
+[![Polidea](site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
+
