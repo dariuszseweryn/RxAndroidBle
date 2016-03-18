@@ -16,7 +16,7 @@ TBD x
 ### Gradle
 
 ```java
-compile "com.polidea.rxandroidble:rxandroidble:0.0.1"
+compile "com.polidea.rxandroidble:rxandroidble:0.0.2"
 ```
 ### Maven
 
@@ -24,7 +24,7 @@ compile "com.polidea.rxandroidble:rxandroidble:0.0.1"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <type>aar</type>
 </dependency>
 ```
