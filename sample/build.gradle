@@ -1,4 +1,19 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+    }
+}
+
+repositories {
+    mavenLocal()
+}
 
 android {
     compileSdkVersion 23
@@ -17,9 +32,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
-    compile "com.polidea.rxandroidble:rxandroidble:0.0.2"
+    compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.0.0-SNAPSHOT', changing: true
+    compile 'com.android.support:design:23.2.1'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'io.reactivex:rxandroid:1.1.0'
+    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.trello:rxlifecycle:0.5.0'
+    compile 'com.trello:rxlifecycle-components:0.5.0'
 }

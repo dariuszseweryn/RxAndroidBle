@@ -19,13 +19,15 @@ class RxBleClientTest extends Specification {
     UUIDUtil uuidParserSpy = Spy UUIDUtil
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
+    MockLocationServicesStatus locationServicesStatusMock = new MockLocationServicesStatus()
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
 
     def setup() {
         contextMock.getApplicationContext() >> contextMock
         rxBleRadio = new FlatRxBleRadio()
-        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio, adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat))
+        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio,
+                adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
     }
 
     def "should start BLE scan if subscriber subscribes to the scan observable"() {
@@ -133,7 +135,7 @@ class RxBleClientTest extends Specification {
         secondSubscriber.assertValueCount 0
     }
 
-    def "should emit error if bluetooth scan failed to start"() {
+    def "should emit BleScanException if bluetooth scan failed to start"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
         bleAdapterWrapperSpy.startLeScan(_) >> false
@@ -143,17 +145,32 @@ class RxBleClientTest extends Specification {
 
         then:
         firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == BLE_CANNOT_START
+            BleScanException exception -> exception.reason == BLUETOOTH_CANNOT_START
         }
     }
 
-    def "should emit error if bluetooth was disabled during scan"() {
+    def "should emit BleScanException if bluetooth was disabled during scan"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
         adapterStateObservable.disableBluetooth()
+
+        then:
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
+        }
+    }
+
+    def "should emit BleScanException if bluetooth has been disabled scan"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> false
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
         firstSubscriber.assertError {
@@ -173,6 +190,44 @@ class RxBleClientTest extends Specification {
         firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_NOT_AVAILABLE
         }
+    }
+
+    def "should emit BleScanException if location permission was not granted"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        locationServicesStatusMock.isLocationPermissionApproved = false
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == LOCATION_PERMISSION_MISSING
+        }
+    }
+
+    @Unroll("should emit BleScanException if location services are required(#required) and enabled(#enabled)")
+    def "should emit BleScanException if location services are in certain state"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+
+        then:
+
+        if (assertError)
+            firstSubscriber.assertError { BleScanException exception -> exception.reason == LOCATION_SERVICES_DISABLED }
+        else {
+            firstSubscriber.assertNoErrors()
+        }
+
+        where:
+        required | enabled | assertError
+        true     | false   | true
+        true     | true    | false
+        false    | false   | false
+        false    | true    | false
     }
 
     @Unroll

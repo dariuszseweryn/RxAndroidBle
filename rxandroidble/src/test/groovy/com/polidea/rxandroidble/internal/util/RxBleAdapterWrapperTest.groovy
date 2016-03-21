@@ -57,7 +57,6 @@ class RxBleAdapterWrapperTest extends Specification {
         startResult | _
         true        | _
         false       | _
-
     }
 
     def "should pass through stopScan()"() {
@@ -69,5 +68,21 @@ class RxBleAdapterWrapperTest extends Specification {
 
         then:
         1 * mockAdapter.stopLeScan(callback)
+    }
+
+    def "should check if bluetooth is enabled"() {
+        when:
+        def isEnabled = objectUnderTest.isBluetoothEnabled()
+
+        then:
+        1 * mockAdapter.isEnabled() >> isEnabledInAdapter
+
+        and:
+        isEnabled == isEnabledInAdapter
+
+        where:
+        isEnabledInAdapter | _
+        true               | _
+        false              | _
     }
 }

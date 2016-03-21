@@ -33,7 +33,8 @@ public abstract class RxBleClient {
     }
 
     /**
-     * Obtain instance of RxBleDevice for provided MAC address.
+     * Obtain instance of RxBleDevice for provided MAC address. This may be the same instance that was provided during scan operation but
+     * this in not guaranteed.
      *
      * @param macAddress Bluetooth LE device MAC address.
      * @return Handle for Bluetooth LE operations.
@@ -49,7 +50,7 @@ public abstract class RxBleClient {
      * the user to enable it if it's disabled.
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
-     * @throws com.polidea.rxandroidble.exceptions.BleScanException in case of error starting the scan
+     * @throws com.polidea.rxandroidble.exceptions.BleScanException emits in case of error starting the scan
      */
     public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs);
 }

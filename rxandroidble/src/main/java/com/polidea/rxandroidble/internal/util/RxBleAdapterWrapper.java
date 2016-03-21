@@ -20,6 +20,10 @@ public class RxBleAdapterWrapper {
         return bluetoothAdapter != null;
     }
 
+    public boolean isBluetoothEnabled() {
+        return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
+    }
+
     public boolean startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         return bluetoothAdapter.startLeScan(leScanCallback);
     }

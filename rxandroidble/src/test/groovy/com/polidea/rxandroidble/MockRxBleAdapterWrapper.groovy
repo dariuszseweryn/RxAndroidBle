@@ -55,6 +55,11 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     }
 
     @Override
+    boolean isBluetoothEnabled() {
+        return true
+    }
+
+    @Override
     void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
 
     }
