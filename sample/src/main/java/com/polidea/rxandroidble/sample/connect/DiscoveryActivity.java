@@ -17,8 +17,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subjects.PublishSubject;
 
 import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
 
@@ -35,20 +35,21 @@ public class DiscoveryActivity extends RxAppCompatActivity {
     SwitchCompat autoConnectToggleSwitch;
     private String macAddress;
     private RxBleDevice bleDevice;
-    private Subscription connectionsSubscription;
     private Observable<RxBleConnection> connectionObservable;
+    private PublishSubject<Void> subjectTriggeringDisconnect = PublishSubject.create();
 
     @OnClick(R.id.connect_toggle)
     public void onScanToggleClick() {
 
         if (isConnected()) {
-            connectionsSubscription.unsubscribe();
+            triggerDisconnect();
         } else {
             connectionObservable = bleDevice.establishConnection(this, autoConnectToggleSwitch.isChecked())
+                    .takeUntil(subjectTriggeringDisconnect)
                     .compose(bindUntilEvent(PAUSE))
                     .doOnUnsubscribe(this::setNotConnected)
                     .compose(new ConnectionSharingAdapter());
-            connectionsSubscription = connectionObservable
+            connectionObservable
                     .flatMap(RxBleConnection::discoverServices)
                     .subscribe(this::updateDiscoveredServices, this::onConnectionFailure);
         }
@@ -72,7 +73,7 @@ public class DiscoveryActivity extends RxAppCompatActivity {
     }
 
     private boolean isConnected() {
-        return connectionsSubscription != null;
+        return connectionObservable != null;
     }
 
     private void onConnectionFailure(Throwable throwable) {
@@ -84,8 +85,12 @@ public class DiscoveryActivity extends RxAppCompatActivity {
     }
 
     private void setNotConnected() {
-        connectionsSubscription = null;
         connectionObservable = null;
+        updateUI();
+    }
+
+    private void triggerDisconnect() {
+        subjectTriggeringDisconnect.onNext(null);
     }
 
     private void updateDiscoveredServices(RxBleDeviceServices rxBleDeviceServices) {
@@ -93,7 +98,10 @@ public class DiscoveryActivity extends RxAppCompatActivity {
     }
 
     private void updateUI() {
-        connectButton.setText(isConnected() ? R.string.disconnect : R.string.connect);
-        autoConnectToggleSwitch.setEnabled(!isConnected());
+        runOnUiThread(() -> {
+            final boolean connected = isConnected();
+            connectButton.setText(connected ? R.string.disconnect : R.string.connect);
+            autoConnectToggleSwitch.setEnabled(!connected);
+        });
     }
 }

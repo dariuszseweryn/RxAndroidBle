@@ -12,7 +12,6 @@ public class ConnectionSharingAdapter implements Observable.Transformer<RxBleCon
 
     @Override
     public Observable<RxBleConnection> call(Observable<RxBleConnection> source) {
-
         synchronized (connectionObservable) {
             final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
 
@@ -20,7 +19,10 @@ public class ConnectionSharingAdapter implements Observable.Transformer<RxBleCon
                 return rxBleConnectionObservable;
             }
 
-            final Observable<RxBleConnection> newConnectionObservable = source.replay(1).refCount();
+            final Observable<RxBleConnection> newConnectionObservable = source
+                    .doOnUnsubscribe(() -> connectionObservable.set(null))
+                    .replay(1)
+                    .refCount();
             connectionObservable.set(newConnectionObservable);
             return newConnectionObservable;
         }

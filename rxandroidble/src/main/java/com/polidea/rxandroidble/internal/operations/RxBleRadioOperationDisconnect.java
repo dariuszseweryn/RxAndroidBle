@@ -32,18 +32,15 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     @Override
     public void run() {
-
         //noinspection Convert2MethodRef
         just(bluetoothGattAtomicReference.get())
-                .flatMap(bluetoothGatt ->
-                        bluetoothGatt == null ? Observable.empty() : just(bluetoothGatt))
-                .flatMap(bluetoothGatt ->
-                        isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
+                .filter(bluetoothGatt -> bluetoothGatt != null)
+                .flatMap(bluetoothGatt -> isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
                 .doOnTerminate(() -> releaseRadio())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         bluetoothGatt -> bluetoothGatt.close(),
-                        throwable1 -> onError(throwable1),
+                        throwable -> onError(throwable),
                         () -> onCompleted()
                 );
     }

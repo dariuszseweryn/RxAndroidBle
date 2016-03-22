@@ -1,9 +1,7 @@
 package com.polidea.rxandroidble.internal.connection
-
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
@@ -13,26 +11,19 @@ import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider.*
+
 public class RxBleConnectionConnectorImplTest extends Specification {
 
     RxBleRadio mockRadio
-
     Context mockContext
-
     BluetoothDevice mockDevice
-
     RxBleGattCallback mockCallback
-
     RxBleGattCallback.Provider mockCallbackProvider
-
     RxBleRadioOperationConnect mockConnect
-
     RxBleRadioOperationDisconnect mockDisconnect
-
     RxBleConnectionConnectorOperationsProvider mockOperationsProvider
-
     RxBleConnectionConnectorImpl objectUnderTest
-
     BleConnectionCompat mockConnectionCompat
 
     def setup() {
@@ -48,7 +39,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
         mockConnect = Mock RxBleRadioOperationConnect
         mockDisconnect = Mock RxBleRadioOperationDisconnect
         mockOperationsProvider = Mock RxBleConnectionConnectorOperationsProvider
-        mockOperationsProvider.provide(_, _, _, _, _) >> new Pair<>(mockConnect, mockDisconnect)
+        mockOperationsProvider.provide(*_) >> new RxBleOperations(mockConnect, mockDisconnect)
 
         objectUnderTest = new RxBleConnectionConnectorImpl(mockDevice, mockCallbackProvider, mockOperationsProvider, mockRadio, mockConnectionCompat)
     }
@@ -147,7 +138,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
         def mockGatt = Mock(BluetoothGatt)
         def testError = new Throwable("test")
         mockRadio.queue(_) >> Observable.just(mockGatt)
-        mockCallback.disconnectedErrorObservable() >> Observable.error(testError)
+        mockCallback.observeDisconnect() >> Observable.error(testError)
 
         when:
         objectUnderTest.prepareConnection(null, true).subscribe(testSubscriber)

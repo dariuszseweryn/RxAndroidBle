@@ -42,18 +42,10 @@ public class RxBleGattCallback {
     private final PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
-
     private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
-            .flatMap(rxBleConnectionState -> {
-                if (isDisconnectedOrDisconnecting(rxBleConnectionState)) {
-                    bluetoothGattBehaviorSubject.onCompleted();
-                    return Observable.error(new BleDisconnectedException());
-                } else {
-                    return Observable.empty();
-                }
-            })
-            .filter(ignored -> false)
-            .cache(1);
+            .filter(this::isDisconnectedOrDisconnecting)
+            .doOnNext(rxBleConnectionState -> bluetoothGattBehaviorSubject.onCompleted())
+            .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()));
 
     private boolean isDisconnectedOrDisconnecting(RxBleConnectionState rxBleConnectionState) {
         return rxBleConnectionState == RxBleConnectionState.DISCONNECTED || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
@@ -273,7 +265,12 @@ public class RxBleGattCallback {
         return bluetoothGattBehaviorSubject;
     }
 
-    public <T> Observable<T> disconnectedErrorObservable() {
+    /**
+     * @return Observable that never emits onNexts.
+     * @throws BleDisconnectedException emitted in case of a disconnect that is a part of the normal flow
+     * @throws BleGattException         emitted in case of connection was interrupted unexpectedly.
+     */
+    public <T> Observable<T> observeDisconnect() {
         //noinspection unchecked
         return disconnectedErrorObservable;
     }
