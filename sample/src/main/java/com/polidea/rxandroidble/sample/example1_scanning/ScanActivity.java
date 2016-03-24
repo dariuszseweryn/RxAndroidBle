@@ -56,7 +56,7 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanSubscription.unsubscribe();
         } else {
-            scanSubscription = rxBleClient.scanBleDevices(null)
+            scanSubscription = rxBleClient.scanBleDevices()
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::setNotScanning)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);

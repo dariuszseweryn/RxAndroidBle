@@ -19,3 +19,4 @@ Version 0.0.3
 * Fixed error callback notifying about disconnects
 
 Version 0.0.4
+* Added ability to filter scan results with one service more easily

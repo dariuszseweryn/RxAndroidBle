@@ -52,5 +52,5 @@ public abstract class RxBleClient {
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      * @throws com.polidea.rxandroidble.exceptions.BleScanException emits in case of error starting the scan
      */
-    public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs);
+    public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs);
 }
