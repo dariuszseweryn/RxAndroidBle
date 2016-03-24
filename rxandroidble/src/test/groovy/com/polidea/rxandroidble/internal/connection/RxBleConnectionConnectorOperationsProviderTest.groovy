@@ -2,7 +2,6 @@ package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
@@ -32,9 +31,9 @@ public class RxBleConnectionConnectorOperationsProviderTest extends Specificatio
         def pair = provider.provide(mockContext, mockDevice, autoConnectValue, mockConnectionCompat, mockCallback)
 
         then:
-        assert pair instanceof Pair
-        assert pair.first instanceof RxBleRadioOperationConnect
-        assert pair.second instanceof RxBleRadioOperationDisconnect
+        assert pair instanceof RxBleConnectionConnectorOperationsProvider.RxBleOperations
+        assert pair.connect instanceof RxBleRadioOperationConnect
+        assert pair.connect instanceof RxBleRadioOperationDisconnect
 
         where:
         id | autoConnectValue

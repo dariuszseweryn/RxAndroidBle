@@ -8,4 +8,9 @@
     <string name="connection_state">State: %s</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
+    <string name="title_example1">Example RxAndroidBle usage</string>
+    <string name="title_example2">Connection &amp; connection state</string>
+    <string name="title_example3">Service discovery</string>
+    <string name="title_example4">Characteristic operations</string>
+    <string name="not_clickable">No action</string>
 </resources>

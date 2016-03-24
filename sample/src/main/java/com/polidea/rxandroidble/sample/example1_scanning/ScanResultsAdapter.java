@@ -1,7 +1,6 @@
-package com.polidea.rxandroidble.sample.scan;
+package com.polidea.rxandroidble.sample.example1_scanning;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +17,9 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHolder> {
+class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHolder> {
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         @Bind(android.R.id.text1)
         public TextView line1;
@@ -46,7 +45,7 @@ public class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.
     private final View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Log.d("tag", "view vlick");
+
             if (onAdapterItemClickListener != null) {
                 onAdapterItemClickListener.onAdapterViewClick(v);
             }
@@ -102,5 +101,4 @@ public class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.
     public void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
         this.onAdapterItemClickListener = onAdapterItemClickListener;
     }
-
 }

@@ -40,7 +40,8 @@ public class RxBleConnectionConnectorOperationsProvider {
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
         );
         // getBluetoothGatt completed when the connection is unsubscribed
-        operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set, ignored -> {});
+        operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set, ignored -> {
+        });
         return new RxBleOperations(operationConnect, operationDisconnect);
     }
 }

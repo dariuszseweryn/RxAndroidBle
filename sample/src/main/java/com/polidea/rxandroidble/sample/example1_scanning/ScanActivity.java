@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.sample.scan;
+package com.polidea.rxandroidble.sample.example1_scanning;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,9 +12,9 @@ import android.widget.Toast;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleScanResult;
 import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
-import com.polidea.rxandroidble.sample.connect.DiscoveryActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -35,7 +35,7 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_example1);
         ButterKnife.bind(this);
         rxBleClient = SampleApplication.getRxBleClient(this);
         configureResultList();
@@ -73,7 +73,6 @@ public class ScanActivity extends AppCompatActivity {
         recyclerView.setAdapter(resultsAdapter);
         resultsAdapter.setOnAdapterItemClickListener(view -> {
             final int childAdapterPosition = recyclerView.getChildAdapterPosition(view);
-            Log.d("tag", "Click: " + childAdapterPosition);
             final RxBleScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
             onAdapterItemClick(itemAtPosition);
         });
@@ -109,8 +108,8 @@ public class ScanActivity extends AppCompatActivity {
     private void onAdapterItemClick(RxBleScanResult scanResults) {
         final String macAddress = scanResults.getBleDevice().getMacAddress();
         Log.v(getClass().getSimpleName(), "Connection requested for " + macAddress);
-        final Intent intent = new Intent(this, DiscoveryActivity.class);
-        intent.putExtra(DiscoveryActivity.EXTRA_MAC_ADDRESS, macAddress);
+        final Intent intent = new Intent(this, DeviceActivity.class);
+        intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
         startActivity(intent);
     }
 

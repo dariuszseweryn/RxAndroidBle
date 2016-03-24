@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble.exceptions;
 
-import android.content.Context;
-
 /**
  * Exception emitted when the BLE link has been interrupted as a result of an error. The exception contains
  * detailed explanation of the error source (type of operation) and the code proxied from

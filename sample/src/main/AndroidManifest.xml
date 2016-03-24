@@ -9,14 +9,24 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <activity android:name=".scan.ScanActivity">
+        <activity
+            android:name=".example1_scanning.ScanActivity"
+            android:label="@string/title_example1">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".connect.DiscoveryActivity"/>
+        <activity
+            android:name=".example2_connection.ConnectionExampleActivity"
+            android:label="@string/title_example2"/>
+        <activity
+            android:name=".example3_discovery.ServiceDiscoveryExampleActivity"
+            android:label="@string/title_example3"/>
+        <activity
+            android:name=".example4_characteristic.CharacteristicOperationExampleActivity"
+            android:label="@string/title_example4"/>
+        <activity android:name=".DeviceActivity"/>
     </application>
-
 </manifest>

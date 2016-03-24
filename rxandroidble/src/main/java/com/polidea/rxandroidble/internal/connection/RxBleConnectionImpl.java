@@ -10,7 +10,6 @@ import android.support.v4.util.Pair;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
-import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
@@ -71,7 +70,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
@@ -82,7 +81,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> getNotification(UUID characteristicUuid) {
+    public Observable<Observable<byte[]>> getNotification(@NonNull UUID characteristicUuid) {
         synchronized (notificationObservableMap) {
             final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);
 
@@ -143,7 +142,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @NonNull
     private Observable<BluetoothGattDescriptor> getClientConfigurationDescriptor(UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
-                .switchIfEmpty(error(new BleCharacteristicNotFoundException(characteristicUuid)))
                 .flatMap(this::getClientCharacteristicConfig);
     }
 
@@ -161,9 +159,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
+    public Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
-                .switchIfEmpty(error(new BleCharacteristicNotFoundException(characteristicUuid)))
                 .flatMap(bluetoothGattCharacteristic -> {
                     final RxBleRadioOperationCharacteristicRead operationCharacteristicRead =
                             new RxBleRadioOperationCharacteristicRead(
@@ -176,16 +173,15 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
         return getCharacteristic(characteristicUuid)
-                .switchIfEmpty(error(new BleCharacteristicNotFoundException(characteristicUuid)))
                 .doOnNext(characteristic -> characteristic.setValue(data))
                 .flatMap(this::writeCharacteristic)
                 .map(BluetoothGattCharacteristic::getValue);
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> writeCharacteristic(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
                 gattCallback,
                 bluetoothGatt,

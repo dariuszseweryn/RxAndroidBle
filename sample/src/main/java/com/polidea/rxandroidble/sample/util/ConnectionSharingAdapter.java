@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.sample.connect;
+package com.polidea.rxandroidble.sample.util;
 
 import com.polidea.rxandroidble.RxBleConnection;
 

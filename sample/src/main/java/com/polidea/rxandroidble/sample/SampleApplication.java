@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.polidea.rxandroidble.RxBleClient;
+import com.polidea.rxandroidble.internal.RxBleLog;
 
 public class SampleApplication extends Application {
 
@@ -21,5 +22,6 @@ public class SampleApplication extends Application {
     public void onCreate() {
         super.onCreate();
         rxBleClient = RxBleClient.getInstance(this);
+        RxBleClient.setLogLevel(RxBleLog.DEBUG);
     }
 }

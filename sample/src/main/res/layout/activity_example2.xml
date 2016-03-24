@@ -9,13 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".scan.ScanActivity">
-
-    <TextView
-        android:id="@+id/mac_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="@string/mac_address"/>
+    tools:context=".example1_scanning.ScanActivity">
 
     <TextView
         android:id="@+id/connection_state"
@@ -41,6 +35,4 @@
             android:layout_marginLeft="16dp"
             android:text="Connect"/>
     </LinearLayout>
-
-
 </LinearLayout>
