@@ -12,6 +12,10 @@ For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/quest
 ## Usage
 TBD x
 
+## Examples
+
+Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
+
 ## Download
 ### Gradle
 
