@@ -1,4 +1,4 @@
-# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [ ![Download](https://api.bintray.com/packages/bintray/jcenter/com.polidea.rxandroidble%3Arxandroidble/images/download.svg) ](https://bintray.com/bintray/jcenter/com.polidea.rxandroidble%3Arxandroidble/_latestVersion)
+# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [ ![Download](https://api.bintray.com/packages/bintray/jcenter/com.polidea.rxandroidble:rxandroidble/images/download.svg) ](https://bintray.com/pawel-urban/maven/com.polidea.rxandroidble%3Arxandroidble/_latestVersion)
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -20,7 +20,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```java
-compile "com.polidea.rxandroidble:rxandroidble:0.0.2"
+compile "com.polidea.rxandroidble:rxandroidble:0.0.3"
 ```
 ### Maven
 
