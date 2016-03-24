@@ -33,7 +33,7 @@ public class RxBleConnectionConnectorOperationsProviderTest extends Specificatio
         then:
         assert pair instanceof RxBleConnectionConnectorOperationsProvider.RxBleOperations
         assert pair.connect instanceof RxBleRadioOperationConnect
-        assert pair.connect instanceof RxBleRadioOperationDisconnect
+        assert pair.disconnect instanceof RxBleRadioOperationDisconnect
 
         where:
         id | autoConnectValue
