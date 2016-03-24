@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import rx.Observable;
 
-// TODO: [PU] 15.03.2016 Documentation
 class RxBleClientImpl extends RxBleClient {
 
     private final RxBleRadio rxBleRadio;
