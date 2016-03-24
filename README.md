@@ -28,7 +28,7 @@ compile "com.polidea.rxandroidble:rxandroidble:0.0.3"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <type>aar</type>
 </dependency>
 ```
