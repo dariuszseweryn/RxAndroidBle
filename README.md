@@ -10,9 +10,119 @@ RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headach
 For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
 
 ## Usage
-TBD x
+### Obtaining the client
+It's your job to maintain single instance of the client. You can use singleton, scopped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
 
-## Examples
+```java
+RxBleClient rxBleClient = RxBleClient.getInstance(context);
+```
+
+### Device discovery
+Scanning devices in the area is simple as that:
+
+```java
+Subscription scanSubscription = rxBleClient.scanBleDevices()
+	.subscribe(rxBleScanResult -> {
+	    // Process scan result here.
+	});
+	
+// When done, just unsubscribe.
+scanSubscription.unsubscribe();
+```
+
+### Connection
+For further BLE interactions the connection is required.
+
+```java
+String macAddress = "AA:BB:CC:DD:EE:FF";
+RxBleDevice device = rxBleClient.getBleDevice(macAddress);
+
+Subscription subscription = device.establishConnection(context, false) // <-- autoConnect flag
+	.subscribe(rxBleConnection -> {
+		// All GATT operations are done through the rxBleConnection.
+	});
+	
+// When done... unsubscribe and forget about connection teardown :)
+subscription.unsubscribe();
+```
+
+### Read / write operations
+#### Read
+```java
+device.establishConnection(context, false)
+	.flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
+	.subscribe(characteristicValue -> {
+		// Read characteristic value.
+	});
+
+```
+#### Write
+```java
+device.establishConnection(context, false)
+	.flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
+	.subscribe(characteristicValue -> {
+		// Characteristic value confirmed.
+	});
+```
+#### Multiple reads
+```java
+ device.establishConnection(context, false)
+    .flatMap(rxBleConnection -> Observable.combineLatest(
+        rxBleConnection.readCharacteristic(firstUUID),
+        rxBleConnection.readCharacteristic(secondUUID),
+        YourModelCombiningTwoValues::new
+    ))
+	.subscribe(model -> {
+	    // Process your model.
+	});
+```
+#### Read and write combined
+
+```java
+ device.establishConnection(context, false)
+    .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
+	    .doOnNext(bytes -> {
+	        // Process read data.
+	    })
+	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
+	.subscribe(writeBytes -> {
+		// Written data.
+	});
+```
+### Change notifications
+```java
+ device.establishConnection(context, false)
+    .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
+    .doOnNext(notificationObservable -> {
+    	// Notification has been set up
+    })
+    .flatMap(notificationObservable -> notificationObservable) // <-- Notification has been set up, now observe value changes.
+    .subscribe(bytes -> {
+    	// Given characteristic has been changes, here is the value.
+    });
+
+```
+### Observing connection state
+If you want to observe changes in device connection state just subscribe like below. On subscription you will receive the most current state instantly.
+
+```java
+device.observeConnectionStateChanges()
+    .subscribe(connectionState -> {
+    	// Process your way.
+    });
+```
+### Logging
+For connection debugging you can use extended logging
+
+```java
+RxBleClient.setLogLevel(RxBleLog.DEBUG);
+```
+
+### Error handling
+Every error you may encounter is proveided via onError callback. Each public method has JavaDoc explaining possible errors.
+
+
+## More examples
 
 Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
 
