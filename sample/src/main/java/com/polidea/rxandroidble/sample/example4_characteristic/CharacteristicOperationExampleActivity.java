@@ -35,13 +35,18 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     TextView readOutputView;
     @Bind(R.id.read_hex_output)
     TextView readHexOutputView;
+    @Bind(R.id.write_input)
+    TextView writeInput;
     @Bind(R.id.read)
     Button readButton;
+    @Bind(R.id.write)
+    Button writeButton;
+    @Bind(R.id.notify)
+    Button notifyButton;
     private UUID characteristicUuid;
     private PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
-
 
     @OnClick(R.id.read)
     public void onReadClick() {
@@ -53,7 +58,34 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                     .subscribe(bytes -> {
                         readOutputView.setText(new String(bytes));
                         readHexOutputView.setText(HexString.bytesToHex(bytes));
+                        writeInput.setText(HexString.bytesToHex(bytes));
                     }, this::onReadFailure);
+        }
+    }
+
+    @OnClick(R.id.write)
+    public void onWriteClick() {
+
+        if (isConnected()) {
+            connectionObservable
+                    .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, getInputBytes()))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(bytes -> {
+                        onWriteSuccess();
+                    }, this::onWriteFailure);
+        }
+    }
+
+    @OnClick(R.id.notify)
+    public void onNotifyClick() {
+
+        if (isConnected()) {
+            connectionObservable
+                    .flatMap(rxBleConnection -> rxBleConnection.getNotification(characteristicUuid))
+                    .doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
+                    .flatMap(notificationObservable -> notificationObservable)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
         }
     }
 
@@ -95,12 +127,37 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
     }
 
     private void onReadFailure(Throwable throwable) {
         //noinspection ConstantConditions
-        Snackbar.make(findViewById(android.R.id.content), "Read error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.main), "Read error: " + throwable, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void onWriteSuccess() {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(R.id.main), "Write success", Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void onWriteFailure(Throwable throwable) {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(R.id.main), "Write error: " + throwable, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void onNotificationReceived(byte[] bytes) {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(R.id.main), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void onNotificationSetupFailure(Throwable throwable) {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(R.id.main), "Notifications error: " + throwable, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void notificationHasBeenSetUp() {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(R.id.main), "Notifications has been set up", Snackbar.LENGTH_SHORT).show();
     }
 
     private void clearSubscription() {
@@ -115,5 +172,11 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private void updateUI() {
         connectButton.setText(isConnected() ? getString(R.string.disconnect) : getString(R.string.connect));
         readButton.setEnabled(isConnected());
+        writeButton.setEnabled(isConnected());
+        notifyButton.setEnabled(isConnected());
+    }
+
+    private byte[] getInputBytes() {
+        return HexString.hexToBytes(writeInput.getText().toString());
     }
 }

@@ -76,7 +76,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> getNotification(@NonNull UUID characteristicUuid) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid) {
         synchronized (notificationObservableMap) {
             final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);
 

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
@@ -56,7 +57,20 @@ public interface RxBleConnection {
      */
     Observable<RxBleDeviceServices> discoverServices();
 
-    Observable<Observable<byte[]>> getNotification(@NonNull UUID characteristicUuid);
+    /**
+     * Setup characteristic notification in order to receive callbacks when given characteristic has been changed. Returned observable will
+     * emit Observable<byte[]> once the notification setup has been completed. It is possible to setup more observables for the same
+     * characteristic and the lifecycle of the notification will be shared among them.
+     * <p>
+     * Notification is automatically unregistered once this observable is unsubscribed.
+     *
+     * @param characteristicUuid Characteristic UUID for notification setup.
+     * @return Observable emitting another observable when the notification setup is complete.
+     * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
+     * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
+     *                                                         reason or lack of permissions.
+     */
+    Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);
 
     /**
      * Convenience method for characteristic retrieval. First step is service discovery which is followed by service/characteristic

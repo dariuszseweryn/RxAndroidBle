@@ -13,4 +13,5 @@
     <string name="title_example3">Service discovery</string>
     <string name="title_example4">Characteristic operations</string>
     <string name="not_clickable">No action</string>
+    <string name="write_input">Write input</string>
 </resources>

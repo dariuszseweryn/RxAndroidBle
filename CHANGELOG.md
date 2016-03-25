@@ -21,5 +21,6 @@ Version 0.0.3
 Version 0.0.4
 * Removed duplicated API for connection state from RxBleConnection
 * Renamed API for connection state observation in RxBleDevice
+* Renamed API for notification setup, not it is RxBleConnection#setupNotification(UUID)
 * Added convenience method to check current connection state
 * Added ability to filter scan results with one service more easily

@@ -45,8 +45,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
                     .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
-
-        updateUI();
     }
 
     @Override
