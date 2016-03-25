@@ -27,10 +27,17 @@ class RxBleDeviceImpl implements RxBleDevice {
         this.connector = connector;
     }
 
-    public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
+    @Override
+    public Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
         return connectionStateSubject.distinctUntilChanged();
     }
 
+    @Override
+    public RxBleConnection.RxBleConnectionState getConnectionState() {
+        return observeConnectionStateChanges().toBlocking().first();
+    }
+
+    @Override
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
 

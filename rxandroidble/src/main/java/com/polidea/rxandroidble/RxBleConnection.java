@@ -42,8 +42,6 @@ public interface RxBleConnection {
         }
     }
 
-    Observable<RxBleConnectionState> getConnectionState();
-
     /**
      * Performs GATT service discovery and emits discovered results. After service discovery you can walk through
      * {@link android.bluetooth.BluetoothGattService}s and {@link BluetoothGattCharacteristic}s.

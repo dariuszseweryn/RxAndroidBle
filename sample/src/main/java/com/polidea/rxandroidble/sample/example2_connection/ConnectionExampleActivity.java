@@ -42,7 +42,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
             connectionSubscription = bleDevice.establishConnection(this, autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(this::setNotConnected)
+                    .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
 
@@ -59,14 +59,14 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
 
         // How to listen for connection state changes
-        bleDevice.getConnectionState()
+        bleDevice.observeConnectionStateChanges()
                 .compose(bindUntilEvent(DESTROY))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);
     }
 
     private boolean isConnected() {
-        return connectionSubscription != null;
+        return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
 
     private void onConnectionFailure(Throwable throwable) {
@@ -81,9 +81,10 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
         connectionStateView.setText(newState.toString());
+        updateUI();
     }
 
-    private void setNotConnected() {
+    private void clearSubscription() {
         connectionSubscription = null;
         updateUI();
     }

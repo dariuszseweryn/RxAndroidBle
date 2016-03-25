@@ -18,7 +18,6 @@ import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
@@ -31,17 +30,16 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     RecyclerView recyclerView;
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
-    private Subscription connectionSubscription;
     private String macAddress;
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        connectionSubscription = bleDevice.establishConnection(this, false)
+        bleDevice.establishConnection(this, false)
                 .flatMap(RxBleConnection::discoverServices)
                 .first() // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnUnsubscribe(this::setNotConnected)
+                .doOnUnsubscribe(this::updateUI)
                 .subscribe(adapter::swapScanResult, this::onConnectionFailure);
 
         updateUI();
@@ -80,22 +78,18 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
             intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
             startActivity(intent);
         } else {
+            //noinspection ConstantConditions
             Snackbar.make(findViewById(android.R.id.content), R.string.not_clickable, Snackbar.LENGTH_SHORT).show();
         }
     }
 
     private boolean isConnected() {
-        return connectionSubscription != null;
+        return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
-    }
-
-    private void setNotConnected() {
-        connectionSubscription = null;
-        updateUI();
     }
 
     private void updateUI() {

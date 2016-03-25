@@ -76,11 +76,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<RxBleConnectionState> getConnectionState() {
-        return gattCallback.getOnConnectionStateChange();
-    }
-
-    @Override
     public Observable<Observable<byte[]>> getNotification(@NonNull UUID characteristicUuid) {
         synchronized (notificationObservableMap) {
             final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);

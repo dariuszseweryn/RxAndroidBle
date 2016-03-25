@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -41,15 +40,6 @@ public class ScanActivity extends AppCompatActivity {
         configureResultList();
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (isScanning()) {
-            scanSubscription.unsubscribe();
-        }
-    }
-
     @OnClick(R.id.scan_toggle_btn)
     public void onScanToggleClick() {
 
@@ -58,24 +48,11 @@ public class ScanActivity extends AppCompatActivity {
         } else {
             scanSubscription = rxBleClient.scanBleDevices()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(this::setNotScanning)
+                    .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
         }
 
         updateButtonUIState();
-    }
-
-    private void configureResultList() {
-        recyclerView.setHasFixedSize(true);
-        LinearLayoutManager recyclerLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(recyclerLayoutManager);
-        resultsAdapter = new ScanResultsAdapter();
-        recyclerView.setAdapter(resultsAdapter);
-        resultsAdapter.setOnAdapterItemClickListener(view -> {
-            final int childAdapterPosition = recyclerView.getChildAdapterPosition(view);
-            final RxBleScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
-            onAdapterItemClick(itemAtPosition);
-        });
     }
 
     private void handleBleScanException(BleScanException bleScanException) {
@@ -101,13 +78,37 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (isScanning()) {
+            /*
+             * Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
+             */
+            scanSubscription.unsubscribe();
+        }
+    }
+
+    private void configureResultList() {
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager recyclerLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(recyclerLayoutManager);
+        resultsAdapter = new ScanResultsAdapter();
+        recyclerView.setAdapter(resultsAdapter);
+        resultsAdapter.setOnAdapterItemClickListener(view -> {
+            final int childAdapterPosition = recyclerView.getChildAdapterPosition(view);
+            final RxBleScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
+            onAdapterItemClick(itemAtPosition);
+        });
+    }
+
     private boolean isScanning() {
         return scanSubscription != null;
     }
 
     private void onAdapterItemClick(RxBleScanResult scanResults) {
         final String macAddress = scanResults.getBleDevice().getMacAddress();
-        Log.v(getClass().getSimpleName(), "Connection requested for " + macAddress);
         final Intent intent = new Intent(this, DeviceActivity.class);
         intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
         startActivity(intent);
@@ -120,7 +121,7 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
-    private void setNotScanning() {
+    private void clearSubscription() {
         scanSubscription = null;
         resultsAdapter.clearScanResults();
         updateButtonUIState();

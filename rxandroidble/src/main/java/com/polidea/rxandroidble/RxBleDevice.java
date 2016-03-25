@@ -11,12 +11,16 @@ import rx.Observable;
 public interface RxBleDevice {
 
     /**
-     * This observable returns only actual state of the BLE connection - it doesn't transmit errors.
-     * On subscription it returns immediately last known RxBleConnectionState.
+     * Observe changes to connection state of the device. On subscription it returns immediately last known RxBleConnectionState.
      *
      * @return the most current RxBleConnectionState
      */
-    Observable<RxBleConnection.RxBleConnectionState> getConnectionState();
+    Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges();
+
+    /**
+     * Returns current connection state
+     */
+    RxBleConnection.RxBleConnectionState getConnectionState();
 
     /**
      * Establishes connection with a given BLE device. {@link RxBleConnection} is a handle, used to process BLE operations with a connected

@@ -43,25 +43,6 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
     }
 
-    @Unroll
-    def "should proxy connection state from gatt callback"() {
-        given:
-        connectionStateChange.onNext(pushedStatus)
-
-        when:
-        objectUnderTest.getConnectionState().subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertValue(expectedState)
-
-        where:
-        pushedStatus                                       | expectedState
-        RxBleConnection.RxBleConnectionState.CONNECTED     | RxBleConnection.RxBleConnectionState.CONNECTED
-        RxBleConnection.RxBleConnectionState.DISCONNECTED  | RxBleConnection.RxBleConnectionState.DISCONNECTED
-        RxBleConnection.RxBleConnectionState.CONNECTING    | RxBleConnection.RxBleConnectionState.CONNECTING
-        RxBleConnection.RxBleConnectionState.DISCONNECTING | RxBleConnection.RxBleConnectionState.DISCONNECTING
-    }
-
     def "should emit BleGattCannotStartException if failed to start retrieving services"() {
         given:
         gattCallback.getOnServicesDiscovered() >> PublishSubject.create()
