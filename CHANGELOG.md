@@ -24,3 +24,5 @@ Version 0.0.4
 * Renamed API for notification setup, not it is RxBleConnection#setupNotification(UUID)
 * Added convenience method to check current connection state
 * Added ability to filter scan results with one service more easily
+* Reject establishConnection calls if connection is already established
+* Added adapter for sharing connections

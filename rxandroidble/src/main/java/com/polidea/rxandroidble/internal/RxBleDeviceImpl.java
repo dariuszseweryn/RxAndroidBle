@@ -5,8 +5,9 @@ import android.content.Context;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
+import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -19,8 +20,8 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
     private final RxBleConnection.Connector connector;
-    private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
     private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateSubject = BehaviorSubject.create(DISCONNECTED);
+    private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
         this.bluetoothDevice = bluetoothDevice;
@@ -41,35 +42,18 @@ class RxBleDeviceImpl implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
 
-            synchronized (connectionObservable) {
-                final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
-                if (rxBleConnectionObservable != null) {
-                    return rxBleConnectionObservable;
+                if (isConnected.compareAndSet(false, true)) {
+                    return connector.prepareConnection(context, autoConnect)
+                            .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
+                            .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
+                            .doOnUnsubscribe(() -> {
+                                connectionStateSubject.onNext(DISCONNECTED);
+                                isConnected.set(false);
+                            });
+                } else {
+                    return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
                 }
-
-                final Observable<RxBleConnection> newConnectionObservable =
-                        connector.prepareConnection(context, autoConnect)
-                                .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
-                                .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
-                                .doOnUnsubscribe(() -> {
-                                    clearConnectionObservable();
-                                    connectionStateSubject.onNext(DISCONNECTED);
-                                })
-                                .replay()
-                                .refCount();
-
-                connectionObservable.set(newConnectionObservable);
-                return newConnectionObservable;
-            }
         });
-    }
-
-    private void clearConnectionObservable() {
-        synchronized (connectionObservable) {
-            //FIXME: [DS] 11.02.2016 Potential race condition when one subscriber would
-            // like to just after the previous one has unsubscribed
-            connectionObservable.set(null);
-        }
     }
 
     @Override

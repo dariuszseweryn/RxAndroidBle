@@ -16,6 +16,6 @@ public class BleServiceNotFoundException extends BleException {
 
     @Override
     public String toString() {
-        return "BleServiceNotFoundException{" + "serviceUUID=" + serviceUUID + '}';
+        return "BleServiceNotFoundException{serviceUUID=" + serviceUUID + '}';
     }
 }

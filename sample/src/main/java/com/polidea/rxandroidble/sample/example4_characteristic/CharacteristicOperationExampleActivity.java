@@ -11,8 +11,8 @@ import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
-import com.polidea.rxandroidble.sample.util.ConnectionSharingAdapter;
 import com.polidea.rxandroidble.sample.util.HexString;
+import com.polidea.rxandroidble.utils.ConnectionSharingAdapter;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
@@ -81,7 +81,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
         if (isConnected()) {
             connectionObservable
-                    .flatMap(rxBleConnection -> rxBleConnection.getNotification(characteristicUuid))
+                    .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
                     .doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())

@@ -3,6 +3,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
+import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException
 import com.polidea.rxandroidble.exceptions.BleGattException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import rx.Observable
@@ -208,20 +209,18 @@ public class RxBleDeviceTest extends Specification {
         testSubscriber.assertValueCount 1
     }
 
-    def "should reuse connection if subscribed with second subscriber"() {
+    def "should emit error if already connected"() {
 
         given:
-        def firstSubscriber = new TestSubscriber()
-        def secondSubscriber = new TestSubscriber()
-        rxStartConnecting().subscribe(firstSubscriber)
+        def testSubscriber = new TestSubscriber()
+        rxStartConnecting().subscribe()
         notifyConnectionWasEstablished()
 
         when:
-        rxStartConnecting().subscribe(secondSubscriber)
+        rxStartConnecting().subscribe(testSubscriber)
 
         then:
-        firstSubscriber.assertValueCount 1
-        firstSubscriber.assertReceivedOnNext(secondSubscriber.onNextEvents)
+        testSubscriber.assertError BleAlreadyConnectedException
     }
 
     def "should create new connection if previous connection was established and released before second subscriber has subscribed"() {
