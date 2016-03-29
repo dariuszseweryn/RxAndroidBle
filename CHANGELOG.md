@@ -26,3 +26,5 @@ Version 0.0.4
 * Added ability to filter scan results with one service more easily
 * Reject establishConnection calls if connection is already established
 * Added adapter for sharing connections
+
+Version 0.0.5
