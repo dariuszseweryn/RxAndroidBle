@@ -11,10 +11,10 @@ For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/quest
 
 ## Usage
 ### Obtaining the client
-It's your job to maintain single instance of the client. You can use singleton, scopped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
+It's your job to maintain single instance of the client. You can use singleton, scoped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
 
 ```java
-RxBleClient rxBleClient = RxBleClient.getInstance(context);
+RxBleClient rxBleClient = RxBleClient.create(context);
 ```
 
 ### Device discovery
