@@ -27,4 +27,6 @@ Version 0.0.4
 * Reject establishConnection calls if connection is already established
 * Added adapter for sharing connections
 
-Version 0.0.5
+Version 1.0.0
+* Changed RxBleClient factory method name.
+* After this version the public API will be maintained to avoid conflicts.
