@@ -18,7 +18,7 @@ public abstract class RxBleClient {
      * @param context Any Android context
      * @return BLE client instance.
      */
-    public static RxBleClient getInstance(@NonNull Context context) {
+    public static RxBleClient create(@NonNull Context context) {
         return RxBleClientImpl.getInstance(context);
     }
 
