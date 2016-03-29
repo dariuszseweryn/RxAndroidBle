@@ -130,7 +130,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```java
-compile "com.polidea.rxandroidble:rxandroidble:0.0.3"
+compile "com.polidea.rxandroidble:rxandroidble:0.0.4"
 ```
 ### Maven
 
@@ -138,7 +138,7 @@ compile "com.polidea.rxandroidble:rxandroidble:0.0.3"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <type>aar</type>
 </dependency>
 ```
