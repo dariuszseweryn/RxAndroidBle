@@ -32,3 +32,5 @@ Version 1.0.0
 * After this version the public API will be maintained to avoid conflicts.
 
 Version 1.1
+* Fixed scan operation concurrency issue, thanks artem-zinnatullin!  (https://github.com/Polidea/RxAndroidBle/issues/5)
+* Fixed location permission requirement check (Android >=6.0)

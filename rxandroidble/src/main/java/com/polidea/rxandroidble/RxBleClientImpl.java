@@ -77,7 +77,22 @@ class RxBleClientImpl extends RxBleClient {
         } else if (checkIfLocationAccessIsEnabledIfRequired()) {
             return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
         } else {
-            return getMatchingQueuedScan(filterServiceUUIDs).switchIfEmpty(createScanOperation(filterServiceUUIDs));
+            return initializeScan(filterServiceUUIDs);
+        }
+    }
+
+    private Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
+        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+
+        synchronized (queuedScanOperations) {
+            Observable<RxBleScanResult> matchingQueuedScan = queuedScanOperations.get(filteredUUIDs);
+
+            if (matchingQueuedScan == null) {
+                matchingQueuedScan = createScanOperation(filterServiceUUIDs);
+                queuedScanOperations.put(filteredUUIDs, matchingQueuedScan);
+            }
+
+            return matchingQueuedScan;
         }
     }
 
@@ -103,28 +118,18 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.defer(() -> {
-            final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
-            final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
+        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+        final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
+        return rxBleRadio.queue(scanOperation)
+                .doOnUnsubscribe(() -> {
 
-            final Observable<RxBleScanResult> scanResultObservable = rxBleRadio.queue(scanOperation)
-                    .doOnUnsubscribe(() -> {
+                    synchronized (queuedScanOperations) {
                         scanOperation.stop();
                         queuedScanOperations.remove(filteredUUIDs);
-                    })
-                    .mergeWith(bluetoothAdapterOffExceptionObservable())
-                    .map(this::convertToPublicScanResult)
-                    .share();
-            queuedScanOperations.put(filteredUUIDs, scanResultObservable);
-            return scanResultObservable;
-        });
-    }
-
-    private Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.just(filterServiceUUIDs)
-                .map(uuidUtil::toDistinctSet)
-                .map(queuedScanOperations::get)
-                .filter(rxBleScanResultObservable -> rxBleScanResultObservable != null)
-                .flatMap(rxBleScanResultObservable -> rxBleScanResultObservable);
+                    }
+                })
+                .mergeWith(bluetoothAdapterOffExceptionObservable())
+                .map(this::convertToPublicScanResult)
+                .share();
     }
 }
