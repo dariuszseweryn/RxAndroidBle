@@ -12,11 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -58,9 +55,7 @@ class RxBleDeviceMock implements RxBleDevice {
             if (isConnected.compareAndSet(false, true)) {
             return connector.prepareConnection(context, autoConnect)
                     .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
-                    .doOnNext(rxBleConnection -> {
-                        connectionStateBehaviorSubject.onNext(CONNECTED);
-                    })
+                    .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
                     .doOnUnsubscribe(() -> {
                         connectionStateBehaviorSubject.onNext(DISCONNECTED);
                         isConnected.set(false);
@@ -97,9 +92,8 @@ class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public String toString() {
-        return "RxBleDeviceImpl{" +
-                "bluetoothDevice=" + name + '(' + macAddress + ')' +
-                '}';
+        return "RxBleDeviceImpl{" + "bluetoothDevice=" + name + '(' + macAddress + ')' + '}';
+
     }
 
     public List<UUID> getAdvertisedUUIDs() {

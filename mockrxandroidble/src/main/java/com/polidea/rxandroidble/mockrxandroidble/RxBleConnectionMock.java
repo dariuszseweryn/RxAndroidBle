@@ -14,7 +14,6 @@ import java.util.UUID;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.subjects.BehaviorSubject;
 
 class RxBleConnectionMock implements RxBleConnection {
 
@@ -38,7 +37,7 @@ class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(UUID characteristicUuid) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid) {
         synchronized (notificationObservableMap) {
             final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);
 
@@ -54,7 +53,7 @@ class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readCharacteristic(UUID characteristicUuid) {
+    public Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid).map(BluetoothGattCharacteristic::getValue);
     }
 
@@ -71,7 +70,7 @@ class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(UUID characteristicUuid, byte[] data) {
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .map(characteristic -> characteristic.setValue(data))
                 .flatMap(ignored -> Observable.just(data));
@@ -127,7 +126,7 @@ class RxBleConnectionMock implements RxBleConnection {
                 .share();
     }
 
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
