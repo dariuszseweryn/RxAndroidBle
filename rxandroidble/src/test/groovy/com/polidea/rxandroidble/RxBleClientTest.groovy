@@ -206,28 +206,35 @@ class RxBleClientTest extends Specification {
         }
     }
 
-    @Unroll("should emit BleScanException if location services are required(#required) and enabled(#enabled)")
+    @Unroll("should emit BleScanException if location services are required(#required) and enabled(#enabled) and granted(#granted")
     def "should emit BleScanException if location services are in certain state"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
+        locationServicesStatusMock.isLocationProviderRequired = required
+        locationServicesStatusMock.isLocationProviderEnabled = enabled
+        locationServicesStatusMock.isLocationPermissionApproved = granted
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
 
-        if (assertError)
+        if (expectError)
             firstSubscriber.assertError { BleScanException exception -> exception.reason == LOCATION_SERVICES_DISABLED }
         else {
             firstSubscriber.assertNoErrors()
         }
 
         where:
-        required | enabled | assertError
-        true     | false   | true
-        true     | true    | false
-        false    | false   | false
-        false    | true    | false
+        required | granted | enabled | expectError
+        true     | false   | false   | true
+        true     | false   | true    | true
+        true     | true    | false   | true
+        true     | true    | true    | false
+        false    | false   | false   | false
+        false    | false   | true    | false
+        false    | true    | false   | false
+        false    | true    | true    | false
     }
 
     @Unroll

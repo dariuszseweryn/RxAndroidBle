@@ -86,7 +86,7 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     private boolean checkIfLocationPermissionIsGrantedIfRequired() {
-        return locationServicesStatus.isLocationProviderEnabled() && !locationServicesStatus.isLocationPermissionApproved();
+        return locationServicesStatus.isLocationProviderRequired() && !locationServicesStatus.isLocationPermissionApproved();
     }
 
     private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
