@@ -5,11 +5,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.annotation.NonNull;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.subscriptions.Subscriptions;
 
+/**
+ * Observes Bluetooth adapter state. This responds to user interactions as well as system controlled state changes.
+ * <p>
+ * NOTE: Make sure that this Observable is unsubscribed according to the Activity lifecycle. It internally uses BroadcastReceiver, so
+ * it is required that it us unregistered before onDestroy.
+ */
 public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObservable.BleAdapterState> {
 
     public static class BleAdapterState {
@@ -30,7 +37,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
     }
 
-    public RxBleAdapterStateObservable(Context context) {
+    public RxBleAdapterStateObservable(@NonNull Context context) {
         super(subscriber -> onSubscribe(context.getApplicationContext(), subscriber));
     }
 
@@ -42,9 +49,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
             }
         };
         context.registerReceiver(receiver, createFilter());
-        subscriber.add(Subscriptions.create(() -> {
-            context.unregisterReceiver(receiver);
-        }));
+        subscriber.add(Subscriptions.create(() -> context.unregisterReceiver(receiver)));
     }
 
     private static void onStateBroadcastReceived(Intent intent, Subscriber<? super BleAdapterState> subscriber) {

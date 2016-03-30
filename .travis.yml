@@ -7,7 +7,7 @@ android:
     - android-23
     - extra-android-m2repository
   licenses:
-    - android-sdk-license-5be876d5
+    - 'android-sdk-license-.+'
 
 jdk:
   - oraclejdk8
@@ -20,9 +20,14 @@ notifications:
 
 sudo: false
 
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
 
 script:
-  - ./gradlew assembleDebug
+  - ./gradlew checkstyle assembleRelease test

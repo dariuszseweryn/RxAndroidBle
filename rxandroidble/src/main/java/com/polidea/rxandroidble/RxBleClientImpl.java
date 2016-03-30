@@ -3,18 +3,21 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.RxBleRadioImpl;
-import com.polidea.rxandroidble.internal.UUIDUtil;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
+import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,60 +28,65 @@ import rx.Observable;
 
 class RxBleClientImpl extends RxBleClient {
 
-    private static RxBleClientImpl CLIENT_INSTANCE;
     private final RxBleRadio rxBleRadio;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
+    private final LocationServicesStatus locationServicesStatus;
 
-    public static RxBleClientImpl getInstance(@NonNull Context context) {
-
-        if (CLIENT_INSTANCE == null) {
-
-            synchronized (RxBleClient.class) {
-
-                if (CLIENT_INSTANCE == null) {
-                    final Context applicationContext = context.getApplicationContext();
-                    CLIENT_INSTANCE = new RxBleClientImpl(
-                            new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
-                            new RxBleRadioImpl(),
-                            new RxBleAdapterStateObservable(applicationContext),
-                            new UUIDUtil());
-                }
-            }
-        }
-
-        return CLIENT_INSTANCE;
-    }
-
-    public RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio,
-                           Observable<BleAdapterState> adapterStateObservable, UUIDUtil uuidUtil) {
+    RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
+                    RxBleRadio rxBleRadio,
+                    Observable<BleAdapterState> adapterStateObservable,
+                    UUIDUtil uuidUtil,
+                    BleConnectionCompat bleConnectionCompat,
+                    LocationServicesStatus locationServicesStatus) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
-        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio);
-        rxBleAdapterStateObservable = adapterStateObservable;
+        this.rxBleAdapterStateObservable = adapterStateObservable;
+        this.locationServicesStatus = locationServicesStatus;
+        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio, bleConnectionCompat);
+    }
+
+    public static RxBleClientImpl getInstance(@NonNull Context context) {
+        return new RxBleClientImpl(
+                new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
+                new RxBleRadioImpl(),
+                new RxBleAdapterStateObservable(context.getApplicationContext()),
+                new UUIDUtil(),
+                new BleConnectionCompat(context),
+                new LocationServicesStatus(context, (LocationManager) context.getSystemService(Context.LOCATION_SERVICE)));
     }
 
     @Override
-    public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
+    public RxBleDevice getBleDevice(@NonNull String macAddress) {
+        return rxBleDeviceProvider.getBleDevice(macAddress);
+    }
 
-        if (rxBleAdapterWrapper.hasBluetoothAdapter()) {
-            return getMatchingQueuedScan(filterServiceUUIDs)
-                    .switchIfEmpty(createScanOperation(filterServiceUUIDs));
-        } else {
+    @Override
+    public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
+
+        if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
             return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
+        } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+            return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
+        } else if (checkIfLocationPermissionIsGrantedIfRequired()) {
+            return Observable.error(new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING));
+        } else if (checkIfLocationAccessIsEnabledIfRequired()) {
+            return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
+        } else {
+            return getMatchingQueuedScan(filterServiceUUIDs).switchIfEmpty(createScanOperation(filterServiceUUIDs));
         }
     }
 
-    private Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.just(filterServiceUUIDs)
-                .map(uuidUtil::toDistinctSet)
-                .map(queuedScanOperations::get)
-                .filter(rxBleScanResultObservable -> rxBleScanResultObservable != null)
-                .flatMap(rxBleScanResultObservable -> rxBleScanResultObservable);
+    private boolean checkIfLocationAccessIsEnabledIfRequired() {
+        return locationServicesStatus.isLocationProviderRequired() && !locationServicesStatus.isLocationProviderEnabled();
+    }
+
+    private boolean checkIfLocationPermissionIsGrantedIfRequired() {
+        return locationServicesStatus.isLocationProviderEnabled() && !locationServicesStatus.isLocationPermissionApproved();
     }
 
     private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
@@ -88,7 +96,12 @@ class RxBleClientImpl extends RxBleClient {
                 .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
     }
 
-    @NonNull
+    private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResult scanResult) {
+        final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
+        final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
+        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
+    }
+
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
         return Observable.defer(() -> {
             final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
@@ -107,14 +120,11 @@ class RxBleClientImpl extends RxBleClient {
         });
     }
 
-    private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResult scanResult) {
-        final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
-        final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
-        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
-    }
-
-    @Override
-    public RxBleDevice getBleDevice(@NonNull String macAddress) {
-        return rxBleDeviceProvider.getBleDevice(macAddress);
+    private Observable<RxBleScanResult> getMatchingQueuedScan(@Nullable UUID[] filterServiceUUIDs) {
+        return Observable.just(filterServiceUUIDs)
+                .map(uuidUtil::toDistinctSet)
+                .map(queuedScanOperations::get)
+                .filter(rxBleScanResultObservable -> rxBleScanResultObservable != null)
+                .flatMap(rxBleScanResultObservable -> rxBleScanResultObservable);
     }
 }

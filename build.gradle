@@ -1,6 +1,5 @@
 apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
-
 buildscript {
     repositories {
         jcenter()
@@ -18,6 +17,7 @@ buildscript {
 
 allprojects {
     apply plugin: 'com.github.ben-manes.versions'
+    
     repositories {
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }

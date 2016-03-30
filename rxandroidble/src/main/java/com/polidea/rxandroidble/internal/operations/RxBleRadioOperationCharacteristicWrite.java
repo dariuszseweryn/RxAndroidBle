@@ -2,13 +2,15 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+
 import rx.Subscription;
 
-public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<byte[]> {
+public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<BluetoothGattCharacteristic> {
 
     private final RxBleGattCallback rxBleGattCallback;
 
@@ -16,14 +18,11 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
 
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
-    private final byte[] data;
-
     public RxBleRadioOperationCharacteristicWrite(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
-                                                 BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] data) {
+                                                  BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
-        this.data = data;
     }
 
     @Override
@@ -33,11 +32,10 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
                 .getOnCharacteristicWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattCharacteristic.getUuid()))
                 .take(1)
-                .map(uuidPair -> uuidPair.second)
+                .map(uuidPair -> bluetoothGattCharacteristic)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
 
-        bluetoothGattCharacteristic.setValue(data);
         final boolean success = bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
         if (!success) {
             subscription.unsubscribe();

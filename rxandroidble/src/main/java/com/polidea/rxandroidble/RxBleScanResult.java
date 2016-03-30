@@ -1,5 +1,8 @@
 package com.polidea.rxandroidble;
 
+/**
+ * Represents a scan result from Bluetooth LE scan.
+ */
 public class RxBleScanResult {
 
     private final RxBleDevice bleDevice;
@@ -12,14 +15,28 @@ public class RxBleScanResult {
         this.scanRecord = scanRecords;
     }
 
+    /**
+     * Returns {@link RxBleDevice} which is a handle for Bluetooth operations on a device. It may be used to establish connection,
+     * get MAC address and/or get the device name.
+     */
     public RxBleDevice getBleDevice() {
         return bleDevice;
     }
 
+    /**
+     * Returns signal strength indication received during scan operation.
+     *
+     * @return the rssi value
+     */
     public int getRssi() {
         return rssi;
     }
 
+    /**
+     * The scan record of Bluetooth LE advertisement.
+     *
+     * @return Array of data containing full ADV packet.
+     */
     public byte[] getScanRecord() {
         return scanRecord;
     }

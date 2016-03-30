@@ -1,10 +1,16 @@
 package com.polidea.rxandroidble.exceptions;
 
+/**
+ * Exception emitted when the BLE link has been interrupted as a result of an error. The exception contains
+ * detailed explanation of the error source (type of operation) and the code proxied from
+ * the Android system.
+ *
+ * @see com.polidea.rxandroidble.RxBleDevice#establishConnection(Context, boolean)
+ */
 public class BleGattException extends BleException {
 
     public static final int UNKNOWN_STATUS = -1;
     private final int status;
-
     private final BleGattOperationType bleGattOperationType;
 
     public BleGattException(int status, BleGattOperationType bleGattOperationType) {
@@ -26,9 +32,6 @@ public class BleGattException extends BleException {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '{' +
-                "status=" + status +
-                ", bleGattOperation=" + bleGattOperationType +
-                '}';
+        return getClass().getSimpleName() + '{' + "status=" + status + ", bleGattOperation=" + bleGattOperationType + '}';
     }
 }

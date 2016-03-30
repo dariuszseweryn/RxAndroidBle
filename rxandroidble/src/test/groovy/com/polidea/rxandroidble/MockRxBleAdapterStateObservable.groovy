@@ -1,4 +1,5 @@
 package com.polidea.rxandroidble
+
 import rx.Observable
 import rx.subjects.ReplaySubject
 

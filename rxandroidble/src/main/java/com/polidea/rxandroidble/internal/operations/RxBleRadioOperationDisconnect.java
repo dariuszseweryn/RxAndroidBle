@@ -3,12 +3,14 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -18,12 +20,11 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     private static final int TIMEOUT_DISCONNECT = 10;
     private final RxBleGattCallback rxBleGattCallback;
-
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference;
-
     private final BluetoothManager bluetoothManager;
 
-    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, AtomicReference<BluetoothGatt> bluetoothGattAtomicReference, BluetoothManager bluetoothManager) {
+    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, AtomicReference<BluetoothGatt> bluetoothGattAtomicReference,
+                                         BluetoothManager bluetoothManager) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattAtomicReference = bluetoothGattAtomicReference;
         this.bluetoothManager = bluetoothManager;
@@ -31,18 +32,15 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     @Override
     public void run() {
-
         //noinspection Convert2MethodRef
         just(bluetoothGattAtomicReference.get())
-                .flatMap(bluetoothGatt ->
-                        bluetoothGatt == null ? Observable.empty() : just(bluetoothGatt))
-                .flatMap(bluetoothGatt ->
-                        isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
+                .filter(bluetoothGatt -> bluetoothGatt != null)
+                .flatMap(bluetoothGatt -> isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
                 .doOnTerminate(() -> releaseRadio())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         bluetoothGatt -> bluetoothGatt.close(),
-                        throwable1 -> onError(throwable1),
+                        throwable -> onError(throwable),
                         () -> onCompleted()
                 );
     }
@@ -62,7 +60,8 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             //noinspection Convert2MethodRef
             rxBleGattCallback
                     .getOnConnectionStateChange()
-                    // It should never happen because if connection was never acquired then it will complete earlier. Just in case timeout here.
+                            // It should never happen because if connection was never acquired then it will complete earlier.
+                            // Just in case timeout here.
                     .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
                     .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
                     .take(1)

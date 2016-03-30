@@ -1,10 +1,12 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
+
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+
 import rx.Subscription;
 
 public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {

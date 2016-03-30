@@ -3,7 +3,8 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.UUIDUtil
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat
+import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -18,22 +19,15 @@ class RxBleClientTest extends Specification {
     UUIDUtil uuidParserSpy = Spy UUIDUtil
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
+    MockLocationServicesStatus locationServicesStatusMock = new MockLocationServicesStatus()
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
 
     def setup() {
         contextMock.getApplicationContext() >> contextMock
         rxBleRadio = new FlatRxBleRadio()
-        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio, adapterStateObservable.asObservable(), uuidParserSpy)
-    }
-
-    def "should return same instance of client"() {
-        given:
-        def firstClient = RxBleClient.getInstance(contextMock)
-        def secondClient = RxBleClient.getInstance(contextMock);
-
-        expect:
-        firstClient == secondClient
+        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio,
+                adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
     }
 
     def "should start BLE scan if subscriber subscribes to the scan observable"() {
@@ -123,49 +117,6 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.startLeScan(_) >> true
     }
 
-    def "should emit test results without filtering"() {
-        given:
-        TestSubscriber testSubscriber = new TestSubscriber<>()
-        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 0, scanRecord: [] as byte[]
-
-        when:
-        objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertValueCount 1
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 0 && scanResult.bleDevice.getMacAddress() == "AA:AA:AA:AA:AA:AA"
-        }
-    }
-
-    def "should emit test results without filtering for more than one item"() {
-        given:
-        TestSubscriber testSubscriber = new TestSubscriber<>()
-        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 0, scanRecord: [] as byte[]
-        bluetoothDeviceDiscovered deviceMac: "BB:BB:BB:BB:BB:BB", rssi: 50, scanRecord: [] as byte[]
-
-        when:
-        objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertValueCount 2
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 0 && scanResult.bleDevice.getMacAddress() == "AA:AA:AA:AA:AA:AA"
-        }
-
-        and:
-        testSubscriber.assertOneMatches {
-            RxBleScanResult scanResult ->
-                scanResult.rssi == 50 && scanResult.bleDevice.getMacAddress() == "BB:BB:BB:BB:BB:BB"
-        }
-    }
-
     def "should not replay scan results to second observer if it subscribed after scan emission"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
@@ -184,7 +135,7 @@ class RxBleClientTest extends Specification {
         secondSubscriber.assertValueCount 0
     }
 
-    def "should emit error if bluetooth scan failed to start"() {
+    def "should emit BleScanException if bluetooth scan failed to start"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
         bleAdapterWrapperSpy.startLeScan(_) >> false
@@ -193,12 +144,12 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertErrorClosure {
-            BleScanException exception -> exception.reason == BLE_CANNOT_START
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == BLUETOOTH_CANNOT_START
         }
     }
 
-    def "should emit error if bluetooth was disabled during scan"() {
+    def "should emit BleScanException if bluetooth was disabled during scan"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
 
@@ -207,7 +158,22 @@ class RxBleClientTest extends Specification {
         adapterStateObservable.disableBluetooth()
 
         then:
-        firstSubscriber.assertErrorClosure {
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
+        }
+    }
+
+    def "should emit BleScanException if bluetooth has been disabled scan"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> false
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
         }
     }
@@ -221,40 +187,80 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertErrorClosure {
+        firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_NOT_AVAILABLE
         }
+    }
+
+    def "should emit BleScanException if location permission was not granted"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        locationServicesStatusMock.isLocationPermissionApproved = false
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == LOCATION_PERMISSION_MISSING
+        }
+    }
+
+    @Unroll("should emit BleScanException if location services are required(#required) and enabled(#enabled)")
+    def "should emit BleScanException if location services are in certain state"() {
+        given:
+        TestSubscriber firstSubscriber = new TestSubscriber<>()
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+
+        then:
+
+        if (assertError)
+            firstSubscriber.assertError { BleScanException exception -> exception.reason == LOCATION_SERVICES_DISABLED }
+        else {
+            firstSubscriber.assertNoErrors()
+        }
+
+        where:
+        required | enabled | assertError
+        true     | false   | true
+        true     | true    | false
+        false    | false   | false
+        false    | true    | false
     }
 
     @Unroll
     def "should emit devices only if matching filter (#description)"() {
         given:
-        TestSubscriber firstSubscriber = new TestSubscriber<>()
+        TestSubscriber testSubscriber = new TestSubscriber<>()
         addressList.each { bluetoothDeviceDiscovered deviceMac: it, rssi: 0, scanRecord: [] as byte[] }
         uuidParserSpy.extractUUIDs(_) >>> publicServices
 
         when:
-        objectUnderTest.scanBleDevices(filter as UUID[]).subscribe(firstSubscriber)
+        objectUnderTest.scanBleDevices(filter as UUID[]).subscribe(testSubscriber)
 
         then:
-        firstSubscriber.assertValueCount expectedCount
+        testSubscriber.assertValueCount expectedDevices.size()
+        testSubscriber.assertScanRecordsByMacWithOrder(expectedDevices)
 
         where:
-        addressList                                | publicServices                       | filter                | expectedCount | description
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | []                    | 1             | 'Empty filter, one public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | []                    | 1             | 'Empty filter, two public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | []                    | 1             | 'Empty filter, no public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | null                  | 1             | 'No filter, one public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | null                  | 1             | 'No filter, two public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | null                  | 1             | 'No filter, no public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | [someUUID]            | 0             | 'One filter, device without public services'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | [someUUID]            | 1             | 'One filter, device with matching public service'
-        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | [someUUID]            | 1             | 'One filter, device with matching public service and one more not matching'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [someUUID]]             | [someUUID]            | 2             | 'One filter, two devices, both with one matching service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], [someUUID]]                     | [someUUID]            | 1             | 'One filter, two devices, one without public services, second with matching service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], []]                             | [someUUID, otherUUID] | 0             | 'Two filtered UUIDs, two devices without public services'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [otherUUID]]            | [someUUID, otherUUID] | 0             | 'Two filtered UUIDs, two devices, both matches only by one service'
-        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, otherUUID], [otherUUID]] | [someUUID, otherUUID] | 1             | 'Two filtered UUIDs, two devices, one matches by both services, second matching only partially'
+        addressList                                | publicServices                       | filter                | expectedDevices                            | description
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, one public service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, someUUID]]               | []                    | ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | 'Empty filter, one public service, two devices'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, two public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | []                    | ["AA:AA:AA:AA:AA:AA"]                      | 'Empty filter, no public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, one public service'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, two public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | null                  | ["AA:AA:AA:AA:AA:AA"]                      | 'No filter, no public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[]]                                 | [someUUID]            | []                                         | 'One filter, device without public services'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID]]                         | [someUUID]            | ["AA:AA:AA:AA:AA:AA"]                      | 'One filter, device with matching public service'
+        ["AA:AA:AA:AA:AA:AA"]                      | [[someUUID, otherUUID]]              | [someUUID]            | ["AA:AA:AA:AA:AA:AA"]                      | 'One filter, device with matching public service and one more not matching'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [someUUID]]             | [someUUID]            | ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | 'One filter, two devices, both with one matching service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], [someUUID]]                     | [someUUID]            | ["AA:AA:AA:AA:AA:BB"]                      | 'One filter, two devices, one without public services, second with matching service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[], []]                             | [someUUID, otherUUID] | []                                         | 'Two filtered UUIDs, two devices without public services'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID], [otherUUID]]            | [someUUID, otherUUID] | []                                         | 'Two filtered UUIDs, two devices, both matches only by one service'
+        ["AA:AA:AA:AA:AA:AA", "AA:AA:AA:AA:AA:BB"] | [[someUUID, otherUUID], [otherUUID]] | [someUUID, otherUUID] | ["AA:AA:AA:AA:AA:AA"]                      | 'Two filtered UUIDs, two devices, one matches by both services, second matching only partially'
     }
 
     def "should emit device if has matching public service plus some more not defined in filter"() {
@@ -283,6 +289,18 @@ class RxBleClientTest extends Specification {
         then:
         rxBleRadio.semaphore.isReleased()
 
+    }
+
+    def "should emit result with all parameters"() {
+        given:
+        TestSubscriber subscriber = new TestSubscriber<>()
+        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 10, scanRecord: [1, 2, 3] as byte[]
+
+        when:
+        objectUnderTest.scanBleDevices(null).subscribe(subscriber)
+
+        then:
+        subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
     }
 
     def bluetoothDeviceDiscovered(Map scanData) {

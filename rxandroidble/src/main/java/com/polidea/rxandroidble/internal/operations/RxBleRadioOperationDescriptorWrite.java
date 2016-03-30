@@ -2,14 +2,15 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.support.v4.util.Pair;
+
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+
 import rx.Subscription;
 
-public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<Pair<BluetoothGattDescriptor, byte[]>> {
+public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte[]> {
 
     private final RxBleGattCallback rxBleGattCallback;
 
@@ -34,6 +35,7 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<Pair
                 .getOnDescriptorWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
                 .first()
+                .map(uuidPair -> uuidPair.second)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
 

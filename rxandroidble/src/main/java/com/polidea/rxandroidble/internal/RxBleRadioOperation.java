@@ -12,6 +12,7 @@ import rx.subjects.ReplaySubject;
  * The base class for all operations that are executed on the Bluetooth Radio.
  * This class is intended to be a kind of wrapper over an Observable (returned by function asObservable()).
  * Implements Runnable interface which will be called on the applications main thread.
+ *
  * @param <T> What is returned from this operation onNext()
  */
 public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxBleRadioOperation> {
@@ -58,6 +59,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
 
     /**
      * A convenience method for calling the Subscriber's onNext()
+     *
      * @param next the next value
      */
     protected final void onNext(T next) {
@@ -74,6 +76,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     /**
      * A convenience method for calling the Subscriber's onError()
      * Calling this method automatically releases the radio -> calls releaseRadio().
+     *
      * @param throwable the throwable
      */
     protected final void onError(Throwable throwable) {
@@ -83,6 +86,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
 
     /**
      * The setter for the semaphore which needs to be released for the Bluetooth Radio to continue the work
+     *
      * @param radioBlockingSemaphore the semaphore
      */
     public void setRadioBlockingSemaphore(Semaphore radioBlockingSemaphore) {
@@ -99,6 +103,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
 
     /**
      * A function returning the priority of this operation
+     *
      * @return the priority of this operation
      */
     protected Priority definedPriority() {
@@ -108,6 +113,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     /**
      * The function for determining which position in Bluetooth Radio's Priority Blocking Queue
      * this operation should take
+     *
      * @param another another operation
      * @return the comparison result
      */
@@ -122,12 +128,9 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      */
     public static class Priority {
 
-        public static Priority HIGH = new Priority(100);
-
-        public static Priority NORMAL = new Priority(50);
-
-        public static Priority LOW = new Priority(0);
-
+        public static final Priority HIGH = new Priority(100);
+        public static final Priority NORMAL = new Priority(50);
+        public static final Priority LOW = new Priority(0);
         private final int priority;
 
         private Priority(int priority) {

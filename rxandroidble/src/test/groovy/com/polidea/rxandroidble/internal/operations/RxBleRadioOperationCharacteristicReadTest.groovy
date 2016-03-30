@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.RxBleGattCallback
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -21,12 +21,13 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     TestSubscriber<byte[]> testSubscriber = new TestSubscriber()
     PublishSubject<Pair<UUID, byte[]>> onCharacteristicReadSubject = PublishSubject.create()
+    Semaphore mockSemaphore = Mock Semaphore
     RxBleRadioOperationCharacteristicRead objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt, mockCharacteristic)
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicRead() >> onCharacteristicReadSubject
-        objectUnderTest.setRadioBlockingSemaphore(new Semaphore(1))
+        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 
@@ -63,7 +64,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         testSubscriber.assertError BleGattCannotStartException
 
         and:
-        testSubscriber.assertErrorClosure {
+        testSubscriber.assertError {
             it.getBleGattOperationType() == BleGattOperationType.CHARACTERISTIC_READ
         }
     }
@@ -158,6 +159,41 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
 
         and:
         testSubscriber.assertValue secondValueFromCharacteristic
+    }
+
+    def "should release Semaphore after successful write"() {
+
+        given:
+        givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
+
+        when:
+        objectUnderTest.run()
+
+        then:
+        1 * mockSemaphore.release()
+    }
+
+    def "should release Semaphore when write failed to start"() {
+
+        given:
+        givenCharacteristicReadFailToStart()
+
+        when:
+        objectUnderTest.run()
+
+        then:
+        1 * mockSemaphore.release()
+    }
+
+    def "should release Semaphore when write failed"() {
+        given:
+        shouldEmitErrorOnCharacteristicRead(new Throwable("test"))
+
+        when:
+        objectUnderTest.run()
+
+        then:
+        1 * mockSemaphore.release()
     }
 
     private givenCharacteristicWithUUIDContainData(Map... returnedDataOnRead) {

@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal;
 
 import android.support.annotation.IntDef;
 import android.util.Log;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,19 +12,23 @@ import java.util.regex.Pattern;
 public class RxBleLog {
 
     @IntDef({VERBOSE, DEBUG, INFO, WARN, ERROR, NONE})
-    public @interface LogLevel {}
+    public @interface LogLevel {
+
+    }
+
     public static final int VERBOSE = Log.VERBOSE;
     public static final int DEBUG = Log.DEBUG;
     public static final int INFO = Log.INFO;
     public static final int WARN = Log.WARN;
     public static final int ERROR = Log.ERROR;
     public static final int NONE = Integer.MAX_VALUE;
-
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
-
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
-    
     private static int logLevel = Integer.MAX_VALUE;
+
+    private RxBleLog() {
+
+    }
 
     public static void setLogLevel(@LogLevel int logLevel) {
         RxBleLog.logLevel = logLevel;
@@ -115,7 +120,7 @@ public class RxBleLog {
         String tag = createTag();
         println(priority, tag, message);
     }
-    
+
     private static void println(int priority, String tag, String message) {
         if (message.length() < 4000) {
             Log.println(priority, tag, message);
