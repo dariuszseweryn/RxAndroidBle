@@ -9,6 +9,8 @@ RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headach
 
 For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
 
+Read the official announcement at [Polidea Blog](https://www.polidea.com/blog/RXAndroidBLE/).
+
 ## Usage
 ### Obtaining the client
 It's your job to maintain single instance of the client. You can use singleton, scoped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
