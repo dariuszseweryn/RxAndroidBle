@@ -122,8 +122,11 @@ class RxBleClientImpl extends RxBleClient {
         final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return rxBleRadio.queue(scanOperation)
                 .doOnUnsubscribe(() -> {
-                    scanOperation.stop();
-                    queuedScanOperations.remove(filteredUUIDs);
+
+                    synchronized (queuedScanOperations) {
+                        scanOperation.stop();
+                        queuedScanOperations.remove(filteredUUIDs);
+                    }
                 })
                 .mergeWith(bluetoothAdapterOffExceptionObservable())
                 .map(this::convertToPublicScanResult)
