@@ -5,11 +5,13 @@ import android.content.Context;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
@@ -32,11 +34,19 @@ class RxBleDeviceMock implements RxBleDevice {
     private Integer rssi;
     private byte[] scanRecord;
     private List<UUID> advertisedUUIDs;
+    private AtomicBoolean isConnected = new AtomicBoolean(false);
 
-    public RxBleDeviceMock(String name, String macAddress, byte[] scanRecord, Integer rssi, RxBleDeviceServices rxBleDeviceServices, Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
+    public RxBleDeviceMock(String name,
+                           String macAddress,
+                           byte[] scanRecord,
+                           Integer rssi,
+                           RxBleDeviceServices rxBleDeviceServices,
+                           Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
         this.name = name;
         this.macAddress = macAddress;
-        this.connector = new RxBleConnectionConnectorMock(new RxBleConnectionMock(rxBleDeviceServices, rssi, characteristicNotificationSources, connectionStateBehaviorSubject));
+        this.connector = new RxBleConnectionConnectorMock(new RxBleConnectionMock(rxBleDeviceServices,
+                                                                                    rssi,
+                                                                                    characteristicNotificationSources));
         this.rssi = rssi;
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
@@ -45,30 +55,30 @@ class RxBleDeviceMock implements RxBleDevice {
     @Override
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
-
-            final AtomicReference<Subscription> connectionStateSubscription = new AtomicReference<>();
-
+            if (isConnected.compareAndSet(false, true)) {
             return connector.prepareConnection(context, autoConnect)
                     .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
                     .doOnNext(rxBleConnection -> {
                         connectionStateBehaviorSubject.onNext(CONNECTED);
-                        connectionStateSubscription.set(subscribeToConnectionStateChanges(rxBleConnection));
                     })
                     .doOnUnsubscribe(() -> {
                         connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                        final Subscription subscription = connectionStateSubscription.get();
-                        if (subscription != null) {
-                            subscription.unsubscribe();
-                        }
-                    })
-                    .replay()
-                    .refCount();
+                        isConnected.set(false);
+                    });
+            } else {
+                return Observable.error(new BleAlreadyConnectedException(macAddress));
+            }
         });
     }
 
     @Override
-    public Observable<RxBleConnection.RxBleConnectionState> getConnectionState() {
+    public Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
         return connectionStateBehaviorSubject.distinctUntilChanged();
+    }
+
+    @Override
+    public RxBleConnection.RxBleConnectionState getConnectionState() {
+        return observeConnectionStateChanges().toBlocking().first();
     }
 
     @Override
@@ -98,28 +108,5 @@ class RxBleDeviceMock implements RxBleDevice {
 
     public byte[] getScanRecord() {
         return scanRecord;
-    }
-
-    private Subscription subscribeToConnectionStateChanges(RxBleConnection rxBleConnection) {
-        return rxBleConnection
-                .getConnectionState()
-                .<RxBleConnection.RxBleConnectionState>lift(subscriber -> new Subscriber<RxBleConnection.RxBleConnectionState>() {
-                    @Override
-                    public void onCompleted() {
-                        // do nothing so the connectionStateBehaviorSubject will not complete
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        // same as above -
-                        subscriber.onNext(DISCONNECTED);
-                    }
-
-                    @Override
-                    public void onNext(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
-                        subscriber.onNext(rxBleConnectionState);
-                    }
-                })
-                .subscribe(connectionStateBehaviorSubject);
     }
 }

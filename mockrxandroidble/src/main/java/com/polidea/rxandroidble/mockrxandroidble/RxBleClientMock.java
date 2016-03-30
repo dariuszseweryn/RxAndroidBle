@@ -67,7 +67,8 @@ public class RxBleClientMock extends RxBleClient {
         /**
          * Build a new {@link RxBleDevice}.
          * <p>
-         * Calling {@link #scanRecord}, {@link #rssi} and {@link #deviceMacAddress} is required before calling {@link #build()}. All other methods
+         * Calling {@link #scanRecord}, {@link #rssi} and {@link #deviceMacAddress}
+         * is required before calling {@link #build()}. All other methods
          * are optional.
          */
         public DeviceBuilder() {
@@ -97,7 +98,12 @@ public class RxBleClientMock extends RxBleClient {
             if (this.rssi == null) throw new IllegalStateException("Rssi required");
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required");
             if (this.scanRecord == null) throw new IllegalStateException("ScanRecord required");
-            RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName, deviceMacAddress, scanRecord, rssi, rxBleDeviceServices, characteristicNotificationSources);
+            RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                                                                    deviceMacAddress,
+                                                                    scanRecord,
+                                                                    rssi,
+                                                                    rxBleDeviceServices,
+                                                                    characteristicNotificationSources);
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                 rxBleDeviceMock.getAdvertisedUUIDs().add(service.getUuid());
@@ -169,7 +175,9 @@ public class RxBleClientMock extends RxBleClient {
          * @param data        locally stored value of the characteristic
          * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
          */
-        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid, @NonNull byte[] data, List<BluetoothGattDescriptor> descriptors) {
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        List<BluetoothGattDescriptor> descriptors) {
             BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, 0, 0);
             for (BluetoothGattDescriptor descriptor : descriptors) {
                 characteristic.addDescriptor(descriptor);
@@ -219,6 +227,7 @@ public class RxBleClientMock extends RxBleClient {
             return bluetoothGattDescriptors;
         }
     }
+
     private final Map<String, RxBleDevice> availableDevices;
 
     private RxBleClientMock(Builder builder) {
