@@ -10,14 +10,11 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
-import com.polidea.rxandroidble.internal.RxBleDeviceCache;
-import com.polidea.rxandroidble.internal.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
@@ -37,7 +34,7 @@ public class RxBleClientMock extends RxBleClient {
          * Build a new {@link RxBleClientMock}.
          */
         public Builder() {
-            this.availableDevices = new RxBleDeviceCache();
+            this.availableDevices = new HashMap<>();
         }
 
         /**
