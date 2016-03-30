@@ -99,11 +99,11 @@ public class RxBleClientMock extends RxBleClient {
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required");
             if (this.scanRecord == null) throw new IllegalStateException("ScanRecord required");
             RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName,
-                                                                    deviceMacAddress,
-                                                                    scanRecord,
-                                                                    rssi,
-                                                                    rxBleDeviceServices,
-                                                                    characteristicNotificationSources);
+                    deviceMacAddress,
+                    scanRecord,
+                    rssi,
+                    rxBleDeviceServices,
+                    characteristicNotificationSources);
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                 rxBleDeviceMock.getAdvertisedUUIDs().add(service.getUuid());
@@ -261,7 +261,7 @@ public class RxBleClientMock extends RxBleClient {
     private List<RxBleDevice> getFilteredDevicesList(UUID[] filterServiceUUIDs) {
         List<RxBleDevice> filteredDevices = new ArrayList<>();
 
-        if(filterServiceUUIDs == null || filterServiceUUIDs.length == 0) {
+        if (filterServiceUUIDs == null || filterServiceUUIDs.length == 0) {
             filteredDevices.addAll(availableDevices.values());
             return filteredDevices;
         }

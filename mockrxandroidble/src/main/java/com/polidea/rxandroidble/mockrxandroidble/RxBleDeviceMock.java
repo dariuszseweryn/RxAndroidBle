@@ -42,8 +42,8 @@ class RxBleDeviceMock implements RxBleDevice {
         this.name = name;
         this.macAddress = macAddress;
         this.connector = new RxBleConnectionConnectorMock(new RxBleConnectionMock(rxBleDeviceServices,
-                                                                                    rssi,
-                                                                                    characteristicNotificationSources));
+                rssi,
+                characteristicNotificationSources));
         this.rssi = rssi;
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
@@ -53,22 +53,21 @@ class RxBleDeviceMock implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
             if (isConnected.compareAndSet(false, true)) {
-            return connector.prepareConnection(context, autoConnect)
-                    .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
-                    .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
-                    .doOnUnsubscribe(() -> {
-                        connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                        isConnected.set(false);
-                    });
+                return connector.prepareConnection(context, autoConnect)
+                        .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
+                        .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
+                        .doOnUnsubscribe(() -> {
+                            connectionStateBehaviorSubject.onNext(DISCONNECTED);
+                            isConnected.set(false);
+                        });
             } else {
                 return Observable.error(new BleAlreadyConnectedException(macAddress));
             }
         });
     }
 
-    @Override
-    public Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
-        return connectionStateBehaviorSubject.distinctUntilChanged();
+    public List<UUID> getAdvertisedUUIDs() {
+        return advertisedUUIDs;
     }
 
     @Override
@@ -90,17 +89,18 @@ class RxBleDeviceMock implements RxBleDevice {
         return rssi;
     }
 
+    public byte[] getScanRecord() {
+        return scanRecord;
+    }
+
+    @Override
+    public Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
+        return connectionStateBehaviorSubject.distinctUntilChanged();
+    }
+
     @Override
     public String toString() {
         return "RxBleDeviceImpl{" + "bluetoothDevice=" + name + '(' + macAddress + ')' + '}';
 
-    }
-
-    public List<UUID> getAdvertisedUUIDs() {
-        return advertisedUUIDs;
-    }
-
-    public byte[] getScanRecord() {
-        return scanRecord;
     }
 }
