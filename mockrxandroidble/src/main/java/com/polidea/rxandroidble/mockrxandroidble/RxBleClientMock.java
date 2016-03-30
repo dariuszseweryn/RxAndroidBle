@@ -240,7 +240,7 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @Override
-    public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID[] filterServiceUUIDs) {
+    public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
         return createScanOperation(filterServiceUUIDs);
     }
 
@@ -260,6 +260,11 @@ public class RxBleClientMock extends RxBleClient {
 
     private List<RxBleDevice> getFilteredDevicesList(UUID[] filterServiceUUIDs) {
         List<RxBleDevice> filteredDevices = new ArrayList<>();
+
+        if(filterServiceUUIDs == null || filterServiceUUIDs.length == 0) {
+            filteredDevices.addAll(availableDevices.values());
+            return filteredDevices;
+        }
 
         for (RxBleDevice device : availableDevices.values()) {
             List<UUID> advertisedUUIDs = ((RxBleDeviceMock) device).getAdvertisedUUIDs();

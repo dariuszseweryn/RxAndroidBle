@@ -1,8 +1,6 @@
 package com.polidea.rxandroidble.mockrxandroidble
 
 import android.os.Build
-import com.polidea.rxandroidble.RxBleConnection
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
@@ -23,20 +21,23 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def setup() {
         rxBleClient = new RxBleClientMock.Builder()
-                .deviceMacAddress("AA:BB:CC:DD:EE:FF")
-                .deviceName("TestDevice")
-                .scanRecord("ScanRecord".getBytes())
-                .rssi(42)
-                .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
-                .addService(
-                serviceUUID,
-                new RxBleClientMock.CharacteristicsBuilder()
-                        .addCharacteristic(
-                        characteristicUUID,
-                        characteristicData,
-                        new RxBleClientMock.DescriptorsBuilder()
-                                .addDescriptor(descriptorUUID, descriptorData)
-                                .build()
+                .addDevice(
+                new RxBleClientMock.DeviceBuilder()
+                        .deviceMacAddress("AA:BB:CC:DD:EE:FF")
+                        .deviceName("TestDevice")
+                        .scanRecord("ScanRecord".getBytes())
+                        .rssi(42)
+                        .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
+                        .addService(
+                        serviceUUID,
+                        new RxBleClientMock.CharacteristicsBuilder()
+                                .addCharacteristic(
+                                characteristicUUID,
+                                characteristicData,
+                                new RxBleClientMock.DescriptorsBuilder()
+                                        .addDescriptor(descriptorUUID, descriptorData)
+                                        .build()
+                        ).build()
                 ).build()
         ).build();
     }
@@ -46,7 +47,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         def testSubscriber = TestSubscriber.create()
 
         when:
-        rxBleClient.scanBleDevices(null)
+        rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getName() }
                 .subscribe(testSubscriber)
@@ -60,7 +61,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         def testSubscriber = TestSubscriber.create()
 
         when:
-        rxBleClient.scanBleDevices(null)
+        rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
                 .subscribe(testSubscriber)
@@ -74,7 +75,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         def testSubscriber = TestSubscriber.create()
 
         when:
-        rxBleClient.scanBleDevices(null)
+        rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getRssi() }
                 .subscribe(testSubscriber)
@@ -145,7 +146,7 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
-                .flatMap { rxBleConnection -> rxBleConnection.getNotification(characteristicNotifiedUUID) }
+                .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicNotifiedUUID) }
                 .subscribe { obs -> obs.map { data -> new String(data) } subscribe(testSubscriber) }
 
         when:
@@ -153,62 +154,5 @@ public class RxBleClientMockTest extends RoboSpecification {
 
         then:
         testSubscriber.assertValue("NotificationData")
-    }
-
-    def "should return connected state when subscribed"() {
-        given:
-        def testStateSubscriber = TestSubscriber.create()
-        def obs = rxBleClient.scanBleDevices(null)
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice ->
-            def connection = rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
-            rxBleDevice.getConnectionState().subscribe(testStateSubscriber)
-            connection
-        };
-
-        when:
-        obs.subscribe()
-
-        then:
-        testStateSubscriber.assertValues(RxBleConnection.RxBleConnectionState.CONNECTED)
-    }
-
-    def "should return disconnected state when unsubscribed"() {
-        given:
-        def subscription;
-        def testStateSubscriber = TestSubscriber.create()
-        def obs = rxBleClient.scanBleDevices(null)
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice ->
-            def connection = rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
-            rxBleDevice.getConnectionState().subscribe(testStateSubscriber)
-            connection
-        };
-
-        when:
-        subscription = obs.subscribe()
-        subscription.unsubscribe()
-
-        then:
-        testStateSubscriber.assertValues(RxBleConnection.RxBleConnectionState.CONNECTED, RxBleConnection.RxBleConnectionState.DISCONNECTED)
-    }
-
-    def "should return error when disconnect is simulated"() {
-        given:
-        def testConnectionSubscriber = TestSubscriber.create()
-        rxBleClient.scanBleDevices(null)
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice ->
-            rxBleDevice.establishConnection(RuntimeEnvironment.application, false)
-        }.subscribe(testConnectionSubscriber)
-
-        when:
-        rxBleClient.disconnect()
-
-        then:
-        testConnectionSubscriber.assertError(BleDisconnectedException.class);
     }
 }

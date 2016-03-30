@@ -7,6 +7,8 @@ import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
+import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +16,11 @@ import java.util.UUID;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Func1;
+
+import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+import static rx.Observable.error;
 
 class RxBleConnectionMock implements RxBleConnection {
 
@@ -45,11 +52,44 @@ class RxBleConnectionMock implements RxBleConnection {
                 return availableObservable;
             }
 
-            final Observable<Observable<byte[]>> newObservable = createCharacteristicNotificationObservable(characteristicUuid);
+            final Observable<Observable<byte[]>> newObservable = createCharacteristicNotificationObservable(characteristicUuid)
+                                            .doOnUnsubscribe(() -> dismissCharacteristicNotification(characteristicUuid))
+                                            .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
+                                            .replay(1)
+                                            .refCount();
             notificationObservableMap.put(characteristicUuid, newObservable);
 
             return newObservable;
         }
+    }
+
+    private void dismissCharacteristicNotification(UUID characteristicUuid) {
+
+        synchronized (notificationObservableMap) {
+            notificationObservableMap.remove(characteristicUuid);
+        }
+
+        getClientConfigurationDescriptor(characteristicUuid)
+                .flatMap(descriptor -> setupCharacteristicNotification(descriptor, false))
+                .subscribe(
+                        ignored -> {
+                        },
+                        ignored -> {
+                        });
+    }
+
+    @NonNull
+    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(UUID characteristicUuid) {
+        return characteristicNotificationSources.get(characteristicUuid);
+    }
+
+    @NonNull
+    private Observable<byte[]> setupCharacteristicNotification(BluetoothGattDescriptor bluetoothGattDescriptor, boolean enabled) {
+        final BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattDescriptor.getCharacteristic();
+        setCharacteristicNotification(bluetoothGattCharacteristic.getUuid(), true);
+        return writeDescriptor(bluetoothGattDescriptor, enabled ? ENABLE_NOTIFICATION_VALUE : DISABLE_NOTIFICATION_VALUE)
+                .flatMap(bluetoothGattDescriptorPair -> Observable.just(bluetoothGattDescriptorPair.second))
+                .onErrorResumeNext(throwable -> error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic)));
     }
 
     @Override
@@ -92,11 +132,7 @@ class RxBleConnectionMock implements RxBleConnection {
 
     private Observable<Observable<byte[]>> createCharacteristicNotificationObservable(UUID characteristicUuid) {
         return getClientConfigurationDescriptor(characteristicUuid)
-                .flatMap(bluetoothGattDescriptor -> {
-                    final BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattDescriptor.getCharacteristic();
-                    setCharacteristicNotification(bluetoothGattCharacteristic.getUuid(), true);
-                    return writeDescriptor(bluetoothGattDescriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                })
+                .flatMap(bluetoothGattDescriptor -> setupCharacteristicNotification(bluetoothGattDescriptor, true))
                 .flatMap(bluetoothGattDescriptorPair -> Observable.create(subscriber -> subscriber.onNext(bluetoothGattDescriptorPair)))
                 .flatMap(bluetoothGattDescriptorPair -> {
                     if (!characteristicNotificationSources.containsKey(characteristicUuid)) {
