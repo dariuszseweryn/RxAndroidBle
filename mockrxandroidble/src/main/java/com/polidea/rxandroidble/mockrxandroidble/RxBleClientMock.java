@@ -142,7 +142,7 @@ public class RxBleClientMock extends RxBleClient {
         /**
          * Set a rssi that will be reported. Calling this method is not required.
          */
-        public DeviceBuilder rssi(@NonNull int rssi) {
+        public DeviceBuilder rssi(int rssi) {
             this.rssi = rssi;
             return this;
         }
@@ -188,7 +188,7 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Create the  {@link List} of {@link BluetoothGattCharacteristic} using the configured values.
+         * Create the {@link List} of {@link BluetoothGattCharacteristic} using the configured values.
          */
         public List<BluetoothGattCharacteristic> build() {
             return bluetoothGattCharacteristics;
@@ -228,7 +228,7 @@ public class RxBleClientMock extends RxBleClient {
         }
     }
 
-    private final Map<String, RxBleDevice> discoverableDevices;
+    private Map<String, RxBleDevice> discoverableDevices;
 
     private RxBleClientMock(Builder builder) {
         discoverableDevices = builder.discoverableDevices;
@@ -261,8 +261,7 @@ public class RxBleClientMock extends RxBleClient {
                 .map(rxBleDevice -> {
                     RxBleDeviceMock rxBleDeviceMock = (RxBleDeviceMock) rxBleDevice;
                     return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
-                })
-                .share());
+                }));
     }
 
     private boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {
@@ -275,11 +274,11 @@ public class RxBleClientMock extends RxBleClient {
 
         for (UUID desiredUUID : filterServiceUUIDs) {
 
-            if (advertisedUUIDs.contains(desiredUUID)) {
-                return true;
+            if (!advertisedUUIDs.contains(desiredUUID)) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 }

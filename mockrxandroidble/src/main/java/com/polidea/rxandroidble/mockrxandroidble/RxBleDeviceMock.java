@@ -22,8 +22,8 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISC
 
 class RxBleDeviceMock implements RxBleDevice {
 
-    private final RxBleConnection rxBleConnection;
-    private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
+    private RxBleConnection rxBleConnection;
+    private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
             DISCONNECTED
     );
     private String name;
@@ -105,6 +105,5 @@ class RxBleDeviceMock implements RxBleDevice {
     @Override
     public String toString() {
         return "RxBleDeviceImpl{" + "bluetoothDevice=" + name + '(' + macAddress + ')' + '}';
-
     }
 }
