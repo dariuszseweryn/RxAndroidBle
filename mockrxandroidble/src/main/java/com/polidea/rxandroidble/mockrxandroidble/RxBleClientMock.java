@@ -95,8 +95,8 @@ public class RxBleClientMock extends RxBleClient {
          */
         public RxBleDeviceMock build() {
             if (this.rssi == -1) throw new IllegalStateException("Rssi is required. DeviceBuilder#rssi should be called.");
-            if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required." +
-                    " DeviceBuilder#deviceMacAddress should be called.");
+            if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required."
+                    + " DeviceBuilder#deviceMacAddress should be called.");
             if (this.scanRecord == null) throw new IllegalStateException("ScanRecord required. DeviceBuilder#scanRecord should be called.");
             RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName,
                     deviceMacAddress,
@@ -238,7 +238,7 @@ public class RxBleClientMock extends RxBleClient {
     public RxBleDevice getBleDevice(@NonNull String macAddress) {
         RxBleDevice rxBleDevice = discoverableDevices.get(macAddress);
 
-        if(rxBleDevice == null) {
+        if (rxBleDevice == null) {
             throw new IllegalStateException("Mock is not configured for a given mac address. Use Builder#addDevice method.");
         }
 
@@ -257,7 +257,7 @@ public class RxBleClientMock extends RxBleClient {
     @NonNull
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
         return Observable.defer(() -> Observable.from(discoverableDevices.values())
-                                                .filter(rxBleDevice -> filterDevice(rxBleDevice, filterServiceUUIDs))
+                .filter(rxBleDevice -> filterDevice(rxBleDevice, filterServiceUUIDs))
                 .map(rxBleDevice -> {
                     RxBleDeviceMock rxBleDeviceMock = (RxBleDeviceMock) rxBleDevice;
                     return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
