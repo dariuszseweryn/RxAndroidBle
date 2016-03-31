@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'groovyx.grooid.groovy-android'
 apply plugin: 'me.tatarka.retrolambda'
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
     compileSdkVersion 23
