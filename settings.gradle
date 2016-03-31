@@ -1,5 +1,3 @@
-include ':rxandroidble'
-//include ':sample'
-//include ':app'
+include ':rxandroidble', ':mockrxandroidble'
 
 rootProject.name = 'rxandroidble-parent'
