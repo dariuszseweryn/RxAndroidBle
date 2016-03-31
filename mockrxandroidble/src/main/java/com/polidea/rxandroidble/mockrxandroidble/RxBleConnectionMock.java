@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import rx.Observable;
-import rx.Subscriber;
 
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
@@ -24,15 +23,15 @@ class RxBleConnectionMock implements RxBleConnection {
 
     private final HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
     private RxBleDeviceServices rxBleDeviceServices;
-    private Integer rssid;
+    private Integer rssi;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
 
     public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices,
-                               Integer rssid,
+                               Integer rssi,
                                Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
         this.rxBleDeviceServices = rxBleDeviceServices;
-        this.rssid = rssid;
+        this.rssi = rssi;
         this.characteristicNotificationSources = characteristicNotificationSources;
     }
 
@@ -41,6 +40,7 @@ class RxBleConnectionMock implements RxBleConnection {
         return Observable.just(rxBleDeviceServices);
     }
 
+    @Override
     public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
@@ -60,27 +60,25 @@ class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Observable<Integer> readRssi() {
-        return Observable.just(rssid);
+        return Observable.just(rssi);
     }
 
     @Override
     public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid) {
-        synchronized (notificationObservableMap) {
-            final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);
+        final Observable<Observable<byte[]>> availableObservable = notificationObservableMap.get(characteristicUuid);
 
-            if (availableObservable != null) {
-                return availableObservable;
-            }
-
-            final Observable<Observable<byte[]>> newObservable = createCharacteristicNotificationObservable(characteristicUuid)
-                    .doOnUnsubscribe(() -> dismissCharacteristicNotification(characteristicUuid))
-                    .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
-                    .replay(1)
-                    .refCount();
-            notificationObservableMap.put(characteristicUuid, newObservable);
-
-            return newObservable;
+        if (availableObservable != null) {
+            return availableObservable;
         }
+
+        final Observable<Observable<byte[]>> newObservable = createCharacteristicNotificationObservable(characteristicUuid)
+                .doOnUnsubscribe(() -> dismissCharacteristicNotification(characteristicUuid))
+                .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
+                .replay(1)
+                .refCount();
+        notificationObservableMap.put(characteristicUuid, newObservable);
+
+        return newObservable;
     }
 
     @Override
@@ -187,12 +185,6 @@ class RxBleConnectionMock implements RxBleConnection {
 
     private Observable<Pair<BluetoothGattDescriptor, byte[]>> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor,
                                                                               byte[] data) {
-        return Observable.create(new Observable.OnSubscribe<Pair<BluetoothGattDescriptor, byte[]>>() {
-            @Override
-            public void call(Subscriber<? super Pair<BluetoothGattDescriptor, byte[]>> subscriber) {
-                subscriber.onNext(new Pair<>(bluetoothGattDescriptor, data));
-                subscriber.onCompleted();
-            }
-        });
+        return Observable.just(new Pair<>(bluetoothGattDescriptor, data));
     }
 }

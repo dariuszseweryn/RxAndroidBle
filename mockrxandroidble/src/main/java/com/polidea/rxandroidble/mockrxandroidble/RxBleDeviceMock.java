@@ -22,7 +22,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISC
 
 class RxBleDeviceMock implements RxBleDevice {
 
-    private final RxBleConnection.Connector connector;
+    private final RxBleConnection rxBleConnection;
     private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
             DISCONNECTED
     );
@@ -41,19 +41,23 @@ class RxBleDeviceMock implements RxBleDevice {
                            Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
         this.name = name;
         this.macAddress = macAddress;
-        this.connector = new RxBleConnectionConnectorMock(new RxBleConnectionMock(rxBleDeviceServices,
+        this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
                 rssi,
-                characteristicNotificationSources));
+                characteristicNotificationSources);
         this.rssi = rssi;
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
+    }
+
+    public void addAdvertisedUUID(UUID advertisedUUID) {
+        advertisedUUIDs.add(advertisedUUID);
     }
 
     @Override
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
             if (isConnected.compareAndSet(false, true)) {
-                return connector.prepareConnection(context, autoConnect)
+                return Observable.just(rxBleConnection)
                         .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
                         .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
                         .doOnUnsubscribe(() -> {
