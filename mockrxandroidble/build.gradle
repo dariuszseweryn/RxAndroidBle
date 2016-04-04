@@ -13,25 +13,27 @@ android {
         versionCode 1
         versionName VERSION_NAME
     }
+
     compileOptions {
         sourceCompatibility rootProject.ext.targetCompatibilityVersion
         targetCompatibility rootProject.ext.targetCompatibilityVersion
     }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
     lintOptions {
         abortOnError false
     }
 }
 
 dependencies {
-    compile "com.polidea.rxandroidble:rxandroidble:1.0.1"
+    compile 'com.polidea.rxandroidble:rxandroidble:1.0.1'
 
     // Test dependencies
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.codehaus.groovy:groovy:2.4.5:grooid'
-    testCompile 'org.robospock:robospock:1.0.0'
-    testCompile 'cglib:cglib-nodep:3.1'
-    testCompile 'org.objenesis:objenesis:2.2'
+    testCompile rootProject.ext.libs.junit
+    testCompile rootProject.ext.libs.groovy
+    testCompile rootProject.ext.libs.spock
+    testCompile rootProject.ext.libs.robospock
 }

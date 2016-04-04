@@ -1,9 +1,11 @@
 apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
+
 buildscript {
     repositories {
         jcenter()
     }
+
     dependencies {
         classpath 'com.android.tools.build:gradle:1.5.0'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.12.0'

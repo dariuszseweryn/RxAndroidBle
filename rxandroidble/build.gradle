@@ -13,16 +13,19 @@ android {
         versionCode 1
         versionName VERSION_NAME
     }
+    
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility rootProject.ext.targetCompatibilityVersion
         targetCompatibility rootProject.ext.targetCompatibilityVersion
     }
+
     testOptions {
         unitTests.returnDefaultValues = true
         unitTests.all {
@@ -33,21 +36,21 @@ android {
             }
         }
     }
+
     lintOptions {
         abortOnError false
     }
 }
+
 dependencies {
     compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.support
     compile rootProject.ext.libs.support_annotations
 
     // Test dependencies
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.codehaus.groovy:groovy:2.4.6:grooid'
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testCompile 'cglib:cglib-nodep:3.2.1'
-    testCompile 'org.objenesis:objenesis:2.2'
-    testCompile 'org.robospock:robospock:1.0.0'
+    testCompile rootProject.ext.libs.junit
+    testCompile rootProject.ext.libs.groovy
+    testCompile rootProject.ext.libs.spock
+    testCompile rootProject.ext.libs.robospock
     testCompile rootProject.ext.libs.support
 }
