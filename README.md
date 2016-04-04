@@ -49,6 +49,13 @@ Subscription subscription = device.establishConnection(context, false) // <-- au
 subscription.unsubscribe();
 ```
 
+#### Auto connect
+Auto connect concept may be misleading at first glance. Without the autoconnect flag the connection will end up with an error if a BLE device is not advertising when the `RxBleDevice#establishConnection` method is called. From platform to platform timeout after which the error is emitted differs, but in general it is rather tens of seconds than single seconds.
+
+Setting the auto connect flag allows you to wait until the BLE device becomes discoverable. The `RxBleConnection` instance won't be emited until the connection is fully set up. It also handles acquiring wakelockes, so it's safe to assume that your Android device will be woken up after the connection has been established.
+
+Be careful not to overuse the autoconnect flag. On the other side it has negative impact on the connection initialization speed. Scanning window and interval is lowered as it is optimized for background use and depending on Bluetooth parameters it may take more time to establish the connection.
+
 ### Read / write operations
 #### Read
 ```java
