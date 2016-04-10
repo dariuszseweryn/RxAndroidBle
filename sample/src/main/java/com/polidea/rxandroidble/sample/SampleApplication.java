@@ -21,7 +21,7 @@ public class SampleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        rxBleClient = RxBleClient.getInstance(this);
+        rxBleClient = RxBleClient.create(this);
         RxBleClient.setLogLevel(RxBleLog.DEBUG);
     }
 }
