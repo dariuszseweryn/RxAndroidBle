@@ -1,15 +1,12 @@
 ### Summary
-
-
-### Preconditions
-
-
-### Actual result
-
-
-### Steps to reproduce actual result
+<br />
+#### Preconditions
+<br />
+#### Steps to reproduce actual result
 1.
 2.
 3.
-
-### Expected result
+#### Actual result
+<br />
+#### Expected result
+<br />
