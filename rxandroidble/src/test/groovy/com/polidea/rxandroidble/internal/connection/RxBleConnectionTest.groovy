@@ -8,6 +8,7 @@ import android.os.Build
 import android.support.v4.util.Pair
 import com.polidea.rxandroidble.BuildConfig
 import com.polidea.rxandroidble.FlatRxBleRadio
+import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.*
 import org.robolectric.annotation.Config
@@ -263,18 +264,26 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertValue(EXPECTED_RSSI_VALUE)
     }
 
+    @Unroll
     def "should emit CharacteristicNotFoundException if matching characteristic wasn't found"() {
         given:
         shouldContainOneServiceWithoutCharacteristics()
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleCharacteristicNotFoundException)
         testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should emit BleCannotSetCharacteristicNotificationException if CLIENT_CONFIGURATION_DESCRIPTION wasn't found"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -282,12 +291,19 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         shouldGattContainServiceWithCharacteristic(characteristic, CHARACTERISTIC_UUID)
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should emit BleCannotSetCharacteristicNotificationException if failed to set characteristic notification"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -296,12 +312,19 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> false
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should emit BleCannotSetCharacteristicNotificationException if failed to start write CLIENT_CONFIGURATION_DESCRIPTION"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -311,12 +334,19 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should emit BleCannotSetCharacteristicNotificationException if failed to write CLIENT_CONFIGURATION_DESCRIPTION"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -326,12 +356,19 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should register notifications correctly"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -340,11 +377,16 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         shouldReturnStartingStatusAndEmitDescriptorWriteCallback(descriptor, { true })
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        1 * bluetoothGattMock.writeDescriptor({ it.value == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE })
+        1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue })
+
+        where:
+        setupTriggerNotificationClosure | enableValue
+        setupNotificationClosure        | BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        setupIndicationClosure          | BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
     }
 
     @Unroll
@@ -354,31 +396,41 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect { Pair.create(CHARACTERISTIC_UUID, it) })
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValues(expectedValues)
         testSubscriber.assertNotCompleted()
 
         where:
-        changeNotifications          | expectedValues
-        [NOT_EMPTY_DATA]             | [NOT_EMPTY_DATA]
-        [NOT_EMPTY_DATA, OTHER_DATA] | [NOT_EMPTY_DATA, OTHER_DATA]
+        changeNotifications          | expectedValues               | setupTriggerNotificationClosure
+        [NOT_EMPTY_DATA]             | [NOT_EMPTY_DATA]             | setupNotificationClosure
+        [NOT_EMPTY_DATA]             | [NOT_EMPTY_DATA]             | setupIndicationClosure
+        [NOT_EMPTY_DATA, OTHER_DATA] | [NOT_EMPTY_DATA, OTHER_DATA] | setupNotificationClosure
+        [NOT_EMPTY_DATA, OTHER_DATA] | [NOT_EMPTY_DATA, OTHER_DATA] | setupIndicationClosure
     }
 
+    @Unroll
     def "should not notify about value change if UUID is not matching"() {
         given:
         shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
         gattCallback.getOnCharacteristicChanged() >> just(Pair.create(OTHER_UUID, NOT_EMPTY_DATA))
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
         testSubscriber.assertNotCompleted()
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should reuse notification setup if UUID matches"() {
         given:
         def secondSubscriber = new TestSubscriber()
@@ -388,15 +440,15 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         gattCallback.getOnCharacteristicChanged() >> PublishSubject.create()
 
         def descriptorWriteSubject = shouldReturnStartingStatusAndEmitDescriptorWriteCallback(descriptor)
-        bluetoothGattMock.setCharacteristicNotification(characteristic, _) >> true
+        bluetoothGattMock.setCharacteristicNotification(characteristic, _) >> false
 
         when:
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).subscribe(secondSubscriber)
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).subscribe(secondSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        1 * bluetoothGattMock.writeDescriptor({ it.value == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE }) >> {
+        1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue }) >> {
             descriptorWriteSubject.onNext(Pair.create(descriptor, EMPTY_DATA))
             descriptorWriteSubject.onCompleted()
             true
@@ -405,8 +457,14 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         and:
         testSubscriber.assertNoErrors()
         secondSubscriber.assertNoErrors()
+
+        where:
+        setupTriggerNotificationClosure | enableValue
+        setupNotificationClosure        | BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        setupIndicationClosure          | BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
     }
 
+    @Unroll
     def "should reuse notification setup if UUID matches but observable wasn't subscribed yet"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, value: EMPTY_DATA)
@@ -418,8 +476,8 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         bluetoothGattMock.setCharacteristicNotification(characteristic, _) >> true
 
         def secondSubscriber = new TestSubscriber()
-        def observable = objectUnderTest.setupNotification(CHARACTERISTIC_UUID)
-        def secondObservable = objectUnderTest.setupNotification(CHARACTERISTIC_UUID)
+        def observable = setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID)
+        def secondObservable = setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID)
 
         when:
         observable.subscribe(testSubscriber)
@@ -427,7 +485,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        1 * bluetoothGattMock.writeDescriptor({ it.value == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE }) >> {
+        1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue }) >> {
             descriptorWriteSubject.onNext(Pair.create(descriptor, EMPTY_DATA))
             descriptorWriteSubject.onCompleted()
             true
@@ -436,16 +494,22 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         and:
         testSubscriber.assertNoErrors()
         secondSubscriber.assertNoErrors()
+
+        where:
+        setupTriggerNotificationClosure | enableValue
+        setupNotificationClosure        | BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        setupIndicationClosure          | BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
     }
 
+    @Unroll
     def "should notify both subscribers about value change"() {
         given:
         shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
         def characteristicChangeSubject = PublishSubject.create()
         gattCallback.getOnCharacteristicChanged() >> characteristicChangeSubject
         def secondSubscriber = new TestSubscriber()
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
-        objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
 
         when:
         characteristicChangeSubject.onNext(Pair.create(CHARACTERISTIC_UUID, NOT_EMPTY_DATA))
@@ -453,20 +517,26 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         then:
         testSubscriber.assertValue(NOT_EMPTY_DATA)
         secondSubscriber.assertValue(NOT_EMPTY_DATA)
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
     }
 
+    @Unroll
     def "should unregister notifications after all observers are unsubscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
         gattCallback.getOnCharacteristicChanged() >> PublishSubject.create()
         def secondSubscriber = new TestSubscriber()
-        def firstSubscription = objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
-        def secondSubscription = objectUnderTest.setupNotification(CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
+        def firstSubscription = setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        def secondSubscription = setupTriggerNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
 
         when:
         firstSubscription.unsubscribe()
 
-        then:
         then:
         0 * bluetoothGattMock.setCharacteristicNotification(characteristic, false) >> true
         0 * bluetoothGattMock.writeDescriptor({ it.value == BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE })
@@ -477,6 +547,33 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, false) >> true
         1 * bluetoothGattMock.writeDescriptor({ it.value == BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE })
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationClosure,
+                setupIndicationClosure
+        ]
+    }
+
+    @Unroll
+    def "should emit BleCharacteristicNotificationOfOtherTypeAlreadySetException if notification is set up after indication on the same characteristic"() {
+        given:
+        shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
+        gattCallback.getOnCharacteristicChanged() >> PublishSubject.create()
+        def secondSubscriber = new TestSubscriber()
+
+        when:
+        setupTriggerFirstNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(testSubscriber)
+        setupTriggerSecondNotificationClosure.call(objectUnderTest, CHARACTERISTIC_UUID).flatMap({ it }).subscribe(secondSubscriber)
+
+        then:
+        testSubscriber.assertNoErrors()
+        secondSubscriber.assertError(BleConflictingNotificationAlreadySetException)
+
+        where:
+        setupTriggerFirstNotificationClosure    | setupTriggerSecondNotificationClosure
+        setupNotificationClosure                | setupIndicationClosure
+        setupIndicationClosure                  | setupNotificationClosure
     }
 
     public shouldSetupCharacteristicNotificationCorrectly(UUID characteristicUUID) {
@@ -566,5 +663,9 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     public shouldFailStartingCharacteristicRead() {
         bluetoothGattMock.readCharacteristic(_) >> false
     }
+
+    private static Closure<Observable<Observable<byte[]>>> setupNotificationClosure = { RxBleConnection connection, UUID charUuid -> return connection.setupNotification(charUuid) }
+
+    private static Closure<Observable<Observable<byte[]>>> setupIndicationClosure = { RxBleConnection connection, UUID charUuid -> return connection.setupIndication(charUuid) }
 
 }

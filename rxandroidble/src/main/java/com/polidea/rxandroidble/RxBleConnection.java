@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
+import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
@@ -64,13 +65,36 @@ public interface RxBleConnection {
      * <p>
      * Notification is automatically unregistered once this observable is unsubscribed.
      *
+     * NOTE: due to stateful nature of characteristics if one will setupIndication() before setupNotification()
+     * the notification will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
+     *
      * @param characteristicUuid Characteristic UUID for notification setup.
      * @return Observable emitting another observable when the notification setup is complete.
      * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
      * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
+     * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);
+
+    /**
+     * Setup characteristic indication in order to receive callbacks when given characteristic has been changed. Returned observable will
+     * emit Observable<byte[]> once the indication setup has been completed. It is possible to setup more observables for the same
+     * characteristic and the lifecycle of the indication will be shared among them.
+     * <p>
+     * Indication is automatically unregistered once this observable is unsubscribed.
+     *
+     * NOTE: due to stateful nature of characteristics if one will setupNotification() before setupIndication()
+     * the indication will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
+     *
+     * @param characteristicUuid Characteristic UUID for indication setup.
+     * @return Observable emitting another observable when the indication setup is complete.
+     * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
+     * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
+     *                                                         reason or lack of permissions.
+     * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
+     */
+    Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid);
 
     /**
      * Convenience method for characteristic retrieval. First step is service discovery which is followed by service/characteristic
