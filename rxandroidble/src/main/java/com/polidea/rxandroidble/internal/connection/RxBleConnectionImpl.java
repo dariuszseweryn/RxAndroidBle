@@ -88,7 +88,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return Observable.defer(() -> setupServerInitiatedCharacteristicRead(characteristicUuid, true));
     }
 
-    private synchronized Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(@NonNull UUID characteristicUuid, boolean withAck) {
+    private synchronized Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
+            @NonNull UUID characteristicUuid, boolean withAck
+    ) {
 
         final HashMap<UUID, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
                 withAck ? notificationObservableMap : indicationObservableMap;
@@ -98,7 +100,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
             return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, !withAck));
         }
 
-        final HashMap<UUID, Observable<Observable<byte[]>>> sameNotificationTypeMap = withAck ? indicationObservableMap : notificationObservableMap;
+        final HashMap<UUID, Observable<Observable<byte[]>>> sameNotificationTypeMap
+                = withAck ? indicationObservableMap : notificationObservableMap;
 
         final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicUuid);
 
@@ -123,7 +126,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(ObservableUtil::justOnNext);
     }
 
-    private void dismissTriggeredRead(UUID characteristicUuid, HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap, byte[] enableValue) {
+    private void dismissTriggeredRead(
+            UUID characteristicUuid, HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap, byte[] enableValue
+    ) {
 
         removeFromMap(characteristicUuid, notificationTypeMap);
 
@@ -148,7 +153,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @NonNull
-    private Observable<byte[]> setupCharacteristicTriggeredRead(BluetoothGattDescriptor bluetoothGattDescriptor, boolean enabled, byte[] enableValue) {
+    private Observable<byte[]> setupCharacteristicTriggeredRead(
+            BluetoothGattDescriptor bluetoothGattDescriptor, boolean enabled, byte[] enableValue
+    ) {
         final BluetoothGattCharacteristic characteristic = bluetoothGattDescriptor.getCharacteristic();
 
         if (bluetoothGatt.setCharacteristicNotification(characteristic, enabled)) {

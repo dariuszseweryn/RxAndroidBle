@@ -27,9 +27,9 @@ public class BleConflictingNotificationAlreadySetException extends BleException 
 
     @Override
     public String toString() {
-        return "BleCharacteristicNotificationOfOtherTypeAlreadySetException{" +
-                "characteristicUuid=" + characteristicUuid.toString() +
-                ", typeAlreadySet=" + (alreadySetIsIndication ? "indication" : "notification") +
-                '}';
+        return "BleCharacteristicNotificationOfOtherTypeAlreadySetException{"
+                + "characteristicUuid=" + characteristicUuid.toString()
+                + ", typeAlreadySet=" + (alreadySetIsIndication ? "indication" : "notification")
+                + '}';
     }
 }
