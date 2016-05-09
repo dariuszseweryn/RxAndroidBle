@@ -10,14 +10,14 @@ import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalScanResult> {
 
     private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final UUIDUtil uuidUtil;
-    private final AtomicBoolean isScanStarted = new AtomicBoolean();
+    private final Object scanLock = new Object();
+    private boolean isScanStarted;
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
         if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
@@ -35,13 +35,13 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     @Override
     public void run() {
 
-        synchronized (isScanStarted) {
+        synchronized (scanLock) {
 
             try {
 
-                isScanStarted.set(rxBleAdapterWrapper.startLeScan(leScanCallback));
+                isScanStarted = rxBleAdapterWrapper.startLeScan(leScanCallback);
 
-                if (!isScanStarted.get()) {
+                if (!isScanStarted) {
                     onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
                 }
             } finally {
@@ -53,11 +53,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     public void stop() {
 
         // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-        synchronized (isScanStarted) {
+        synchronized (scanLock) {
 
-            if (isScanStarted.get()) {
+            if (isScanStarted) {
                 rxBleAdapterWrapper.stopLeScan(leScanCallback);
-                isScanStarted.set(false);
+                isScanStarted = false;
             }
         }
     }
