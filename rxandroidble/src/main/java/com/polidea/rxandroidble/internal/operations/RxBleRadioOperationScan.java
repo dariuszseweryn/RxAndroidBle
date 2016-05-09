@@ -39,12 +39,10 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
 
             try {
 
-                if (!getSubscriber().isUnsubscribed()) {
-                    isScanStarted.set(rxBleAdapterWrapper.startLeScan(leScanCallback));
+                isScanStarted.set(rxBleAdapterWrapper.startLeScan(leScanCallback));
 
-                    if (!isScanStarted.get()) {
-                        onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
-                    }
+                if (!isScanStarted.get()) {
+                    onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
                 }
             } finally {
                 releaseRadio();
