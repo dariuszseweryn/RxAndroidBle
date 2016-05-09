@@ -16,13 +16,13 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final UUIDUtil uuidUtil;
-
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
         if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
             onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
         }
     };
+    private boolean startLeScanStatus;
 
     public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, UUIDUtil uuidUtil) {
 
@@ -35,7 +35,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     public void run() {
 
         try {
-            boolean startLeScanStatus = rxBleAdapterWrapper.startLeScan(leScanCallback);
+            startLeScanStatus = rxBleAdapterWrapper.startLeScan(leScanCallback);
 
             if (!startLeScanStatus) {
                 onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
@@ -46,8 +46,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     public void stop() {
+
         // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-        rxBleAdapterWrapper.stopLeScan(leScanCallback);
+        if (startLeScanStatus) {
+            rxBleAdapterWrapper.stopLeScan(leScanCallback);
+        }
     }
 
     private boolean containsDesiredServiceIds(byte[] scanRecord) {

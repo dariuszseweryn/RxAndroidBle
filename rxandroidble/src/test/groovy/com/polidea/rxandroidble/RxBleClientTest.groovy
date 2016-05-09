@@ -3,6 +3,7 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.observers.TestSubscriber
@@ -62,7 +63,7 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.stopLeScan(_)
     }
 
-    def "should stop and unsubscribe in case of scan throws exception"() {
+    def "should unsubscribe in case of scan throws exception"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
         bleAdapterWrapperSpy.startLeScan(_) >> { throw new NullPointerException() }
@@ -71,9 +72,6 @@ class RxBleClientTest extends Specification {
         def scanSubscription = objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
 
         then:
-        1 * bleAdapterWrapperSpy.stopLeScan(_)
-
-        and:
         scanSubscription.isUnsubscribed()
     }
 
@@ -314,5 +312,32 @@ class RxBleClientTest extends Specification {
         def mock = Mock(BluetoothDevice)
         mock.getAddress() >> scanData['deviceMac']
         bleAdapterWrapperSpy.addScanResult(mock, scanData['rssi'], scanData['scanRecord'])
+    }
+
+    def "should not call stopLeScan if startLeScan wasn't called before"() {
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.startLeScan(_) >> {
+            // simulate delay when starting scan
+            Thread.sleep(100)
+            true
+        }
+        RxBleClient client = new RxBleClientImpl(bleAdapterWrapperSpy, new RxBleRadioImpl(),
+                adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
+
+        when:
+        client.scanBleDevices(null).subscribe(testSubscriber).unsubscribe()
+        waitForThreadsToCompleteWork()
+
+        then:
+        0 * bleAdapterWrapperSpy.startLeScan(_)
+
+        and:
+        0 * bleAdapterWrapperSpy.stopLeScan(_)
+    }
+
+    public waitForThreadsToCompleteWork() {
+        Thread.sleep(200) // Nasty :<
+        true
     }
 }
