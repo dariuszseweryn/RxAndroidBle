@@ -10,19 +10,20 @@ import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalScanResult> {
 
     private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final UUIDUtil uuidUtil;
+    private final AtomicBoolean isScanStarted = new AtomicBoolean();
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
         if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
             onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
         }
     };
-    private boolean startLeScanStatus;
 
     public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, UUIDUtil uuidUtil) {
 
@@ -34,22 +35,32 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     @Override
     public void run() {
 
-        try {
-            startLeScanStatus = rxBleAdapterWrapper.startLeScan(leScanCallback);
+        synchronized (isScanStarted) {
 
-            if (!startLeScanStatus) {
-                onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+            try {
+
+                if (!getSubscriber().isUnsubscribed()) {
+                    isScanStarted.set(rxBleAdapterWrapper.startLeScan(leScanCallback));
+
+                    if (!isScanStarted.get()) {
+                        onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+                    }
+                }
+            } finally {
+                releaseRadio();
             }
-        } finally {
-            releaseRadio();
         }
     }
 
     public void stop() {
 
         // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-        if (startLeScanStatus) {
-            rxBleAdapterWrapper.stopLeScan(leScanCallback);
+        synchronized (isScanStarted) {
+
+            if (isScanStarted.get()) {
+                rxBleAdapterWrapper.stopLeScan(leScanCallback);
+                isScanStarted.set(false);
+            }
         }
     }
 
