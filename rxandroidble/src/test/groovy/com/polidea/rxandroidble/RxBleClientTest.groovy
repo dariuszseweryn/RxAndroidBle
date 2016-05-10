@@ -3,9 +3,12 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl
+import com.polidea.rxandroidble.internal.RxBleRadio
+import com.polidea.rxandroidble.internal.RxBleRadioOperation
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.UUIDUtil
+import rx.Observable
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -314,26 +317,58 @@ class RxBleClientTest extends Specification {
         bleAdapterWrapperSpy.addScanResult(mock, scanData['rssi'], scanData['scanRecord'])
     }
 
-    def "should not call stopLeScan if startLeScan wasn't called before"() {
+    /**
+     * This test reproduces issue: https://github.com/Polidea/RxAndroidBle/issues/17
+     * It first calls startLeScan method which takes 150ms to finish
+     * then it calls stopLeScan before startLeScan returns
+     */
+    def "should call stopLeScan only after startLeScan finishes and returns true"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
         bleAdapterWrapperSpy.startLeScan(_) >> {
             // simulate delay when starting scan
-            Thread.sleep(100)
+            Thread.sleep(150)
             true
         }
-        RxBleClient client = new RxBleClientImpl(bleAdapterWrapperSpy, new RxBleRadioImpl(),
-                adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
+        RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(null, bleAdapterWrapperSpy, null)
+        Thread stopScanThread = new Thread() {
+            @Override
+            void run() {
+                //unsubscribe before scan starts
+                Thread.sleep(5)
+                scanOperation.stop();
+            }
+        }
+        def scanTestRadio = new RxBleRadio() {
+            @Override
+            def <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation) {
+                return rxBleRadioOperation
+                        .asObservable()
+                        .doOnSubscribe({
+                    stopScanThread.start()
+                    Thread runOperationThread = new Thread() {
+                        @Override
+                        void run() {
+                            def semaphore = new MockSemaphore()
+                            rxBleRadioOperation.setRadioBlockingSemaphore(semaphore)
+                            semaphore.acquire()
+                            rxBleRadioOperation.run()
+                        }
+                    }
+                    runOperationThread.start()
+                })
+            }
+        }
 
         when:
-        client.scanBleDevices(null).subscribe(testSubscriber).unsubscribe()
+        scanTestRadio.queue(scanOperation).subscribe(testSubscriber)
         waitForThreadsToCompleteWork()
 
         then:
-        0 * bleAdapterWrapperSpy.startLeScan(_)
+        1 * bleAdapterWrapperSpy.startLeScan(_)
 
-        and:
-        0 * bleAdapterWrapperSpy.stopLeScan(_)
+        then:
+        1 * bleAdapterWrapperSpy.stopLeScan(_)
     }
 
     public waitForThreadsToCompleteWork() {
