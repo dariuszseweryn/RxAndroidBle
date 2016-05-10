@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
@@ -319,23 +320,26 @@ class RxBleClientTest extends Specification {
 
     /**
      * This test reproduces issue: https://github.com/Polidea/RxAndroidBle/issues/17
-     * It first calls startLeScan method which takes 150ms to finish
-     * then it calls stopLeScan before startLeScan returns
+     * It first calls startLeScan method which takes 100ms to finish
+     * then it calls stopLeScan after 50ms but before startLeScan returns
      */
     def "should call stopLeScan only after startLeScan finishes and returns true"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.startLeScan(_) >> {
-            // simulate delay when starting scan
-            Thread.sleep(150)
-            true
+        bleAdapterWrapperSpy.startLeScan(_) >> true
+        RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(null, bleAdapterWrapperSpy, null) {
+            @Override
+            synchronized void run() {
+                // simulate delay when starting scan
+                Thread.sleep(100)
+                super.run()
+            }
         }
-        RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(null, bleAdapterWrapperSpy, null)
         Thread stopScanThread = new Thread() {
             @Override
             void run() {
                 //unsubscribe before scan starts
-                Thread.sleep(5)
+                Thread.sleep(50)
                 scanOperation.stop();
             }
         }
