@@ -8,6 +8,5 @@
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
-        android:allowBackup="true"
         android:label="@string/app_name"/>
 </manifest>
