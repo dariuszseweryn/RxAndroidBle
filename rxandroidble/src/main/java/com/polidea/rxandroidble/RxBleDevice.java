@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 
@@ -63,4 +64,12 @@ public interface RxBleDevice {
      * MAC address of the corresponding device.
      */
     String getMacAddress();
+
+    /**
+     * The underlying android.bluetooth.BluetoothDevice.
+     *
+     * NOTE: this should be used with caution and knowledge as interaction with the BluetoothDevice may interrupt the flow of this library.
+     * @return the BluetoothDevice
+     */
+    BluetoothDevice getBluetoothDevice();
 }
