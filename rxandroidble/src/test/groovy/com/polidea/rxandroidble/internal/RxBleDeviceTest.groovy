@@ -301,6 +301,12 @@ public class RxBleDeviceTest extends Specification {
         connectionState == DISCONNECTED
     }
 
+    def "should return initial BluetoothDevice on getBluetoothDevice()"() {
+
+        expect:
+        rxBleDevice.getBluetoothDevice() == mockBluetoothDevice
+    }
+
     public void startConnecting() {
         rxStartConnecting().subscribe({}, {})
     }
