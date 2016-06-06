@@ -16,6 +16,8 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final UUIDUtil uuidUtil;
+    private volatile boolean isStarted = false;
+    private volatile boolean isStopped = false;
 
     private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
 
@@ -39,6 +41,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
 
             if (!startLeScanStatus) {
                 onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+            } else {
+                isStarted = true;
+                if (isStopped) {
+                    stop();
+                }
             }
         } finally {
             releaseRadio();
@@ -46,8 +53,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     public void stop() {
-        // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-        rxBleAdapterWrapper.stopLeScan(leScanCallback);
+        isStopped = true;
+        if (isStarted) {
+            // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
+            rxBleAdapterWrapper.stopLeScan(leScanCallback);
+        }
     }
 
     private boolean containsDesiredServiceIds(byte[] scanRecord) {
