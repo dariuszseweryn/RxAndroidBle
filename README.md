@@ -94,7 +94,7 @@ device.establishConnection(context, false)
 	    .doOnNext(bytes -> {
 	        // Process read data.
 	    })
-	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
+	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite)))
 	.subscribe(writeBytes -> {
 		// Written data.
 	});
