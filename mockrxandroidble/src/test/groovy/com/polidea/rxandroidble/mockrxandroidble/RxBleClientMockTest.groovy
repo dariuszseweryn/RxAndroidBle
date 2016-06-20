@@ -7,6 +7,8 @@ import org.robospock.RoboSpecification
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 
+import static java.util.Collections.emptyList
+
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends RoboSpecification {
 
@@ -40,6 +42,20 @@ public class RxBleClientMockTest extends RoboSpecification {
                         ).build()
                 ).build()
         ).build();
+    }
+
+    def "should return filtered BluetoothDevice"() {
+        given:
+        def testSubscriber = TestSubscriber.create()
+
+        when:
+        rxBleClient.scanBleDevices(serviceUUID)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
+                .subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
     }
 
     def "should return the BluetoothDevice name"() {
