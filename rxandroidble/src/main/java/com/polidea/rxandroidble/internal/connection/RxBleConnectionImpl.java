@@ -202,17 +202,21 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
         return getCharacteristic(characteristicUuid)
-                .doOnNext(characteristic -> characteristic.setValue(data))
-                .flatMap(this::writeCharacteristic)
-                .map(BluetoothGattCharacteristic::getValue);
+                .flatMap(characteristic -> writeCharacteristic(characteristic, data));
     }
 
     @Override
     public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
+                .map(bytes -> bluetoothGattCharacteristic);
+    }
+
+    private Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
                 gattCallback,
                 bluetoothGatt,
-                bluetoothGattCharacteristic
+                characteristic,
+                data
         ));
     }
 
