@@ -23,13 +23,13 @@ class OperationPriorityFifoBlockingQueue {
         return q.isEmpty();
     }
 
-    public void remove(RxBleRadioOperation rxBleRadioOperation) {
+    public boolean remove(RxBleRadioOperation rxBleRadioOperation) {
         for (FIFOEntry entry : q) {
             if (entry.getEntry() == rxBleRadioOperation) {
-                q.remove(entry);
-                return;
+                return q.remove(entry);
             }
         }
+        return false;
     }
 
     private static class FIFOEntry implements Comparable<FIFOEntry> {
