@@ -66,6 +66,17 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @Override
+    public Set<RxBleDevice> getBondedDevices() {
+        Set<RxBleDevice> rxBleDevices = null;
+        Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
+        for (BluetoothDevice bluetoothDevice: bluetoothDevices) {
+            rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
+        }
+
+        return rxBleDevices;
+    }
+
+    @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
 
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
