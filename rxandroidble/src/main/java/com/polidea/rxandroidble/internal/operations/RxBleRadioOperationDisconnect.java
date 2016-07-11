@@ -31,7 +31,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
         //noinspection Convert2MethodRef
         just(bluetoothGattAtomicReference.get())
                 .filter(bluetoothGatt -> bluetoothGatt != null)

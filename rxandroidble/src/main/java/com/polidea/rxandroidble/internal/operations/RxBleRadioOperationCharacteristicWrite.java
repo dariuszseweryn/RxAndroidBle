@@ -26,7 +26,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
         //noinspection Convert2MethodRef
         final Subscription subscription = rxBleGattCallback
                 .getOnCharacteristicWrite()

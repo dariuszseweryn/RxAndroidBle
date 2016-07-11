@@ -23,7 +23,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
 
         //noinspection Convert2MethodRef
         Observable.<RxBleDeviceServices>create(subscriber -> {

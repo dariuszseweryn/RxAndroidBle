@@ -128,21 +128,35 @@ class RxBleRadioTest extends Specification {
 
     def "should emit onError and release radio if error occured"() {
         given:
-        def testSubscriber = new TestSubscriber()
-        def firstOperation = MockOperation.mockOperation(NORMAL, {
-            it.onError(new Throwable("Some throwable"))
-        })
+        def firstTestSubscriber = new TestSubscriber()
+        def secondTestSubscriber = new TestSubscriber()
+        def firstOperation =  MockOperation.mockOperation(NORMAL, {
+                    it.onError(new Throwable("First throwable"))
+                })
+
+        def secondOperation = new MockOperation(NORMAL, null) {
+            @Override
+            void protectedRun() {
+                // simulate that a not handled exception was thrown somewhere
+                throw new Exception("Second throwable")
+            }
+        }
 
         when:
-        objectUnderTest.queue(firstOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(firstOperation).subscribe(firstTestSubscriber)
+        objectUnderTest.queue(secondOperation).subscribe(secondTestSubscriber)
         waitForThreadsToCompleteWork()
 
         then:
-        testSubscriber.assertError(Throwable)
+        firstTestSubscriber.assertError(Throwable)
+        secondTestSubscriber.assertError(Throwable)
 
         and:
-        testSubscriber.assertError {
-            it.message == "Some throwable"
+        firstTestSubscriber.assertError {
+            it.message == "First throwable"
+        }
+        secondTestSubscriber.assertError {
+            it.message == "Second throwable"
         }
     }
 

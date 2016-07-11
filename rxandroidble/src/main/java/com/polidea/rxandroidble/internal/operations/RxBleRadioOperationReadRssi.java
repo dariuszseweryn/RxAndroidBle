@@ -21,7 +21,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
         //noinspection Convert2MethodRef
         final Subscription subscription = bleGattCallback
                 .getOnRssiRead()

@@ -34,7 +34,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
 
         try {
             boolean startLeScanStatus = rxBleAdapterWrapper.startLeScan(leScanCallback);
@@ -42,9 +42,11 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
             if (!startLeScanStatus) {
                 onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
             } else {
-                isStarted = true;
-                if (isStopped) {
-                    stop();
+                synchronized (this) { // synchronization added for stopping the scan
+                    isStarted = true;
+                    if (isStopped) {
+                        stop();
+                    }
                 }
             }
         } finally {
@@ -52,9 +54,10 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
         }
     }
 
-    public void stop() {
+    public synchronized void stop() { // synchronized keyword added to be sure that operation will be stopped no matter which thread will call it
+        boolean wasStopped = isStopped;
         isStopped = true;
-        if (isStarted) {
+        if (isStarted && !wasStopped) {
             // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
             rxBleAdapterWrapper.stopLeScan(leScanCallback);
         }

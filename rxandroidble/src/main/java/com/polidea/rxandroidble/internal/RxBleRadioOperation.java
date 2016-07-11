@@ -1,7 +1,9 @@
 package com.polidea.rxandroidble.internal;
 
+import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import java.util.concurrent.Semaphore;
 
 import rx.Observable;
@@ -34,6 +36,24 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     public Observable<T> asObservable() {
         return replaySubject;
     }
+
+    @Override
+    public final void run() {
+
+        try {
+            protectedRun();
+        } catch (DeadObjectException deadObjectException) {
+            onError(new BleDisconnectedException(deadObjectException));
+        } catch (Throwable throwable) {
+            onError(throwable);
+        }
+    }
+
+    /**
+     * This method will be overriden in concrete operation implementations and
+     * will contain specific operation logic.
+     */
+    protected abstract void protectedRun() throws Throwable;
 
     /**
      * A convenience method for getting a representation of the Subscriber

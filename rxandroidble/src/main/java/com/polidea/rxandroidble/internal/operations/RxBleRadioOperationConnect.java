@@ -47,7 +47,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
         final Runnable onConnectionEstablishedRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
         // TODO: [PU] 22.03.2016 Is radio properly released in autoConnect in case of connection error?

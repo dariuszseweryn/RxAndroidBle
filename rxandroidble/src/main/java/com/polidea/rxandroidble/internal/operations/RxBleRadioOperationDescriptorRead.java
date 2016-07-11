@@ -27,7 +27,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<Pair<
     }
 
     @Override
-    public void run() {
+    protected void protectedRun() {
         //noinspection Convert2MethodRef
         final Subscription subscription = rxBleGattCallback
                 .getOnDescriptorRead()

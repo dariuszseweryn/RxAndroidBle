@@ -46,7 +46,8 @@ public class RxBleDeviceProvider {
                             RxBleGattCallback::new,
                             new RxBleConnectionConnectorOperationsProvider(),
                             rxBleRadio,
-                            bleConnectionCompat)
+                            bleConnectionCompat,
+                            rxBleAdapterWrapper)
             );
             availableDevices.put(macAddress, newRxBleDevice);
             return newRxBleDevice;
