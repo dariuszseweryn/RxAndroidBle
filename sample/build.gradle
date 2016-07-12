@@ -47,8 +47,8 @@ dependencies {
     compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.0.1', changing: false
     compile 'com.android.support:design:23.2.1'
     compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'io.reactivex:rxandroid:1.1.0'
-    compile 'io.reactivex:rxjava:1.1.0'
+    compile rootProject.ext.libs.rxjava
+    compile rootProject.ext.libs.rxandroid
     compile 'com.trello:rxlifecycle:0.5.0'
     compile 'com.trello:rxlifecycle-components:0.5.0'
 }

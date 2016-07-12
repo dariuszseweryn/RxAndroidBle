@@ -64,7 +64,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
             if (services.size() > 0) { // checking if bluetoothGatt has already discovered services (internal cache?)
                 newObservable = just(new RxBleDeviceServices(services));
             } else { // performing actual discovery
-                newObservable = rxBleRadio.queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt)).cache(1);
+                newObservable = rxBleRadio
+                        .queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt))
+                        .cacheWithInitialCapacity(1);
             }
 
             discoveredServicesCache.set(newObservable);
