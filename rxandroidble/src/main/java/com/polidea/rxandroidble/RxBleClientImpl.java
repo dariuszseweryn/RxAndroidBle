@@ -69,7 +69,7 @@ class RxBleClientImpl extends RxBleClient {
     public Set<RxBleDevice> getBondedDevices() {
         Set<RxBleDevice> rxBleDevices = null;
         Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
-        for (BluetoothDevice bluetoothDevice: bluetoothDevices) {
+        for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
             rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
         }
 

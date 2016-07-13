@@ -54,7 +54,8 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
         }
     }
 
-    public synchronized void stop() { // synchronized keyword added to be sure that operation will be stopped no matter which thread will call it
+    // synchronized keyword added to be sure that operation will be stopped no matter which thread will call it
+    public synchronized void stop() {
         isStopped = true;
         if (isStarted) {
             // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
