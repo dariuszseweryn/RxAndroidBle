@@ -8,6 +8,6 @@ public class ObservableUtil {
     }
 
     public static <T> Observable<T> justOnNext(T onNext) {
-        return Observable.create(subscriber -> subscriber.onNext(onNext));
+        return Observable.<T>never().startWith(onNext);
     }
 }

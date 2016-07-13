@@ -30,7 +30,6 @@ import rx.Observable;
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
-import static rx.Observable.create;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
@@ -175,14 +174,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(BluetoothGattCharacteristic characteristic) {
-        return create(subscriber -> {
+        return Observable.fromCallable(() -> {
             final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
 
             if (descriptor == null) {
-                subscriber.onError(new BleCannotSetCharacteristicNotificationException(characteristic));
+                throw new BleCannotSetCharacteristicNotificationException(characteristic);
             } else {
-                subscriber.onNext(descriptor);
-                subscriber.onCompleted();
+                return descriptor;
             }
         });
     }
