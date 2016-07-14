@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
@@ -78,12 +79,33 @@ public interface RxBleConnection {
     Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);
 
     /**
+     * Setup characteristic notification in order to receive callbacks when given characteristic has been changed. Returned observable will
+     * emit Observable<byte[]> once the notification setup has been completed. It is possible to setup more observables for the same
+     * characteristic and the lifecycle of the notification will be shared among them.
+     * <p>
+     * Notification is automatically unregistered once this observable is unsubscribed.
+     * <p>
+     * NOTE: due to stateful nature of characteristics if one will setupIndication() before setupNotification()
+     * the notification will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
+     * <p>
+     * The characteristic can be retrieved from {@link com.polidea.rxandroidble.RxBleDeviceServices} emitted from
+     * {@link RxBleConnection#discoverServices()}
+     *
+     * @param characteristic Characteristic for notification setup.
+     * @return Observable emitting another observable when the notification setup is complete.
+     * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
+     *                                                         reason or lack of permissions.
+     * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
+     */
+    Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic);
+
+    /**
      * Setup characteristic indication in order to receive callbacks when given characteristic has been changed. Returned observable will
      * emit Observable<byte[]> once the indication setup has been completed. It is possible to setup more observables for the same
      * characteristic and the lifecycle of the indication will be shared among them.
      * <p>
      * Indication is automatically unregistered once this observable is unsubscribed.
-     *
+     * <p>
      * NOTE: due to stateful nature of characteristics if one will setupNotification() before setupIndication()
      * the indication will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      *
@@ -95,6 +117,27 @@ public interface RxBleConnection {
      * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid);
+
+    /**
+     * Setup characteristic indication in order to receive callbacks when given characteristic has been changed. Returned observable will
+     * emit Observable<byte[]> once the indication setup has been completed. It is possible to setup more observables for the same
+     * characteristic and the lifecycle of the indication will be shared among them.
+     * <p>
+     * Indication is automatically unregistered once this observable is unsubscribed.
+     * <p>
+     * NOTE: due to stateful nature of characteristics if one will setupNotification() before setupIndication()
+     * the indication will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
+     * <p>
+     * The characteristic can be retrieved from {@link com.polidea.rxandroidble.RxBleDeviceServices} emitted from
+     * {@link RxBleConnection#discoverServices()}
+     *
+     * @param characteristic Characteristic for indication setup.
+     * @return Observable emitting another observable when the indication setup is complete.
+     * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
+     *                                                         reason or lack of permissions.
+     * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
+     */
+    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic);
 
     /**
      * Convenience method for characteristic retrieval. First step is service discovery which is followed by service/characteristic
@@ -122,6 +165,18 @@ public interface RxBleConnection {
     Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid);
 
     /**
+     * Performs GATT read operation on a given characteristic.
+     *
+     * @param characteristic Requested characteristic.
+     * @return Observable emitting characteristic value or an error in case of failure.
+     * @throws BleGattCannotStartException        if read operation couldn't be started for internal reason.
+     * @throws BleGattException                   if read operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
+     */
+    Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic);
+
+    /**
      * Performs GATT write operation on a characteristic with given UUID.
      *
      * @param characteristicUuid Requested characteristic UUID.
@@ -133,19 +188,88 @@ public interface RxBleConnection {
     Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data);
 
     /**
-     * Performs GATT write operation on a characteristic with given UUID.
+     * Performs GATT write operation on a given characteristic. The value that will be transmitted is referenced
+     * by {@link BluetoothGattCharacteristic#getValue()} when this function is being called and reassigned at the time of internal execution
+     * by {@link BluetoothGattCharacteristic#setValue(byte[])}
+     * <p>
+     * @deprecated Use {@link #writeCharacteristic(BluetoothGattCharacteristic, byte[])} instead
      *
      * @param bluetoothGattCharacteristic Characteristic to write. Use {@link BluetoothGattCharacteristic#setValue(byte[])} to set value.
      * @return Observable emitting characteristic after write or an error in case of failure.
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
      * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
      */
-    Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
+    @Deprecated Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
 
+    /**
+     * Performs GATT write operation on a given characteristic.
+     *
+     * @param bluetoothGattCharacteristic Characteristic to write.
+     * @param data the byte array to write
+     * @return Observable emitting written data or an error in case of failure.
+     * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
+     * @throws BleGattException            if write operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
+     */
+    Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data);
+
+    /**
+     * Performs GATT read operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
+     *
+     * @param serviceUuid Requested {@link android.bluetooth.BluetoothGattService} UUID
+     * @param characteristicUuid Requested {@link android.bluetooth.BluetoothGattCharacteristic} UUID
+     * @param descriptorUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @return Observable emitting the descriptor value after read or an error in case of failure.
+     * @throws BleGattCannotStartException if read operation couldn't be started for internal reason.
+     * @throws BleGattException            if read operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
+     */
     Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid);
 
+    /**
+     * Performs GATT read operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
+     *
+     * @param descriptor Requested {@link android.bluetooth.BluetoothGattDescriptor}
+     * @return Observable emitting the descriptor value after read or an error in case of failure.
+     * @throws BleGattCannotStartException if read operation couldn't be started for internal reason.
+     * @throws BleGattException            if read operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic from which you can get the {@link BluetoothGattDescriptor}.
+     * @see #discoverServices() to obtain the {@link BluetoothGattDescriptor}.
+     */
+    Observable<byte[]> readDescriptor(BluetoothGattDescriptor descriptor);
+
+    /**
+     * Performs GATT write operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
+     *
+     * @param serviceUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @param characteristicUuid Requested {@link android.bluetooth.BluetoothGattCharacteristic} UUID
+     * @param descriptorUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @return Observable emitting the written descriptor value after write or an error in case of failure.
+     * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
+     * @throws BleGattException            if write operation failed
+     */
     Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data);
 
+    /**
+     * Performs GATT write operation on a given descriptor.
+     *
+     * @param descriptor Requested {@link android.bluetooth.BluetoothGattDescriptor}
+     * @return Observable emitting the written descriptor value after write or an error in case of failure.
+     * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
+     * @throws BleGattException            if write operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
+     */
+    Observable<byte[]> writeDescriptor(BluetoothGattDescriptor descriptor, byte[] data);
+
+    /**
+     * Performs GATT read rssi operation.
+     *
+     * @return Observable emitting the read RSSI value
+     */
     Observable<Integer> readRssi();
 }
