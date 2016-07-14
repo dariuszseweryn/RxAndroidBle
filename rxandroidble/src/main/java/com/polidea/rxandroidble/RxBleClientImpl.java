@@ -20,6 +20,7 @@ import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -67,7 +68,7 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Set<RxBleDevice> getBondedDevices() {
-        Set<RxBleDevice> rxBleDevices = null;
+        Set<RxBleDevice> rxBleDevices = new HashSet<>();
         Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
         for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
             rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
