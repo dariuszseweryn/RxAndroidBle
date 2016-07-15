@@ -201,7 +201,8 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    @Deprecated Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
+    @Deprecated
+    Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
 
     /**
      * Performs GATT write operation on a given characteristic.

@@ -130,7 +130,10 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
                 byte[] enableNotificationTypeValue = withAck ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
 
-                final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(characteristic, enableNotificationTypeValue)
+                final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(
+                        characteristic,
+                        enableNotificationTypeValue
+                )
                         .doOnUnsubscribe(() -> dismissTriggeredRead(characteristic, sameNotificationTypeMap, enableNotificationTypeValue))
                         .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
                         .replay(1)
