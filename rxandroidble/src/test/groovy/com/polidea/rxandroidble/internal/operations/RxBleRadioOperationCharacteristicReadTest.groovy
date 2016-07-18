@@ -161,7 +161,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release Semaphore after successful read"() {
 
         given:
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
@@ -173,7 +173,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         1 * mockSemaphore.release()
     }
 
-    def "should release Semaphore when write failed to start"() {
+    def "should release Semaphore when read failed to start"() {
 
         given:
         givenCharacteristicReadFailToStart()
@@ -185,7 +185,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         1 * mockSemaphore.release()
     }
 
-    def "should release Semaphore when write failed"() {
+    def "should release Semaphore when read failed"() {
         given:
         shouldEmitErrorOnCharacteristicRead(new Throwable("test"))
 

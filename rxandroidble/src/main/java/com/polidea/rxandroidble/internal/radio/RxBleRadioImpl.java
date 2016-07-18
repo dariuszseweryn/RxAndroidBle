@@ -50,11 +50,12 @@ public class RxBleRadioImpl implements RxBleRadio {
 
     @Override
     public <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation) {
-        return Observable.<T>create(subscriber -> {
-            log("QUEUED", rxBleRadioOperation);
-            rxBleRadioOperation.asObservable().subscribe(subscriber);
-            queue.add(rxBleRadioOperation);
-        })
+        return rxBleRadioOperation
+                .asObservable()
+                .doOnSubscribe(() -> {
+                    log("QUEUED", rxBleRadioOperation);
+                    queue.add(rxBleRadioOperation);
+                })
                 .doOnUnsubscribe(() -> {
                     if (queue.remove(rxBleRadioOperation)) {
                         log("REMOVED", rxBleRadioOperation);

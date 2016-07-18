@@ -56,19 +56,14 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
      * 2. The same BluetoothGatt - in this situation we should probably cancel the pending BluetoothGatt.close() call
      */
     private Observable<BluetoothGatt> disconnect(BluetoothGatt bluetoothGatt) {
-        return Observable.create(subscriber -> {
-            //noinspection Convert2MethodRef
-            rxBleGattCallback
-                    .getOnConnectionStateChange()
-                            // It should never happen because if connection was never acquired then it will complete earlier.
-                            // Just in case timeout here.
-                    .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
-                    .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
-                    .take(1)
-                    .map(rxBleConnectionState -> bluetoothGatt)
-                    .subscribe(subscriber);
-
-            bluetoothGatt.disconnect();
-        });
+        return rxBleGattCallback
+                .getOnConnectionStateChange()
+                .doOnSubscribe(bluetoothGatt::disconnect)
+                // It should never happen because if connection was never acquired then it will complete earlier.
+                // Just in case timeout here.
+                .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(RxBleConnection.RxBleConnectionState.DISCONNECTED))
+                .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
+                .take(1)
+                .map(rxBleConnectionState -> bluetoothGatt);
     }
 }

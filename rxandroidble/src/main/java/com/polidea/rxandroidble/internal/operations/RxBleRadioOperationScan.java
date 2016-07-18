@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
@@ -49,6 +50,10 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
                     }
                 }
             }
+        } catch (Throwable throwable) {
+            isStarted = true;
+            RxBleLog.e(throwable, "Error while calling BluetoothAdapter.startLeScan()");
+            onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
         } finally {
             releaseRadio();
         }

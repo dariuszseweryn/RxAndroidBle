@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
@@ -30,18 +29,23 @@ import rx.Observable;
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
-import static rx.Observable.create;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class RxBleConnectionImpl implements RxBleConnection {
 
     static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+
     private final RxBleRadio rxBleRadio;
+
     private final RxBleGattCallback gattCallback;
+
     private final BluetoothGatt bluetoothGatt;
+
     private final AtomicReference<Observable<RxBleDeviceServices>> discoveredServicesCache = new AtomicReference<>();
+
     private final HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
+
     private final HashMap<UUID, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
 
     public RxBleConnectionImpl(RxBleRadio rxBleRadio, RxBleGattCallback gattCallback, BluetoothGatt bluetoothGatt) {
@@ -64,7 +68,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
             if (services.size() > 0) { // checking if bluetoothGatt has already discovered services (internal cache?)
                 newObservable = just(new RxBleDeviceServices(services));
             } else { // performing actual discovery
-                newObservable = rxBleRadio.queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt)).cache(1);
+                newObservable = rxBleRadio
+                        .queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt))
+                        .cacheWithInitialCapacity(1);
             }
 
             discoveredServicesCache.set(newObservable);
@@ -80,69 +86,86 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid) {
-        return Observable.defer(() -> setupServerInitiatedCharacteristicRead(characteristicUuid, false));
+        return getCharacteristic(characteristicUuid).flatMap(this::setupNotification);
+    }
+
+    @Override
+    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic) {
+        return setupServerInitiatedCharacteristicRead(characteristic, false);
     }
 
     @Override
     public Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid) {
-        return Observable.defer(() -> setupServerInitiatedCharacteristicRead(characteristicUuid, true));
+        return getCharacteristic(characteristicUuid).flatMap(this::setupIndication);
+    }
+
+    @Override
+    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic) {
+        return setupServerInitiatedCharacteristicRead(characteristic, true);
     }
 
     private synchronized Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
-            @NonNull UUID characteristicUuid, boolean withAck
+            @NonNull BluetoothGattCharacteristic characteristic, boolean withAck
     ) {
+        return Observable.defer(() -> {
+            synchronized (this) {
+                final UUID characteristicUuid = characteristic.getUuid();
 
-        final HashMap<UUID, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
-                withAck ? notificationObservableMap : indicationObservableMap;
-        final boolean conflictingNotificationIsAlreadySet = conflictingServerInitiatedReadingMap.containsKey(characteristicUuid);
+                final HashMap<UUID, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
+                        withAck ? notificationObservableMap : indicationObservableMap;
+                final boolean conflictingNotificationIsAlreadySet = conflictingServerInitiatedReadingMap.containsKey(characteristicUuid);
 
-        if (conflictingNotificationIsAlreadySet) {
-            return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, !withAck));
-        }
+                if (conflictingNotificationIsAlreadySet) {
+                    return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, !withAck));
+                }
 
-        final HashMap<UUID, Observable<Observable<byte[]>>> sameNotificationTypeMap
-                = withAck ? indicationObservableMap : notificationObservableMap;
+                final HashMap<UUID, Observable<Observable<byte[]>>> sameNotificationTypeMap
+                        = withAck ? indicationObservableMap : notificationObservableMap;
 
-        final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicUuid);
+                final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicUuid);
 
-        if (availableObservable != null) {
-            return availableObservable;
-        }
+                if (availableObservable != null) {
+                    return availableObservable;
+                }
 
-        byte[] enableNotificationTypeValue = withAck ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
+                byte[] enableNotificationTypeValue = withAck ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
 
-        final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(characteristicUuid, enableNotificationTypeValue)
-                .doOnUnsubscribe(() -> dismissTriggeredRead(characteristicUuid, sameNotificationTypeMap, enableNotificationTypeValue))
-                .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
-                .replay(1)
-                .refCount();
-        sameNotificationTypeMap.put(characteristicUuid, newObservable);
-        return newObservable;
+                final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(
+                        characteristic,
+                        enableNotificationTypeValue
+                )
+                        .doOnUnsubscribe(() -> dismissTriggeredRead(characteristic, sameNotificationTypeMap, enableNotificationTypeValue))
+                        .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
+                        .replay(1)
+                        .refCount();
+                sameNotificationTypeMap.put(characteristicUuid, newObservable);
+                return newObservable;
+            }
+        });
     }
 
-    private Observable<byte[]> createTriggeredReadObservable(UUID characteristicUuid, byte[] enableValue) {
-        return getClientConfigurationDescriptor(characteristicUuid)
+    private Observable<byte[]> createTriggeredReadObservable(BluetoothGattCharacteristic characteristic, byte[] enableValue) {
+        return getClientCharacteristicConfig(characteristic)
                 .flatMap(descriptor -> setupCharacteristicTriggeredRead(descriptor, true, enableValue))
                 .flatMap(ObservableUtil::justOnNext);
     }
 
     private void dismissTriggeredRead(
-            UUID characteristicUuid, HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap, byte[] enableValue
+            BluetoothGattCharacteristic characteristic,
+            HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap,
+            byte[] enableValue
     ) {
+        synchronized (this) {
+            notificationTypeMap.remove(characteristic.getUuid());
+        }
 
-        removeFromMap(characteristicUuid, notificationTypeMap);
-
-        getClientConfigurationDescriptor(characteristicUuid)
+        getClientCharacteristicConfig(characteristic)
                 .flatMap(descriptor -> setupCharacteristicTriggeredRead(descriptor, false, enableValue))
                 .subscribe(
                         ignored -> {
                         },
                         ignored -> {
                         });
-    }
-
-    private synchronized void removeFromMap(UUID characteristicUuid, HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap) {
-        notificationTypeMap.remove(characteristicUuid);
     }
 
     @NonNull
@@ -166,21 +189,14 @@ public class RxBleConnectionImpl implements RxBleConnection {
         }
     }
 
-    @NonNull
-    private Observable<BluetoothGattDescriptor> getClientConfigurationDescriptor(UUID characteristicUuid) {
-        return getCharacteristic(characteristicUuid)
-                .flatMap(this::getClientCharacteristicConfig);
-    }
-
     private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(BluetoothGattCharacteristic characteristic) {
-        return create(subscriber -> {
+        return Observable.fromCallable(() -> {
             final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
 
             if (descriptor == null) {
-                subscriber.onError(new BleCannotSetCharacteristicNotificationException(characteristic));
+                throw new BleCannotSetCharacteristicNotificationException(characteristic);
             } else {
-                subscriber.onNext(descriptor);
-                subscriber.onCompleted();
+                return descriptor;
             }
         });
     }
@@ -188,15 +204,16 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
-                .flatMap(bluetoothGattCharacteristic -> {
-                    final RxBleRadioOperationCharacteristicRead operationCharacteristicRead =
-                            new RxBleRadioOperationCharacteristicRead(
-                                    gattCallback,
-                                    bluetoothGatt,
-                                    bluetoothGattCharacteristic
-                            );
-                    return rxBleRadio.queue(operationCharacteristicRead);
-                });
+                .flatMap(this::readCharacteristic);
+    }
+
+    @Override
+    public Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
+        return rxBleRadio.queue(new RxBleRadioOperationCharacteristicRead(
+                gattCallback,
+                bluetoothGatt,
+                characteristic
+        ));
     }
 
     @Override
@@ -205,33 +222,35 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(characteristic -> writeCharacteristic(characteristic, data));
     }
 
+    @Deprecated
     @Override
     public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
                 .map(bytes -> bluetoothGattCharacteristic);
     }
 
-    private Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+    @Override
+    public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
                 gattCallback,
                 bluetoothGatt,
                 characteristic,
-                data
-        ));
+                data));
     }
 
     @Override
     public Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
-                .flatMap(this::readDescriptor)
-                .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second);
+                .flatMap(this::readDescriptor);
     }
 
-    private Observable<Pair<BluetoothGattDescriptor, byte[]>> readDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor) {
+    @Override
+    public Observable<byte[]> readDescriptor(BluetoothGattDescriptor descriptor) {
         return rxBleRadio.queue(
-                new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGatt, bluetoothGattDescriptor)
-        );
+                new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGatt, descriptor)
+        )
+                .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second);
     }
 
     @Override
@@ -241,7 +260,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(bluetoothGattDescriptor -> writeDescriptor(bluetoothGattDescriptor, data));
     }
 
-    private Observable<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
+    @Override
+    public Observable<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
         return rxBleRadio.queue(
                 new RxBleRadioOperationDescriptorWrite(gattCallback, bluetoothGatt, bluetoothGattDescriptor, data)
         );
