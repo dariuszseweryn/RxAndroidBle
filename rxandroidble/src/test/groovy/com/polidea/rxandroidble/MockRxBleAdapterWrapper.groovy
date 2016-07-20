@@ -3,6 +3,7 @@ package com.polidea.rxandroidble
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException
 
 class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
 
@@ -19,6 +20,7 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     }
 
     private List<ScanData> scanDataList = new ArrayList<>()
+    private Set<BluetoothDevice> bondedDevices = new HashSet<>()
 
     MockRxBleAdapterWrapper() {
         super(null)
@@ -30,6 +32,10 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
 
     def addScanResult(BluetoothDevice bluetoothDevice, int rssi, byte[] scanResult) {
         scanDataList.add(new ScanData(bluetoothDevice, rssi, scanResult))
+    }
+
+    def addBondedDevice(BluetoothDevice bluetoothDevice) {
+        bondedDevices.add(bluetoothDevice)
     }
 
     @Override
@@ -62,5 +68,10 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     @Override
     void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
 
+    }
+
+    @Override
+    Set<BluetoothDevice> getBondedDevices() {
+        return bondedDevices
     }
 }

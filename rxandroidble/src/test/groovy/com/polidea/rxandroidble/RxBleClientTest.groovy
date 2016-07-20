@@ -34,6 +34,20 @@ class RxBleClientTest extends Specification {
                 adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
     }
 
+    def "should return bonded devices"() {
+        given:
+        bluetoothDeviceBonded("AA:AA:AA:AA:AA:AA")
+        bluetoothDeviceBonded("BB:BB:BB:BB:BB:BB")
+        bluetoothDeviceDiscovered deviceMac: "AA:AA:AA:AA:AA:AA", rssi: 0, scanRecord: [] as byte[]
+        bluetoothDeviceDiscovered deviceMac: "BB:BB:BB:BB:BB:BB", rssi: 50, scanRecord: [] as byte[]
+
+        when:
+        def results = objectUnderTest.getBondedDevices()
+
+        then:
+        assert results.size() == 2
+    }
+
     def "should start BLE scan if subscriber subscribes to the scan observable"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
@@ -318,6 +332,13 @@ class RxBleClientTest extends Specification {
         def mock = Mock(BluetoothDevice)
         mock.getAddress() >> scanData['deviceMac']
         bleAdapterWrapperSpy.addScanResult(mock, scanData['rssi'], scanData['scanRecord'])
+    }
+
+    def bluetoothDeviceBonded(String address) {
+        def mock = Mock(BluetoothDevice)
+        mock.getAddress() >> address
+        mock.hashCode() >> address.hashCode()
+        bleAdapterWrapperSpy.addBondedDevice(mock);
     }
 
     /**
