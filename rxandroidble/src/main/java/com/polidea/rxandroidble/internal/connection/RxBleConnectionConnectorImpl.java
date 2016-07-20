@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 
+import com.polidea.rxandroidble.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
@@ -25,16 +26,19 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
     private final RxBleRadio rxBleRadio;
     private final BleConnectionCompat connectionCompat;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
+    private final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable;
 
     public RxBleConnectionConnectorImpl(BluetoothDevice bluetoothDevice, RxBleGattCallback.Provider gattCallbackProvider,
                                         RxBleConnectionConnectorOperationsProvider operationsProvider, RxBleRadio rxBleRadio,
-                                        BleConnectionCompat connectionCompat, RxBleAdapterWrapper rxBleAdapterWrapper) {
+                                        BleConnectionCompat connectionCompat, RxBleAdapterWrapper rxBleAdapterWrapper,
+                                        Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable) {
         this.bluetoothDevice = bluetoothDevice; // TODO: pass in prepareConnection?
         this.gattCallbackProvider = gattCallbackProvider;
         this.operationsProvider = operationsProvider;
         this.rxBleRadio = rxBleRadio;
         this.connectionCompat = connectionCompat;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
+        this.adapterStateObservable = adapterStateObservable;
     }
 
     @Override
@@ -46,7 +50,13 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             final RxBleOperations operationsPair =
                     operationsProvider.provide(context, bluetoothDevice, autoConnect, connectionCompat, gattCallback);
 
-            return rxBleRadio.queue(operationsPair.connect)
+            return Observable.merge(
+                    rxBleRadio.queue(operationsPair.connect),
+                    adapterStateObservable
+                            .filter(bleAdapterState -> !bleAdapterState.isUsable())
+                            .flatMap(bleAdapterState -> Observable.error(new BleDisconnectedException()))
+            )
+                    .first()
                     .flatMap(bluetoothGatt -> emitConnectionWithoutCompleting(gattCallback, bluetoothGatt))
                     .mergeWith(gattCallback.observeDisconnect())
                     .doOnUnsubscribe(() -> enqueueDisconnectOperation(operationsPair.disconnect));

@@ -1,7 +1,12 @@
 package com.polidea.rxandroidble.internal.connection
+
+import static com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider.RxBleOperations
+
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
+import com.polidea.rxandroidble.RxBleAdapterStateObservable
+import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
@@ -10,43 +15,39 @@ import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
 import rx.observers.TestSubscriber
+import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider.*
-
 public class RxBleConnectionConnectorImplTest extends Specification {
 
-    RxBleRadio mockRadio
-    Context mockContext
-    BluetoothDevice mockDevice
-    RxBleGattCallback mockCallback
-    RxBleGattCallback.Provider mockCallbackProvider
-    RxBleRadioOperationConnect mockConnect
-    RxBleRadioOperationDisconnect mockDisconnect
-    RxBleConnectionConnectorOperationsProvider mockOperationsProvider
+    RxBleRadio mockRadio = Mock RxBleRadio
+    BluetoothDevice mockDevice = Mock BluetoothDevice
+    RxBleGattCallback mockCallback = Mock RxBleGattCallback
+    RxBleGattCallback.Provider mockCallbackProvider = Mock RxBleGattCallback.Provider
+    RxBleRadioOperationConnect mockConnect = Mock RxBleRadioOperationConnect
+    RxBleRadioOperationDisconnect mockDisconnect = Mock RxBleRadioOperationDisconnect
+    RxBleConnectionConnectorOperationsProvider mockOperationsProvider = Mock RxBleConnectionConnectorOperationsProvider
     RxBleConnectionConnectorImpl objectUnderTest
-    BleConnectionCompat mockConnectionCompat
-    RxBleAdapterWrapper mockAdapterWrapper
+    BleConnectionCompat mockConnectionCompat = Mock BleConnectionCompat
+    RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
+    PublishSubject<RxBleAdapterStateObservable.BleAdapterState> adapterStatePublishSubject = PublishSubject.create()
+    TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
+    BluetoothGatt mockGatt = Mock BluetoothGatt
 
     def setup() {
-        mockConnectionCompat = Mock BleConnectionCompat
-        mockRadio = Mock RxBleRadio
-        mockContext = Mock Context
-        mockDevice = Mock BluetoothDevice
-
-        mockCallback = Mock RxBleGattCallback
-        mockCallbackProvider = Mock RxBleGattCallback.Provider
         mockCallbackProvider.provide() >> mockCallback
-
-        mockConnect = Mock RxBleRadioOperationConnect
-        mockDisconnect = Mock RxBleRadioOperationDisconnect
-        mockOperationsProvider = Mock RxBleConnectionConnectorOperationsProvider
         mockOperationsProvider.provide(*_) >> new RxBleOperations(mockConnect, mockDisconnect)
 
-        mockAdapterWrapper = Mock RxBleAdapterWrapper
-
-        objectUnderTest = new RxBleConnectionConnectorImpl(mockDevice, mockCallbackProvider, mockOperationsProvider, mockRadio, mockConnectionCompat, mockAdapterWrapper)
+        objectUnderTest = new RxBleConnectionConnectorImpl(
+                mockDevice,
+                mockCallbackProvider,
+                mockOperationsProvider,
+                mockRadio,
+                mockConnectionCompat,
+                mockAdapterWrapper,
+                adapterStatePublishSubject
+        )
     }
 
     @Unroll
@@ -54,7 +55,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
 
         when:
         objectUnderTest.prepareConnection(contextObject, autoConnectValue).subscribe(testSubscriber)
@@ -74,7 +74,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
 
         when:
         objectUnderTest.prepareConnection(null, true).subscribe(testSubscriber)
@@ -87,7 +86,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
         mockRadio.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
@@ -101,7 +99,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
         mockRadio.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
@@ -115,7 +112,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
         mockRadio.queue(mockConnect) >> Observable.empty()
 
         when:
@@ -130,8 +126,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
-        def mockGatt = Mock(BluetoothGatt)
         mockRadio.queue(mockConnect) >> Observable.just(mockGatt)
 
         when:
@@ -146,8 +140,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
-        def testSubscriber = new TestSubscriber()
-        def mockGatt = Mock(BluetoothGatt)
         def testError = new Throwable("test")
         mockRadio.queue(_) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.error(testError)
@@ -164,13 +156,57 @@ public class RxBleConnectionConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> false
-        def testSubscriber = new TestSubscriber()
 
         when:
         objectUnderTest.prepareConnection(null, autoConnect).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleDisconnectedException)
+
+        where:
+        autoConnect << [
+                true,
+                false
+        ]
+    }
+
+    @Unroll
+    def "prepareConnection() should emit BleDisconnectedException when RxBleAdapterStateObservable emits not usable RxBleAdapterStateObservable.BleAdapterState"() {
+
+        given:
+        mockAdapterWrapper.isBluetoothEnabled() >> true
+        mockRadio.queue(_) >> Observable.never()
+        objectUnderTest.prepareConnection(null, autoConnect).subscribe(testSubscriber)
+
+        when:
+        adapterStatePublishSubject.onNext(state)
+
+        then:
+        testSubscriber.assertError BleDisconnectedException
+
+        where:
+        autoConnect | state
+        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_OFF
+        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_OFF
+        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_ON
+        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_OFF
+        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_OFF
+        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_ON
+    }
+
+    @Unroll
+    def "prepareConnection() should not emit BleDisconnectedException when RxBleAdapterStateObservable emits usable RxBleAdapterStateObservable.BleAdapterState"() {
+
+        given:
+        mockAdapterWrapper.isBluetoothEnabled() >> true
+        mockRadio.queue(_) >> Observable.never()
+        objectUnderTest.prepareConnection(null, autoConnect).subscribe(testSubscriber)
+
+        when:
+        adapterStatePublishSubject.onNext(RxBleAdapterStateObservable.BleAdapterState.STATE_ON)
+
+        then:
+        testSubscriber.assertNoErrors()
 
         where:
         autoConnect << [

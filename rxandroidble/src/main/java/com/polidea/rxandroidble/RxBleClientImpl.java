@@ -40,24 +40,28 @@ class RxBleClientImpl extends RxBleClient {
                     RxBleRadio rxBleRadio,
                     Observable<BleAdapterState> adapterStateObservable,
                     UUIDUtil uuidUtil,
-                    BleConnectionCompat bleConnectionCompat,
-                    LocationServicesStatus locationServicesStatus) {
+                    LocationServicesStatus locationServicesStatus,
+                    RxBleDeviceProvider rxBleDeviceProvider) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleAdapterStateObservable = adapterStateObservable;
         this.locationServicesStatus = locationServicesStatus;
-        rxBleDeviceProvider = new RxBleDeviceProvider(this.rxBleAdapterWrapper, this.rxBleRadio, bleConnectionCompat);
+        this.rxBleDeviceProvider = rxBleDeviceProvider;
     }
 
     public static RxBleClientImpl getInstance(@NonNull Context context) {
+        final RxBleAdapterWrapper rxBleAdapterWrapper = new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter());
+        final RxBleRadioImpl rxBleRadio = new RxBleRadioImpl();
+        final RxBleAdapterStateObservable adapterStateObservable = new RxBleAdapterStateObservable(context.getApplicationContext());
+        final BleConnectionCompat bleConnectionCompat = new BleConnectionCompat(context);
         return new RxBleClientImpl(
-                new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter()),
-                new RxBleRadioImpl(),
-                new RxBleAdapterStateObservable(context.getApplicationContext()),
+                rxBleAdapterWrapper,
+                rxBleRadio,
+                adapterStateObservable,
                 new UUIDUtil(),
-                new BleConnectionCompat(context),
-                new LocationServicesStatus(context, (LocationManager) context.getSystemService(Context.LOCATION_SERVICE)));
+                new LocationServicesStatus(context, (LocationManager) context.getSystemService(Context.LOCATION_SERVICE)),
+                new RxBleDeviceProvider(rxBleAdapterWrapper, rxBleRadio, bleConnectionCompat, adapterStateObservable));
     }
 
     @Override

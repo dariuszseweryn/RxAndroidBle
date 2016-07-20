@@ -1,37 +1,52 @@
 package com.polidea.rxandroidble
 
+import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_CANNOT_START
+import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_DISABLED
+import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_NOT_AVAILABLE
+import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_PERMISSION_MISSING
+import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_SERVICES_DISABLED
+
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.RxBleRadioOperation
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan
-import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.Observable
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.polidea.rxandroidble.exceptions.BleScanException.*
-
 class RxBleClientTest extends Specification {
 
-    FlatRxBleRadio rxBleRadio
+    FlatRxBleRadio rxBleRadio = new FlatRxBleRadio()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     UUIDUtil uuidParserSpy = Spy UUIDUtil
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = new MockLocationServicesStatus()
+    RxBleDeviceProvider mockDeviceProvider = Mock RxBleDeviceProvider
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
 
     def setup() {
         contextMock.getApplicationContext() >> contextMock
-        rxBleRadio = new FlatRxBleRadio()
-        objectUnderTest = new RxBleClientImpl(bleAdapterWrapperSpy, rxBleRadio,
-                adapterStateObservable.asObservable(), uuidParserSpy, Mock(BleConnectionCompat), locationServicesStatusMock)
+        mockDeviceProvider.getBleDevice(_ as String) >> { String macAddress ->
+            def device = Mock(RxBleDevice)
+            device.macAddress >> macAddress
+            device
+        }
+        objectUnderTest = new RxBleClientImpl(
+                bleAdapterWrapperSpy,
+                rxBleRadio,
+                adapterStateObservable.asObservable(),
+                uuidParserSpy,
+                locationServicesStatusMock,
+                mockDeviceProvider
+        )
     }
 
     def "should start BLE scan if subscriber subscribes to the scan observable"() {
