@@ -35,4 +35,14 @@ Version 1.0.1
 * Fixed scan operation concurrency issue, thanks artem-zinnatullin!  (https://github.com/Polidea/RxAndroidBle/issues/5)
 * Fixed location permission requirement check (Android >=6.0)
 
-Version 1.1
+Version 1.0.2
+* Added Mock RxAndroidBle to the repository
+* Added indications handling on RxBleConnection
+* Fixed scan operation concurrency issue (https://github.com/Polidea/RxAndroidBle/issues/17)
+* Exposed android.bluetooth.BluetoothDevice in RxBleDevice (https://github.com/Polidea/RxAndroidBle/issues/23)
+* Fixed stale RxBleRadio on RxBleOperation unhandled throw (https://github.com/Polidea/RxAndroidBle/issues/18)
+* Fixed possible BluetoothCharacteristic value overwrites with multiple writes (https://github.com/Polidea/RxAndroidBle/issues/27)
+* Updated rxJava (1.1.0 -> 1.1.7) and rxAndroid (1.1.0 -> 1.2.1) libraries dependency
+* Added interface methods for usage with BluetoothCharacteristic object (https://github.com/Polidea/RxAndroidBle/issues/38)
+* Fixed lost connection when BluetoothAdapter disabled before the connection established (https://github.com/Polidea/RxAndroidBle/issues/45)
+* Added RxBleClient.getBondedDevices() method, thanks fracturedpsyche! (https://github.com/Polidea/RxAndroidBle/pull/46)
