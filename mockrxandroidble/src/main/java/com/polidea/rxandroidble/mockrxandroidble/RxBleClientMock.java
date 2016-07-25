@@ -13,8 +13,10 @@ import com.polidea.rxandroidble.RxBleScanResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
@@ -28,12 +30,14 @@ public class RxBleClientMock extends RxBleClient {
     public static class Builder {
 
         private Map<String, RxBleDevice> discoverableDevices;
+        private Set<RxBleDevice> bondedDevices;
 
         /**
          * Build a new {@link RxBleClientMock}.
          */
         public Builder() {
             this.discoverableDevices = new HashMap<>();
+            this.bondedDevices = new HashSet<>();
         }
 
         /**
@@ -43,6 +47,16 @@ public class RxBleClientMock extends RxBleClient {
          */
         public Builder addDevice(@NonNull RxBleDevice rxBleDevice) {
             discoverableDevices.put(rxBleDevice.getMacAddress(), rxBleDevice);
+            return this;
+        }
+
+        /**
+         * Add a {@link RxBleDevice} to the list of bonded devices.
+         *
+         * @param rxBleDevice device that the mocked client should contain. Use {@link DeviceBuilder} to create them.
+         */
+        public Builder addBondedDevice(@NonNull RxBleDevice rxBleDevice) {
+            bondedDevices.add(rxBleDevice);
             return this;
         }
 
@@ -228,10 +242,12 @@ public class RxBleClientMock extends RxBleClient {
         }
     }
 
+    private Set<RxBleDevice> bondedDevices;
     private Map<String, RxBleDevice> discoverableDevices;
 
     private RxBleClientMock(Builder builder) {
         discoverableDevices = builder.discoverableDevices;
+        bondedDevices = builder.bondedDevices;
     }
 
     @Override
@@ -243,6 +259,11 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         return rxBleDevice;
+    }
+
+    @Override
+    public Set<RxBleDevice> getBondedDevices() {
+        return bondedDevices;
     }
 
     @Override
