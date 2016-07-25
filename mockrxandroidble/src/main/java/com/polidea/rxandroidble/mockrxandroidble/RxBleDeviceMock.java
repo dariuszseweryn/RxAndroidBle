@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.mockrxandroidble;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -82,6 +83,12 @@ class RxBleDeviceMock implements RxBleDevice {
     @Override
     public String getMacAddress() {
         return macAddress;
+    }
+
+    @Override
+    public BluetoothDevice getBluetoothDevice() {
+        throw new UnsupportedOperationException("Mock does not support returning a " +
+                "BluetoothDevice.");
     }
 
     @Override
