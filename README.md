@@ -12,6 +12,9 @@ For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/quest
 
 Read the official announcement at [Polidea Blog](https://www.polidea.com/blog/RXAndroidBLE/).
 
+## RxAndroidBLE @ Mobile Central Europe 2016
+[![RxAndroidBLE @ Mobile Central Europe 2016](https://img.youtube.com/vi/0aKfUGCxUDM/0.jpg)](https://www.youtube.com/watch?v=0aKfUGCxUDM)
+
 ## Usage
 ### Obtaining the client
 It's your job to maintain single instance of the client. You can use singleton, scoped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
@@ -28,7 +31,7 @@ Subscription scanSubscription = rxBleClient.scanBleDevices()
 	.subscribe(rxBleScanResult -> {
 	    // Process scan result here.
 	});
-	
+
 // When done, just unsubscribe.
 scanSubscription.unsubscribe();
 ```
@@ -44,7 +47,7 @@ Subscription subscription = device.establishConnection(context, false) // <-- au
 	.subscribe(rxBleConnection -> {
 		// All GATT operations are done through the rxBleConnection.
 	});
-	
+
 // When done... unsubscribe and forget about connection teardown :)
 subscription.unsubscribe();
 ```
@@ -140,7 +143,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```java
-compile "com.polidea.rxandroidble:rxandroidble:1.0.1"
+compile "com.polidea.rxandroidble:rxandroidble:1.0.2"
 ```
 ### Maven
 
@@ -148,7 +151,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.0.1"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <type>aar</type>
 </dependency>
 ```
@@ -166,6 +169,7 @@ When submitting code, please make every effort to follow existing conventions an
 
 ## Contributors, thank you!
 * Michał Zieliński (michal.zielinski@polidea.com)
+* Fracturedpsyche (https://github.com/fracturedpsyche)
 
 ## License
 
