@@ -87,8 +87,8 @@ class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public BluetoothDevice getBluetoothDevice() {
-        throw new UnsupportedOperationException("Mock does not support returning a " +
-                "BluetoothDevice.");
+        throw new UnsupportedOperationException("Mock does not support returning a "
+            + "BluetoothDevice.");
     }
 
     @Override
