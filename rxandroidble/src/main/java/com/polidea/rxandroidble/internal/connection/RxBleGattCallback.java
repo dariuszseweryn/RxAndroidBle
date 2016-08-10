@@ -30,7 +30,7 @@ public class RxBleGattCallback {
         RxBleGattCallback provide();
     }
 
-    private final Scheduler callbackScheduler = Schedulers.newThread();
+    private final Scheduler callbackScheduler = Schedulers.computation();
     private final BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();
     private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
     private final PublishSubject<RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
