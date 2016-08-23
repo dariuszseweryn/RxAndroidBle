@@ -10,6 +10,7 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -21,7 +22,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final BleConnectionCompat connectionCompat;
     private final boolean autoConnect;
     private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
-    @SuppressWarnings("Convert2MethodRef")
+    private Subscription bluetoothGattSubscription;
     private final Runnable releaseRadioRunnable = () -> releaseRadio();
     private final Runnable emptyRunnable = () -> {
     };
@@ -35,14 +36,46 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     }
 
     @Override
+    public Observable<BluetoothGatt> asObservable() {
+        return super.asObservable()
+                .doOnUnsubscribe(() -> {
+                    if (bluetoothGattSubscription != null) {
+                        bluetoothGattSubscription.unsubscribe();
+                        bluetoothGattSubscription = null;
+                    }
+                });
+    }
+
+    @Override
     protected void protectedRun() {
         final Runnable onConnectionEstablishedRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
+        // TODO: [PU] 22.03.2016 Is radio properly released in autoConnect in case of connection error?
+        //noinspection Convert2MethodRef
+        observeBluetoothGattAfterConnectionEstablished()
+                .subscribe(
+                        bluetoothGatt -> {
+                            onNext(bluetoothGatt);
+                            onConnectionEstablishedRunnable.run();
+                        },
+                        (throwable) -> onError(throwable),
+                        () -> onCompleted()
+                );
 
-        getConnectedBluetoothGatt()
-                .doOnCompleted(onConnectionEstablishedRunnable::run)
-                .subscribe(getSubscriber());
+        // Listen for BluetoothGatt instance updates and complete the subject if there won't be more updates.
+        bluetoothGattSubscription = rxBleGattCallback.getBluetoothGatt()
+                .startWith(connect())
+                .doOnUnsubscribe(bluetoothGattBehaviorSubject::onCompleted)
+                .subscribe(this::postUpdatedBluetoothGatt);
         onConnectCalledRunnable.run();
+    }
+
+    private void postUpdatedBluetoothGatt(BluetoothGatt bluetoothGatt) {
+        bluetoothGattBehaviorSubject.onNext(bluetoothGatt);
+    }
+
+    private BluetoothGatt connect() {
+        return connectionCompat.connectGatt(bluetoothDevice, autoConnect, rxBleGattCallback.getBluetoothGattCallback());
     }
 
     /**
@@ -52,25 +85,21 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
      * @throws com.polidea.rxandroidble.exceptions.BleDisconnectedException if connection was disconnected/failed before it was established.
      */
     @NonNull
-    private Observable<BluetoothGatt> getConnectedBluetoothGatt() {
-        // start connecting the BluetoothGatt
-        // note: Due to different Android BLE stack implementations it is not certain whether `connectGatt()` or `BluetoothGattCallback`
-        // will emit BluetoothGatt first
-        return Observable.fromCallable(() ->
-                connectionCompat.connectGatt(bluetoothDevice, autoConnect, rxBleGattCallback.getBluetoothGattCallback())
+    private Observable<BluetoothGatt> observeBluetoothGattAfterConnectionEstablished() {
+        return Observable.combineLatest(
+                observeConnectionEstablishedEvents(), // waiting for connected state.
+                bluetoothGattBehaviorSubject, // using latest BluetoothGatt
+                (rxBleConnectionState, bluetoothGatt) -> bluetoothGatt // only BluetoothGatt is useful for us.
         )
-                .mergeWith(rxBleGattCallback.getBluetoothGatt())
-                // relay BluetoothGatt instance updates
-                .doOnNext(bluetoothGattBehaviorSubject::onNext)
-                // capture BluetoothGatt when connected
-                .sample(rxBleGattCallback
-                        .getOnConnectionStateChange()
-                        .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED))
-                // disconnect may happen even if the connection was not established yet
-                .mergeWith(rxBleGattCallback.observeDisconnect())
-                .take(1)
-                // finish relaying if there won't be more updates
-                .doOnTerminate(bluetoothGattBehaviorSubject::onCompleted);
+                .mergeWith(rxBleGattCallback.observeDisconnect()) // disconnect may happen even if the connection was not established yet.
+                .first();
+    }
+
+    @NonNull
+    private Observable<RxBleConnection.RxBleConnectionState> observeConnectionEstablishedEvents() {
+        return rxBleGattCallback
+                .getOnConnectionStateChange()
+                .filter(rxBleConnectionState -> rxBleConnectionState == CONNECTED);
     }
 
     /**
