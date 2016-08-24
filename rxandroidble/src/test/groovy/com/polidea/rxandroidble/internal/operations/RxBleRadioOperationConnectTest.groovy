@@ -23,12 +23,14 @@ public class RxBleRadioOperationConnectTest extends Specification {
     TestSubscriber<BluetoothGatt> getGattSubscriber = new TestSubscriber()
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
     PublishSubject<BluetoothGatt> bluetoothGattPublishSubject = PublishSubject.create()
+    PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
     RxBleRadioOperationConnect objectUnderTest
 
     def setup() {
         mockCallback.getOnConnectionStateChange() >> onConnectionStateSubject
         mockCallback.getBluetoothGatt() >> bluetoothGattPublishSubject
+        mockCallback.observeDisconnect() >> observeDisconnectPublishSubject
         prepareObjectUnderTest(false)
     }
 
@@ -46,6 +48,19 @@ public class RxBleRadioOperationConnectTest extends Specification {
 
         when:
         emitConnectingConnectionState()
+
+        then:
+        testSubscriber.assertNoValues()
+    }
+
+    def "asObservable() should not emit onNext if RxBleGattCallback.getBluetoothGatt() completes (this happens when device fails to connect)"() {
+
+        given:
+        objectUnderTest.run()
+        bluetoothGattPublishSubject.onNext(mockGatt)
+
+        when:
+        bluetoothGattPublishSubject.onCompleted()
 
         then:
         testSubscriber.assertNoValues()
