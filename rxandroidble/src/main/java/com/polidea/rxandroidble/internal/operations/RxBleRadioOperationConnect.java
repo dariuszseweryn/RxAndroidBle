@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 
-import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
@@ -81,7 +80,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     /**
      * Emits BluetoothGatt and completes after connection is established.
      *
-     * @return BluetoothGatt after connection reaches {@link RxBleConnection.RxBleConnectionState#CONNECTED} state.
+     * @return BluetoothGatt after connection reaches {@link com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState#CONNECTED} state.
      * @throws com.polidea.rxandroidble.exceptions.BleDisconnectedException if connection was disconnected/failed before it was established.
      */
     @NonNull
