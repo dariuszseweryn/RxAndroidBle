@@ -1,13 +1,12 @@
 package com.polidea.rxandroidble.mockrxandroidble
 
 import android.os.Build
+import com.polidea.rxandroidble.RxBleConnection
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
-
-import static java.util.Collections.emptyList
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends RoboSpecification {
@@ -170,5 +169,39 @@ public class RxBleClientMockTest extends RoboSpecification {
 
         then:
         testSubscriber.assertValue("NotificationData")
+    }
+
+    def "should emit correct connection state values when connected"() {
+        given:
+        def testSubscriber = TestSubscriber.create()
+        def device = rxBleClient.getBleDevice("AA:BB:CC:DD:EE:FF")
+        device.observeConnectionStateChanges().subscribe(testSubscriber);
+
+        when:
+        device.establishConnection(RuntimeEnvironment.application, false).subscribe {}
+
+        then:
+        testSubscriber.assertValues(
+                RxBleConnection.RxBleConnectionState.DISCONNECTED,
+                RxBleConnection.RxBleConnectionState.CONNECTING,
+                RxBleConnection.RxBleConnectionState.CONNECTED)
+    }
+
+    def "should emit correct connection state values when disconnected"() {
+        given:
+        def testSubscriber = TestSubscriber.create()
+        def device = rxBleClient.getBleDevice("AA:BB:CC:DD:EE:FF")
+        device.observeConnectionStateChanges().subscribe(testSubscriber);
+        def subscription = device.establishConnection(RuntimeEnvironment.application, false).subscribe {}
+
+        when:
+        subscription.unsubscribe()
+
+        then:
+        testSubscriber.assertValues(
+                RxBleConnection.RxBleConnectionState.DISCONNECTED,
+                RxBleConnection.RxBleConnectionState.CONNECTING,
+                RxBleConnection.RxBleConnectionState.CONNECTED,
+                RxBleConnection.RxBleConnectionState.DISCONNECTED)
     }
 }

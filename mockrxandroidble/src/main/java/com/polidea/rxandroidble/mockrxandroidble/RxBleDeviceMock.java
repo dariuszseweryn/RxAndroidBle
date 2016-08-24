@@ -58,7 +58,7 @@ class RxBleDeviceMock implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
             if (isConnected.compareAndSet(false, true)) {
-                return Observable.just(rxBleConnection)
+                return emitConnectionWithoutCompleting()
                         .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
                         .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
                         .doOnUnsubscribe(() -> {
@@ -69,6 +69,10 @@ class RxBleDeviceMock implements RxBleDevice {
                 return Observable.error(new BleAlreadyConnectedException(macAddress));
             }
         });
+    }
+
+    private Observable<RxBleConnection> emitConnectionWithoutCompleting() {
+        return Observable.<RxBleConnection>never().startWith(rxBleConnection);
     }
 
     public List<UUID> getAdvertisedUUIDs() {
