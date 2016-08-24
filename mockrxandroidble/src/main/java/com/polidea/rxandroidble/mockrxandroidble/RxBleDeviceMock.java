@@ -58,7 +58,7 @@ class RxBleDeviceMock implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
             if (isConnected.compareAndSet(false, true)) {
-                return Observable.just(rxBleConnection)
+                return emitConnectionWithoutCompleting()
                         .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
                         .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
                         .doOnUnsubscribe(() -> {
@@ -76,6 +76,12 @@ class RxBleDeviceMock implements RxBleDevice {
     }
 
     @Override
+    public BluetoothDevice getBluetoothDevice() {
+        throw new UnsupportedOperationException("Mock does not support returning a "
+                + "BluetoothDevice.");
+    }
+
+    @Override
     public RxBleConnection.RxBleConnectionState getConnectionState() {
         return observeConnectionStateChanges().toBlocking().first();
     }
@@ -83,12 +89,6 @@ class RxBleDeviceMock implements RxBleDevice {
     @Override
     public String getMacAddress() {
         return macAddress;
-    }
-
-    @Override
-    public BluetoothDevice getBluetoothDevice() {
-        throw new UnsupportedOperationException("Mock does not support returning a "
-            + "BluetoothDevice.");
     }
 
     @Override
@@ -112,5 +112,9 @@ class RxBleDeviceMock implements RxBleDevice {
     @Override
     public String toString() {
         return "RxBleDeviceImpl{" + "bluetoothDevice=" + name + '(' + macAddress + ')' + '}';
+    }
+
+    private Observable<RxBleConnection> emitConnectionWithoutCompleting() {
+        return Observable.<RxBleConnection>never().startWith(rxBleConnection);
     }
 }
