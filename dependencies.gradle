@@ -5,7 +5,7 @@ ext {
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
     libs = [
             /* Application dependencies */
-            retrolambda        : 'me.tatarka:gradle-retrolambda:3.2.4',
+            retrolambda        : 'net.orfjackal.retrolambda:retrolambda:2.3.0',
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
             rxjava             : 'io.reactivex:rxjava:1.1.7',
