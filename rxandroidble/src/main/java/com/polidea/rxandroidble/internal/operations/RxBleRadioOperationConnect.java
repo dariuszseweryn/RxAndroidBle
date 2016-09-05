@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
@@ -24,6 +25,11 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final Runnable releaseRadioRunnable = () -> releaseRadio();
     private final Runnable emptyRunnable = () -> {
     };
+    private final BehaviorSubject<Boolean> isSubscribed = BehaviorSubject.create(false);
+    private final Observable<BluetoothGatt> operationConnectAsObservableWithSubscribersMonitoring = super.asObservable()
+            .doOnSubscribe(() -> isSubscribed.onNext(true))
+            .doOnUnsubscribe(() -> isSubscribed.onNext(false))
+            .share();
 
     public RxBleRadioOperationConnect(BluetoothDevice bluetoothDevice, RxBleGattCallback rxBleGattCallback,
                                       BleConnectionCompat connectionCompat, boolean autoConnect) {
@@ -34,14 +40,26 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     }
 
     @Override
+    public Observable<BluetoothGatt> asObservable() {
+        return operationConnectAsObservableWithSubscribersMonitoring;
+    }
+
+    @Override
     protected void protectedRun() {
         final Runnable onConnectionEstablishedRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
 
         getConnectedBluetoothGatt()
+                // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
+                .takeUntil(asObservableHasNoSubscribers().doOnNext(noSubscribers -> RxBleLog.d("No subscribers, finishing operation")))
                 .doOnCompleted(onConnectionEstablishedRunnable::run)
                 .subscribe(getSubscriber());
         onConnectCalledRunnable.run();
+    }
+
+    @NonNull
+    private Observable<Boolean> asObservableHasNoSubscribers() {
+        return isSubscribed.filter(aBoolean -> !aBoolean);
     }
 
     /**

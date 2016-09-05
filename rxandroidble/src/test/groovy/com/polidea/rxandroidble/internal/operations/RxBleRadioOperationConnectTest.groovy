@@ -6,6 +6,7 @@ import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
+import rx.Subscription
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -25,6 +26,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     PublishSubject<BluetoothGatt> bluetoothGattPublishSubject = PublishSubject.create()
     PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
+    Subscription asObservableSubscription
     RxBleRadioOperationConnect objectUnderTest
 
     def setup() {
@@ -37,7 +39,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     def prepareObjectUnderTest(boolean autoConnect) {
         objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockCallback, connectionCompat, autoConnect)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        asObservableSubscription = objectUnderTest.asObservable().subscribe(testSubscriber)
         objectUnderTest.getBluetoothGatt().subscribe(getGattSubscriber)
     }
 
@@ -170,6 +172,18 @@ public class RxBleRadioOperationConnectTest extends Specification {
 
         when:
         emitConnectionError(new Throwable("test"))
+
+        then:
+        1 * mockSemaphore.release()
+    }
+
+    def "should release Semaphore when unsubscribed before connection is established"() {
+
+        given:
+        objectUnderTest.run()
+
+        when:
+        asObservableSubscription.unsubscribe()
 
         then:
         1 * mockSemaphore.release()
