@@ -1,11 +1,11 @@
 package com.polidea.rxandroidble.internal.util;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
 
 public class LocationServicesStatus {
 
@@ -31,7 +31,9 @@ public class LocationServicesStatus {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private boolean isPermissionGranted(String permission) {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+                context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
     }
 }

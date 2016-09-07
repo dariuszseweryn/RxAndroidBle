@@ -2,10 +2,10 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.ByteAssociation
 import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
@@ -21,9 +21,9 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     BluetoothGattDescriptor differentDescriptor = Mock BluetoothGattDescriptor
 
-    TestSubscriber<Pair<BluetoothGattDescriptor, byte[]>> testSubscriber = new TestSubscriber()
+    TestSubscriber<ByteAssociation<BluetoothGattDescriptor>> testSubscriber = new TestSubscriber()
 
-    PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> onDescriptorReadSubject = PublishSubject.create()
+    PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
     Semaphore mockSemaphore = Mock Semaphore
 
@@ -90,7 +90,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         // XXX [PU] I'm not sure if it is really desired
         given:
         mockGatt.readDescriptor(mockDescriptor) >> true
-        onDescriptorReadSubject.onNext(new Pair(mockDescriptor, []))
+        onDescriptorReadSubject.onNext(ByteAssociation.create(mockDescriptor, new byte[0]))
 
         when:
         objectUnderTest.run()
@@ -112,7 +112,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         objectUnderTest.run()
 
         then:
-        testSubscriber.assertValue Pair.create(mockDescriptor, dataFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, dataFromDescriptor)
     }
 
     def "asObservable() emit only first descriptor value notified"() {
@@ -131,7 +131,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         testSubscriber.assertValueCount 1
 
         and:
-        testSubscriber.assertValue Pair.create(mockDescriptor, dataFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, dataFromDescriptor)
     }
 
     def "asObservable() not emit descriptor value if BLE notified only with non matching descriptors"() {
@@ -162,7 +162,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         testSubscriber.assertValueCount 1
 
         and:
-        testSubscriber.assertValue Pair.create(mockDescriptor, secondValueFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, secondValueFromDescriptor)
     }
 
     def "should release Semaphore after successful read"() {
@@ -203,7 +203,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
     private givenDescriptorWithUUIDContainData(Map... returnedDataOnRead) {
         mockGatt.readDescriptor(mockDescriptor) >> {
             returnedDataOnRead.each {
-                onDescriptorReadSubject.onNext(new Pair(it['descriptor'], it['value'] as byte[]))
+                onDescriptorReadSubject.onNext(new ByteAssociation(it['descriptor'], it['value'] as byte[]))
             }
 
             true

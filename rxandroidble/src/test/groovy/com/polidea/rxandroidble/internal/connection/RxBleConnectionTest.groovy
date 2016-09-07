@@ -5,12 +5,12 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.os.Build
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.BuildConfig
 import com.polidea.rxandroidble.FlatRxBleRadio
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.*
+import com.polidea.rxandroidble.internal.util.ByteAssociation
 import org.robolectric.annotation.Config
 import org.robospock.GradleRoboSpecification
 import rx.observers.TestSubscriber
@@ -249,7 +249,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         and:
         1 * bluetoothGattMock.writeCharacteristic({ it.getValue() == OTHER_DATA }) >> {
             BluetoothGattCharacteristic characteristic ->
-                onWriteSubject.onNext(Pair.create(characteristic.getUuid(), characteristic.getValue()))
+                onWriteSubject.onNext(ByteAssociation.create(characteristic.getUuid(), characteristic.getValue()))
                 true
         }
 
@@ -415,7 +415,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should notify about value change and stay subscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
-        gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect { Pair.create(CHARACTERISTIC_UUID, it) })
+        gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect { ByteAssociation.create(CHARACTERISTIC_UUID, it) })
 
         when:
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
@@ -441,7 +441,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should not notify about value change if UUID is not matching"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID)
-        gattCallback.getOnCharacteristicChanged() >> just(Pair.create(OTHER_UUID, NOT_EMPTY_DATA))
+        gattCallback.getOnCharacteristicChanged() >> just(ByteAssociation.create(OTHER_UUID, NOT_EMPTY_DATA))
 
         when:
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
@@ -478,7 +478,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue }) >> {
-            descriptorWriteSubject.onNext(Pair.create(descriptor, EMPTY_DATA))
+            descriptorWriteSubject.onNext(ByteAssociation.create(descriptor, EMPTY_DATA))
             descriptorWriteSubject.onCompleted()
             true
         }
@@ -517,7 +517,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue }) >> {
-            descriptorWriteSubject.onNext(Pair.create(descriptor, EMPTY_DATA))
+            descriptorWriteSubject.onNext(ByteAssociation.create(descriptor, EMPTY_DATA))
             descriptorWriteSubject.onCompleted()
             true
         }
@@ -545,7 +545,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(secondSubscriber)
 
         when:
-        characteristicChangeSubject.onNext(Pair.create(CHARACTERISTIC_UUID, NOT_EMPTY_DATA))
+        characteristicChangeSubject.onNext(ByteAssociation.create(CHARACTERISTIC_UUID, NOT_EMPTY_DATA))
 
         then:
         testSubscriber.assertValue(NOT_EMPTY_DATA)
@@ -628,7 +628,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         shouldGattContainServiceWithCharacteristic(characteristic, characteristicUUID)
         shouldReturnStartingStatusAndEmitDescriptorWriteCallback(descriptor, {
-            it.onNext(Pair.create(descriptor, EMPTY_DATA))
+            it.onNext(ByteAssociation.create(descriptor, EMPTY_DATA))
             it.onCompleted()
             true
         })
@@ -672,7 +672,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     }
 
     public shouldGattCallbackReturnDataOnRead(Map... parameters) {
-        gattCallback.getOnCharacteristicRead() >> { from(parameters.collect { Pair.create it['uuid'], it['value'] }) }
+        gattCallback.getOnCharacteristicRead() >> { from(parameters.collect { ByteAssociation.create it['uuid'], it['value'] }) }
     }
 
     public mockCharacteristicWithValue(Map characteristicData) {

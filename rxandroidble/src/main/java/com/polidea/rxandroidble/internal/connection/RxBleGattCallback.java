@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble.RxBleDeviceServices;
@@ -14,6 +13,7 @@ import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
 
+import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.UUID;
 
 import rx.Observable;
@@ -35,11 +35,11 @@ public class RxBleGattCallback {
     private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
     private final PublishSubject<RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
-    private final PublishSubject<Pair<UUID, byte[]>> readCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<Pair<UUID, byte[]>> writeCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<Pair<UUID, byte[]>> changedCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> readDescriptorPublishSubject = PublishSubject.create();
-    private final PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> writeDescriptorPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<UUID>> writeCharacteristicPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<UUID>> changedCharacteristicPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> readDescriptorPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
     private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
@@ -96,7 +96,7 @@ public class RxBleGattCallback {
             }
 
             just(characteristic)
-                    .map(mapCharacteristicPairToUuid())
+                    .map(associateCharacteristicWithBytes())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(readCharacteristicPublishSubject::onNext);
         }
@@ -112,7 +112,7 @@ public class RxBleGattCallback {
             }
 
             just(characteristic)
-                    .map(mapCharacteristicPairToUuid())
+                    .map(associateCharacteristicWithBytes())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(writeCharacteristicPublishSubject::onNext);
         }
@@ -124,7 +124,7 @@ public class RxBleGattCallback {
             bluetoothGattBehaviorSubject.onNext(gatt);
 
             just(characteristic)
-                    .map(mapCharacteristicPairToUuid())
+                    .map(associateCharacteristicWithBytes())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(changedCharacteristicPublishSubject::onNext);
         }
@@ -204,20 +204,20 @@ public class RxBleGattCallback {
     };
 
     @NonNull
-    private Observable<Pair<BluetoothGattCharacteristic, byte[]>> just(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    private Observable<ByteAssociation<BluetoothGattCharacteristic>> just(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         final byte[] value = bluetoothGattCharacteristic.getValue();
-        return Observable.defer(() -> Observable.just(Pair.create(bluetoothGattCharacteristic, value)));
+        return Observable.defer(() -> Observable.just(ByteAssociation.create(bluetoothGattCharacteristic, value)));
     }
 
     @NonNull
-    private Func1<Pair<BluetoothGattCharacteristic, byte[]>, Pair<UUID, byte[]>> mapCharacteristicPairToUuid() {
-        return pair -> new Pair<>(pair.first.getUuid(), pair.second);
+    private Func1<ByteAssociation<BluetoothGattCharacteristic>, ByteAssociation<UUID>> associateCharacteristicWithBytes() {
+        return pair -> new ByteAssociation<>(pair.first.getUuid(), pair.second);
     }
 
     @NonNull
-    private Observable<Pair<BluetoothGattDescriptor, byte[]>> just(BluetoothGattDescriptor bluetoothGattDescriptor) {
+    private Observable<ByteAssociation<BluetoothGattDescriptor>> just(BluetoothGattDescriptor bluetoothGattDescriptor) {
         final byte[] value = bluetoothGattDescriptor.getValue();
-        return Observable.defer(() -> Observable.just(Pair.create(bluetoothGattDescriptor, value)));
+        return Observable.defer(() -> Observable.just(ByteAssociation.create(bluetoothGattDescriptor, value)));
     }
 
     private RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
@@ -283,23 +283,23 @@ public class RxBleGattCallback {
         return withHandlingStatusError(servicesDiscoveredPublishSubject);
     }
 
-    public Observable<Pair<UUID, byte[]>> getOnCharacteristicRead() {
+    public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
         return withHandlingStatusError(readCharacteristicPublishSubject);
     }
 
-    public Observable<Pair<UUID, byte[]>> getOnCharacteristicWrite() {
+    public Observable<ByteAssociation<UUID>> getOnCharacteristicWrite() {
         return withHandlingStatusError(writeCharacteristicPublishSubject);
     }
 
-    public Observable<Pair<UUID, byte[]>> getOnCharacteristicChanged() {
+    public Observable<ByteAssociation<UUID>> getOnCharacteristicChanged() {
         return withHandlingStatusError(changedCharacteristicPublishSubject);
     }
 
-    public Observable<Pair<BluetoothGattDescriptor, byte[]>> getOnDescriptorRead() {
+    public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorRead() {
         return withHandlingStatusError(readDescriptorPublishSubject);
     }
 
-    public Observable<Pair<BluetoothGattDescriptor, byte[]>> getOnDescriptorWrite() {
+    public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorWrite() {
         return withHandlingStatusError(writeDescriptorPublishSubject);
     }
 

@@ -2,10 +2,10 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.ByteAssociation
 import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
@@ -23,7 +23,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     def testSubscriber = new TestSubscriber()
 
-    PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> onDescriptorWriteSubject = PublishSubject.create()
+    PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
 
     Semaphore mockSemaphore = Mock Semaphore
 
@@ -94,7 +94,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
         given:
         mockGatt.writeDescriptor(mockDescriptor) >> true
-        onDescriptorWriteSubject.onNext(new Pair(mockDescriptor, []))
+        onDescriptorWriteSubject.onNext(new ByteAssociation<BluetoothGattDescriptor>(mockDescriptor, new byte[0]))
 
         when:
         objectUnderTest.run()
@@ -210,7 +210,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     private givenDescriptorWithUUIDWritesData(Map... returnedDataOnWrite) {
         mockGatt.writeDescriptor(mockDescriptor) >> {
             returnedDataOnWrite.each {
-                onDescriptorWriteSubject.onNext(new Pair(it['descriptor'] as BluetoothGattDescriptor, it['value'] as byte[]))
+                onDescriptorWriteSubject.onNext(ByteAssociation.create(it['descriptor'] as BluetoothGattDescriptor, it['value'] as byte[]))
             }
 
             true

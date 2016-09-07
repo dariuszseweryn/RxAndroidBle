@@ -2,15 +2,14 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.ByteAssociation
+import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
-
-import java.util.concurrent.Semaphore
 
 public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
 
@@ -20,7 +19,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     def testSubscriber = new TestSubscriber()
-    PublishSubject<Pair<UUID, byte[]>> onCharacteristicWriteSubject = PublishSubject.create()
+    PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
     RxBleRadioOperationCharacteristicWrite objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
@@ -89,7 +88,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
 
         given:
         mockGatt.writeCharacteristic(mockCharacteristic) >> true
-        onCharacteristicWriteSubject.onNext(new Pair(mockCharacteristicUUID, []))
+        onCharacteristicWriteSubject.onNext(new ByteAssociation(mockCharacteristicUUID, new byte[0]))
 
         when:
         objectUnderTest.run()
@@ -205,7 +204,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     private givenCharacteristicWithUUIDWritesData(Map... returnedDataOnWrite) {
         mockGatt.writeCharacteristic(mockCharacteristic) >> {
             returnedDataOnWrite.each {
-                onCharacteristicWriteSubject.onNext(new Pair(it['uuid'], it['value'] as byte[]))
+                onCharacteristicWriteSubject.onNext(new ByteAssociation(it['uuid'], it['value'] as byte[]))
             }
 
             true
