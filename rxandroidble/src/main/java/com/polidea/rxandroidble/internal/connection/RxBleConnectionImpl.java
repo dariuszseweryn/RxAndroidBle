@@ -44,9 +44,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     private final AtomicReference<Observable<RxBleDeviceServices>> discoveredServicesCache = new AtomicReference<>();
 
-    private final HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
+    private final HashMap<Integer, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
 
-    private final HashMap<UUID, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
+    private final HashMap<Integer, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
 
     public RxBleConnectionImpl(RxBleRadio rxBleRadio, RxBleGattCallback gattCallback, BluetoothGatt bluetoothGatt) {
         this.rxBleRadio = rxBleRadio;
@@ -109,20 +109,20 @@ public class RxBleConnectionImpl implements RxBleConnection {
     ) {
         return Observable.defer(() -> {
             synchronized (this) {
-                final UUID characteristicUuid = characteristic.getUuid();
+                final int characteristicInstanceId = characteristic.getInstanceId();
 
-                final HashMap<UUID, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
+                final HashMap<Integer, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
                         withAck ? notificationObservableMap : indicationObservableMap;
-                final boolean conflictingNotificationIsAlreadySet = conflictingServerInitiatedReadingMap.containsKey(characteristicUuid);
+                final boolean conflictingNotificationIsAlreadySet = conflictingServerInitiatedReadingMap.containsKey(characteristicInstanceId);
 
                 if (conflictingNotificationIsAlreadySet) {
-                    return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, !withAck));
+                    return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
                 }
 
-                final HashMap<UUID, Observable<Observable<byte[]>>> sameNotificationTypeMap
+                final HashMap<Integer, Observable<Observable<byte[]>>> sameNotificationTypeMap
                         = withAck ? indicationObservableMap : notificationObservableMap;
 
-                final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicUuid);
+                final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicInstanceId);
 
                 if (availableObservable != null) {
                     return availableObservable;
@@ -135,10 +135,10 @@ public class RxBleConnectionImpl implements RxBleConnection {
                         enableNotificationTypeValue
                 )
                         .doOnUnsubscribe(() -> dismissTriggeredRead(characteristic, sameNotificationTypeMap, enableNotificationTypeValue))
-                        .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicUuid))
+                        .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicInstanceId))
                         .replay(1)
                         .refCount();
-                sameNotificationTypeMap.put(characteristicUuid, newObservable);
+                sameNotificationTypeMap.put(characteristicInstanceId, newObservable);
                 return newObservable;
             }
         });
@@ -152,11 +152,11 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     private void dismissTriggeredRead(
             BluetoothGattCharacteristic characteristic,
-            HashMap<UUID, Observable<Observable<byte[]>>> notificationTypeMap,
+            HashMap<Integer, Observable<Observable<byte[]>>> notificationTypeMap,
             byte[] enableValue
     ) {
         synchronized (this) {
-            notificationTypeMap.remove(characteristic.getUuid());
+            notificationTypeMap.remove(characteristic.getInstanceId());
         }
 
         getClientCharacteristicConfig(characteristic)
@@ -169,9 +169,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @NonNull
-    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(UUID characteristicUuid) {
+    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(Integer characteristicInstanceId) {
         return gattCallback.getOnCharacteristicChanged()
-                .filter(uuidPair -> uuidPair.first.equals(characteristicUuid))
+                .filter(uuidPair -> uuidPair.first.equals(characteristicInstanceId))
                 .map(uuidPair -> uuidPair.second);
     }
 

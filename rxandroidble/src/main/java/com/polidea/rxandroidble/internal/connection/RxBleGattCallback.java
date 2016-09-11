@@ -37,7 +37,7 @@ public class RxBleGattCallback {
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> writeCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<ByteAssociation<UUID>> changedCharacteristicPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<Integer>> changedCharacteristicPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> readDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
@@ -124,7 +124,7 @@ public class RxBleGattCallback {
             bluetoothGattBehaviorSubject.onNext(gatt);
 
             just(characteristic)
-                    .map(associateCharacteristicWithBytes())
+                    .map(associateCharacteristicWithBytesByInstanceId())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(changedCharacteristicPublishSubject::onNext);
         }
@@ -215,6 +215,11 @@ public class RxBleGattCallback {
     }
 
     @NonNull
+    private Func1<ByteAssociation<BluetoothGattCharacteristic>, ByteAssociation<Integer>> associateCharacteristicWithBytesByInstanceId() {
+        return pair -> new ByteAssociation<>(pair.first.getInstanceId(), pair.second);
+    }
+
+    @NonNull
     private Observable<ByteAssociation<BluetoothGattDescriptor>> just(BluetoothGattDescriptor bluetoothGattDescriptor) {
         final byte[] value = bluetoothGattDescriptor.getValue();
         return Observable.defer(() -> Observable.just(ByteAssociation.create(bluetoothGattDescriptor, value)));
@@ -291,7 +296,7 @@ public class RxBleGattCallback {
         return withHandlingStatusError(writeCharacteristicPublishSubject);
     }
 
-    public Observable<ByteAssociation<UUID>> getOnCharacteristicChanged() {
+    public Observable<ByteAssociation<Integer>> getOnCharacteristicChanged() {
         return withHandlingStatusError(changedCharacteristicPublishSubject);
     }
 
