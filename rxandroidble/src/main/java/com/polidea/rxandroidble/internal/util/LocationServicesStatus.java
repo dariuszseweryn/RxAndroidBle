@@ -33,7 +33,7 @@ public class LocationServicesStatus {
 
     @TargetApi(Build.VERSION_CODES.M)
     private boolean isPermissionGranted(String permission) {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
-                context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
     }
 }
