@@ -113,7 +113,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
                 final HashMap<Integer, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
                         withAck ? notificationObservableMap : indicationObservableMap;
-                final boolean conflictingNotificationIsAlreadySet = conflictingServerInitiatedReadingMap.containsKey(characteristicInstanceId);
+                final boolean conflictingNotificationIsAlreadySet =
+                        conflictingServerInitiatedReadingMap.containsKey(characteristicInstanceId);
 
                 if (conflictingNotificationIsAlreadySet) {
                     return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
