@@ -6,7 +6,9 @@ import android.content.Context;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble.exceptions.BleDeviceUnpairException;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import rx.Observable;
@@ -42,17 +44,17 @@ class RxBleDeviceImpl implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return Observable.defer(() -> {
 
-                if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(context, autoConnect)
-                            .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
-                            .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
-                            .doOnUnsubscribe(() -> {
-                                connectionStateSubject.onNext(DISCONNECTED);
-                                isConnected.set(false);
-                            });
-                } else {
-                    return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
-                }
+            if (isConnected.compareAndSet(false, true)) {
+                return connector.prepareConnection(context, autoConnect)
+                        .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
+                        .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
+                        .doOnUnsubscribe(() -> {
+                            connectionStateSubject.onNext(DISCONNECTED);
+                            isConnected.set(false);
+                        });
+            } else {
+                return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
+            }
         });
     }
 
@@ -69,6 +71,25 @@ class RxBleDeviceImpl implements RxBleDevice {
     @Override
     public BluetoothDevice getBluetoothDevice() {
         return bluetoothDevice;
+    }
+
+    @Override
+    public Observable<Boolean> unpair() {
+
+        return Observable.defer(() -> {
+            try {
+                Method removeBondMethod = bluetoothDevice.getClass()
+                        .getMethod("removeBond", (Class[]) null);
+                Object value = removeBondMethod.invoke(bluetoothDevice, (Object[]) null);
+                if (value instanceof Boolean) {
+                    boolean unpairingResult = (boolean) value;
+                    return Observable.just(unpairingResult);
+                }
+                return Observable.just(false);
+            } catch (Exception e) {
+                return Observable.error(new BleDeviceUnpairException(e));
+            }
+        });
     }
 
     @Override
