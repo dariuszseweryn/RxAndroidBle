@@ -21,7 +21,7 @@ class TestSubscriberExtension {
 
     static boolean assertScanRecord(final TestSubscriber<RxBleScanResult> subscriber, int rssi, String macAddress, byte[] scanRecord) {
         assertAnyOnNext(subscriber, {
-            it.rssi == rssi && it.bleDevice.macAddress == macAddress && scanRecord == it.scanRecord
+            it.rssi == rssi && it.bleDevice.macAddress == macAddress && scanRecord == it.scanRecord.bytes
         })
     }
 

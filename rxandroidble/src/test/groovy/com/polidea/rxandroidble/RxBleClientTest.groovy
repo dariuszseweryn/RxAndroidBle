@@ -2,7 +2,6 @@ package com.polidea.rxandroidble
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.os.Build
 import com.polidea.rxandroidble.exceptions.BleScanException
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble.internal.RxBleRadio
@@ -337,10 +336,7 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(subscriber)
 
         then:
-        //is there any possibility to set sdk version for concrete test?
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
-        }
+        subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
     }
 
     def bluetoothDeviceDiscovered(Map scanData) {
