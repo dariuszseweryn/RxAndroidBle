@@ -1,13 +1,8 @@
 package com.polidea.rxandroidble
 
-import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_CANNOT_START
-import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_DISABLED
-import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_NOT_AVAILABLE
-import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_PERMISSION_MISSING
-import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_SERVICES_DISABLED
-
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Build
 import com.polidea.rxandroidble.exceptions.BleScanException
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble.internal.RxBleRadio
@@ -18,6 +13,8 @@ import rx.Observable
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static com.polidea.rxandroidble.exceptions.BleScanException.*
 
 class RxBleClientTest extends Specification {
 
@@ -340,7 +337,10 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(subscriber)
 
         then:
-        subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
+        //is there any possibility to set sdk version for concrete test?
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            subscriber.assertScanRecord(10, "AA:AA:AA:AA:AA:AA", [1, 2, 3] as byte[])
+        }
     }
 
     def bluetoothDeviceDiscovered(Map scanData) {

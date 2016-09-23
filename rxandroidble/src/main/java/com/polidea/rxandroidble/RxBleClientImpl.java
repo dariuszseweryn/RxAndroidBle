@@ -1,9 +1,11 @@
 package com.polidea.rxandroidble;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,8 +13,10 @@ import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
+import com.polidea.rxandroidble.internal.RxBleInternalScanResultV21;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanV21;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
@@ -127,13 +131,19 @@ class RxBleClientImpl extends RxBleClient {
                 .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
     }
 
+    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? createScanOperationV18(filterServiceUUIDs)
+                : createScanOperationV21(filterServiceUUIDs);
+    }
+
     private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResult scanResult) {
         final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
         final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
-        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
+        final RxBleScanRecord scanRecord = uuidUtil.parseFromBytes(scanResult.getScanRecord());
+        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanRecord);
     }
 
-    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> createScanOperationV18(@Nullable UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
         final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return rxBleRadio.queue(scanOperation)
@@ -148,4 +158,28 @@ class RxBleClientImpl extends RxBleClient {
                 .map(this::convertToPublicScanResult)
                 .share();
     }
+
+    private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResultV21 scanResult) {
+        final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
+        final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
+        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private Observable<RxBleScanResult> createScanOperationV21(@Nullable UUID[] filterServiceUUIDs) {
+        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+        final RxBleRadioOperationScanV21 scanOperation = new RxBleRadioOperationScanV21(filterServiceUUIDs, rxBleAdapterWrapper);
+        return rxBleRadio.queue(scanOperation)
+                .doOnUnsubscribe(() -> {
+
+                    synchronized (queuedScanOperations) {
+                        scanOperation.stop();
+                        queuedScanOperations.remove(filteredUUIDs);
+                    }
+                })
+                .mergeWith(bluetoothAdapterOffExceptionObservable())
+                .map(this::convertToPublicScanResult)
+                .share();
+    }
+
 }

@@ -7,9 +7,9 @@ public class RxBleScanResult {
 
     private final RxBleDevice bleDevice;
     private final int rssi;
-    private final byte[] scanRecord;
+    private final RxBleScanRecord scanRecord;
 
-    public RxBleScanResult(RxBleDevice bleDevice, int rssi, byte[] scanRecords) {
+    public RxBleScanResult(RxBleDevice bleDevice, int rssi, RxBleScanRecord scanRecords) {
         this.bleDevice = bleDevice;
         this.rssi = rssi;
         this.scanRecord = scanRecords;
@@ -35,9 +35,9 @@ public class RxBleScanResult {
     /**
      * The scan record of Bluetooth LE advertisement.
      *
-     * @return Array of data containing full ADV packet.
+     * @return Scan record, including advertising data and scan response data.
      */
-    public byte[] getScanRecord() {
+    public RxBleScanRecord getScanRecord() {
         return scanRecord;
     }
 }
