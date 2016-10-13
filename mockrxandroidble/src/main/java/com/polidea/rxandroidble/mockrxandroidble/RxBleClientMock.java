@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
+import rx.subjects.ReplaySubject;
 
 /**
  * A mocked {@link RxBleClient}. Callers supply device parameters such as services,
@@ -244,10 +245,16 @@ public class RxBleClientMock extends RxBleClient {
 
     private Set<RxBleDevice> bondedDevices;
     private Map<String, RxBleDevice> discoverableDevices;
+    private ReplaySubject<RxBleDeviceMock> discoveredDevicesSubject;
 
     private RxBleClientMock(Builder builder) {
         discoverableDevices = builder.discoverableDevices;
         bondedDevices = builder.bondedDevices;
+        discoveredDevicesSubject = ReplaySubject.create();
+        for (RxBleDevice device: discoverableDevices.values())
+        {
+            discoveredDevicesSubject.onNext((RxBleDeviceMock) device);
+        }
     }
 
     @Override
@@ -277,12 +284,14 @@ public class RxBleClientMock extends RxBleClient {
 
     @NonNull
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.defer(() -> Observable.from(discoverableDevices.values())
+        return discoveredDevicesSubject
                 .filter(rxBleDevice -> filterDevice(rxBleDevice, filterServiceUUIDs))
-                .map(rxBleDevice -> {
-                    RxBleDeviceMock rxBleDeviceMock = (RxBleDeviceMock) rxBleDevice;
-                    return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
-                }));
+                .map(this::createRxBleScanResult);
+    }
+
+    @NonNull
+    private RxBleScanResult createRxBleScanResult(RxBleDeviceMock rxBleDeviceMock) {
+        return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
     }
 
     private boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {
