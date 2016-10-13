@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
+import rx.subjects.ReplaySubject;
 
 /**
  * A mocked {@link RxBleClient}. Callers supply device parameters such as services,
@@ -29,15 +30,20 @@ public class RxBleClientMock extends RxBleClient {
 
     public static class Builder {
 
-        private Map<String, RxBleDevice> discoverableDevices;
+        private ReplaySubject<RxBleDeviceMock> discoverableDevicesSubject;
         private Set<RxBleDevice> bondedDevices;
 
         /**
          * Build a new {@link RxBleClientMock}.
          */
         public Builder() {
-            this.discoverableDevices = new HashMap<>();
+            this.discoverableDevicesSubject = ReplaySubject.create();
             this.bondedDevices = new HashSet<>();
+        }
+
+        public Builder setDeviceDiscoveryObservable(@NonNull Observable<RxBleDeviceMock> discoverableDevicesObservable) {
+            discoverableDevicesObservable.subscribe(this.discoverableDevicesSubject);
+            return this;
         }
 
         /**
@@ -46,7 +52,7 @@ public class RxBleClientMock extends RxBleClient {
          * @param rxBleDevice device that the mocked client should contain. Use {@link DeviceBuilder} to create them.
          */
         public Builder addDevice(@NonNull RxBleDevice rxBleDevice) {
-            discoverableDevices.put(rxBleDevice.getMacAddress(), rxBleDevice);
+            this.discoverableDevicesSubject.onNext((RxBleDeviceMock) rxBleDevice);
             return this;
         }
 
@@ -243,16 +249,18 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     private Set<RxBleDevice> bondedDevices;
-    private Map<String, RxBleDevice> discoverableDevices;
+    private ReplaySubject<RxBleDeviceMock> discoveredDevicesSubject;
 
     private RxBleClientMock(Builder builder) {
-        discoverableDevices = builder.discoverableDevices;
         bondedDevices = builder.bondedDevices;
+        discoveredDevicesSubject = builder.discoverableDevicesSubject;
     }
 
     @Override
     public RxBleDevice getBleDevice(@NonNull String macAddress) {
-        RxBleDevice rxBleDevice = discoverableDevices.get(macAddress);
+        RxBleDevice rxBleDevice = discoveredDevicesSubject
+            .first(device -> device.getMacAddress().equals(macAddress))
+            .toBlocking().first();
 
         if (rxBleDevice == null) {
             throw new IllegalStateException("Mock is not configured for a given mac address. Use Builder#addDevice method.");
@@ -277,12 +285,14 @@ public class RxBleClientMock extends RxBleClient {
 
     @NonNull
     private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
-        return Observable.defer(() -> Observable.from(discoverableDevices.values())
+        return discoveredDevicesSubject
                 .filter(rxBleDevice -> filterDevice(rxBleDevice, filterServiceUUIDs))
-                .map(rxBleDevice -> {
-                    RxBleDeviceMock rxBleDeviceMock = (RxBleDeviceMock) rxBleDevice;
-                    return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
-                }));
+                .map(this::createRxBleScanResult);
+    }
+
+    @NonNull
+    private RxBleScanResult createRxBleScanResult(RxBleDeviceMock rxBleDeviceMock) {
+        return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
     }
 
     private boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {

@@ -20,26 +20,30 @@ public class RxBleClientMockTest extends RoboSpecification {
     def rxBleClient
     def PublishSubject characteristicNotificationSubject = PublishSubject.create()
 
+    def createDevice(deviceName, macAddress, rssi) {
+        new RxBleClientMock.DeviceBuilder()
+                .deviceMacAddress(macAddress)
+                .deviceName(deviceName)
+                .scanRecord("ScanRecord".getBytes())
+                .rssi(rssi)
+                .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
+                .addService(
+                serviceUUID,
+                new RxBleClientMock.CharacteristicsBuilder()
+                        .addCharacteristic(
+                        characteristicUUID,
+                        characteristicData,
+                        new RxBleClientMock.DescriptorsBuilder()
+                                .addDescriptor(descriptorUUID, descriptorData)
+                                .build()
+                ).build()
+        ).build()
+    }
+
     def setup() {
         rxBleClient = new RxBleClientMock.Builder()
                 .addDevice(
-                new RxBleClientMock.DeviceBuilder()
-                        .deviceMacAddress("AA:BB:CC:DD:EE:FF")
-                        .deviceName("TestDevice")
-                        .scanRecord("ScanRecord".getBytes())
-                        .rssi(42)
-                        .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
-                        .addService(
-                        serviceUUID,
-                        new RxBleClientMock.CharacteristicsBuilder()
-                                .addCharacteristic(
-                                characteristicUUID,
-                                characteristicData,
-                                new RxBleClientMock.DescriptorsBuilder()
-                                        .addDescriptor(descriptorUUID, descriptorData)
-                                        .build()
-                        ).build()
-                ).build()
+                    createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42)
         ).build();
     }
 
@@ -116,6 +120,30 @@ public class RxBleClientMockTest extends RoboSpecification {
 
         then:
         testSubscriber.assertValue(72)
+    }
+
+    def "should return BluetoothDevices that were added on the fly"() {
+        given:
+        def testNameSubscriber = TestSubscriber.create()
+        def testAddressSubscriber = TestSubscriber.create()
+        def testRssiSubscriber = TestSubscriber.create()
+        def discoverableDevicesSubject = PublishSubject.create()
+        def dynRxBleClient = new RxBleClientMock.Builder()
+                .setDeviceDiscoveryObservable(discoverableDevicesSubject)
+                .build();
+        discoverableDevicesSubject.onNext(createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42))
+        discoverableDevicesSubject.onNext(createDevice("SecondDevice", "AA:BB:CC:DD:EE:00", 17))
+
+        when:
+        def scanObservable = dynRxBleClient.scanBleDevices()
+        scanObservable.map { scanResult -> scanResult.getBleDevice().getName() }.subscribe(testNameSubscriber)
+        scanObservable.map { scanResult -> scanResult.getBleDevice().getMacAddress() }.subscribe(testAddressSubscriber)
+        scanObservable.map { scanResult -> scanResult.getRssi() }.subscribe(testRssiSubscriber)
+
+        then:
+        testNameSubscriber.assertValues("TestDevice", "SecondDevice")
+        testAddressSubscriber.assertValues("AA:BB:CC:DD:EE:FF", "AA:BB:CC:DD:EE:00")
+        testRssiSubscriber.assertValues(42, 17)
     }
 
     def "should return services list"() {
