@@ -251,8 +251,7 @@ public class RxBleClientMock extends RxBleClient {
         discoverableDevices = builder.discoverableDevices;
         bondedDevices = builder.bondedDevices;
         discoveredDevicesSubject = ReplaySubject.create();
-        for (RxBleDevice device: discoverableDevices.values())
-        {
+        for (RxBleDevice device : discoverableDevices.values()) {
             discoveredDevicesSubject.onNext((RxBleDeviceMock) device);
         }
     }
@@ -276,6 +275,11 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
         return createScanOperation(filterServiceUUIDs);
+    }
+
+    public void simulateDeviceDiscovery(@NonNull RxBleDeviceMock deviceMock) {
+        this.discoverableDevices.put(deviceMock.getMacAddress(), deviceMock);
+        discoveredDevicesSubject.onNext(deviceMock);
     }
 
     private RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {

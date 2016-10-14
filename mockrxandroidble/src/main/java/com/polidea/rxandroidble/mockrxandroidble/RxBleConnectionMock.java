@@ -19,7 +19,7 @@ import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VAL
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
 
-class RxBleConnectionMock implements RxBleConnection {
+public class RxBleConnectionMock implements RxBleConnection {
 
     static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     private HashMap<UUID, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();

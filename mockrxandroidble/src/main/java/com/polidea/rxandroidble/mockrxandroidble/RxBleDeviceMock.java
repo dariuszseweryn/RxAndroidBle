@@ -21,7 +21,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONN
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
-class RxBleDeviceMock implements RxBleDevice {
+public class RxBleDeviceMock implements RxBleDevice {
 
     private RxBleConnection rxBleConnection;
     private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
