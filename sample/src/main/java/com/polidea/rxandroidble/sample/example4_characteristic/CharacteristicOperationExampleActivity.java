@@ -115,10 +115,9 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         } else {
             connectionObservable.subscribe(rxBleConnection -> {
                 Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
+                runOnUiThread(this::updateUI);
             }, this::onConnectionFailure);
         }
-
-        updateUI();
     }
 
     private boolean isConnected() {
