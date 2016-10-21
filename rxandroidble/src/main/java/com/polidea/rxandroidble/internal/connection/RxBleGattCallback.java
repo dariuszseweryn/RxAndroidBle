@@ -45,9 +45,7 @@ public class RxBleGattCallback {
     private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
             .filter(this::isDisconnectedOrDisconnecting)
             .doOnNext(rxBleConnectionState -> bluetoothGattBehaviorSubject.onCompleted())
-            .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()))
-            .replay()
-            .autoConnect(0);
+            .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()));
 
     private boolean isDisconnectedOrDisconnecting(RxBleConnectionState rxBleConnectionState) {
         return rxBleConnectionState == RxBleConnectionState.DISCONNECTED || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
@@ -254,8 +252,7 @@ public class RxBleGattCallback {
     private <T> Observable<T> withHandlingStatusError(Observable<T> observable) {
         //noinspection unchecked
         return Observable.merge(
-                statusErrorSubject.asObservable(), // statusErrorSubject emits only errors
-                disconnectedErrorObservable,
+                (Observable<? extends T>) statusErrorSubject.asObservable(), // statusErrorSubject emits only errors
                 observable
         );
     }
