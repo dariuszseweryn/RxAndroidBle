@@ -1,6 +1,6 @@
 ext {
     supportVersion = '23.1.1'
-    buildToolsVersionVariable = "23.0.2"
+    buildToolsVersionVariable = "25.0.0"
     sourceCompatibilityVersion = JavaVersion.VERSION_1_8
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
     libs = [
