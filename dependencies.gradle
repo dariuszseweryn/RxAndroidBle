@@ -15,7 +15,7 @@ ext {
             spock              : ['org.spockframework:spock-core:1.0-groovy-2.4',
                                   'cglib:cglib-nodep:3.2.1',
                                   'org.objenesis:objenesis:2.2'],
-            robospock          : 'org.robospock:robospock:1.0.0'
+            robospock          : 'org.robospock:robospock:1.0.1'
 
     ]
 }
