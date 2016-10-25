@@ -19,7 +19,6 @@ import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
@@ -30,7 +29,7 @@ public class RxBleGattCallback {
         RxBleGattCallback provide();
     }
 
-    private final Scheduler callbackScheduler = Schedulers.computation();
+    private final Scheduler callbackScheduler;
     private final BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();
     private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
     private final PublishSubject<RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
@@ -46,6 +45,10 @@ public class RxBleGattCallback {
             .filter(this::isDisconnectedOrDisconnecting)
             .doOnNext(rxBleConnectionState -> bluetoothGattBehaviorSubject.onCompleted())
             .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()));
+
+    public RxBleGattCallback(Scheduler callbackScheduler) {
+        this.callbackScheduler = callbackScheduler;
+    }
 
     private boolean isDisconnectedOrDisconnecting(RxBleConnectionState rxBleConnectionState) {
         return rxBleConnectionState == RxBleConnectionState.DISCONNECTED || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;

@@ -13,6 +13,7 @@ import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
 import java.util.Map;
 import rx.Observable;
+import rx.Scheduler;
 
 public class RxBleDeviceProvider {
 
@@ -21,13 +22,16 @@ public class RxBleDeviceProvider {
     private final RxBleRadio rxBleRadio;
     private final BleConnectionCompat bleConnectionCompat;
     private final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable;
+    private final Scheduler gattCallbacksProcessingScheduler;
 
     public RxBleDeviceProvider(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio, BleConnectionCompat bleConnectionCompat,
-                               Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable) {
+                               Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable,
+                               Scheduler gattCallbacksProcessingScheduler) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleRadio = rxBleRadio;
         this.bleConnectionCompat = bleConnectionCompat;
         this.adapterStateObservable = adapterStateObservable;
+        this.gattCallbacksProcessingScheduler = gattCallbacksProcessingScheduler;
     }
 
     public RxBleDevice getBleDevice(String macAddress) {
@@ -48,7 +52,7 @@ public class RxBleDeviceProvider {
             final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(
                     bluetoothDevice,
                     new RxBleConnectionConnectorImpl(bluetoothDevice,
-                            RxBleGattCallback::new,
+                            () -> new RxBleGattCallback(gattCallbacksProcessingScheduler),
                             new RxBleConnectionConnectorOperationsProvider(),
                             rxBleRadio,
                             bleConnectionCompat,

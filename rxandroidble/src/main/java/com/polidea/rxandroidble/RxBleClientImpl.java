@@ -25,7 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 class RxBleClientImpl extends RxBleClient {
 
@@ -56,13 +60,28 @@ class RxBleClientImpl extends RxBleClient {
         final RxBleRadioImpl rxBleRadio = new RxBleRadioImpl();
         final RxBleAdapterStateObservable adapterStateObservable = new RxBleAdapterStateObservable(context.getApplicationContext());
         final BleConnectionCompat bleConnectionCompat = new BleConnectionCompat(context);
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Scheduler gattCallbacksProcessingScheduler = Schedulers.from(executor);
         return new RxBleClientImpl(
                 rxBleAdapterWrapper,
                 rxBleRadio,
                 adapterStateObservable,
                 new UUIDUtil(),
                 new LocationServicesStatus(context, (LocationManager) context.getSystemService(Context.LOCATION_SERVICE)),
-                new RxBleDeviceProvider(rxBleAdapterWrapper, rxBleRadio, bleConnectionCompat, adapterStateObservable));
+                new RxBleDeviceProvider(
+                        rxBleAdapterWrapper,
+                        rxBleRadio,
+                        bleConnectionCompat,
+                        adapterStateObservable,
+                        gattCallbacksProcessingScheduler
+                )
+        ) {
+            @Override
+            protected void finalize() throws Throwable {
+                super.finalize();
+                executor.shutdown();
+            }
+        };
     }
 
     @Override
