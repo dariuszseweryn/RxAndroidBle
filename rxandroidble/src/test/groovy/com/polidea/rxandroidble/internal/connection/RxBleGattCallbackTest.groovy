@@ -4,7 +4,7 @@ import static android.bluetooth.BluetoothGatt.GATT_FAILURE
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.STATE_CONNECTED
 import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -20,7 +20,7 @@ import spock.lang.Unroll
 
 class RxBleGattCallbackTest extends RoboSpecification {
 
-    def objectUnderTest = new RxBleGattCallback()
+    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE)
     def testSubscriber = new TestSubscriber()
     @Shared def mockBluetoothGatt = Mock BluetoothGatt
     @Shared def mockBluetoothGattCharacteristic = Mock BluetoothGattCharacteristic
@@ -33,6 +33,12 @@ class RxBleGattCallbackTest extends RoboSpecification {
 
     def teardownSpec() {
         RxJavaHooks.reset()
+    }
+
+    def "sanity check"() {
+
+        expect:
+        GATT_SUCCESS != GATT_FAILURE
     }
 
     @Unroll
