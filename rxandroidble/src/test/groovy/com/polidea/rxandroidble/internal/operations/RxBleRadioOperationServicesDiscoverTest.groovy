@@ -1,16 +1,25 @@
 package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import rx.Observable
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
 public class RxBleRadioOperationServicesDiscoverTest extends Specification {
+
+    static long timeout = 20
+
+    static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
     Semaphore mockSemaphore = Mock Semaphore
 
@@ -19,6 +28,8 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
 
     TestSubscriber<RxBleDeviceServices> testSubscriber = new TestSubscriber()
+
+    TestScheduler testScheduler = new TestScheduler()
 
     PublishSubject<RxBleDeviceServices> onServicesDiscoveredPublishSubject = PublishSubject.create()
 
@@ -111,9 +122,61 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertValueCount(1) // no more values
     }
 
+    def "should timeout after specified amount of time if BluetoothGatt.getServices() will return empty list"() {
+
+        given:
+        mockBluetoothGatt.discoverServices() >> true
+        mockGattCallback.onServicesDiscovered >> Observable.never()
+        mockBluetoothGatt.getServices() >> []
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
+
+        then:
+        testSubscriber.assertError(TimeoutException)
+    }
+
+    def "should not timeout after specified amount of time if BluetoothGatt.getServices() will return non-empty list"() {
+
+        given:
+        mockBluetoothGatt.discoverServices() >> true
+        mockGattCallback.onServicesDiscovered >> Observable.never()
+        mockBluetoothGatt.getServices() >> createMockedBluetoothGattServiceList()
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
+
+        then:
+        testSubscriber.assertNoErrors()
+    }
+
+    def "should emit valid RxBleServices after specified timeout was reached if BluetoothGatt won't get onDiscoveryCompleted() callback (therefore no RxBleGattCallback.onServicesDiscovered() emission) if BluetoothGatt.getServices() will return not-empty list - should wait before emitting 5 more seconds"() {
+
+        given:
+        mockBluetoothGatt.discoverServices() >> true
+        mockGattCallback.onServicesDiscovered >> Observable.never()
+        def mockedBluetoothGattServiceList = createMockedBluetoothGattServiceList()
+        mockBluetoothGatt.getServices() >> mockedBluetoothGattServiceList
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)
+
+        then:
+        testSubscriber.assertAnyOnNext { RxBleDeviceServices services ->
+            services.bluetoothGattServices.containsAll(mockedBluetoothGattServiceList)
+        }
+    }
+
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt)
+        objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt, timeout, timeoutTimeUnit, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
+    }
+
+    private List<BluetoothGattService> createMockedBluetoothGattServiceList() {
+        return [Mock(BluetoothGattService), Mock(BluetoothGattService)]
     }
 }

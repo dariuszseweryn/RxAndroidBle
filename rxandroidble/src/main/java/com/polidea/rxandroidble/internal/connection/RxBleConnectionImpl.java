@@ -22,9 +22,11 @@ import com.polidea.rxandroidble.internal.util.ObservableUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
 import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
@@ -56,6 +58,15 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
+        return privateDiscoverServices(20, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit) {
+        return privateDiscoverServices(timeout, timeUnit);
+    }
+
+    private Observable<RxBleDeviceServices> privateDiscoverServices(long timeout, TimeUnit timeUnit) {
         synchronized (discoveredServicesCache) {
             // checking if there are already cached services
             final Observable<RxBleDeviceServices> sharedObservable = this.discoveredServicesCache.get();
@@ -69,7 +80,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 newObservable = just(new RxBleDeviceServices(services));
             } else { // performing actual discovery
                 newObservable = rxBleRadio
-                        .queue(new RxBleRadioOperationServicesDiscover(gattCallback, bluetoothGatt))
+                        .queue(new RxBleRadioOperationServicesDiscover(
+                                gattCallback,
+                                bluetoothGatt,
+                                timeout,
+                                timeUnit,
+                                Schedulers.computation()
+                        ))
                         .cacheWithInitialCapacity(1);
             }
 

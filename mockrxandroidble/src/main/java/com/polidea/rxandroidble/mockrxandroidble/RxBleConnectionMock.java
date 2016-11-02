@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import java.util.concurrent.TimeUnit;
 import rx.Observable;
 
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
@@ -38,6 +39,11 @@ class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
+        return Observable.just(rxBleDeviceServices);
+    }
+
+    @Override
+    public Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit) {
         return Observable.just(rxBleDeviceServices);
     }
 
