@@ -42,7 +42,7 @@ public class BleScanException extends BleException {
      * in order to receive BLE scan results.
      */
     public static final int LOCATION_SERVICES_DISABLED = 4;
-    private final int reason;
+    @Reason private final int reason;
 
     public BleScanException(int cause) {
         this.reason = cause;
@@ -57,5 +57,28 @@ public class BleScanException extends BleException {
     @Reason
     public int getReason() {
         return reason;
+    }
+
+    @Override
+    public String toString() {
+        return "BleScanException{" +
+                "reason=" + reasonDescription() +
+                '}';
+    }
+
+    private String reasonDescription() {
+        switch (reason) {
+            case BLUETOOTH_CANNOT_START:
+                return "BLUETOOTH_CANNOT_START";
+            case BLUETOOTH_DISABLED:
+                return "BLUETOOTH_DISABLED";
+            case BLUETOOTH_NOT_AVAILABLE:
+                return "BLUETOOTH_NOT_AVAILABLE";
+            case LOCATION_PERMISSION_MISSING:
+                return "LOCATION_PERMISSION_MISSING";
+            case LOCATION_SERVICES_DISABLED:
+                return "LOCATION_SERVICES_DISABLED";
+        }
+        return "UNKNOWN";
     }
 }
