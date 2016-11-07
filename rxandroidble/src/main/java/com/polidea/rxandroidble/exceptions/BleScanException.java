@@ -23,26 +23,32 @@ public class BleScanException extends BleException {
      * Scan did not start correctly because of unspecified error.
      */
     public static final int BLUETOOTH_CANNOT_START = 0;
+
     /**
      * Scan did not start correctly because the Bluetooth adapter was disabled. Ask the user to turn on Bluetooth or use
      * <b>android.bluetooth.adapter.action.REQUEST_ENABLE</b>
      */
     public static final int BLUETOOTH_DISABLED = 1;
+
     /**
      * Scan did not start correctly because the device does not support it.
      */
     public static final int BLUETOOTH_NOT_AVAILABLE = 2;
+
     /**
      * Scan did not start correctly because the user did not accept access to location services. On Android 6.0 and up you must ask the
      * user about <b>ACCESS_COARSE_LOCATION</b> in runtime.
      */
     public static final int LOCATION_PERMISSION_MISSING = 3;
+
     /**
      * Scan did not start because location services are disabled on the device. On Android 6.0 and up location services must be enabled
      * in order to receive BLE scan results.
      */
     public static final int LOCATION_SERVICES_DISABLED = 4;
-    @Reason private final int reason;
+
+    @Reason
+    private final int reason;
 
     public BleScanException(int cause) {
         this.reason = cause;
@@ -61,9 +67,9 @@ public class BleScanException extends BleException {
 
     @Override
     public String toString() {
-        return "BleScanException{" +
-                "reason=" + reasonDescription() +
-                '}';
+        return "BleScanException{"
+                + "reason=" + reasonDescription()
+                + '}';
     }
 
     private String reasonDescription() {
