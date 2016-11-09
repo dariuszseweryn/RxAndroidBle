@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble.exceptions.BleGattException
 import org.robospock.RoboSpecification
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
@@ -98,6 +99,56 @@ class RxBleGattCallbackTest extends RoboSpecification {
 
         then:
         testSubscriber.assertError(BleDisconnectedException)
+    }
+
+    // TODO: This test will be deprecated in 2.0.0
+    @Unroll
+    def "observeDisconnect() should emit error if any of BluetoothGatt.on*() callbacks will receive status != GATT_SUCCESS"() {
+
+        given:
+        objectUnderTest.observeDisconnect().subscribe(testSubscriber)
+
+        when:
+        callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
+
+        then:
+        testSubscriber.assertError(BleGattException)
+
+        where:
+        callbackCaller << [
+                { (it as BluetoothGattCallback).onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED) },
+                { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicRead(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+        ]
+    }
+
+    // TODO: This test will be deprecated in 2.0.0
+    @Unroll
+    def "observeDisconnect() should emit error even if any of BluetoothGatt.on*() callbacks received status != GATT_SUCCESS before the subscription"() {
+
+        given:
+        callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
+
+        when:
+        objectUnderTest.observeDisconnect().subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError(BleGattException)
+
+        where:
+        callbackCaller << [
+                { (it as BluetoothGattCallback).onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED) },
+                { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicRead(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+        ]
     }
 
     @Unroll

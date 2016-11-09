@@ -30,7 +30,7 @@ public class RxBleGattCallback {
     }
 
     private final Scheduler callbackScheduler;
-    private final BehaviorSubject<Void> statusErrorSubject = BehaviorSubject.create();
+    private final BehaviorSubject statusErrorSubject = BehaviorSubject.create();
     private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
     private final PublishSubject<RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
@@ -43,8 +43,8 @@ public class RxBleGattCallback {
     private final PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
     private final Observable disconnectedErrorObservable = getOnConnectionStateChange()
             .filter(this::isDisconnectedOrDisconnecting)
-            .doOnNext(rxBleConnectionState -> bluetoothGattBehaviorSubject.onCompleted())
             .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()))
+            .doOnTerminate(bluetoothGattBehaviorSubject::onCompleted)
             .replay()
             .autoConnect(0);
 
@@ -252,7 +252,7 @@ public class RxBleGattCallback {
         return isError;
     }
 
-    private <T> Observable<T> withHandlingStatusError(Observable<T> observable) {
+    private <T> Observable<T> withHandlingStatusErrorAndDisconnection(Observable<T> observable) {
         //noinspection unchecked
         return Observable.merge(
                 statusErrorSubject.asObservable(), // statusErrorSubject emits only errors
@@ -276,7 +276,7 @@ public class RxBleGattCallback {
      */
     public <T> Observable<T> observeDisconnect() {
         //noinspection unchecked
-        return disconnectedErrorObservable;
+        return Observable.merge(disconnectedErrorObservable, statusErrorSubject);
     }
 
     /**
@@ -288,30 +288,30 @@ public class RxBleGattCallback {
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
-        return withHandlingStatusError(servicesDiscoveredPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(servicesDiscoveredPublishSubject);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
-        return withHandlingStatusError(readCharacteristicPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(readCharacteristicPublishSubject);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicWrite() {
-        return withHandlingStatusError(writeCharacteristicPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(writeCharacteristicPublishSubject);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicChanged() {
-        return withHandlingStatusError(changedCharacteristicPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(changedCharacteristicPublishSubject);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorRead() {
-        return withHandlingStatusError(readDescriptorPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(readDescriptorPublishSubject);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorWrite() {
-        return withHandlingStatusError(writeDescriptorPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(writeDescriptorPublishSubject);
     }
 
     public Observable<Integer> getOnRssiRead() {
-        return withHandlingStatusError(readRssiPublishSubject);
+        return withHandlingStatusErrorAndDisconnection(readRssiPublishSubject);
     }
 }
