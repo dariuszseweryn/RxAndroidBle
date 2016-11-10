@@ -280,7 +280,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
         return rxBleRadio.queue(
-                new RxBleRadioOperationDescriptorWrite(gattCallback, bluetoothGatt, bluetoothGattDescriptor, data)
+                new RxBleRadioOperationDescriptorWrite(
+                        gattCallback,
+                        bluetoothGatt,
+                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT,
+                        bluetoothGattDescriptor,
+                        data
+                )
         );
     }
 

@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
@@ -10,6 +11,7 @@ import java.util.concurrent.Semaphore
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
+import spock.lang.Unroll
 
 public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
@@ -21,6 +23,8 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     BluetoothGattDescriptor differentDescriptor = Mock BluetoothGattDescriptor
 
+    BluetoothGattCharacteristic mockParentCharacteristic = Mock BluetoothGattCharacteristic
+
     def testSubscriber = new TestSubscriber()
 
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
@@ -31,8 +35,14 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     byte[] testData = ['t', 'e', 's', 't']
 
+    int bluetoothGattCharacteristicDefaultWriteType = 99
+
+    int originalParentBluetoothGattCharacteristicWriteType = 1337
+
     def setup() {
         mockCallback.getOnDescriptorWrite() >> onDescriptorWriteSubject
+        mockDescriptor.getCharacteristic() >> mockParentCharacteristic
+        mockParentCharacteristic.getWriteType() >> originalParentBluetoothGattCharacteristicWriteType
         prepareObjectUnderTest()
     }
 
@@ -207,6 +217,25 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         1 * mockSemaphore.release()
     }
 
+    @Unroll
+    def "should set parent BluetoothGattCharacteristic.writeType() to WRITE_TYPE_DEFAULT before calling BluetoothGatt.writeCharacteristic() and reset it to original value afterwards"() {
+
+        given:
+        mockGatt.writeDescriptor(mockDescriptor) >> writeStartSuccess
+
+        when:
+        objectUnderTest.run()
+
+        then:
+        1 * mockParentCharacteristic.setWriteType(bluetoothGattCharacteristicDefaultWriteType)
+
+        then:
+        1 * mockParentCharacteristic.setWriteType(originalParentBluetoothGattCharacteristicWriteType)
+
+        where:
+        writeStartSuccess << [ true, false ]
+    }
+
     private givenDescriptorWithUUIDWritesData(Map... returnedDataOnWrite) {
         mockGatt.writeDescriptor(mockDescriptor) >> {
             returnedDataOnWrite.each {
@@ -229,7 +258,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt, mockDescriptor, testData)
+        objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt, bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
