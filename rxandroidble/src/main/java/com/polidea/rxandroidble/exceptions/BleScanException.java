@@ -84,7 +84,8 @@ public class BleScanException extends BleException {
                 return "LOCATION_PERMISSION_MISSING";
             case LOCATION_SERVICES_DISABLED:
                 return "LOCATION_SERVICES_DISABLED";
+            default:
+                return "UNKNOWN";
         }
-        return "UNKNOWN";
     }
 }
