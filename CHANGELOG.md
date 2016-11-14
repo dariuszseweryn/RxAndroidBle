@@ -1,5 +1,19 @@
 Change Log
-=============
+==========
+
+Version 1.1.0
+* Fixed issue that sometimes happened where `RxBleRadioOperationConnect` was not yet subscribed while running. (https://github.com/Polidea/RxAndroidBle/issues/94)
+* Fixed issue with descriptor writing using parent characteristic write type. (https://github.com/Polidea/RxAndroidBle/issues/93)
+* Added `BleScanException.toString()` for a more descriptive stacktrace.
+* Added a workaround for a bug while discovering services. (https://github.com/Polidea/RxAndroidBle/issues/86)
+* Added a timeout for discovering services. (https://github.com/Polidea/RxAndroidBle/issues/86)
+* Fixed calling `BluetoothGatt.disconnect()` on a correct thread. (https://github.com/Polidea/RxAndroidBle/issues/84)
+* Fixed library stuck if disconnection happened during operation execution. (https://github.com/Polidea/RxAndroidBle/issues/81)
+* Removed reflection call to `BluetoothGatt.connect()` on Android 7.0.0+. (https://github.com/Polidea/RxAndroidBle/issues/83)
+* Removed android.support.v4 dependency.
+* Added cancelling of connection establishing process. 
+* Reduced method count.
+* Fixed `RejectedExecutionException` when processing `BluetoothGattCallback`. (https://github.com/Polidea/RxAndroidBle/issues/25) (https://github.com/Polidea/RxAndroidBle/issues/75)
 
 Version 1.0.2
 
