@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'me.tatarka:gradle-retrolambda:3.3.1'
     }
 }
 
@@ -43,12 +43,13 @@ configurations.all {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.2.1'
-    compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.0.1', changing: false
-    compile 'com.android.support:design:23.2.1'
-    compile 'com.jakewharton:butterknife:7.0.1'
+    // compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.1.0', changing: false
+    compile project(path: ':rxandroidble')
+    compile "com.android.support:appcompat-v7:$rootProject.ext.buildToolsVersionVariable"
+    compile "com.android.support:design:$rootProject.ext.buildToolsVersionVariable"
+    compile 'com.jakewharton:butterknife:8.4.0'
     compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.rxandroid
-    compile 'com.trello:rxlifecycle:0.5.0'
-    compile 'com.trello:rxlifecycle-components:0.5.0'
+    compile 'com.trello:rxlifecycle:1.0'
+    compile 'com.trello:rxlifecycle-components:1.0'
 }

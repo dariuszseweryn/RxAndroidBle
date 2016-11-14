@@ -13,22 +13,22 @@ import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
-import static com.trello.rxlifecycle.ActivityEvent.DESTROY;
-import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
+import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class ConnectionExampleActivity extends RxAppCompatActivity {
 
-    @Bind(R.id.connection_state)
+    @BindView(R.id.connection_state)
     TextView connectionStateView;
-    @Bind(R.id.connect_toggle)
+    @BindView(R.id.connect_toggle)
     Button connectButton;
-    @Bind(R.id.autoconnect)
+    @BindView(R.id.autoconnect)
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
     private Subscription connectionSubscription;

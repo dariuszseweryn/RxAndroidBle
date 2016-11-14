@@ -17,31 +17,31 @@ import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
 
-import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class CharacteristicOperationExampleActivity extends RxAppCompatActivity {
 
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";
-    @Bind(R.id.connect)
+    @BindView(R.id.connect)
     Button connectButton;
-    @Bind(R.id.read_output)
+    @BindView(R.id.read_output)
     TextView readOutputView;
-    @Bind(R.id.read_hex_output)
+    @BindView(R.id.read_hex_output)
     TextView readHexOutputView;
-    @Bind(R.id.write_input)
+    @BindView(R.id.write_input)
     TextView writeInput;
-    @Bind(R.id.read)
+    @BindView(R.id.read)
     Button readButton;
-    @Bind(R.id.write)
+    @BindView(R.id.write)
     Button writeButton;
-    @Bind(R.id.notify)
+    @BindView(R.id.notify)
     Button notifyButton;
     private UUID characteristicUuid;
     private PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();

@@ -1,5 +1,5 @@
 ext {
-    supportVersion = '23.1.1'
+    supportVersion = '25.0.0'
     buildToolsVersionVariable = "25.0.0"
     sourceCompatibilityVersion = JavaVersion.VERSION_1_8
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
@@ -8,13 +8,13 @@ ext {
             retrolambda        : 'net.orfjackal.retrolambda:retrolambda:2.3.0',
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
-            rxjava             : 'io.reactivex:rxjava:1.1.7',
+            rxjava             : 'io.reactivex:rxjava:1.2.2',
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
             junit              : 'junit:junit:4.12',
-            groovy             : 'org.codehaus.groovy:groovy:2.4.6:grooid',
+            groovy             : 'org.codehaus.groovy:groovy:2.4.7:grooid',
             spock              : ['org.spockframework:spock-core:1.0-groovy-2.4',
-                                  'cglib:cglib-nodep:3.2.1',
-                                  'org.objenesis:objenesis:2.2'],
+                                  'cglib:cglib-nodep:3.2.4',
+                                  'org.objenesis:objenesis:2.4'],
             robospock          : 'org.robospock:robospock:1.0.1'
 
     ]
