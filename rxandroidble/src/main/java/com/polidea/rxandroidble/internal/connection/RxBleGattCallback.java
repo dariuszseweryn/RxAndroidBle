@@ -9,6 +9,8 @@ import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
@@ -64,7 +66,7 @@ public class RxBleGattCallback {
             super.onConnectionStateChange(gatt, status, newState);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CONNECTION_STATE);
+            propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.CONNECTION_STATE);
 
             Observable.just(mapConnectionStateToRxBleConnectionStatus(newState))
                     .compose(getSubscribeAndObserveOnTransformer())
@@ -77,7 +79,7 @@ public class RxBleGattCallback {
             super.onServicesDiscovered(gatt, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.SERVICE_DISCOVERY)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.SERVICE_DISCOVERY)) {
                 return;
             }
 
@@ -94,7 +96,7 @@ public class RxBleGattCallback {
             super.onCharacteristicRead(gatt, characteristic, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CHARACTERISTIC_READ)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, characteristic, status, BleGattOperationType.CHARACTERISTIC_READ)) {
                 return;
             }
 
@@ -110,7 +112,7 @@ public class RxBleGattCallback {
             super.onCharacteristicWrite(gatt, characteristic, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.CHARACTERISTIC_WRITE)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, characteristic, status, BleGattOperationType.CHARACTERISTIC_WRITE)) {
                 return;
             }
 
@@ -138,7 +140,7 @@ public class RxBleGattCallback {
             super.onDescriptorRead(gatt, descriptor, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.DESCRIPTOR_READ)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, descriptor, status, BleGattOperationType.DESCRIPTOR_READ)) {
                 return;
             }
 
@@ -153,7 +155,7 @@ public class RxBleGattCallback {
             super.onDescriptorWrite(gatt, descriptor, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.DESCRIPTOR_WRITE)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, descriptor, status, BleGattOperationType.DESCRIPTOR_WRITE)) {
                 return;
             }
 
@@ -168,7 +170,7 @@ public class RxBleGattCallback {
             super.onReliableWriteCompleted(gatt, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.RELIABLE_WRITE_COMPLETED)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.RELIABLE_WRITE_COMPLETED)) {
                 return;
             }
 
@@ -181,7 +183,7 @@ public class RxBleGattCallback {
             super.onReadRemoteRssi(gatt, rssi, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.READ_RSSI)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.READ_RSSI)) {
                 return;
             }
 
@@ -196,7 +198,7 @@ public class RxBleGattCallback {
             super.onMtuChanged(gatt, mtu, status);
             bluetoothGattBehaviorSubject.onNext(gatt);
 
-            if (propagateStatusErrorIfGattErrorOccurred(status, BleGattOperationType.ON_MTU_CHANGED)) {
+            if (propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.ON_MTU_CHANGED)) {
                 return;
             }
 
@@ -241,15 +243,46 @@ public class RxBleGattCallback {
         return observable -> observable.subscribeOn(callbackScheduler).observeOn(callbackScheduler);
     }
 
-    private boolean propagateStatusErrorIfGattErrorOccurred(int status, BleGattOperationType operationType) {
-        final boolean isError = status != BluetoothGatt.GATT_SUCCESS;
+    private boolean propagateStatusErrorIfGattErrorOccurred(
+            BluetoothGatt gatt,
+            BluetoothGattCharacteristic characteristic,
+            int status,
+            BleGattOperationType operationType
+    ) {
+        return isException(status) && propagateStatusError(new BleGattCharacteristicException(
+                gatt,
+                characteristic,
+                status,
+                operationType
+        ));
+    }
 
-        if (isError) {
-            statusErrorSubject.onError(new BleGattException(status, operationType));
-            bluetoothGattBehaviorSubject.onCompleted();
-        }
+    private boolean propagateStatusErrorIfGattErrorOccurred(
+            BluetoothGatt gatt,
+            BluetoothGattDescriptor descriptor,
+            int status,
+            BleGattOperationType operationType
+    ) {
+        return isException(status) && propagateStatusError(new BleGattDescriptorException(
+                gatt,
+                descriptor,
+                status,
+                operationType
+        ));
+    }
 
-        return isError;
+    private boolean propagateStatusErrorIfGattErrorOccurred(BluetoothGatt gatt, int status, BleGattOperationType operationType) {
+        return isException(status) && propagateStatusError(new BleGattException(gatt, status, operationType));
+    }
+
+    private boolean isException(int status) {
+        return status != BluetoothGatt.GATT_SUCCESS;
+    }
+
+    private boolean propagateStatusError(BleGattException exception) {
+        statusErrorSubject.onError(exception);
+        bluetoothGattBehaviorSubject.onCompleted();
+        return true;
     }
 
     private <T> Observable<T> withHandlingStatusErrorAndDisconnection(Observable<T> observable) {

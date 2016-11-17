@@ -43,7 +43,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
         final boolean success = bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.CHARACTERISTIC_WRITE));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_WRITE));
         }
     }
 }

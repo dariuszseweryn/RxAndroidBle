@@ -6,11 +6,14 @@ import static android.bluetooth.BluetoothProfile.STATE_CONNECTED
 import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException
+import com.polidea.rxandroidble.exceptions.BleGattDescriptorException
 import com.polidea.rxandroidble.exceptions.BleGattException
 import org.robospock.RoboSpecification
 import rx.internal.schedulers.ImmediateScheduler
@@ -26,10 +29,14 @@ class RxBleGattCallbackTest extends RoboSpecification {
     @Shared def mockBluetoothGatt = Mock BluetoothGatt
     @Shared def mockBluetoothGattCharacteristic = Mock BluetoothGattCharacteristic
     @Shared def mockBluetoothGattDescriptor = Mock BluetoothGattDescriptor
+    @Shared def mockBluetoothDevice = Mock BluetoothDevice
+    @Shared def mockBluetoothDeviceMacAddress = "MacAddress"
 
     def setupSpec() {
         RxJavaHooks.reset()
         RxJavaHooks.setOnComputationScheduler({ ImmediateScheduler.INSTANCE })
+        mockBluetoothGatt.getDevice() >> mockBluetoothDevice
+        mockBluetoothDevice.getAddress() >> mockBluetoothDeviceMacAddress
     }
 
     def teardownSpec() {
@@ -112,7 +119,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
         callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
 
         then:
-        testSubscriber.assertError(BleGattException)
+        errorAssertion.call(testSubscriber)
 
         where:
         callbackCaller << [
@@ -123,6 +130,15 @@ class RxBleGattCallbackTest extends RoboSpecification {
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+        ]
+        errorAssertion << [
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } }
         ]
     }
 
@@ -137,7 +153,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
         objectUnderTest.observeDisconnect().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleGattException)
+        errorAssertion.call(testSubscriber)
 
         where:
         callbackCaller << [
@@ -148,6 +164,15 @@ class RxBleGattCallbackTest extends RoboSpecification {
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+        ]
+        errorAssertion << [
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } }
         ]
     }
 
@@ -194,4 +219,44 @@ class RxBleGattCallbackTest extends RoboSpecification {
                 { return (it as RxBleGattCallback).getOnRssiRead() }
         ]
     }
+
+    @Unroll
+    def "callbacks should emit error if their respective BluetoothGatt.on*() callbacks received status != GATT_SUCCESS"() {
+
+        given:
+        callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
+
+        when:
+        observablePicker.call(objectUnderTest).subscribe(testSubscriber)
+
+        then:
+        errorAssertion.call(testSubscriber)
+
+        where:
+        observablePicker << [
+                { (it as RxBleGattCallback).getOnServicesDiscovered() },
+                { (it as RxBleGattCallback).getOnCharacteristicRead() },
+                { (it as RxBleGattCallback).getOnCharacteristicWrite() },
+                { (it as RxBleGattCallback).getOnDescriptorRead() },
+                { (it as RxBleGattCallback).getOnDescriptorWrite() },
+                { (it as RxBleGattCallback).getOnRssiRead() }
+        ]
+        callbackCaller << [
+                { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicRead(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+        ]
+        errorAssertion << [
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
+                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } }
+        ]
+    }
+
 }

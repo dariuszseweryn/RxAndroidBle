@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
 import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
@@ -9,6 +10,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,6 +23,7 @@ public class RxBleDeviceTest extends Specification {
     RxBleConnection mockConnection = Mock RxBleConnection
     PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
     PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create()
+    @Shared BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector)
     TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
 
@@ -320,7 +323,7 @@ public class RxBleDeviceTest extends Specification {
     }
 
     public void dropConnection() {
-        mockConnectorEstablishConnectionPublishSubject.onError(new BleGattException(BleGattOperationType.CONNECTION_STATE))
+        mockConnectorEstablishConnectionPublishSubject.onError(new BleGattException(mockBluetoothGatt, BleGattOperationType.CONNECTION_STATE))
     }
 
     public void emitConnectionStateErrorThroughConnectionStatus() {

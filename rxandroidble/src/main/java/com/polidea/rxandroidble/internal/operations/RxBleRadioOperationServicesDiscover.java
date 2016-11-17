@@ -54,7 +54,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
         final boolean success = bluetoothGatt.discoverServices();
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.SERVICE_DISCOVERY));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
         }
     }
 

@@ -74,7 +74,7 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte
 
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.DESCRIPTOR_WRITE));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_WRITE));
         }
     }
 }
