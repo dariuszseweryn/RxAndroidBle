@@ -311,6 +311,10 @@ public class RxBleGattCallback {
         return withHandlingStatusErrorAndDisconnection(writeDescriptorPublishSubject);
     }
 
+    public Observable<Integer> getOnMtuChanged() {
+        return withHandlingStatusError(changedMtuPublishSubject);
+    }
+
     public Observable<Integer> getOnRssiRead() {
         return withHandlingStatusErrorAndDisconnection(readRssiPublishSubject);
     }
