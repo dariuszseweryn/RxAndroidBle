@@ -142,6 +142,12 @@ class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic,
+            @NonNull byte[] data, long delay, TimeUnit unit) {
+        return Observable.just(data).delay(delay, unit);
+    }
+
+    @Override
     public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
         return Observable.just(data);
     }
@@ -151,6 +157,15 @@ class RxBleConnectionMock implements RxBleConnection {
         return getCharacteristic(characteristicUuid)
                 .map(characteristic -> characteristic.setValue(data))
                 .flatMap(ignored -> Observable.just(data));
+    }
+
+    @Override
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data, long delay,
+            TimeUnit unit) {
+        return getCharacteristic(characteristicUuid)
+                .map(characteristic -> characteristic.setValue(data))
+                .flatMap(ignored -> Observable.just(data))
+                .delay(delay, unit);
     }
 
     @Override

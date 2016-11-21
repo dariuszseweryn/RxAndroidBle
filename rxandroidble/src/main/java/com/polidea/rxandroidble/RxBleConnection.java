@@ -209,6 +209,19 @@ public interface RxBleConnection {
     Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data);
 
     /**
+     * Performs GATT write operation on a characteristic with given UUID.
+     *
+     * @param characteristicUuid Requested characteristic UUID.
+     * @param delay Delay time
+     * @param unit Delay time unit
+     * @return Observable emitting characteristic value after write or an error in case of failure.
+     * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
+     * @throws BleGattCannotStartException        if write operation couldn't be started for internal reason.
+     * @throws BleGattException                   if write operation failed
+     */
+    Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data, long delay, TimeUnit unit);
+
+    /**
      * Performs GATT write operation on a given characteristic. The value that will be transmitted is referenced
      * by {@link BluetoothGattCharacteristic#getValue()} when this function is being called and reassigned at the time of internal execution
      * by {@link BluetoothGattCharacteristic#setValue(byte[])}
@@ -224,6 +237,23 @@ public interface RxBleConnection {
      */
     @Deprecated
     Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
+
+    /**
+     * Performs GATT write operation on a given characteristic.
+     *
+     * @param bluetoothGattCharacteristic Characteristic to write.
+     * @param data the byte array to write
+     * @param delay Delay time
+     * @param unit Delay time unit
+     * @return Observable emitting written data or an error in case of failure.
+     * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
+     * @throws BleGattException            if write operation failed
+     * @see #getCharacteristic(UUID) to obtain the characteristic.
+     * @see #discoverServices() to obtain the characteristic.
+     */
+    Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data,
+            long delay, TimeUnit unit);
+
 
     /**
      * Performs GATT write operation on a given characteristic.

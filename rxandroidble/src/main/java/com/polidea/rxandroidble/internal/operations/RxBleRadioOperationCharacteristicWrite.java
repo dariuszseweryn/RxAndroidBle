@@ -7,7 +7,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
+import java.util.concurrent.TimeUnit;
 import rx.Subscription;
 
 public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<byte[]> {
@@ -20,12 +20,26 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
 
     private final byte[] data;
 
+    private long delay;
+
+    private TimeUnit unit;
+
     public RxBleRadioOperationCharacteristicWrite(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
                                                   BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] data) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.data = data;
+    }
+
+    public RxBleRadioOperationCharacteristicWrite(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
+            BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] data, long delay, TimeUnit unit) {
+        this.rxBleGattCallback = rxBleGattCallback;
+        this.bluetoothGatt = bluetoothGatt;
+        this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
+        this.data = data;
+        this.delay = delay;
+        this.unit = unit;
     }
 
     @Override
@@ -35,6 +49,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
                 .getOnCharacteristicWrite()
                 .filter(uuidPair -> uuidPair.first.equals(bluetoothGattCharacteristic.getUuid()))
                 .take(1)
+                .compose(uuidPair -> (delay == 0) ? uuidPair : uuidPair.delay(delay, unit))
                 .map(uuidPair -> uuidPair.second)
                 .doOnCompleted(() -> releaseRadio())
                 .subscribe(getSubscriber());
