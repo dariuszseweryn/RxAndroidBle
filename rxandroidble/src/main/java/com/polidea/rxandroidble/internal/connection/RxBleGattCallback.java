@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
@@ -13,8 +12,8 @@ import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
-
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
+
 import java.util.UUID;
 
 import rx.Observable;
