@@ -15,6 +15,7 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacter
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorWrite;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationMtuRequest;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
@@ -55,6 +56,36 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.gattCallback = gattCallback;
         this.bluetoothGatt = bluetoothGatt;
     }
+
+    @Override
+    public Observable<Integer> requestMtu(int mtu) {
+        return privateRequestMtu(mtu, 20, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Observable<Integer> requestMtu(int mtu, long timeout, TimeUnit timeUnit) {
+        return privateRequestMtu(mtu, timeout, timeUnit);
+    }
+
+    private Observable<Integer> privateRequestMtu(int mtu, long timeout, TimeUnit timeUnit) {
+        synchronized (discoveredServicesCache) {
+            final Observable<Integer> newObservable;
+            // performing actual discovery
+                newObservable = rxBleRadio
+                        .queue(new RxBleRadioOperationMtuRequest(
+                                mtu,
+                                gattCallback,
+                                bluetoothGatt,
+                                timeout,
+                                timeUnit,
+                                Schedulers.computation()
+                        ))
+                        .cacheWithInitialCapacity(1);
+
+            return newObservable;
+        }
+    }
+
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {

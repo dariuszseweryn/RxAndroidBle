@@ -294,4 +294,32 @@ public interface RxBleConnection {
      * @return Observable emitting the read RSSI value
      */
     Observable<Integer> readRssi();
+
+    /**
+     * Performs GATT request MTU
+     * <p>
+     *
+     * Timeouts after specified amount of time.
+     *
+     * @return Observable emitting result the MTU requested.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#ON_MTU_CHANGED} type, when it wasn't possible to set
+     *                                     the MTU for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
+     */
+    Observable<Integer> requestMtu(int mtu);
+
+    /**
+     * Performs GATT request MTU
+     * <p>
+     *
+     * Timeouts after specified amount of time.
+     *
+     * @param timeout multiplier of TimeUnit after which the discovery will timeout in case of no return values
+     * @param timeUnit TimeUnit for the timeout
+     * @return Observable emitting result the MTU requested.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#ON_MTU_CHANGED} type, when it wasn't possible to set
+     *                                     the MTU for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
+     */
+    Observable<Integer> requestMtu(int mtu, long timeout, TimeUnit timeUnit);
 }

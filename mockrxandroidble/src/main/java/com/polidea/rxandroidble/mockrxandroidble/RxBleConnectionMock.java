@@ -38,6 +38,16 @@ class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    public Observable<Integer> requestMtu(int mtu) {
+        return Observable.just(mtu);
+    }
+
+    @Override
+    public Observable<Integer> requestMtu(int mtu, long timeout, TimeUnit timeUnit) {
+        return Observable.just(mtu);
+    }
+
+    @Override
     public Observable<RxBleDeviceServices> discoverServices() {
         return Observable.just(rxBleDeviceServices);
     }

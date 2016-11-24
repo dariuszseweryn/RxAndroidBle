@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
@@ -289,6 +290,10 @@ public class RxBleGattCallback {
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
         return withHandlingStatusErrorAndDisconnection(servicesDiscoveredPublishSubject);
+    }
+
+    public Observable<Integer> getOnMtuChanged() {
+        return withHandlingStatusErrorAndDisconnection(changedMtuPublishSubject);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
