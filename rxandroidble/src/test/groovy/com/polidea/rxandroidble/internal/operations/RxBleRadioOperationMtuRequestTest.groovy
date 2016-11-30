@@ -18,10 +18,6 @@ import java.util.concurrent.TimeoutException
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
 
-    static long timeout = 20
-
-    static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
-
     Semaphore mockSemaphore = Mock Semaphore
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
@@ -89,22 +85,8 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
     }
 
-    def "should timeout after specified amount of time if BluetoothGatt.getOnMtuChanged() will no call the callback"() {
-
-        given:
-        mockBluetoothGatt.requestMtu(72) >> true
-        mockGattCallback.onMtuChanged >> Observable.never()
-        objectUnderTest.run()
-
-        when:
-        testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
-
-        then:
-        testSubscriber.assertError(TimeoutException)
-    }
-
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt, timeout, timeoutTimeUnit, testScheduler)
+        objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
