@@ -15,3 +15,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# hide warnings caused by Retrolamdba
+-dontwarn java.lang.invoke.*
