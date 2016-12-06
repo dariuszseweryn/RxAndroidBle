@@ -12,8 +12,8 @@ import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
-import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
+import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.UUID;
 
 import rx.Observable;
