@@ -61,11 +61,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public Observable<Integer> requestMtu(int mtu) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            return privateRequestMtu(mtu, 10, TimeUnit.SECONDS);
-        else
-            return Observable.error(new BleException("requestMtu is not supported with API lower than 21"));
+        return privateRequestMtu(mtu, 10, TimeUnit.SECONDS);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -80,8 +78,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                         timeout,
                         timeUnit,
                         Schedulers.computation()
-                ))
-                .cacheWithInitialCapacity(1);
+                ));
 
         return newObservable;
     }
@@ -127,7 +124,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(
+            @NonNull UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
@@ -138,7 +136,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<Observable<byte[]>> setupNotification(
+            @NonNull BluetoothGattCharacteristic characteristic) {
         return setupServerInitiatedCharacteristicRead(characteristic, false);
     }
 
@@ -148,7 +147,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<Observable<byte[]>> setupIndication(
+            @NonNull BluetoothGattCharacteristic characteristic) {
         return setupServerInitiatedCharacteristicRead(characteristic, true);
     }
 
@@ -256,7 +256,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<byte[]> readCharacteristic(
+            @NonNull BluetoothGattCharacteristic characteristic) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicRead(
                 gattCallback,
                 bluetoothGatt,
@@ -265,20 +266,23 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
+    public Observable<byte[]> writeCharacteristic(
+            @NonNull UUID characteristicUuid, @NonNull byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(characteristic -> writeCharacteristic(characteristic, data));
     }
 
     @Deprecated
     @Override
-    public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(
+            @NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
                 .map(bytes -> bluetoothGattCharacteristic);
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+    public Observable<byte[]> writeCharacteristic(
+            @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
                 gattCallback,
                 bluetoothGatt,

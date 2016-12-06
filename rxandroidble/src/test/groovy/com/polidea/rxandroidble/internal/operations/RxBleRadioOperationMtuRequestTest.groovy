@@ -90,6 +90,19 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
     }
 
+    def "should timeout if will not response after 10 seconds "() {
+
+        given:
+        mockBluetoothGatt.requestMtu(72) >> true
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)
+
+        then:
+        testSubscriber.assertError(TimeoutException)
+    }
+
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt,timeout, timeoutTimeUnit, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)

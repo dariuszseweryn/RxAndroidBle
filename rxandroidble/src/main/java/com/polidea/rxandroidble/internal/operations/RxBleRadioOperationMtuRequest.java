@@ -52,7 +52,7 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
         final Subscription subscription = rxBleGattCallback
                 .getOnMtuChanged()
                 .first()
-                .timeout(timeout, timeoutTimeUnit, timeoutFallbackProcedure(), timeoutScheduler)
+                .timeout(timeout, timeoutTimeUnit, timeoutScheduler)
                 .doOnTerminate(() -> releaseRadio())
                 .subscribe(getSubscriber());
 
@@ -61,10 +61,5 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
             subscription.unsubscribe();
             onError(new BleGattCannotStartException(BleGattOperationType.ON_MTU_CHANGED));
         }
-    }
-
-    @NonNull
-    private Observable<Integer> timeoutFallbackProcedure() {
-        return Observable.error(new TimeoutException());
     }
 }

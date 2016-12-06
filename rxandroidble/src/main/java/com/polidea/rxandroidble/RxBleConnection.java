@@ -300,7 +300,7 @@ public interface RxBleConnection {
     /**
      * Performs GATT request MTU
      *
-     * Timeouts after specified amount of time.
+     * Timeouts after 10 seconds.
      *
      * @return Observable emitting result the MTU requested.
      * @throws BleGattCannotStartException with {@link BleGattOperationType#ON_MTU_CHANGED} type, when it wasn't possible to set
