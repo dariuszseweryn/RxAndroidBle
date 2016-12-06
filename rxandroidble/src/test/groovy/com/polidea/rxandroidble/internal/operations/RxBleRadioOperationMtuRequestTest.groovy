@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
 
-    static long timeout = 20
+    static long timeout = 10
 
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
