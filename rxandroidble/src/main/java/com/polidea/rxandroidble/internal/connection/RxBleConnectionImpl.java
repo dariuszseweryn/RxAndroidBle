@@ -63,7 +63,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<Integer> requestMtu(int mtu) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            return privateRequestMtu(mtu, 20, TimeUnit.SECONDS);
+            return privateRequestMtu(mtu, 10, TimeUnit.SECONDS);
         else
             return Observable.error(new BleException("requestMtu is not supported with API lower than 21"));
     }
