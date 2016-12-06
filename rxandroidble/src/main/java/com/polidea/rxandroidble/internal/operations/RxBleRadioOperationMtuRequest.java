@@ -24,15 +24,27 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
 
     private final BluetoothGatt bluetoothGatt;
 
+    private final long timeout;
+
+    private final TimeUnit timeoutTimeUnit;
+
+    private final Scheduler timeoutScheduler;
+
     private final int mtu;
 
     public RxBleRadioOperationMtuRequest(
             int mtu,
             RxBleGattCallback rxBleGattCallback,
-            BluetoothGatt bluetoothGatt) {
+            BluetoothGatt bluetoothGatt,
+            long timeout,
+            TimeUnit timeoutTimeUnit,
+            Scheduler timeoutScheduler) {
         this.mtu = mtu;
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
+        this.timeout = timeout;
+        this.timeoutTimeUnit = timeoutTimeUnit;
+        this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
@@ -40,6 +52,7 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
         final Subscription subscription = rxBleGattCallback
                 .getOnMtuChanged()
                 .first()
+                .timeout(timeout, timeoutTimeUnit, timeoutFallbackProcedure(), timeoutScheduler)
                 .doOnTerminate(() -> releaseRadio())
                 .subscribe(getSubscriber());
 
@@ -48,5 +61,10 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
             subscription.unsubscribe();
             onError(new BleGattCannotStartException(BleGattOperationType.ON_MTU_CHANGED));
         }
+    }
+
+    @NonNull
+    private Observable<Integer> timeoutFallbackProcedure() {
+        return Observable.error(new TimeoutException());
     }
 }

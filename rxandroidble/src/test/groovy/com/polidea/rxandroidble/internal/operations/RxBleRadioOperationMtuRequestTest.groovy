@@ -8,6 +8,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import rx.Observable
 import rx.observers.TestSubscriber
+import rx.schedulers.Schedulers
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -17,6 +18,10 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
+
+    static long timeout = 20
+
+    static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
     Semaphore mockSemaphore = Mock Semaphore
 
@@ -86,7 +91,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt)
+        objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt,timeout, timeoutTimeUnit, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
