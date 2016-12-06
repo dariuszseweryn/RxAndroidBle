@@ -124,8 +124,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(
-            @NonNull UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
     }
