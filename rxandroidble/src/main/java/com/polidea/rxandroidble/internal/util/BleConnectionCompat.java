@@ -39,7 +39,7 @@ public class BleConnectionCompat {
          * issue: https://android.googlesource.com/platform/frameworks/base/+/d35167adcaa40cb54df8e392379dfdfe98bcdba2%5E%21/#F0
           */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || !autoConnect) {
-            return connectGattCompat(bluetoothGattCallback, remoteDevice, false);
+            return connectGattCompat(bluetoothGattCallback, remoteDevice, autoConnect);
         }
 
         /**
