@@ -12,7 +12,6 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
-import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
@@ -69,7 +68,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private Observable<Integer> privateRequestMtu(int mtu, long timeout, TimeUnit timeUnit) {
         final Observable<Integer> newObservable;
-        // performing actual discovery
         newObservable = rxBleRadio
                 .queue(new RxBleRadioOperationMtuRequest(
                         mtu,
@@ -135,8 +133,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(
-            @NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic) {
         return setupServerInitiatedCharacteristicRead(characteristic, false);
     }
 
@@ -146,8 +143,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(
-            @NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic) {
         return setupServerInitiatedCharacteristicRead(characteristic, true);
     }
 
@@ -255,8 +251,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readCharacteristic(
-            @NonNull BluetoothGattCharacteristic characteristic) {
+    public Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicRead(
                 gattCallback,
                 bluetoothGatt,
@@ -265,23 +260,20 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(
-            @NonNull UUID characteristicUuid, @NonNull byte[] data) {
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(characteristic -> writeCharacteristic(characteristic, data));
     }
 
     @Deprecated
     @Override
-    public Observable<BluetoothGattCharacteristic> writeCharacteristic(
-            @NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
                 .map(bytes -> bluetoothGattCharacteristic);
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(
-            @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+    public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
                 gattCallback,
                 bluetoothGatt,

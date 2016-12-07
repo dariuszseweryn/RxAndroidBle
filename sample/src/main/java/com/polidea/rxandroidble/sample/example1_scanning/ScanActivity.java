@@ -1,12 +1,7 @@
 package com.polidea.rxandroidble.sample.example1_scanning;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,7 +23,6 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class ScanActivity extends AppCompatActivity {
 
-    public final static int PERMISSIONS_REQUEST_LOCATION = 16;
 
     @BindView(R.id.scan_toggle_btn)
     Button scanToggleButton;
