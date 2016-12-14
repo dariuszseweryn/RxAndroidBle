@@ -23,7 +23,6 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class ScanActivity extends AppCompatActivity {
 
-
     @BindView(R.id.scan_toggle_btn)
     Button scanToggleButton;
     @BindView(R.id.scan_results)

@@ -81,7 +81,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return newObservable;
     }
 
-
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
         return privateDiscoverServices(20, TimeUnit.SECONDS);
