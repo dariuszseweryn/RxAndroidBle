@@ -6,6 +6,10 @@ public class BleException extends RuntimeException {
         super();
     }
 
+    public BleException(String message) {
+        super(message);
+    }
+
     public BleException(Throwable throwable) {
         super(throwable);
     }

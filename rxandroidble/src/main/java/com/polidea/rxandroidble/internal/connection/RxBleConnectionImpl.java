@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
@@ -15,6 +17,7 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacter
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorWrite;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationMtuRequest;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
@@ -54,6 +57,28 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.rxBleRadio = rxBleRadio;
         this.gattCallback = gattCallback;
         this.bluetoothGatt = bluetoothGatt;
+    }
+
+    @Override
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public Observable<Integer> requestMtu(int mtu) {
+        return privateRequestMtu(mtu, 10, TimeUnit.SECONDS);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private Observable<Integer> privateRequestMtu(int mtu, long timeout, TimeUnit timeUnit) {
+        final Observable<Integer> newObservable;
+        newObservable = rxBleRadio
+                .queue(new RxBleRadioOperationMtuRequest(
+                        mtu,
+                        gattCallback,
+                        bluetoothGatt,
+                        timeout,
+                        timeUnit,
+                        Schedulers.computation()
+                ));
+
+        return newObservable;
     }
 
     @Override

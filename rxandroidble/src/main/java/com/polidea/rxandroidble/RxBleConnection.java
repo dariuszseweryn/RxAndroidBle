@@ -3,7 +3,9 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
@@ -294,4 +296,17 @@ public interface RxBleConnection {
      * @return Observable emitting the read RSSI value
      */
     Observable<Integer> readRssi();
+
+    /**
+     * Performs GATT request MTU
+     *
+     * Timeouts after 10 seconds.
+     *
+     * @return Observable emitting result the MTU requested.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#ON_MTU_CHANGED} type, when it wasn't possible to set
+     *                                     the MTU for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    Observable<Integer> requestMtu(int mtu);
 }

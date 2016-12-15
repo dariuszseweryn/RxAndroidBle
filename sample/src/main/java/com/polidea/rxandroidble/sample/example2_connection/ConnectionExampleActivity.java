@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -28,6 +29,10 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     TextView connectionStateView;
     @BindView(R.id.connect_toggle)
     Button connectButton;
+    @BindView(R.id.newMtu)
+    EditText textMtu;
+    @BindView(R.id.set_mtu)
+    Button setMtuButton;
     @BindView(R.id.autoconnect)
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
@@ -45,6 +50,17 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
                     .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
+    }
+
+    @OnClick(R.id.set_mtu)
+    public void onSetMtu() {
+        bleDevice.establishConnection(this, false)
+                .flatMap(rxBleConnection -> rxBleConnection.requestMtu(72))
+                .first() // Disconnect automatically after discovery
+                .compose(bindUntilEvent(PAUSE))
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnUnsubscribe(this::updateUI)
+                .subscribe(this::onMtuReceived, this::onConnectionFailure);
     }
 
     @Override
@@ -80,6 +96,11 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
         connectionStateView.setText(newState.toString());
         updateUI();
+    }
+
+    private void onMtuReceived(Integer mtu) {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT).show();
     }
 
     private void clearSubscription() {

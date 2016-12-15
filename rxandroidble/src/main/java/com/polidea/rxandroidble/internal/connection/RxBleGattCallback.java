@@ -291,6 +291,10 @@ public class RxBleGattCallback {
         return withHandlingStatusErrorAndDisconnection(servicesDiscoveredPublishSubject);
     }
 
+    public Observable<Integer> getOnMtuChanged() {
+        return withHandlingStatusErrorAndDisconnection(changedMtuPublishSubject);
+    }
+
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
         return withHandlingStatusErrorAndDisconnection(readCharacteristicPublishSubject);
     }

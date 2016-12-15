@@ -99,6 +99,25 @@ public class RxBleClientMockTest extends RoboSpecification {
         testSubscriber.assertValue(42)
     }
 
+    def "should return the BluetoothDevice mtu"() {
+        given:
+        def testSubscriber = TestSubscriber.create()
+
+        when:
+        rxBleClient.scanBleDevices(null)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleConnection ->
+            rxBleConnection
+                    .requestMtu(72)
+        }
+        .subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertValue(72)
+    }
+
     def "should return services list"() {
         given:
         def testSubscriber = TestSubscriber.create()
