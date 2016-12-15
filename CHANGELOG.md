@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 1.2.0-SNAPSHOT
+* Added Proguard rules for the library. (https://github.com/Polidea/RxAndroidBle/issues/104)
+* Added support for MTU negotiation, thanks pregno!
+* Fixed connecting with autoConnect = true on Android 7.0.0+, thanks JIUgia!
+
 Version 1.1.0
 * Fixed issue that sometimes happened where `RxBleRadioOperationConnect` was not yet subscribed while running. (https://github.com/Polidea/RxAndroidBle/issues/94)
 * Fixed issue with descriptor writing using parent characteristic write type. (https://github.com/Polidea/RxAndroidBle/issues/93)
@@ -30,7 +35,7 @@ Version 1.0.2
 
 Version 1.0.1
 
-* Fixed scan operation concurrency issue, thanks artem-zinnatullin!  (https://github.com/Polidea/RxAndroidBle/issues/5)
+* Fixed scan operation concurrency issue, thanks artem-zinnatullin! (https://github.com/Polidea/RxAndroidBle/issues/5)
 * Fixed location permission requirement check (Android >=6.0)
 
 Version 1.0.0

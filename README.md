@@ -213,6 +213,7 @@ When submitting code, please make every effort to follow existing conventions an
 ## Contributors, thank you!
 * Michał Zieliński (michal.zielinski@polidea.com)
 * Fracturedpsyche (https://github.com/fracturedpsyche)
+* Andrea Pregnolato (https://github.com/pregno)
 
 ## License
 
