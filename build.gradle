@@ -7,11 +7,11 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.3'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.12.0'
-        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.13.0'
+        classpath 'me.tatarka:gradle-retrolambda:3.3.1'
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
-        classpath 'org.codehaus.groovy:gradle-groovy-android-plugin:0.3.8'
+        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:1.1.0'
     }
 
     configurations.classpath.exclude group: 'com.android.tools.external.lombok'
@@ -27,6 +27,17 @@ allprojects {
     buildscript {
         repositories {
             jcenter()
+        }
+    }
+
+    if (System.env.TRAVIS == 'true') {
+        tasks.withType(GroovyCompile) {
+            groovyOptions.fork = false
+        }
+        tasks.withType(Test) {
+            // containers (currently) have 2 dedicated cores and 4GB of memory
+            maxParallelForks = 2
+            minHeapSize = '128m'
         }
     }
 }

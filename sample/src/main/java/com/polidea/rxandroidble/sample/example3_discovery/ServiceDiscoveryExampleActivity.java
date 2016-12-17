@@ -15,18 +15,18 @@ import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.example4_characteristic.CharacteristicOperationExampleActivity;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.android.schedulers.AndroidSchedulers;
 
-import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
-    @Bind(R.id.connect)
+    @BindView(R.id.connect)
     Button connectButton;
-    @Bind(R.id.scan_results)
+    @BindView(R.id.scan_results)
     RecyclerView recyclerView;
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;

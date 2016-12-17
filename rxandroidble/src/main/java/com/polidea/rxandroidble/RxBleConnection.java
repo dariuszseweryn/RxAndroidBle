@@ -3,7 +3,9 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
@@ -14,6 +16,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 
 import java.util.UUID;
 
+import java.util.concurrent.TimeUnit;
 import rx.Observable;
 
 /**
@@ -52,12 +55,32 @@ public interface RxBleConnection {
      * Result of the discovery is cached internally so consecutive calls won't trigger BLE operation and can be
      * considered relatively lightweight.
      *
+     * Uses default timeout of 20 seconds
+     *
      * @return Observable emitting result a GATT service discovery.
      * @throws BleGattCannotStartException with {@link BleGattOperationType#SERVICE_DISCOVERY} type, when it wasn't possible to start
      *                                     the discovery for internal reasons.
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#SERVICE_DISCOVERY} type.
      */
     Observable<RxBleDeviceServices> discoverServices();
+
+    /**
+     * Performs GATT service discovery and emits discovered results. After service discovery you can walk through
+     * {@link android.bluetooth.BluetoothGattService}s and {@link BluetoothGattCharacteristic}s.
+     * <p>
+     * Result of the discovery is cached internally so consecutive calls won't trigger BLE operation and can be
+     * considered relatively lightweight.
+     *
+     * Timeouts after specified amount of time.
+     *
+     * @param timeout multiplier of TimeUnit after which the discovery will timeout in case of no return values
+     * @param timeUnit TimeUnit for the timeout
+     * @return Observable emitting result a GATT service discovery.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#SERVICE_DISCOVERY} type, when it wasn't possible to start
+     *                                     the discovery for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#SERVICE_DISCOVERY} type.
+     */
+    Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit);
 
     /**
      * Setup characteristic notification in order to receive callbacks when given characteristic has been changed. Returned observable will
@@ -273,4 +296,17 @@ public interface RxBleConnection {
      * @return Observable emitting the read RSSI value
      */
     Observable<Integer> readRssi();
+
+    /**
+     * Performs GATT request MTU
+     *
+     * Timeouts after 10 seconds.
+     *
+     * @return Observable emitting result the MTU requested.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#ON_MTU_CHANGED} type, when it wasn't possible to set
+     *                                     the MTU for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    Observable<Integer> requestMtu(int mtu);
 }

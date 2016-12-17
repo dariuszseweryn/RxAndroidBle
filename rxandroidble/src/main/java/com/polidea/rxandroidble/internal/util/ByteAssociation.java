@@ -34,14 +34,14 @@ public class ByteAssociation<T> {
     public String toString() {
         String firstDescription;
         if (first instanceof BluetoothGattCharacteristic) {
-            firstDescription = BluetoothGattCharacteristic.class.getSimpleName() +
-                    "(" + ((BluetoothGattCharacteristic) first).getUuid().toString() + ")";
+            firstDescription = BluetoothGattCharacteristic.class.getSimpleName()
+                    + "(" + ((BluetoothGattCharacteristic) first).getUuid().toString() + ")";
         } else if (first instanceof BluetoothGattDescriptor) {
-            firstDescription = BluetoothGattDescriptor.class.getSimpleName() +
-                    "(" + ((BluetoothGattDescriptor) first).getUuid().toString() + ")";
+            firstDescription = BluetoothGattDescriptor.class.getSimpleName()
+                    + "(" + ((BluetoothGattDescriptor) first).getUuid().toString() + ")";
         } else if (first instanceof UUID) {
-            firstDescription = UUID.class.getSimpleName() +
-                    "(" + first.toString() + ")";
+            firstDescription = UUID.class.getSimpleName()
+                    + "(" + first.toString() + ")";
         } else {
             firstDescription = first.getClass().getSimpleName();
         }

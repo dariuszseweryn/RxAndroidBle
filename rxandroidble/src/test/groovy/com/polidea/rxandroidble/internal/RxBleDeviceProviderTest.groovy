@@ -5,13 +5,20 @@ import com.polidea.rxandroidble.FlatRxBleRadio
 import com.polidea.rxandroidble.MockRxBleAdapterWrapper
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import rx.Observable
+import rx.Scheduler
 import spock.lang.Specification
 
 class RxBleDeviceProviderTest extends Specification {
     def mockRadio = new FlatRxBleRadio()
     def mockAdapterWrapper = Mock MockRxBleAdapterWrapper
     def adapterStateObservable = Observable.never()
-    def objectUnderTest = new RxBleDeviceProvider(mockAdapterWrapper, mockRadio, Mock(BleConnectionCompat), adapterStateObservable)
+    def objectUnderTest = new RxBleDeviceProvider(
+            mockAdapterWrapper,
+            mockRadio,
+            Mock(BleConnectionCompat),
+            adapterStateObservable,
+            Mock(Scheduler)
+    )
 
     def setup() {
         mockAdapterWrapper.getRemoteDevice(_) >> {
