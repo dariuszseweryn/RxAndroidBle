@@ -105,9 +105,9 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Create the {@link RxBleClientMock} instance using the configured values.
+         * Create the {@link RxBleDeviceMock} instance using the configured values.
          */
-        public RxBleDeviceMock build() {
+        public RxBleDevice build() {
             if (this.rssi == -1) throw new IllegalStateException("Rssi is required. DeviceBuilder#rssi should be called.");
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required."
                     + " DeviceBuilder#deviceMacAddress should be called.");
