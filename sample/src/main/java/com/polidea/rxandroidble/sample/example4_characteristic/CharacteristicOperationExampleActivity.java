@@ -48,6 +48,41 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_example4);
+        ButterKnife.bind(this);
+        String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
+        characteristicUuid = (UUID) getIntent().getSerializableExtra(EXTRA_CHARACTERISTIC_UUID);
+        bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
+        connectionObservable = prepareConnectionObservable();
+        //noinspection ConstantConditions
+        getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
+    }
+
+    private Observable<RxBleConnection> prepareConnectionObservable() {
+        return bleDevice
+                .establishConnection(this, false)
+                .takeUntil(disconnectTriggerSubject)
+                .compose(bindUntilEvent(PAUSE))
+                .doOnUnsubscribe(this::clearSubscription)
+                .compose(new ConnectionSharingAdapter());
+    }
+
+    @OnClick(R.id.connect)
+    public void onConnectToggleClick() {
+
+        if (isConnected()) {
+            triggerDisconnect();
+        } else {
+            connectionObservable.subscribe(rxBleConnection -> {
+                Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
+                runOnUiThread(this::updateUI);
+            }, this::onConnectionFailure);
+        }
+    }
+
     @OnClick(R.id.read)
     public void onReadClick() {
 
@@ -86,37 +121,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_example4);
-        ButterKnife.bind(this);
-        String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
-        characteristicUuid = (UUID) getIntent().getSerializableExtra(EXTRA_CHARACTERISTIC_UUID);
-        bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
-        connectionObservable = bleDevice
-                .establishConnection(this, false)
-                .takeUntil(disconnectTriggerSubject)
-                .compose(bindUntilEvent(PAUSE))
-                .doOnUnsubscribe(this::clearSubscription)
-                .compose(new ConnectionSharingAdapter());
-        //noinspection ConstantConditions
-        getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
-    }
-
-    @OnClick(R.id.connect)
-    public void onConnectToggleClick() {
-
-        if (isConnected()) {
-            triggerDisconnect();
-        } else {
-            connectionObservable.subscribe(rxBleConnection -> {
-                Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
-                runOnUiThread(this::updateUI);
-            }, this::onConnectionFailure);
         }
     }
 
@@ -160,7 +164,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     }
 
     private void clearSubscription() {
-        connectionObservable = null;
         updateUI();
     }
 
