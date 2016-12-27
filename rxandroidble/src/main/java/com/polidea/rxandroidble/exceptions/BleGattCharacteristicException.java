@@ -8,7 +8,12 @@ public class BleGattCharacteristicException extends BleGattException {
 
     public final BluetoothGattCharacteristic characteristic;
 
-    public BleGattCharacteristicException(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status, BleGattOperationType bleGattOperationType) {
+    public BleGattCharacteristicException(
+            BluetoothGatt gatt,
+            BluetoothGattCharacteristic characteristic,
+            int status,
+            BleGattOperationType bleGattOperationType
+    ) {
         super(gatt, status, bleGattOperationType);
         this.characteristic = characteristic;
     }

@@ -8,7 +8,12 @@ public class BleGattDescriptorException extends BleGattException {
 
     public final BluetoothGattDescriptor descriptor;
 
-    public BleGattDescriptorException(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status, BleGattOperationType bleGattOperationType) {
+    public BleGattDescriptorException(
+            BluetoothGatt gatt,
+            BluetoothGattDescriptor descriptor,
+            int status,
+            BleGattOperationType bleGattOperationType
+    ) {
         super(gatt, status, bleGattOperationType);
         this.descriptor = descriptor;
     }
