@@ -38,7 +38,7 @@ public class RxBleGattCallback {
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> writeCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<ByteAssociation<UUID>> changedCharacteristicPublishSubject = PublishSubject.create();
+    private final PublishSubject<ByteAssociation<Integer>> changedCharacteristicPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> readDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
@@ -129,7 +129,7 @@ public class RxBleGattCallback {
             bluetoothGattBehaviorSubject.onNext(gatt);
 
             just(characteristic)
-                    .map(associateCharacteristicWithBytes())
+                    .map(associateCharacteristicWithBytesByInstanceId())
                     .compose(getSubscribeAndObserveOnTransformer())
                     .subscribe(changedCharacteristicPublishSubject::onNext);
         }
@@ -217,6 +217,11 @@ public class RxBleGattCallback {
     @NonNull
     private Func1<ByteAssociation<BluetoothGattCharacteristic>, ByteAssociation<UUID>> associateCharacteristicWithBytes() {
         return pair -> new ByteAssociation<>(pair.first.getUuid(), pair.second);
+    }
+
+    @NonNull
+    private Func1<ByteAssociation<BluetoothGattCharacteristic>, ByteAssociation<Integer>> associateCharacteristicWithBytesByInstanceId() {
+        return pair -> new ByteAssociation<>(pair.first.getInstanceId(), pair.second);
     }
 
     @NonNull
@@ -336,7 +341,7 @@ public class RxBleGattCallback {
         return withHandlingStatusErrorAndDisconnection(writeCharacteristicPublishSubject);
     }
 
-    public Observable<ByteAssociation<UUID>> getOnCharacteristicChanged() {
+    public Observable<ByteAssociation<Integer>> getOnCharacteristicChanged() {
         return withHandlingStatusErrorAndDisconnection(changedCharacteristicPublishSubject);
     }
 
