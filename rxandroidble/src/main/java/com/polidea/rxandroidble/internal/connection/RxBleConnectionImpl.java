@@ -81,6 +81,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return newObservable;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void requestConnectionPriority(int priority) {
+        bluetoothGatt.requestConnectionPriority(priority);
+    }
+
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
         return privateDiscoverServices(20, TimeUnit.SECONDS);
