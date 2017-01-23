@@ -5,8 +5,10 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.os.ParcelUuid;
+import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleScanRecord;
 import com.polidea.rxandroidble.exceptions.BleScanException;
@@ -22,6 +24,7 @@ import java.util.UUID;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class RxBleRadioOperationScanV21 extends RxBleRadioOperation<RxBleInternalScanResultV21> {
 
+    private final ScanSettings settings;
     private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
 
@@ -48,7 +51,8 @@ public class RxBleRadioOperationScanV21 extends RxBleRadioOperation<RxBleInterna
         }
     };
 
-    public RxBleRadioOperationScanV21(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper) {
+    public RxBleRadioOperationScanV21(@Nullable ScanSettings settings, UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper) {
+        this.settings = settings != null ? settings : new ScanSettings.Builder().build();
         this.filterServiceUUIDs = filterServiceUUIDs;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
     }
@@ -57,7 +61,7 @@ public class RxBleRadioOperationScanV21 extends RxBleRadioOperation<RxBleInterna
     protected void protectedRun() {
         try {
             List<ScanFilter> scanFilters = getScanFiltersFrom(filterServiceUUIDs);
-            rxBleAdapterWrapper.startScan(scanFilters, scanCallback);
+            rxBleAdapterWrapper.startScan(scanFilters, settings, scanCallback);
         } catch (Throwable throwable) {
             RxBleLog.e(throwable, "Error while calling BluetoothAdapter.startLeScan()");
             onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));

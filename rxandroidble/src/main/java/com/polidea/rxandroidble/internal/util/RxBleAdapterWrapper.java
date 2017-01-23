@@ -41,8 +41,8 @@ public class RxBleAdapterWrapper {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void startScan(List<ScanFilter> scanFilters, ScanCallback scanCallback) {
-        bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, new ScanSettings.Builder().build(), scanCallback);
+    public void startScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, ScanCallback scanCallback) {
+        bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, scanSettings, scanCallback);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
