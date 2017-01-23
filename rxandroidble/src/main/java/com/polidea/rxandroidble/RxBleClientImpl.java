@@ -122,7 +122,7 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
-        return scanBleDevices(filterServiceUUIDs);
+        return scanBleDevices(null, filterServiceUUIDs);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
