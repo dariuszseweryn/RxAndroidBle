@@ -224,7 +224,7 @@ class RxBleClientTest extends Specification {
     def "should emit BleScanException if location permission was not granted"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
-        locationServicesStatusMock.isLocationPermissionApproved = false
+        locationServicesStatusMock.isLocationPermissionOk = false
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
@@ -235,35 +235,25 @@ class RxBleClientTest extends Specification {
         }
     }
 
-    @Unroll("should emit BleScanException if location services are required(#required) and enabled(#enabled) and granted(#granted")
-    def "should emit BleScanException if location services are in certain state"() {
+    @Unroll
+    def "should emit BleScanException if location services are not ok (LocationProviderOk:#providerOk)"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
-        locationServicesStatusMock.isLocationProviderRequired = required
-        locationServicesStatusMock.isLocationProviderEnabled = enabled
-        locationServicesStatusMock.isLocationPermissionApproved = granted
+        locationServicesStatusMock.isLocationProviderOk = providerOk
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
 
-        if (expectError)
+        if (!providerOk)
             firstSubscriber.assertError { BleScanException exception -> exception.reason == LOCATION_SERVICES_DISABLED }
         else {
             firstSubscriber.assertNoErrors()
         }
 
         where:
-        required | granted | enabled | expectError
-        true     | false   | false   | true
-        true     | false   | true    | true
-        true     | true    | false   | true
-        true     | true    | true    | false
-        false    | false   | false   | false
-        false    | false   | true    | false
-        false    | true    | false   | false
-        false    | true    | true    | false
+        providerOk << [true, false]
     }
 
     @Unroll

@@ -17,36 +17,71 @@ import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
 
-import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class CharacteristicOperationExampleActivity extends RxAppCompatActivity {
 
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";
-    @Bind(R.id.connect)
+    @BindView(R.id.connect)
     Button connectButton;
-    @Bind(R.id.read_output)
+    @BindView(R.id.read_output)
     TextView readOutputView;
-    @Bind(R.id.read_hex_output)
+    @BindView(R.id.read_hex_output)
     TextView readHexOutputView;
-    @Bind(R.id.write_input)
+    @BindView(R.id.write_input)
     TextView writeInput;
-    @Bind(R.id.read)
+    @BindView(R.id.read)
     Button readButton;
-    @Bind(R.id.write)
+    @BindView(R.id.write)
     Button writeButton;
-    @Bind(R.id.notify)
+    @BindView(R.id.notify)
     Button notifyButton;
     private UUID characteristicUuid;
     private PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_example4);
+        ButterKnife.bind(this);
+        String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
+        characteristicUuid = (UUID) getIntent().getSerializableExtra(EXTRA_CHARACTERISTIC_UUID);
+        bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
+        connectionObservable = prepareConnectionObservable();
+        //noinspection ConstantConditions
+        getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
+    }
+
+    private Observable<RxBleConnection> prepareConnectionObservable() {
+        return bleDevice
+                .establishConnection(this, false)
+                .takeUntil(disconnectTriggerSubject)
+                .compose(bindUntilEvent(PAUSE))
+                .doOnUnsubscribe(this::clearSubscription)
+                .compose(new ConnectionSharingAdapter());
+    }
+
+    @OnClick(R.id.connect)
+    public void onConnectToggleClick() {
+
+        if (isConnected()) {
+            triggerDisconnect();
+        } else {
+            connectionObservable.subscribe(rxBleConnection -> {
+                Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
+                runOnUiThread(this::updateUI);
+            }, this::onConnectionFailure);
+        }
+    }
 
     @OnClick(R.id.read)
     public void onReadClick() {
@@ -89,38 +124,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_example4);
-        ButterKnife.bind(this);
-        String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
-        characteristicUuid = (UUID) getIntent().getSerializableExtra(EXTRA_CHARACTERISTIC_UUID);
-        bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
-        connectionObservable = bleDevice
-                .establishConnection(this, false)
-                .takeUntil(disconnectTriggerSubject)
-                .compose(bindUntilEvent(PAUSE))
-                .doOnUnsubscribe(this::clearSubscription)
-                .compose(new ConnectionSharingAdapter());
-        //noinspection ConstantConditions
-        getSupportActionBar().setSubtitle(getString(R.string.mac_address, macAddress));
-    }
-
-    @OnClick(R.id.connect)
-    public void onConnectToggleClick() {
-
-        if (isConnected()) {
-            triggerDisconnect();
-        } else {
-            connectionObservable.subscribe(rxBleConnection -> {
-                Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
-            }, this::onConnectionFailure);
-        }
-
-        updateUI();
-    }
-
     private boolean isConnected() {
         return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
@@ -161,7 +164,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     }
 
     private void clearSubscription() {
-        connectionObservable = null;
         updateUI();
     }
 

@@ -39,7 +39,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteA
         final boolean success = bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.DESCRIPTOR_READ));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_READ));
         }
     }
 }

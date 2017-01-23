@@ -32,7 +32,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
         final boolean success = bluetoothGatt.readRemoteRssi();
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.READ_RSSI));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.READ_RSSI));
         }
     }
 }

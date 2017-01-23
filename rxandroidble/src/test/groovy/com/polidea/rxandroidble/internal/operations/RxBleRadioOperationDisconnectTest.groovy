@@ -14,6 +14,7 @@ import rx.Scheduler
 import rx.android.plugins.RxAndroidPlugins
 import rx.android.plugins.RxAndroidSchedulersHook
 import rx.android.schedulers.AndroidSchedulers
+import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
@@ -133,7 +134,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, gattAtomicReference, mockBluetoothManager)
+        objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, gattAtomicReference, mockBluetoothManager, ImmediateScheduler.INSTANCE)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

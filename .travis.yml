@@ -3,8 +3,8 @@ language: android
 android:
   components:
     - tools
-    - build-tools-23.0.2
-    - android-23
+    - build-tools-25.0.0
+    - android-24
     - extra-android-m2repository
   licenses:
     - 'android-sdk-license-.+'
@@ -19,6 +19,10 @@ notifications:
   email: false
 
 sudo: false
+
+env:
+  global:
+    - GRADLE_OPTS="-Xms128m"
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock

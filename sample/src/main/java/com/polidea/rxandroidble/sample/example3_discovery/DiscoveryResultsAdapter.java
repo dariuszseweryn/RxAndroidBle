@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapter.ViewHolder> {
@@ -39,9 +39,9 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(android.R.id.text1)
+        @BindView(android.R.id.text1)
         public TextView line1;
-        @Bind(android.R.id.text2)
+        @BindView(android.R.id.text2)
         public TextView line2;
 
         public ViewHolder(View itemView) {

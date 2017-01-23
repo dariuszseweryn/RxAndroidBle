@@ -19,7 +19,11 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanV21;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble.internal.util.CheckerLocationPermission;
+import com.polidea.rxandroidble.internal.util.CheckerLocationProvider;
 import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
+import com.polidea.rxandroidble.internal.util.ProviderApplicationTargetSdk;
+import com.polidea.rxandroidble.internal.util.ProviderDeviceSdk;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
@@ -29,7 +33,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 class RxBleClientImpl extends RxBleClient {
 
@@ -56,17 +64,43 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     public static RxBleClientImpl getInstance(@NonNull Context context) {
+        final Context applicationContext = context.getApplicationContext();
         final RxBleAdapterWrapper rxBleAdapterWrapper = new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter());
         final RxBleRadioImpl rxBleRadio = new RxBleRadioImpl();
-        final RxBleAdapterStateObservable adapterStateObservable = new RxBleAdapterStateObservable(context.getApplicationContext());
+        final RxBleAdapterStateObservable adapterStateObservable = new RxBleAdapterStateObservable(applicationContext);
         final BleConnectionCompat bleConnectionCompat = new BleConnectionCompat(context);
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Scheduler gattCallbacksProcessingScheduler = Schedulers.from(executor);
+        final LocationManager locationManager = (LocationManager) applicationContext.getSystemService(Context.LOCATION_SERVICE);
+        final CheckerLocationPermission checkerLocationPermission = new CheckerLocationPermission(applicationContext);
+        final CheckerLocationProvider checkerLocationProvider = new CheckerLocationProvider(locationManager);
+        final ProviderApplicationTargetSdk providerApplicationTargetSdk = new ProviderApplicationTargetSdk(applicationContext);
+        final ProviderDeviceSdk providerDeviceSdk = new ProviderDeviceSdk();
         return new RxBleClientImpl(
                 rxBleAdapterWrapper,
                 rxBleRadio,
                 adapterStateObservable,
                 new UUIDUtil(),
-                new LocationServicesStatus(context, (LocationManager) context.getSystemService(Context.LOCATION_SERVICE)),
-                new RxBleDeviceProvider(rxBleAdapterWrapper, rxBleRadio, bleConnectionCompat, adapterStateObservable));
+                new LocationServicesStatus(
+                        checkerLocationProvider,
+                        checkerLocationPermission,
+                        providerDeviceSdk,
+                        providerApplicationTargetSdk
+                ),
+                new RxBleDeviceProvider(
+                        rxBleAdapterWrapper,
+                        rxBleRadio,
+                        bleConnectionCompat,
+                        adapterStateObservable,
+                        gattCallbacksProcessingScheduler
+                )
+        ) {
+            @Override
+            protected void finalize() throws Throwable {
+                super.finalize();
+                executor.shutdown();
+            }
+        };
     }
 
     @Override
@@ -92,9 +126,9 @@ class RxBleClientImpl extends RxBleClient {
             return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
         } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
             return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
-        } else if (checkIfLocationPermissionIsGrantedIfRequired()) {
+        } else if (!locationServicesStatus.isLocationPermissionOk()) {
             return Observable.error(new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING));
-        } else if (checkIfLocationAccessIsEnabledIfRequired()) {
+        } else if (!locationServicesStatus.isLocationProviderOk()) {
             return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
         } else {
             return initializeScan(filterServiceUUIDs);
@@ -114,14 +148,6 @@ class RxBleClientImpl extends RxBleClient {
 
             return matchingQueuedScan;
         }
-    }
-
-    private boolean checkIfLocationAccessIsEnabledIfRequired() {
-        return locationServicesStatus.isLocationProviderRequired() && !locationServicesStatus.isLocationProviderEnabled();
-    }
-
-    private boolean checkIfLocationPermissionIsGrantedIfRequired() {
-        return locationServicesStatus.isLocationProviderRequired() && !locationServicesStatus.isLocationPermissionApproved();
     }
 
     private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {

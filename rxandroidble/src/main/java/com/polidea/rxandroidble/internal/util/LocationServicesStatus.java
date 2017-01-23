@@ -1,39 +1,59 @@
 package com.polidea.rxandroidble.internal.util;
 
-import android.Manifest;
 import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.Build;
 
 public class LocationServicesStatus {
 
-    private final Context context;
-    private final LocationManager locationManager;
+    private final CheckerLocationProvider checkerLocationProvider;
 
-    public LocationServicesStatus(Context context, LocationManager locationManager) {
-        this.context = context;
-        this.locationManager = locationManager;
+    private final CheckerLocationPermission checkerLocationPermission;
+
+    private final ProviderDeviceSdk providerDeviceSdk;
+
+    private final ProviderApplicationTargetSdk providerApplicationTargetSdk;
+
+    public LocationServicesStatus(
+            CheckerLocationProvider checkerLocationProvider,
+            CheckerLocationPermission checkerLocationPermission,
+            ProviderDeviceSdk providerDeviceSdk,
+            ProviderApplicationTargetSdk providerApplicationTargetSdk
+    ) {
+        this.checkerLocationProvider = checkerLocationProvider;
+        this.checkerLocationPermission = checkerLocationPermission;
+        this.providerDeviceSdk = providerDeviceSdk;
+        this.providerApplicationTargetSdk = providerApplicationTargetSdk;
     }
 
-    public boolean isLocationPermissionApproved() {
-        return isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
-                || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    public boolean isLocationPermissionOk() {
+        return !isLocationPermissionGrantedRequired() || isLocationPermissionGranted();
     }
 
-    public boolean isLocationProviderEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
-    public boolean isLocationProviderRequired() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+    public boolean isLocationProviderOk() {
+        return !isLocationProviderEnabledRequired() || isLocationProviderEnabled();
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    private boolean isPermissionGranted(String permission) {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                || context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+    private boolean isLocationPermissionGranted() {
+        return checkerLocationPermission.isLocationPermissionGranted();
+    }
+
+    private boolean isLocationProviderEnabled() {
+        return checkerLocationProvider.isLocationProviderEnabled();
+    }
+
+    private boolean isLocationPermissionGrantedRequired() {
+        return providerDeviceSdk.provide() >= Build.VERSION_CODES.M;
+    }
+
+    /**
+     * A function that returns true if the location services may be needed to be turned ON.
+     *
+     * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
+     * @return true if Location Services need to be turned ON
+     */
+    private boolean isLocationProviderEnabledRequired() {
+        return providerApplicationTargetSdk.provide() >= Build.VERSION_CODES.M
+                && providerDeviceSdk.provide() >= Build.VERSION_CODES.M;
     }
 }

@@ -15,7 +15,7 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Subscription;
@@ -23,9 +23,9 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class ScanActivity extends AppCompatActivity {
 
-    @Bind(R.id.scan_toggle_btn)
+    @BindView(R.id.scan_toggle_btn)
     Button scanToggleButton;
-    @Bind(R.id.scan_results)
+    @BindView(R.id.scan_results)
     RecyclerView recyclerView;
     private RxBleClient rxBleClient;
     private Subscription scanSubscription;

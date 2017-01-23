@@ -10,6 +10,7 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnec
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
 import java.util.concurrent.atomic.AtomicReference;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class RxBleConnectionConnectorOperationsProvider {
 
@@ -37,7 +38,8 @@ public class RxBleConnectionConnectorOperationsProvider {
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
                 gattCallback,
                 bluetoothGattAtomicReference,
-                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE)
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE),
+                AndroidSchedulers.mainThread()
         );
         // getBluetoothGatt completed when the connection is unsubscribed
         operationConnect.getBluetoothGatt().subscribe(bluetoothGattAtomicReference::set, ignored -> {
