@@ -127,10 +127,15 @@ public class RxBleClientMockTest extends RoboSpecification {
         def testNameSubscriber = TestSubscriber.create()
         def testAddressSubscriber = TestSubscriber.create()
         def testRssiSubscriber = TestSubscriber.create()
-        rxBleClient.simulateDeviceDiscovery(createDevice("SecondDevice", "AA:BB:CC:DD:EE:00", 17))
+        def discoverableDevicesSubject = PublishSubject.create()
+        def dynRxBleClient = new RxBleClientMock.Builder()
+                .setDeviceDiscoveryObservable(discoverableDevicesSubject)
+                .build();
+        discoverableDevicesSubject.onNext(createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42))
+        discoverableDevicesSubject.onNext(createDevice("SecondDevice", "AA:BB:CC:DD:EE:00", 17))
 
         when:
-        def scanObservable = rxBleClient.scanBleDevices()
+        def scanObservable = dynRxBleClient.scanBleDevices()
         scanObservable.map { scanResult -> scanResult.getBleDevice().getName() }.subscribe(testNameSubscriber)
         scanObservable.map { scanResult -> scanResult.getBleDevice().getMacAddress() }.subscribe(testAddressSubscriber)
         scanObservable.map { scanResult -> scanResult.getRssi() }.subscribe(testRssiSubscriber)
