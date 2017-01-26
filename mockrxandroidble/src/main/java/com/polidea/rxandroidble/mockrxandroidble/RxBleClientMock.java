@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.mockrxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.le.ScanSettings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -10,6 +11,7 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -279,8 +281,14 @@ public class RxBleClientMock extends RxBleClient {
         return createScanOperation(filterServiceUUIDs);
     }
 
+    @Override
+    public Observable<RxBleScanResult> scanBleDevices(@NonNull ScanSettings settings, @Nullable UUID... filterServiceUUIDs) {
+        return createScanOperation(filterServiceUUIDs);
+    }
+
     private RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
-        return new RxBleScanResult(bleDevice, rssi, scanRecord);
+        UUIDUtil uuidUtil = new UUIDUtil();
+        return new RxBleScanResult(bleDevice, rssi, uuidUtil.parseFromBytes(scanRecord));
     }
 
     @NonNull

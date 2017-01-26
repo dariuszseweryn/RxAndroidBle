@@ -1,9 +1,12 @@
 package com.polidea.rxandroidble;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,8 +14,10 @@ import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
+import com.polidea.rxandroidble.internal.RxBleInternalScanResultV21;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanV21;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 import com.polidea.rxandroidble.internal.util.CheckerLocationPermission;
@@ -28,9 +33,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
@@ -117,7 +122,12 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
+        return scanBleDevices(null, filterServiceUUIDs);
+    }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public Observable<RxBleScanResult> scanBleDevices(@NonNull ScanSettings settings, @Nullable UUID... filterServiceUUIDs) {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
             return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
         } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
@@ -127,18 +137,19 @@ class RxBleClientImpl extends RxBleClient {
         } else if (!locationServicesStatus.isLocationProviderOk()) {
             return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
         } else {
-            return initializeScan(filterServiceUUIDs);
+            return initializeScan(settings, filterServiceUUIDs);
         }
     }
 
-    private Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> initializeScan(ScanSettings settings, @Nullable UUID[] filterServiceUUIDs) {
+        //TODO add settings to the key
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
 
         synchronized (queuedScanOperations) {
             Observable<RxBleScanResult> matchingQueuedScan = queuedScanOperations.get(filteredUUIDs);
 
             if (matchingQueuedScan == null) {
-                matchingQueuedScan = createScanOperation(filterServiceUUIDs);
+                matchingQueuedScan = createScanOperation(settings, filterServiceUUIDs);
                 queuedScanOperations.put(filteredUUIDs, matchingQueuedScan);
             }
 
@@ -153,13 +164,19 @@ class RxBleClientImpl extends RxBleClient {
                 .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
     }
 
+    private Observable<RxBleScanResult> createScanOperation(ScanSettings settings, @Nullable UUID[] filterServiceUUIDs) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? createScanOperationV18(filterServiceUUIDs)
+                : createScanOperationV21(settings, filterServiceUUIDs);
+    }
+
     private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResult scanResult) {
         final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
         final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
-        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
+        final RxBleScanRecord scanRecord = uuidUtil.parseFromBytes(scanResult.getScanRecord());
+        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanRecord);
     }
 
-    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> createScanOperationV18(@Nullable UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
         final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return rxBleRadio.queue(scanOperation)
@@ -174,4 +191,28 @@ class RxBleClientImpl extends RxBleClient {
                 .map(this::convertToPublicScanResult)
                 .share();
     }
+
+    private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResultV21 scanResult) {
+        final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
+        final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
+        return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private Observable<RxBleScanResult> createScanOperationV21(ScanSettings settings, @Nullable UUID[] filterServiceUUIDs) {
+        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+        final RxBleRadioOperationScanV21 scanOperation = new RxBleRadioOperationScanV21(settings, filterServiceUUIDs, rxBleAdapterWrapper);
+        return rxBleRadio.queue(scanOperation)
+                .doOnUnsubscribe(() -> {
+
+                    synchronized (queuedScanOperations) {
+                        scanOperation.stop();
+                        queuedScanOperations.remove(filteredUUIDs);
+                    }
+                })
+                .mergeWith(bluetoothAdapterOffExceptionObservable())
+                .map(this::convertToPublicScanResult)
+                .share();
+    }
+
 }
