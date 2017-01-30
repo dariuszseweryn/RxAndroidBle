@@ -265,11 +265,28 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 .flatMap(characteristic -> writeCharacteristic(characteristic, data));
     }
 
+    @Override
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data, long delay,
+            TimeUnit unit) {
+        return getCharacteristic(characteristicUuid)
+                .flatMap(characteristic -> writeCharacteristic(characteristic, data, delay, unit));
+    }
+
     @Deprecated
     @Override
     public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
                 .map(bytes -> bluetoothGattCharacteristic);
+    }
+
+    @Override
+    public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic,
+            @NonNull byte[] data, long delay, TimeUnit unit) {
+        return rxBleRadio.queue(new RxBleRadioOperationCharacteristicWrite(
+                gattCallback,
+                bluetoothGatt,
+                characteristic,
+                data, delay, unit));
     }
 
     @Override
