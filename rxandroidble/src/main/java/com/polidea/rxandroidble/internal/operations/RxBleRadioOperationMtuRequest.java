@@ -5,12 +5,14 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.concurrent.TimeUnit;
 
+import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
 
@@ -49,7 +51,12 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
         final Subscription subscription = rxBleGattCallback
                 .getOnMtuChanged()
                 .first()
-                .timeout(timeout, timeoutTimeUnit, timeoutScheduler)
+                .timeout(
+                        timeout,
+                        timeoutTimeUnit,
+                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED)),
+                        timeoutScheduler
+                )
                 .doOnTerminate(() -> releaseRadio())
                 .subscribe(getSubscriber());
 

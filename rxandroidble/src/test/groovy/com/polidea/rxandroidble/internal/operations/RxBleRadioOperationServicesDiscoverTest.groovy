@@ -4,11 +4,11 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import rx.Observable
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
@@ -134,7 +134,12 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
 
         then:
-        testSubscriber.assertError(TimeoutException)
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.SERVICE_DISCOVERY
+        }
     }
 
     def "should not timeout after specified amount of time if BluetoothGatt.getServices() will return non-empty list"() {

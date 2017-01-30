@@ -3,11 +3,14 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -23,11 +26,13 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     TestSubscriber<ByteAssociation<BluetoothGattDescriptor>> testSubscriber = new TestSubscriber()
 
+    TestScheduler testScheduler = new TestScheduler()
+
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
     Semaphore mockSemaphore = Mock Semaphore
 
-    RxBleRadioOperationDescriptorRead objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt, mockDescriptor)
+    RxBleRadioOperationDescriptorRead objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt, mockDescriptor, testScheduler)
 
     def setup() {
         mockCallback.getOnDescriptorRead() >> onDescriptorReadSubject
@@ -200,6 +205,24 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         1 * mockSemaphore.release()
     }
 
+    def "should timeout if RxBleGattCallback.onDescriptorRead() won't trigger in 30 seconds"() {
+
+        given:
+        givenDescriptorReadStartsOk()
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.DESCRIPTOR_READ
+        }
+    }
+
     private givenDescriptorWithUUIDContainData(Map... returnedDataOnRead) {
         mockGatt.readDescriptor(mockDescriptor) >> {
             returnedDataOnRead.each {
@@ -219,5 +242,9 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     private givenDescriptorReadFailToStart() {
         mockGatt.readDescriptor(mockDescriptor) >> false
+    }
+
+    private givenDescriptorReadStartsOk() {
+        mockGatt.readDescriptor(mockDescriptor) >> true
     }
 }

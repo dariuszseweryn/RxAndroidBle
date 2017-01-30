@@ -1,21 +1,17 @@
 package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattService
-import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import rx.Observable
 import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
 
@@ -100,7 +96,12 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)
 
         then:
-        testSubscriber.assertError(TimeoutException)
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.ON_MTU_CHANGED
+        }
     }
 
     private prepareObjectUnderTest() {

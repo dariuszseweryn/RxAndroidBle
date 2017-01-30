@@ -2,10 +2,13 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -18,6 +21,8 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
 
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
+
+    TestScheduler testScheduler = new TestScheduler()
 
     PublishSubject<Integer> onReadRemoteRssiPublishSubject = PublishSubject.create()
 
@@ -110,8 +115,26 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         testSubscriber.assertValueCount(1) // no more values
     }
 
+    def "should timeout if RxBleGattCallback.onReadRssi() won't trigger in 30 seconds"() {
+
+        given:
+        mockBluetoothGatt.readRemoteRssi() >> true
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.READ_RSSI
+        }
+    }
+
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationReadRssi(mockGattCallback, mockBluetoothGatt)
+        objectUnderTest = new RxBleRadioOperationReadRssi(mockGattCallback, mockBluetoothGatt, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

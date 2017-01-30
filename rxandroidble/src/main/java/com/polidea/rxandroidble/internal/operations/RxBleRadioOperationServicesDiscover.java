@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -75,7 +76,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
             final List<BluetoothGattService> services = bluetoothGatt.getServices();
             if (services.size() == 0) {
                 // if after the timeout services are empty we have no other option to declare a failed discovery
-                return Observable.error(new TimeoutException());
+                return Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
             } else {
                 /*
                 it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time

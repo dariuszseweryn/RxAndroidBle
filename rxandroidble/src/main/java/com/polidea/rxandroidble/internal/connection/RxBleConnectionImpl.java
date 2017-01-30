@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
@@ -52,6 +53,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     private final HashMap<Integer, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
 
     private final HashMap<Integer, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
+
+    private final Scheduler timeoutScheduler = Schedulers.computation();
 
     public RxBleConnectionImpl(RxBleRadio rxBleRadio, RxBleGattCallback gattCallback, BluetoothGatt bluetoothGatt) {
         this.rxBleRadio = rxBleRadio;
@@ -110,7 +113,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                                 bluetoothGatt,
                                 timeout,
                                 timeUnit,
-                                Schedulers.computation()
+                                timeoutScheduler
                         ))
                         .cacheWithInitialCapacity(1);
             }
@@ -255,8 +258,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return rxBleRadio.queue(new RxBleRadioOperationCharacteristicRead(
                 gattCallback,
                 bluetoothGatt,
-                characteristic
-        ));
+                characteristic,
+                timeoutScheduler));
     }
 
     @Override
@@ -278,7 +281,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 gattCallback,
                 bluetoothGatt,
                 characteristic,
-                data));
+                data,
+                timeoutScheduler));
     }
 
     @Override
@@ -291,7 +295,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> readDescriptor(BluetoothGattDescriptor descriptor) {
         return rxBleRadio.queue(
-                new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGatt, descriptor)
+                new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGatt, descriptor, timeoutScheduler)
         )
                 .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second);
     }
@@ -311,13 +315,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
                         bluetoothGatt,
                         BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT,
                         bluetoothGattDescriptor,
-                        data
-                )
+                        data,
+                        timeoutScheduler)
         );
     }
 
     @Override
     public Observable<Integer> readRssi() {
-        return rxBleRadio.queue(new RxBleRadioOperationReadRssi(gattCallback, bluetoothGatt));
+        return rxBleRadio.queue(new RxBleRadioOperationReadRssi(gattCallback, bluetoothGatt, timeoutScheduler));
     }
 }

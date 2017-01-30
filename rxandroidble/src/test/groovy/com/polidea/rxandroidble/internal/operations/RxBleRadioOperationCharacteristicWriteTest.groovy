@@ -3,11 +3,14 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -19,6 +22,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     def testSubscriber = new TestSubscriber()
+    TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
     RxBleRadioOperationCharacteristicWrite objectUnderTest
@@ -201,6 +205,24 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         1 * mockSemaphore.release()
     }
 
+    def "should timeout if RxBleGattCallback.onCharacteristicWrite() won't trigger in 30 seconds"() {
+
+        given:
+        givenCharacteristicWriteStartsOk()
+        objectUnderTest.run()
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.CHARACTERISTIC_WRITE
+        }
+    }
+
     private givenCharacteristicWithUUIDWritesData(Map... returnedDataOnWrite) {
         mockGatt.writeCharacteristic(mockCharacteristic) >> {
             returnedDataOnWrite.each {
@@ -222,8 +244,12 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         mockGatt.writeCharacteristic(mockCharacteristic) >> false
     }
 
+    private givenCharacteristicWriteStartsOk() {
+        mockGatt.writeCharacteristic(mockCharacteristic) >> true
+    }
+
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt, mockCharacteristic, testData)
+        objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt, mockCharacteristic, testData, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }
