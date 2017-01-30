@@ -67,9 +67,17 @@ public interface RxBleDevice {
 
     /**
      * The underlying android.bluetooth.BluetoothDevice.
-     *
+     * <p>
      * NOTE: this should be used with caution and knowledge as interaction with the BluetoothDevice may interrupt the flow of this library.
+     *
      * @return the BluetoothDevice
      */
     BluetoothDevice getBluetoothDevice();
+
+    /**
+     * Programmatically unpair the BLE device.
+     *
+     * @return whether or not the unpair call worked.
+     */
+    Observable<Boolean> unpair();
 }
