@@ -10,6 +10,7 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
+import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -280,7 +281,8 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     private RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
-        return new RxBleScanResult(bleDevice, rssi, scanRecord);
+        UUIDUtil uuidUtil = new UUIDUtil();
+        return new RxBleScanResult(bleDevice, rssi, uuidUtil.parseFromBytes(scanRecord));
     }
 
     @NonNull
