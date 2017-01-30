@@ -56,7 +56,7 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
         boolean success = bluetoothGatt.requestMtu(mtu);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.ON_MTU_CHANGED));
+            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED));
         }
     }
 }
