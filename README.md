@@ -177,6 +177,8 @@ RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 
+### Helpers
+We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
 
 ## More examples
 

@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble.internal.util;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 
 public class LocationServicesStatus {
@@ -26,20 +25,11 @@ public class LocationServicesStatus {
     }
 
     public boolean isLocationPermissionOk() {
-        return !isLocationPermissionGrantedRequired() || isLocationPermissionGranted();
+        return !isLocationPermissionGrantedRequired() || checkerLocationPermission.isLocationPermissionGranted();
     }
 
     public boolean isLocationProviderOk() {
-        return !isLocationProviderEnabledRequired() || isLocationProviderEnabled();
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private boolean isLocationPermissionGranted() {
-        return checkerLocationPermission.isLocationPermissionGranted();
-    }
-
-    private boolean isLocationProviderEnabled() {
-        return checkerLocationProvider.isLocationProviderEnabled();
+        return !isLocationProviderEnabledRequired() || checkerLocationProvider.isLocationProviderEnabled();
     }
 
     private boolean isLocationPermissionGrantedRequired() {
