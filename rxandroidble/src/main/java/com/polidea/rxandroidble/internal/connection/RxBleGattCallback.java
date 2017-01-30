@@ -143,7 +143,7 @@ public class RxBleGattCallback {
             bluetoothGattBehaviorSubject.onNext(gatt);
 
             if (!propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.RELIABLE_WRITE_COMPLETED)) {
-                // TODO Implement reliable write
+                return; // TODO Implement reliable write
             }
         }
 
