@@ -154,7 +154,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic, NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic,
+                                                            NotificationSetupMode setupMode) {
         return setupNotification(characteristic.getUuid(), setupMode);
     }
 
@@ -169,7 +170,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(@NonNull final UUID characteristicUuid, @NonNull final NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupIndication(@NonNull final UUID characteristicUuid,
+                                                          @NonNull final NotificationSetupMode setupMode) {
         if (notificationObservableMap.containsKey(characteristicUuid)) {
             return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, false));
         }
@@ -201,12 +203,14 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic, @NonNull NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic,
+                                                          @NonNull NotificationSetupMode setupMode) {
         return setupIndication(characteristic.getUuid(), setupMode);
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(
+            @NonNull final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         return getCharacteristic(bluetoothGattCharacteristic.getUuid())
                 .map(new Func1<BluetoothGattCharacteristic, Boolean>() {
                     @Override
@@ -245,7 +249,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeDescriptor(final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid, final byte[] data) {
+    public Observable<byte[]> writeDescriptor(final UUID serviceUuid, final UUID characteristicUuid,
+                                              final UUID descriptorUuid, final byte[] data) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
                     @Override
@@ -271,7 +276,9 @@ public class RxBleConnectionMock implements RxBleConnection {
         return Observable.just(data);
     }
 
-    private Observable<Observable<byte[]>> createCharacteristicNotificationObservable(final UUID characteristicUuid, NotificationSetupMode setupMode, boolean isIndication) {
+    private Observable<Observable<byte[]>> createCharacteristicNotificationObservable(final UUID characteristicUuid,
+                                                                                      NotificationSetupMode setupMode,
+                                                                                      boolean isIndication) {
         return setupCharacteristicNotification(characteristicUuid, setupMode, true, isIndication)
                 .flatMap(new Func1<Boolean, Observable<Boolean>>() {
                     @Override
@@ -338,7 +345,8 @@ public class RxBleConnectionMock implements RxBleConnection {
                 .flatMap(new Func1<byte[], Observable<? extends Boolean>>() {
                     @Override
                     public Observable<? extends Boolean> call(byte[] it) {
-                        return setupCharacteristicDescriptorTriggeredRead(bluetoothGattCharacteristicUUID, setupMode, enabled, isIndication);
+                        return setupCharacteristicDescriptorTriggeredRead(bluetoothGattCharacteristicUUID,
+                                setupMode, enabled, isIndication);
                     }
                 });
     }

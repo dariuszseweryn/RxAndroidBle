@@ -164,7 +164,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic, NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic,
+                                                            NotificationSetupMode setupMode) {
         return setupServerInitiatedCharacteristicRead(characteristic, setupMode, false);
     }
 
@@ -179,7 +180,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid, @NonNull final NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid,
+                                                          @NonNull final NotificationSetupMode setupMode) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(new Func1<BluetoothGattCharacteristic, Observable<? extends Observable<byte[]>>>() {
                     @Override
@@ -190,7 +192,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic, @NonNull NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic,
+                                                          @NonNull NotificationSetupMode setupMode) {
         return setupServerInitiatedCharacteristicRead(characteristic, setupMode, true);
     }
 
@@ -249,7 +252,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
         });
     }
 
-    private Observable<Boolean> createTriggeredReadObservable(final BluetoothGattCharacteristic characteristic, final byte[] enableValue, final NotificationSetupMode setupMode) {
+    private Observable<Boolean> createTriggeredReadObservable(final BluetoothGattCharacteristic characteristic, final byte[] enableValue,
+                                                              final NotificationSetupMode setupMode) {
         return setCharacteristicNotification(characteristic, true)
                 .doOnNext(new Action1<Boolean>() {
                     @Override
@@ -274,7 +278,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @NonNull
-    private Observable<Boolean> setCharacteristicNotification(final BluetoothGattCharacteristic characteristic, final boolean isNotificationEnabled) {
+    private Observable<Boolean> setCharacteristicNotification(final BluetoothGattCharacteristic characteristic,
+                                                              final boolean isNotificationEnabled) {
         return Observable.fromCallable(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -325,7 +330,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @NonNull
     private Observable<Boolean> setupCharacteristicDescriptorTriggeredRead(
-            final BluetoothGattCharacteristic bluetoothGattCharacteristic, NotificationSetupMode setupMode, final boolean enabled, final byte[] enableValue
+            final BluetoothGattCharacteristic bluetoothGattCharacteristic, NotificationSetupMode setupMode,
+            final boolean enabled, final byte[] enableValue
     ) {
         if (setupMode == NotificationSetupMode.DEFAULT) {
             return getClientCharacteristicConfig(bluetoothGattCharacteristic)
@@ -341,7 +347,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
                             return error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic));
                         }
                     })
-                    .switchIfEmpty(Observable.<byte[]>error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic)))
+                    .switchIfEmpty(Observable.<byte[]>error(
+                            new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic)))
                     .map(new Func1<byte[], Boolean>() {
                         @Override
                         public Boolean call(byte[] ignored) {

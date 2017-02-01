@@ -184,7 +184,8 @@ public interface RxBleConnection {
      *                                                         reason or lack of permissions.
      * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
      */
-    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic, @NonNull NotificationSetupMode setupMode);
+    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic,
+                                                   @NonNull NotificationSetupMode setupMode);
 
     /**
      * Convenience method for characteristic retrieval. First step is service discovery which is followed by service/characteristic
