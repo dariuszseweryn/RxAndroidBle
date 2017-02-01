@@ -83,6 +83,16 @@ public interface RxBleConnection {
     Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit);
 
     /**
+     * @see #setupNotification(UUID, NotificationSetupMode)  with default setup mode.
+     */
+    Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);
+
+    /**
+     * @see #setupNotification(BluetoothGattCharacteristic, NotificationSetupMode) with default setup mode.
+     */
+    Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic);
+
+    /**
      * Setup characteristic notification in order to receive callbacks when given characteristic has been changed. Returned observable will
      * emit Observable<byte[]> once the notification setup has been completed. It is possible to setup more observables for the same
      * characteristic and the lifecycle of the notification will be shared among them.
@@ -93,13 +103,14 @@ public interface RxBleConnection {
      * the notification will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      *
      * @param characteristicUuid Characteristic UUID for notification setup.
+     * @param setupMode Configures how the notification is set up. For available modes see {@link NotificationSetupMode}.
      * @return Observable emitting another observable when the notification setup is complete.
      * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
      * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
      * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
      */
-    Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);
+    Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid, NotificationSetupMode setupMode);
 
     /**
      * Setup characteristic notification in order to receive callbacks when given characteristic has been changed. Returned observable will
@@ -115,12 +126,23 @@ public interface RxBleConnection {
      * {@link RxBleConnection#discoverServices()}
      *
      * @param characteristic Characteristic for notification setup.
+     * @param setupMode Configures how the notification is set up. For available modes see {@link NotificationSetupMode}.
      * @return Observable emitting another observable when the notification setup is complete.
      * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
      * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
      */
-    Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic);
+    Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic, NotificationSetupMode setupMode);
+
+    /**
+     * @see #setupIndication(UUID, NotificationSetupMode) with default setup mode.
+     */
+    Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid);
+
+    /**
+     * @see #setupIndication(BluetoothGattCharacteristic, NotificationSetupMode) with default setup mode.
+     */
+    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic);
 
     /**
      * Setup characteristic indication in order to receive callbacks when given characteristic has been changed. Returned observable will
@@ -133,13 +155,14 @@ public interface RxBleConnection {
      * the indication will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      *
      * @param characteristicUuid Characteristic UUID for indication setup.
+     * @param setupMode Configures how the notification is set up. For available modes see {@link NotificationSetupMode}.
      * @return Observable emitting another observable when the indication setup is complete.
      * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
      * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
      * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
      */
-    Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid);
+    Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid, @NonNull NotificationSetupMode setupMode);
 
     /**
      * Setup characteristic indication in order to receive callbacks when given characteristic has been changed. Returned observable will
@@ -155,12 +178,13 @@ public interface RxBleConnection {
      * {@link RxBleConnection#discoverServices()}
      *
      * @param characteristic Characteristic for indication setup.
+     * @param setupMode Configures how the notification is set up. For available modes see {@link NotificationSetupMode}.
      * @return Observable emitting another observable when the indication setup is complete.
      * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
      * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
      */
-    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic);
+    Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic, @NonNull NotificationSetupMode setupMode);
 
     /**
      * Convenience method for characteristic retrieval. First step is service discovery which is followed by service/characteristic

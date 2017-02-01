@@ -5,10 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.os.Build
-import com.polidea.rxandroidble.BuildConfig
-import com.polidea.rxandroidble.FlatRxBleRadio
-import com.polidea.rxandroidble.RxBleConnection
-import com.polidea.rxandroidble.RxBleDeviceServices
+import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import org.robolectric.annotation.Config
@@ -391,7 +388,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     }
 
     @Unroll
-    def "should register notifications correctly"() {
+    def "should register notifications according to BLE standard"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -403,7 +400,8 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue })
+        1 * bluetoothGattMock.writeDescriptor({ it.value == enableValue }) >> just(new byte[0])
+        testSubscriber.assertNoErrors()
 
         where:
         setupTriggerNotificationClosure        | enableValue
@@ -411,6 +409,29 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         setupIndicationUuidClosure             | BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
         setupNotificationCharacteristicClosure | BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
         setupIndicationCharacteristicClosure   | BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+    }
+
+    @Unroll
+    def "should register notifications according in compatibility where client descriptor is not present"() {
+        given:
+        gattCallback.getOnCharacteristicChanged() >> PublishSubject.create()
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        shouldGattContainServiceWithCharacteristic(characteristic, CHARACTERISTIC_UUID)
+
+        when:
+        setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
+
+        then:
+        1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        0 * bluetoothGattMock.writeDescriptor() >> just(new byte[0])
+        testSubscriber.assertNoErrors()
+
+        where:
+        setupTriggerNotificationClosure << [
+                setupNotificationUuidCompatClosure,
+                setupIndicationUuidCompatClosure,
+                setupNotificationCharacteristicCompatClosure,
+                setupIndicationCharacteristicCompatClosure]
     }
 
     @Unroll
@@ -734,5 +755,13 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     private static Closure<Observable<Observable<byte[]>>> setupIndicationUuidClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupIndication(characteristic.getUuid()) }
 
     private static Closure<Observable<Observable<byte[]>>> setupIndicationCharacteristicClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupIndication(characteristic) }
+
+    private static Closure<Observable<Observable<byte[]>>> setupNotificationUuidCompatClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupNotification(characteristic.getUuid(), NotificationSetupMode.COMPAT) }
+
+    private static Closure<Observable<Observable<byte[]>>> setupNotificationCharacteristicCompatClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupNotification(characteristic, NotificationSetupMode.COMPAT) }
+
+    private static Closure<Observable<Observable<byte[]>>> setupIndicationUuidCompatClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupIndication(characteristic.getUuid(), NotificationSetupMode.COMPAT) }
+
+    private static Closure<Observable<Observable<byte[]>>> setupIndicationCharacteristicCompatClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic -> return connection.setupIndication(characteristic, NotificationSetupMode.COMPAT) }
 
 }
