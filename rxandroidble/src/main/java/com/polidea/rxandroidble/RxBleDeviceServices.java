@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import rx.Observable;
+import rx.functions.Func1;
 
 /**
  * Service discovery result containing list of services and characteristics withing the services.
@@ -39,11 +40,15 @@ public class RxBleDeviceServices {
      * @return Observable emitting matching services or error if hasn't been found.
      * @throws BleServiceNotFoundException if service with given UUID hasn't been found.
      */
-    public Observable<BluetoothGattService> getService(@NonNull UUID serviceUuid) {
+    public Observable<BluetoothGattService> getService(@NonNull final UUID serviceUuid) {
         return Observable.from(bluetoothGattServices)
-                .filter(bluetoothGattService -> bluetoothGattService.getUuid().equals(serviceUuid))
-                .take(1)
-                .switchIfEmpty(Observable.error(new BleServiceNotFoundException(serviceUuid)));
+                .takeFirst(new Func1<BluetoothGattService, Boolean>() {
+                    @Override
+                    public Boolean call(BluetoothGattService bluetoothGattService) {
+                        return bluetoothGattService.getUuid().equals(serviceUuid);
+                    }
+                })
+                .switchIfEmpty(Observable.<BluetoothGattService>error(new BleServiceNotFoundException(serviceUuid)));
     }
 
     /**
@@ -61,7 +66,7 @@ public class RxBleDeviceServices {
         return Observable.from(bluetoothGattServices)
                 .compose(extractCharacteristic(characteristicUuid))
                 .take(1)
-                .switchIfEmpty(Observable.error(new BleCharacteristicNotFoundException(characteristicUuid)));
+                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
     }
 
     /**
@@ -78,27 +83,61 @@ public class RxBleDeviceServices {
         return getService(serviceUuid)
                 .compose(extractCharacteristic(characteristicUuid))
                 .take(1)
-                .switchIfEmpty(Observable.error(new BleCharacteristicNotFoundException(characteristicUuid)));
+                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
     }
 
-    private Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic> extractCharacteristic(UUID characteristicUuid) {
-        return source -> {
-            return source.map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
-                    .filter(bluetoothGattCharacteristic -> bluetoothGattCharacteristic != null)
-                    .take(1); // Services may be empty;
+    private Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic> extractCharacteristic(final UUID characteristicUuid) {
+        return new Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic>() {
+            @Override
+            public Observable<BluetoothGattCharacteristic> call(Observable<BluetoothGattService> source) {
+                return source.map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
+                    @Override
+                    public BluetoothGattCharacteristic call(BluetoothGattService bluetoothGattService) {
+                        return bluetoothGattService.getCharacteristic(characteristicUuid);
+                    }
+                })
+                        .takeFirst(new Func1<BluetoothGattCharacteristic, Boolean>() {
+                            @Override
+                            public Boolean call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                                return bluetoothGattCharacteristic != null;
+                            }
+                        }); // Services may be empty;
+            }
         };
     }
 
     // TODO: [PU] 15.03.2016 Consider moving getDescriptor to the characteristic
-    public Observable<BluetoothGattDescriptor> getDescriptor(UUID characteristicUuid, UUID descriptorUuid) {
+    public Observable<BluetoothGattDescriptor> getDescriptor(final UUID characteristicUuid, final UUID descriptorUuid) {
         return getCharacteristic(characteristicUuid)
-                .map(bluetoothGattCharacteristic -> bluetoothGattCharacteristic.getDescriptor(descriptorUuid))
-                .filter(bluetoothGattDescriptor -> bluetoothGattDescriptor != null);
+                .map(new Func1<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
+                    @Override
+                    public BluetoothGattDescriptor call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                        return bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
+                    }
+                })
+                .filter(new Func1<Object, Boolean>() {
+                    @Override
+                    public Boolean call(Object bluetoothGattDescriptor) {
+                        return bluetoothGattDescriptor != null;
+                    }
+                });
     }
 
-    public Observable<BluetoothGattDescriptor> getDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
+    public Observable<BluetoothGattDescriptor> getDescriptor(
+            final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid
+    ) {
         return getService(serviceUuid)
-                .map(bluetoothGattService -> bluetoothGattService.getCharacteristic(characteristicUuid))
-                .map(bluetoothGattCharacteristic -> bluetoothGattCharacteristic.getDescriptor(descriptorUuid));
+                .map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
+                    @Override
+                    public BluetoothGattCharacteristic call(BluetoothGattService bluetoothGattService) {
+                        return bluetoothGattService.getCharacteristic(characteristicUuid);
+                    }
+                })
+                .map(new Func1<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
+                    @Override
+                    public BluetoothGattDescriptor call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                        return bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
+                    }
+                });
     }
 }

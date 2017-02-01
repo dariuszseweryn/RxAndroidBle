@@ -52,7 +52,12 @@ public class RxBleDeviceProvider {
             final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(
                     bluetoothDevice,
                     new RxBleConnectionConnectorImpl(bluetoothDevice,
-                            () -> new RxBleGattCallback(gattCallbacksProcessingScheduler),
+                            new RxBleGattCallback.Provider() {
+                                @Override
+                                public RxBleGattCallback provide() {
+                                    return new RxBleGattCallback(gattCallbacksProcessingScheduler);
+                                }
+                            },
                             new RxBleConnectionConnectorOperationsProvider(),
                             rxBleRadio,
                             bleConnectionCompat,

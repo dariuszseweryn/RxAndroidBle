@@ -1,27 +1,31 @@
 package com.polidea.rxandroidble.internal.cache;
 
 import android.support.annotation.Nullable;
-
 import com.polidea.rxandroidble.RxBleDevice;
-
-import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 import rx.Observable;
+import rx.functions.Action2;
 import rx.functions.Func0;
+import rx.functions.Func1;
 
 public class RxBleDeviceCache implements Map<String, RxBleDevice> {
 
     private final HashMap<String, DeviceWeakReference> cache = new HashMap<>();
+
     private final DeviceWeakReference.Provider deviceReferenceProvider;
 
     public RxBleDeviceCache() {
-        this(DeviceWeakReference::new);
+        this(new DeviceWeakReference.Provider() {
+            @Override
+            public DeviceWeakReference provide(RxBleDevice device) {
+                return new DeviceWeakReference(device);
+            }
+        });
     }
 
     RxBleDeviceCache(DeviceWeakReference.Provider provider) {
@@ -52,12 +56,35 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
     @Override
     public Set<Entry<String, RxBleDevice>> entrySet() {
         return Observable.from(cache.entrySet())
-                .filter(stringDeviceWeakReferenceEntry -> !stringDeviceWeakReferenceEntry.getValue().isEmpty())
-                .map(stringDeviceWeakReferenceEntry -> new CacheEntry(
-                        stringDeviceWeakReferenceEntry.getKey(),
-                        deviceReferenceProvider.provide(stringDeviceWeakReferenceEntry.getValue().get())
-                ))
-                .collect((Func0<HashSet<Entry<String, RxBleDevice>>>) HashSet::new, HashSet::add)
+                .filter(new Func1<Entry<String, DeviceWeakReference>, Boolean>() {
+                    @Override
+                    public Boolean call(Entry<String, DeviceWeakReference> stringDeviceWeakReferenceEntry) {
+                        return !stringDeviceWeakReferenceEntry.getValue().isEmpty();
+                    }
+                })
+                .map(new Func1<Entry<String, DeviceWeakReference>, CacheEntry>() {
+                    @Override
+                    public CacheEntry call(Entry<String, DeviceWeakReference> stringDeviceWeakReferenceEntry) {
+                        return new CacheEntry(
+                                stringDeviceWeakReferenceEntry.getKey(),
+                                deviceReferenceProvider.provide(stringDeviceWeakReferenceEntry.getValue().get())
+                        );
+                    }
+                })
+                .collect(
+                        new Func0<HashSet<Entry<String, RxBleDevice>>>() {
+                            @Override
+                            public HashSet<Entry<String, RxBleDevice>> call() {
+                                return new HashSet<>();
+                            }
+                        },
+                        new Action2<HashSet<Entry<String, RxBleDevice>>, CacheEntry>() {
+                            @Override
+                            public void call(HashSet<Entry<String, RxBleDevice>> entries, CacheEntry e) {
+                                entries.add(e);
+                            }
+                        }
+                )
                 .toBlocking().first();
     }
 
@@ -109,8 +136,18 @@ public class RxBleDeviceCache implements Map<String, RxBleDevice> {
     @Override
     public Collection<RxBleDevice> values() {
         return Observable.from(cache.values())
-                .filter(deviceWeakReference -> !deviceWeakReference.isEmpty())
-                .map(Reference::get)
+                .filter(new Func1<DeviceWeakReference, Boolean>() {
+                    @Override
+                    public Boolean call(DeviceWeakReference deviceWeakReference) {
+                        return !deviceWeakReference.isEmpty();
+                    }
+                })
+                .map(new Func1<DeviceWeakReference, RxBleDevice>() {
+                    @Override
+                    public RxBleDevice call(DeviceWeakReference deviceWeakReference) {
+                        return deviceWeakReference.get();
+                    }
+                })
                 .toList()
                 .toBlocking()
                 .first();

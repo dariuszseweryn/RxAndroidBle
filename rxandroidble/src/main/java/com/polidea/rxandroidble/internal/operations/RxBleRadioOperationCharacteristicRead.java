@@ -9,10 +9,14 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
+import com.polidea.rxandroidble.internal.util.ByteAssociation;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicRead extends RxBleRadioOperation<byte[]> {
 
@@ -38,16 +42,32 @@ public class RxBleRadioOperationCharacteristicRead extends RxBleRadioOperation<b
         //noinspection Convert2MethodRef
         final Subscription subscription = rxBleGattCallback
                 .getOnCharacteristicRead()
-                .filter(uuidPair -> uuidPair.first.equals(bluetoothGattCharacteristic.getUuid()))
-                .take(1)
-                .map(uuidPair -> uuidPair.second)
+                .takeFirst(new Func1<ByteAssociation<UUID>, Boolean>() {
+                    @Override
+                    public Boolean call(ByteAssociation<UUID> uuidPair) {
+                        return uuidPair.first.equals(bluetoothGattCharacteristic.getUuid());
+                    }
+                })
+                .map(new Func1<ByteAssociation<UUID>, byte[]>() {
+                    @Override
+                    public byte[] call(ByteAssociation<UUID> uuidPair) {
+                        return uuidPair.second;
+                    }
+                })
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_READ)),
+                        Observable.<byte[]>error(
+                                new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_READ)
+                        ),
                         timeoutScheduler
                 )
-                .doOnCompleted(() -> releaseRadio())
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationCharacteristicRead.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);

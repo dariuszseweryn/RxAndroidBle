@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothAdapter;
 
+import android.bluetooth.BluetoothDevice;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleLog;
@@ -20,10 +21,15 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     private volatile boolean isStarted = false;
     private volatile boolean isStopped = false;
 
-    private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
+    private final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
 
-        if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
-            onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
+            if (!RxBleRadioOperationScan.this.hasDefinedFilter()
+                    || RxBleRadioOperationScan.this.hasDefinedFilter()
+                    && RxBleRadioOperationScan.this.containsDesiredServiceIds(scanRecord)) {
+                RxBleRadioOperationScan.this.onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
+            }
         }
     };
 

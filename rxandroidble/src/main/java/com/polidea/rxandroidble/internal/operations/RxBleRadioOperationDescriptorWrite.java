@@ -10,10 +10,13 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
+import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Func1;
 
 public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte[]> {
 
@@ -56,16 +59,31 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleRadioOperation<byte
         //noinspection Convert2MethodRef
         final Subscription subscription = rxBleGattCallback
                 .getOnDescriptorWrite()
-                .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
+                .filter(new Func1<ByteAssociation<BluetoothGattDescriptor>, Boolean>() {
+                    @Override
+                    public Boolean call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
+                        return uuidPair.first.equals(bluetoothGattDescriptor);
+                    }
+                })
                 .first()
-                .map(uuidPair -> uuidPair.second)
+                .map(new Func1<ByteAssociation<BluetoothGattDescriptor>, byte[]>() {
+                    @Override
+                    public byte[] call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
+                        return uuidPair.second;
+                    }
+                })
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_WRITE)),
+                        Observable.<byte[]>error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_WRITE)),
                         timeoutScheduler
                 )
-                .doOnCompleted(() -> releaseRadio())
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationDescriptorWrite.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         bluetoothGattDescriptor.setValue(data);

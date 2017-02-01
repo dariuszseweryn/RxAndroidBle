@@ -33,6 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 class RxBleClientImpl extends RxBleClient {
@@ -146,11 +148,21 @@ class RxBleClientImpl extends RxBleClient {
         }
     }
 
-    private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
+    private Observable<RxBleInternalScanResult> bluetoothAdapterOffExceptionObservable() {
         return rxBleAdapterStateObservable
-                .filter(state -> state != BleAdapterState.STATE_ON)
+                .filter(new Func1<BleAdapterState, Boolean>() {
+                    @Override
+                    public Boolean call(BleAdapterState state) {
+                        return state != BleAdapterState.STATE_ON;
+                    }
+                })
                 .first()
-                .flatMap(status -> Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)));
+                .flatMap(new Func1<BleAdapterState, Observable<? extends RxBleInternalScanResult>>() {
+                    @Override
+                    public Observable<? extends RxBleInternalScanResult> call(BleAdapterState status) {
+                        return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
+                    }
+                });
     }
 
     private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResult scanResult) {
@@ -159,19 +171,27 @@ class RxBleClientImpl extends RxBleClient {
         return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());
     }
 
-    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> createScanOperation(@Nullable final UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
         final RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return rxBleRadio.queue(scanOperation)
-                .doOnUnsubscribe(() -> {
+                .doOnUnsubscribe(new Action0() {
+                    @Override
+                    public void call() {
 
-                    synchronized (queuedScanOperations) {
-                        scanOperation.stop();
-                        queuedScanOperations.remove(filteredUUIDs);
+                        synchronized (queuedScanOperations) {
+                            scanOperation.stop();
+                            queuedScanOperations.remove(filteredUUIDs);
+                        }
                     }
                 })
                 .mergeWith(bluetoothAdapterOffExceptionObservable())
-                .map(this::convertToPublicScanResult)
+                .map(new Func1<RxBleInternalScanResult, RxBleScanResult>() {
+                    @Override
+                    public RxBleScanResult call(RxBleInternalScanResult scanResult) {
+                        return RxBleClientImpl.this.convertToPublicScanResult(scanResult);
+                    }
+                })
                 .share();
     }
 }

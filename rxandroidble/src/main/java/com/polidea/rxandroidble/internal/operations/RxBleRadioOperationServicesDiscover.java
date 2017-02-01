@@ -10,11 +10,15 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Func0;
+import rx.functions.Func1;
 
 public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxBleDeviceServices> {
 
@@ -49,7 +53,12 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
                 .getOnServicesDiscovered()
                 .first()
                 .timeout(timeout, timeoutTimeUnit, timeoutFallbackProcedure(), timeoutScheduler)
-                .doOnTerminate(() -> releaseRadio())
+                .doOnTerminate(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationServicesDiscover.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.discoverServices();
@@ -72,20 +81,33 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
      */
     @NonNull
     private Observable<RxBleDeviceServices> timeoutFallbackProcedure() {
-        return Observable.defer(() -> {
-            final List<BluetoothGattService> services = bluetoothGatt.getServices();
-            if (services.size() == 0) {
-                // if after the timeout services are empty we have no other option to declare a failed discovery
-                return Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
-            } else {
+        return Observable.defer(new Func0<Observable<RxBleDeviceServices>>() {
+            @Override
+            public Observable<RxBleDeviceServices> call() {
+                final List<BluetoothGattService> services = bluetoothGatt.getServices();
+                if (services.size() == 0) {
+                    // if after the timeout services are empty we have no other option to declare a failed discovery
+                    return Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
+                } else {
                 /*
                 it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time
                 if there are some services available we will wait for 5 more seconds just to be sure that
                 the timeout was not triggered right in the moment of filling the services and then emit a value.
                  */
-                return Observable
-                        .timer(5, TimeUnit.SECONDS, timeoutScheduler)
-                        .flatMap(t -> Observable.fromCallable(() -> new RxBleDeviceServices(bluetoothGatt.getServices())));
+                    return Observable
+                            .timer(5, TimeUnit.SECONDS, timeoutScheduler)
+                            .flatMap(new Func1<Long, Observable<RxBleDeviceServices>>() {
+                                @Override
+                                public Observable<RxBleDeviceServices> call(Long t) {
+                                    return Observable.fromCallable(new Callable<RxBleDeviceServices>() {
+                                        @Override
+                                        public RxBleDeviceServices call() throws Exception {
+                                            return new RxBleDeviceServices(bluetoothGatt.getServices());
+                                        }
+                                    });
+                                }
+                            });
+                }
             }
         });
     }

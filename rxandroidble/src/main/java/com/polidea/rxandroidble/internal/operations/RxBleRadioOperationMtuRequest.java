@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> {
@@ -54,10 +55,15 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
                 .timeout(
                         timeout,
                         timeoutTimeUnit,
-                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED)),
+                        Observable.<Integer>error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED)),
                         timeoutScheduler
                 )
-                .doOnTerminate(() -> releaseRadio())
+                .doOnTerminate(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationMtuRequest.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         boolean success = bluetoothGatt.requestMtu(mtu);

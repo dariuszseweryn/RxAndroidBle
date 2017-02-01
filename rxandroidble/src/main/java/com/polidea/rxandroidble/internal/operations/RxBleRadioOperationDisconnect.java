@@ -12,6 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import rx.Observable;
 import rx.Scheduler;
+import rx.Subscriber;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func1;
 
 public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
@@ -33,14 +37,45 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     protected void protectedRun() {
         //noinspection Convert2MethodRef
         just(bluetoothGattAtomicReference.get())
-                .filter(bluetoothGatt -> bluetoothGatt != null)
-                .flatMap(bluetoothGatt -> isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
-                .doOnTerminate(() -> releaseRadio())
+                .filter(new Func1<BluetoothGatt, Boolean>() {
+                    @Override
+                    public Boolean call(BluetoothGatt bluetoothGatt) {
+                        return bluetoothGatt != null;
+                    }
+                })
+                .flatMap(new Func1<BluetoothGatt, Observable<BluetoothGatt>>() {
+                    @Override
+                    public Observable<BluetoothGatt> call(BluetoothGatt bluetoothGatt) {
+                        return RxBleRadioOperationDisconnect.this.isDisconnected(bluetoothGatt)
+                                ? just(bluetoothGatt) : RxBleRadioOperationDisconnect.this.disconnect(bluetoothGatt);
+                    }
+                })
+                .doOnTerminate(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationDisconnect.this.releaseRadio();
+                    }
+                })
                 .observeOn(mainThreadScheduler)
                 .subscribe(
-                        bluetoothGatt -> bluetoothGatt.close(),
-                        throwable -> onError(throwable),
-                        () -> onCompleted()
+                        new Action1<BluetoothGatt>() {
+                            @Override
+                            public void call(BluetoothGatt bluetoothGatt) {
+                                bluetoothGatt.close();
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                RxBleRadioOperationDisconnect.this.onError(throwable);
+                            }
+                        },
+                        new Action0() {
+                            @Override
+                            public void call() {
+                                RxBleRadioOperationDisconnect.this.onCompleted();
+                            }
+                        }
                 );
     }
 
@@ -62,18 +97,36 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     private static class DisconnectGattObservable extends Observable<BluetoothGatt> {
 
         DisconnectGattObservable(
-                BluetoothGatt bluetoothGatt,
-                RxBleGattCallback rxBleGattCallback,
-                Scheduler disconnectScheduler
+                final BluetoothGatt bluetoothGatt,
+                final RxBleGattCallback rxBleGattCallback,
+                final Scheduler disconnectScheduler
         ) {
-            super(subscriber -> {
-                rxBleGattCallback
-                        .getOnConnectionStateChange()
-                        .filter(rxBleConnectionState -> rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED)
-                        .take(1)
-                        .map(rxBleConnectionState -> bluetoothGatt)
-                        .subscribe(subscriber);
-                disconnectScheduler.createWorker().schedule(bluetoothGatt::disconnect);
+            super(new OnSubscribe<BluetoothGatt>() {
+                @Override
+                public void call(Subscriber<? super BluetoothGatt> subscriber) {
+                    rxBleGattCallback
+                            .getOnConnectionStateChange()
+                            .filter(new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
+                                @Override
+                                public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
+                                    return rxBleConnectionState == RxBleConnection.RxBleConnectionState.DISCONNECTED;
+                                }
+                            })
+                            .take(1)
+                            .map(new Func1<RxBleConnection.RxBleConnectionState, BluetoothGatt>() {
+                                @Override
+                                public BluetoothGatt call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
+                                    return bluetoothGatt;
+                                }
+                            })
+                            .subscribe(subscriber);
+                    disconnectScheduler.createWorker().schedule(new Action0() {
+                        @Override
+                        public void call() {
+                            bluetoothGatt.disconnect();
+                        }
+                    });
+                }
             });
         }
     }

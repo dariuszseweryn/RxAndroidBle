@@ -15,6 +15,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import rx.Observable;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -56,17 +59,33 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
-        return Observable.defer(() -> {
-            if (isConnected.compareAndSet(false, true)) {
-                return emitConnectionWithoutCompleting()
-                        .doOnSubscribe(() -> connectionStateBehaviorSubject.onNext(CONNECTING))
-                        .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
-                        .doOnUnsubscribe(() -> {
-                            connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                            isConnected.set(false);
-                        });
-            } else {
-                return Observable.error(new BleAlreadyConnectedException(macAddress));
+        return Observable.defer(new Func0<Observable<RxBleConnection>>() {
+            @Override
+            public Observable<RxBleConnection> call() {
+                if (isConnected.compareAndSet(false, true)) {
+                    return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
+                            .doOnSubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    connectionStateBehaviorSubject.onNext(CONNECTING);
+                                }
+                            })
+                            .doOnNext(new Action1<RxBleConnection>() {
+                                @Override
+                                public void call(RxBleConnection rxBleConnection) {
+                                    connectionStateBehaviorSubject.onNext(CONNECTED);
+                                }
+                            })
+                            .doOnUnsubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    connectionStateBehaviorSubject.onNext(DISCONNECTED);
+                                    isConnected.set(false);
+                                }
+                            });
+                } else {
+                    return Observable.error(new BleAlreadyConnectedException(macAddress));
+                }
             }
         });
     }

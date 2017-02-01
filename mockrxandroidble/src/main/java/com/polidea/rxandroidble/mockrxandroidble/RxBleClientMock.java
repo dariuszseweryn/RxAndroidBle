@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import rx.Observable;
+import rx.functions.Func1;
 import rx.subjects.ReplaySubject;
 
 /**
@@ -91,7 +92,7 @@ public class RxBleClientMock extends RxBleClient {
          * are optional.
          */
         public DeviceBuilder() {
-            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<>());
+            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<BluetoothGattService>());
             this.characteristicNotificationSources = new HashMap<>();
         }
 
@@ -257,9 +258,14 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @Override
-    public RxBleDevice getBleDevice(@NonNull String macAddress) {
+    public RxBleDevice getBleDevice(@NonNull final String macAddress) {
         RxBleDevice rxBleDevice = discoveredDevicesSubject
-            .first(device -> device.getMacAddress().equals(macAddress))
+            .first(new Func1<RxBleDeviceMock, Boolean>() {
+                @Override
+                public Boolean call(RxBleDeviceMock device) {
+                    return device.getMacAddress().equals(macAddress);
+                }
+            })
             .toBlocking().first();
 
         if (rxBleDevice == null) {
@@ -284,10 +290,20 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @NonNull
-    private Observable<RxBleScanResult> createScanOperation(@Nullable UUID[] filterServiceUUIDs) {
+    private Observable<RxBleScanResult> createScanOperation(@Nullable final UUID[] filterServiceUUIDs) {
         return discoveredDevicesSubject
-                .filter(rxBleDevice -> filterDevice(rxBleDevice, filterServiceUUIDs))
-                .map(this::createRxBleScanResult);
+                .filter(new Func1<RxBleDeviceMock, Boolean>() {
+                    @Override
+                    public Boolean call(RxBleDeviceMock rxBleDevice) {
+                        return RxBleClientMock.this.filterDevice(rxBleDevice, filterServiceUUIDs);
+                    }
+                })
+                .map(new Func1<RxBleDeviceMock, RxBleScanResult>() {
+                    @Override
+                    public RxBleScanResult call(RxBleDeviceMock rxBleDeviceMock) {
+                        return RxBleClientMock.this.createRxBleScanResult(rxBleDeviceMock);
+                    }
+                });
     }
 
     @NonNull

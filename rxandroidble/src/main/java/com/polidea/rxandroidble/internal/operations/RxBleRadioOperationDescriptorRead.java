@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Func1;
 
 public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteAssociation<BluetoothGattDescriptor>> {
 
@@ -38,15 +40,27 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteA
         //noinspection Convert2MethodRef
         final Subscription subscription = rxBleGattCallback
                 .getOnDescriptorRead()
-                .filter(uuidPair -> uuidPair.first.equals(bluetoothGattDescriptor))
+                .filter(new Func1<ByteAssociation<BluetoothGattDescriptor>, Boolean>() {
+                    @Override
+                    public Boolean call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
+                        return uuidPair.first.equals(bluetoothGattDescriptor);
+                    }
+                })
                 .first()
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_READ)),
+                        Observable.<ByteAssociation<BluetoothGattDescriptor>>error(
+                                new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_READ)
+                        ),
                         timeoutScheduler
                 )
-                .doOnCompleted(() -> releaseRadio())
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationDescriptorRead.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.readDescriptor(bluetoothGattDescriptor);

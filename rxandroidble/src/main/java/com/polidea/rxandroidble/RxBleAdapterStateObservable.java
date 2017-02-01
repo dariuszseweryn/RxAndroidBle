@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -37,19 +38,29 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
     }
 
-    public RxBleAdapterStateObservable(@NonNull Context context) {
-        super(subscriber -> onSubscribe(context.getApplicationContext(), subscriber));
+    public RxBleAdapterStateObservable(@NonNull final Context context) {
+        super(new OnSubscribe<BleAdapterState>() {
+            @Override
+            public void call(Subscriber<? super BleAdapterState> subscriber) {
+                onSubscribe(context.getApplicationContext(), subscriber);
+            }
+        });
     }
 
-    private static void onSubscribe(Context context, final Subscriber<? super BleAdapterState> subscriber) {
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+    private static void onSubscribe(final Context context, final Subscriber<? super BleAdapterState> subscriber) {
+        final BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 onStateBroadcastReceived(intent, subscriber);
             }
         };
         context.registerReceiver(receiver, createFilter());
-        subscriber.add(Subscriptions.create(() -> context.unregisterReceiver(receiver)));
+        subscriber.add(Subscriptions.create(new Action0() {
+            @Override
+            public void call() {
+                context.unregisterReceiver(receiver);
+            }
+        }));
     }
 
     private static void onStateBroadcastReceived(Intent intent, Subscriber<? super BleAdapterState> subscriber) {

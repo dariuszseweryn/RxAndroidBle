@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action0;
 
 public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
 
@@ -36,10 +37,15 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.READ_RSSI)),
+                        Observable.<Integer>error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.READ_RSSI)),
                         timeoutScheduler
                 )
-                .doOnCompleted(() -> releaseRadio())
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        RxBleRadioOperationReadRssi.this.releaseRadio();
+                    }
+                })
                 .subscribe(getSubscriber());
 
         final boolean success = bluetoothGatt.readRemoteRssi();

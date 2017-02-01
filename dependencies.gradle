@@ -2,11 +2,10 @@ ext {
     supportVersion = '25.0.0'
     buildToolsVersionVariable = "25.0.0"
     rxJavaVersion = '1.2.3'
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
-    targetCompatibilityVersion = JavaVersion.VERSION_1_8
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
+    targetCompatibilityVersion = JavaVersion.VERSION_1_7
     libs = [
             /* Application dependencies */
-            retrolambda        : 'net.orfjackal.retrolambda:retrolambda:2.3.0',
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
             rxjava             : ["io.reactivex:rxjava:$rxJavaVersion",

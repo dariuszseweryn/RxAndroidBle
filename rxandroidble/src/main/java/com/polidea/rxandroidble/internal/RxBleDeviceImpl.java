@@ -10,6 +10,9 @@ import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import rx.Observable;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -39,20 +42,36 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
-    public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
-        return Observable.defer(() -> {
+    public Observable<RxBleConnection> establishConnection(final Context context, final boolean autoConnect) {
+        return Observable.defer(new Func0<Observable<RxBleConnection>>() {
+            @Override
+            public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(context, autoConnect)
-                            .doOnSubscribe(() -> connectionStateSubject.onNext(CONNECTING))
-                            .doOnNext(rxBleConnection -> connectionStateSubject.onNext(CONNECTED))
-                            .doOnUnsubscribe(() -> {
-                                connectionStateSubject.onNext(DISCONNECTED);
-                                isConnected.set(false);
+                            .doOnSubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    connectionStateSubject.onNext(CONNECTING);
+                                }
+                            })
+                            .doOnNext(new Action1<RxBleConnection>() {
+                                @Override
+                                public void call(RxBleConnection rxBleConnection) {
+                                    connectionStateSubject.onNext(CONNECTED);
+                                }
+                            })
+                            .doOnUnsubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    connectionStateSubject.onNext(DISCONNECTED);
+                                    isConnected.set(false);
+                                }
                             });
                 } else {
                     return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
                 }
+            }
         });
     }
 

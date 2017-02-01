@@ -1,5 +1,11 @@
 package com.polidea.rxandroidble.internal.connection;
 
+import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
+import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+import static rx.Observable.error;
+import static rx.Observable.just;
+
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -7,7 +13,6 @@ import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
@@ -20,23 +25,21 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescripto
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationMtuRequest;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
+import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action0;
+import rx.functions.Actions;
+import rx.functions.Func0;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-
-import static android.bluetooth.BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
-import static android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
-import static android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
-import static rx.Observable.error;
-import static rx.Observable.just;
 
 public class RxBleConnectionImpl implements RxBleConnection {
 
@@ -124,14 +127,25 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return discoverServices()
-                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid));
+                .flatMap(new Func1<RxBleDeviceServices, Observable<? extends BluetoothGattCharacteristic>>() {
+                    @Override
+                    public Observable<? extends BluetoothGattCharacteristic> call(RxBleDeviceServices rxBleDeviceServices) {
+                        return rxBleDeviceServices.getCharacteristic(characteristicUuid);
+                    }
+                });
     }
 
     @Override
     public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid) {
-        return getCharacteristic(characteristicUuid).flatMap(this::setupNotification);
+        return getCharacteristic(characteristicUuid).flatMap(
+                new Func1<BluetoothGattCharacteristic, Observable<? extends Observable<byte[]>>>() {
+                    @Override
+                    public Observable<? extends Observable<byte[]>> call(BluetoothGattCharacteristic characteristic) {
+                        return setupNotification(characteristic);
+                    }
+                });
     }
 
     @Override
@@ -141,7 +155,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid) {
-        return getCharacteristic(characteristicUuid).flatMap(this::setupIndication);
+        return getCharacteristic(characteristicUuid).flatMap(
+                new Func1<BluetoothGattCharacteristic, Observable<? extends Observable<byte[]>>>() {
+                    @Override
+                    public Observable<? extends Observable<byte[]>> call(BluetoothGattCharacteristic characteristic) {
+                        return setupIndication(characteristic);
+                    }
+                });
     }
 
     @Override
@@ -150,75 +170,113 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     private synchronized Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
-            @NonNull BluetoothGattCharacteristic characteristic, boolean withAck
+            @NonNull final BluetoothGattCharacteristic characteristic, final boolean withAck
     ) {
-        return Observable.defer(() -> {
-            synchronized (this) {
-                final int characteristicInstanceId = characteristic.getInstanceId();
+        return Observable.defer(new Func0<Observable<Observable<byte[]>>>() {
+            @Override
+            public Observable<Observable<byte[]>> call() {
+                synchronized (RxBleConnectionImpl.this) {
+                    final int characteristicInstanceId = characteristic.getInstanceId();
 
-                final HashMap<Integer, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
-                        withAck ? notificationObservableMap : indicationObservableMap;
-                final boolean conflictingNotificationIsAlreadySet =
-                        conflictingServerInitiatedReadingMap.containsKey(characteristicInstanceId);
+                    final HashMap<Integer, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap =
+                            withAck ? notificationObservableMap : indicationObservableMap;
+                    final boolean conflictingNotificationIsAlreadySet =
+                            conflictingServerInitiatedReadingMap.containsKey(characteristicInstanceId);
 
-                if (conflictingNotificationIsAlreadySet) {
-                    return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
+                    if (conflictingNotificationIsAlreadySet) {
+                        return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
+                    }
+
+                    final HashMap<Integer, Observable<Observable<byte[]>>> sameNotificationTypeMap
+                            = withAck ? indicationObservableMap : notificationObservableMap;
+
+                    final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicInstanceId);
+
+                    if (availableObservable != null) {
+                        return availableObservable;
+                    }
+
+                    final byte[] enableNotificationTypeValue = withAck ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
+
+                    final Observable<Observable<byte[]>> newObservable = RxBleConnectionImpl.this.createTriggeredReadObservable(
+                            characteristic,
+                            enableNotificationTypeValue
+                    )
+                            .doOnUnsubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    RxBleConnectionImpl.this
+                                            .dismissTriggeredRead(characteristic, sameNotificationTypeMap, enableNotificationTypeValue);
+                                }
+                            })
+                            .map(new Func1<byte[], Observable<byte[]>>() {
+                                @Override
+                                public Observable<byte[]> call(byte[] notificationDescriptorData) {
+                                    return RxBleConnectionImpl.this.observeOnCharacteristicChangeCallbacks(characteristicInstanceId);
+                                }
+                            })
+                            .replay(1)
+                            .refCount();
+                    sameNotificationTypeMap.put(characteristicInstanceId, newObservable);
+                    return newObservable;
                 }
-
-                final HashMap<Integer, Observable<Observable<byte[]>>> sameNotificationTypeMap
-                        = withAck ? indicationObservableMap : notificationObservableMap;
-
-                final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(characteristicInstanceId);
-
-                if (availableObservable != null) {
-                    return availableObservable;
-                }
-
-                byte[] enableNotificationTypeValue = withAck ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
-
-                final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(
-                        characteristic,
-                        enableNotificationTypeValue
-                )
-                        .doOnUnsubscribe(() -> dismissTriggeredRead(characteristic, sameNotificationTypeMap, enableNotificationTypeValue))
-                        .map(notificationDescriptorData -> observeOnCharacteristicChangeCallbacks(characteristicInstanceId))
-                        .replay(1)
-                        .refCount();
-                sameNotificationTypeMap.put(characteristicInstanceId, newObservable);
-                return newObservable;
             }
         });
     }
 
-    private Observable<byte[]> createTriggeredReadObservable(BluetoothGattCharacteristic characteristic, byte[] enableValue) {
+    private Observable<byte[]> createTriggeredReadObservable(BluetoothGattCharacteristic characteristic, final byte[] enableValue) {
         return getClientCharacteristicConfig(characteristic)
-                .flatMap(descriptor -> setupCharacteristicTriggeredRead(descriptor, true, enableValue))
-                .flatMap(ObservableUtil::justOnNext);
+                .flatMap(new Func1<BluetoothGattDescriptor, Observable<byte[]>>() {
+                    @Override
+                    public Observable<byte[]> call(BluetoothGattDescriptor descriptor) {
+                        return RxBleConnectionImpl.this.setupCharacteristicTriggeredRead(descriptor, true, enableValue);
+                    }
+                })
+                .flatMap(new Func1<byte[], Observable<? extends byte[]>>() {
+                    @Override
+                    public Observable<? extends byte[]> call(byte[] onNext) {
+                        return ObservableUtil.justOnNext(onNext);
+                    }
+                });
     }
 
     private void dismissTriggeredRead(
             BluetoothGattCharacteristic characteristic,
             HashMap<Integer, Observable<Observable<byte[]>>> notificationTypeMap,
-            byte[] enableValue
+            final byte[] enableValue
     ) {
         synchronized (this) {
             notificationTypeMap.remove(characteristic.getInstanceId());
         }
 
         getClientCharacteristicConfig(characteristic)
-                .flatMap(descriptor -> setupCharacteristicTriggeredRead(descriptor, false, enableValue))
+                .flatMap(new Func1<BluetoothGattDescriptor, Observable<byte[]>>() {
+                    @Override
+                    public Observable<byte[]> call(BluetoothGattDescriptor descriptor) {
+                        return RxBleConnectionImpl.this.setupCharacteristicTriggeredRead(descriptor, false, enableValue);
+                    }
+                })
                 .subscribe(
-                        ignored -> {
-                        },
-                        ignored -> {
-                        });
+                        Actions.empty(),
+                        Actions.<Throwable>toAction1(Actions.empty())
+                );
     }
 
     @NonNull
-    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(Integer characteristicInstanceId) {
+    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(final Integer characteristicInstanceId) {
         return gattCallback.getOnCharacteristicChanged()
-                .filter(uuidPair -> uuidPair.first.equals(characteristicInstanceId))
-                .map(uuidPair -> uuidPair.second);
+                .filter(new Func1<ByteAssociation<Integer>, Boolean>() {
+                    @Override
+                    public Boolean call(ByteAssociation<Integer> uuidPair) {
+                        return uuidPair.first.equals(characteristicInstanceId);
+                    }
+                })
+                .map(new Func1<ByteAssociation<Integer>, byte[]>() {
+                    @Override
+                    public byte[] call(ByteAssociation<Integer> uuidPair) {
+                        return uuidPair.second;
+                    }
+                });
     }
 
     @NonNull
@@ -229,20 +287,28 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
         if (bluetoothGatt.setCharacteristicNotification(characteristic, enabled)) {
             return writeDescriptor(bluetoothGattDescriptor, enabled ? enableValue : DISABLE_NOTIFICATION_VALUE)
-                    .onErrorResumeNext(throwable -> error(new BleCannotSetCharacteristicNotificationException(characteristic)));
+                    .onErrorResumeNext(new Func1<Throwable, Observable<? extends byte[]>>() {
+                        @Override
+                        public Observable<? extends byte[]> call(Throwable throwable) {
+                            return error(new BleCannotSetCharacteristicNotificationException(characteristic));
+                        }
+                    });
         } else {
             return error(new BleCannotSetCharacteristicNotificationException(characteristic));
         }
     }
 
-    private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(BluetoothGattCharacteristic characteristic) {
-        return Observable.fromCallable(() -> {
-            final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
+    private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(final BluetoothGattCharacteristic characteristic) {
+        return Observable.fromCallable(new Callable<BluetoothGattDescriptor>() {
+            @Override
+            public BluetoothGattDescriptor call() throws Exception {
+                final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
 
-            if (descriptor == null) {
-                throw new BleCannotSetCharacteristicNotificationException(characteristic);
-            } else {
-                return descriptor;
+                if (descriptor == null) {
+                    throw new BleCannotSetCharacteristicNotificationException(characteristic);
+                } else {
+                    return descriptor;
+                }
             }
         });
     }
@@ -250,7 +316,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
         return getCharacteristic(characteristicUuid)
-                .flatMap(this::readCharacteristic);
+                .flatMap(new Func1<BluetoothGattCharacteristic, Observable<? extends byte[]>>() {
+                    @Override
+                    public Observable<? extends byte[]> call(BluetoothGattCharacteristic characteristic) {
+                        return readCharacteristic(characteristic);
+                    }
+                });
     }
 
     @Override
@@ -263,16 +334,28 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data) {
+    public Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull final byte[] data) {
         return getCharacteristic(characteristicUuid)
-                .flatMap(characteristic -> writeCharacteristic(characteristic, data));
+                .flatMap(new Func1<BluetoothGattCharacteristic, Observable<? extends byte[]>>() {
+                    @Override
+                    public Observable<? extends byte[]> call(BluetoothGattCharacteristic characteristic) {
+                        return writeCharacteristic(characteristic, data);
+                    }
+                });
     }
 
     @Deprecated
     @Override
-    public Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public Observable<BluetoothGattCharacteristic> writeCharacteristic(
+            @NonNull final BluetoothGattCharacteristic bluetoothGattCharacteristic
+    ) {
         return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
-                .map(bytes -> bluetoothGattCharacteristic);
+                .map(new Func1<byte[], BluetoothGattCharacteristic>() {
+                    @Override
+                    public BluetoothGattCharacteristic call(byte[] bytes) {
+                        return bluetoothGattCharacteristic;
+                    }
+                });
     }
 
     @Override
@@ -286,10 +369,20 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
+    public Observable<byte[]> readDescriptor(final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid) {
         return discoverServices()
-                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
-                .flatMap(this::readDescriptor);
+                .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
+                    @Override
+                    public Observable<BluetoothGattDescriptor> call(RxBleDeviceServices rxBleDeviceServices) {
+                        return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
+                    }
+                })
+                .flatMap(new Func1<BluetoothGattDescriptor, Observable<byte[]>>() {
+                    @Override
+                    public Observable<byte[]> call(BluetoothGattDescriptor descriptor) {
+                        return readDescriptor(descriptor);
+                    }
+                });
     }
 
     @Override
@@ -297,14 +390,31 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return rxBleRadio.queue(
                 new RxBleRadioOperationDescriptorRead(gattCallback, bluetoothGatt, descriptor, timeoutScheduler)
         )
-                .map(bluetoothGattDescriptorPair -> bluetoothGattDescriptorPair.second);
+                .map(new Func1<ByteAssociation<BluetoothGattDescriptor>, byte[]>() {
+                    @Override
+                    public byte[] call(ByteAssociation<BluetoothGattDescriptor> bluetoothGattDescriptorPair) {
+                        return bluetoothGattDescriptorPair.second;
+                    }
+                });
     }
 
     @Override
-    public Observable<byte[]> writeDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid, byte[] data) {
+    public Observable<byte[]> writeDescriptor(
+            final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid, final byte[] data
+    ) {
         return discoverServices()
-                .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid))
-                .flatMap(bluetoothGattDescriptor -> writeDescriptor(bluetoothGattDescriptor, data));
+                .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
+                    @Override
+                    public Observable<BluetoothGattDescriptor> call(RxBleDeviceServices rxBleDeviceServices) {
+                        return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
+                    }
+                })
+                .flatMap(new Func1<BluetoothGattDescriptor, Observable<? extends byte[]>>() {
+                    @Override
+                    public Observable<? extends byte[]> call(BluetoothGattDescriptor bluetoothGattDescriptor) {
+                        return RxBleConnectionImpl.this.writeDescriptor(bluetoothGattDescriptor, data);
+                    }
+                });
     }
 
     @Override

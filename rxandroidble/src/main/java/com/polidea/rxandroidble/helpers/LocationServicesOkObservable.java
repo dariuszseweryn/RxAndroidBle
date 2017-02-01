@@ -27,7 +27,7 @@ import rx.internal.operators.OnSubscribeFromEmitter;
  */
 public class LocationServicesOkObservable extends Observable<Boolean> {
 
-    public static LocationServicesOkObservable createInstance(@NonNull Context context) {
+    public static LocationServicesOkObservable createInstance(@NonNull final Context context) {
         final Context applicationContext = context.getApplicationContext();
         final LocationManager locationManager = (LocationManager) applicationContext.getSystemService(Context.LOCATION_SERVICE);
         final ProviderDeviceSdk providerDeviceSdk = new ProviderDeviceSdk();
@@ -43,16 +43,16 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
         return new LocationServicesOkObservable(applicationContext, locationServicesStatus);
     }
 
-    LocationServicesOkObservable(@NonNull Context context, @NonNull LocationServicesStatus locationServicesStatus) {
+    LocationServicesOkObservable(@NonNull final Context context, @NonNull final LocationServicesStatus locationServicesStatus) {
         super(new OnSubscribeFromEmitter<>(
                 new Action1<Emitter<Boolean>>() {
                     @Override
-                    public void call(Emitter<Boolean> emitter) {
+                    public void call(final Emitter<Boolean> emitter) {
                         final boolean locationProviderOk = locationServicesStatus.isLocationProviderOk();
                         final AtomicBoolean locationProviderOkAtomicBoolean = new AtomicBoolean(locationProviderOk);
                         emitter.onNext(locationProviderOk);
 
-                        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+                        final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
                                 final boolean newLocationProviderOkValue = locationServicesStatus.isLocationProviderOk();

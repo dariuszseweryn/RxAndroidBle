@@ -5,6 +5,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Observable;
+import rx.functions.Action0;
 
 /**
  * Observable transformer that can be used to share connection between many subscribers.
@@ -44,7 +45,12 @@ public class ConnectionSharingAdapter implements Observable.Transformer<RxBleCon
             }
 
             final Observable<RxBleConnection> newConnectionObservable = source
-                    .doOnUnsubscribe(() -> connectionObservable.set(null))
+                    .doOnUnsubscribe(new Action0() {
+                        @Override
+                        public void call() {
+                            connectionObservable.set(null);
+                        }
+                    })
                     .replay(1)
                     .refCount();
             connectionObservable.set(newConnectionObservable);

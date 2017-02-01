@@ -16,6 +16,8 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 import rx.subjects.SerializedSubject;
@@ -41,9 +43,24 @@ public class RxBleGattCallback {
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
     private final Observable disconnectedErrorObservable = connectionStatePublishSubject
-            .filter(this::isDisconnectedOrDisconnecting)
-            .flatMap(rxBleConnectionState -> Observable.error(new BleDisconnectedException()))
-            .doOnTerminate(bluetoothGattBehaviorSubject::onCompleted)
+            .filter(new Func1<RxBleConnectionState, Boolean>() {
+                @Override
+                public Boolean call(RxBleConnectionState rxBleConnectionState) {
+                    return RxBleGattCallback.this.isDisconnectedOrDisconnecting(rxBleConnectionState);
+                }
+            })
+            .flatMap(new Func1<RxBleConnectionState, Observable<?>>() {
+                @Override
+                public Observable<?> call(RxBleConnectionState rxBleConnectionState) {
+                    return Observable.error(new BleDisconnectedException());
+                }
+            })
+            .doOnTerminate(new Action0() {
+                @Override
+                public void call() {
+                    bluetoothGattBehaviorSubject.onCompleted();
+                }
+            })
             .replay()
             .autoConnect(0);
 
