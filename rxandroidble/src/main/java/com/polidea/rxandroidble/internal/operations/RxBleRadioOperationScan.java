@@ -2,6 +2,8 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.DeadObjectException;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleLog;
@@ -76,5 +78,10 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
             // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
             rxBleAdapterWrapper.stopLeScan(leScanCallback);
         }
+    }
+
+    @Override
+    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
+        return new BleDisconnectedException(deadObjectException, null);
     }
 }

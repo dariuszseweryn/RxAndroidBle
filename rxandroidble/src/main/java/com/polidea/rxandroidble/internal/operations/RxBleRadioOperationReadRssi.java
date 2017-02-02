@@ -1,43 +1,34 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
-
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 
-public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
-
-    private final RxBleGattCallback bleGattCallback;
-
-    private final BluetoothGatt bluetoothGatt;
+public class RxBleRadioOperationReadRssi extends RxBleGattRadioOperation<Integer> {
 
     private final Scheduler timeoutScheduler;
 
     public RxBleRadioOperationReadRssi(RxBleGattCallback bleGattCallback, BluetoothGatt bluetoothGatt, Scheduler timeoutScheduler) {
-        this.bleGattCallback = bleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
+        super(bluetoothGatt, bleGattCallback, BleGattOperationType.READ_RSSI);
         this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
     protected void protectedRun() {
         //noinspection Convert2MethodRef
-        final Subscription subscription = bleGattCallback
+        final Subscription subscription = rxBleGattCallback
                 .getOnRssiRead()
                 .take(1)
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.<Integer>error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.READ_RSSI)),
+                        Observable.<Integer>error(newTimeoutException()),
                         timeoutScheduler
                 )
                 .doOnCompleted(new Action0() {
@@ -51,7 +42,7 @@ public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
         final boolean success = bluetoothGatt.readRemoteRssi();
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.READ_RSSI));
+            onError(newCannotStartException());
         }
     }
 }

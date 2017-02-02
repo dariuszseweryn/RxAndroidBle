@@ -43,7 +43,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
         try {
             protectedRun();
         } catch (DeadObjectException deadObjectException) {
-            onError(new BleDisconnectedException(deadObjectException));
+            onError(provideBleDisconnectedException(deadObjectException));
         } catch (Throwable throwable) {
             onError(throwable);
         }
@@ -54,6 +54,12 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
      * will contain specific operation logic.
      */
     protected abstract void protectedRun() throws Throwable;
+
+    /**
+     * This function will be overriden in concrete operation implementations to provide an exception with needed context
+     * @param deadObjectException the cause for the exception
+     */
+    protected abstract BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException);
 
     /**
      * A convenience method for getting a representation of the Subscriber

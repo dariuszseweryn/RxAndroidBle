@@ -48,11 +48,14 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
-                if (!rxBleAdapterWrapper.isBluetoothEnabled()) return Observable.error(new BleDisconnectedException());
+                if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+                    return Observable.error(new BleDisconnectedException(bluetoothDevice.getAddress()));
+                }
 
                 final RxBleGattCallback gattCallback = gattCallbackProvider.provide();
                 final RxBleOperations operationsPair =
                         operationsProvider.provide(context, bluetoothDevice, autoConnect, connectionCompat, gattCallback);
+
 
                 return Observable.merge(
                         rxBleRadio.queue(operationsPair.connect),
@@ -66,7 +69,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
                                 .flatMap(new Func1<BleAdapterState, Observable<BluetoothGatt>>() {
                                     @Override
                                     public Observable<BluetoothGatt> call(BleAdapterState bleAdapterState) {
-                                        return Observable.error(new BleDisconnectedException());
+                                        return Observable.error(new BleDisconnectedException(bluetoothDevice.getAddress()));
                                     }
                                 })
                 )

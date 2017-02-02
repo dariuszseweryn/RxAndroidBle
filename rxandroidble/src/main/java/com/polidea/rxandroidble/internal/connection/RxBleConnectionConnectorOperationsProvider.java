@@ -40,6 +40,7 @@ public class RxBleConnectionConnectorOperationsProvider {
                 autoConnect);
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
                 gattCallback,
+                bluetoothDevice.getAddress(),
                 bluetoothGattAtomicReference,
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE),
                 AndroidSchedulers.mainThread()

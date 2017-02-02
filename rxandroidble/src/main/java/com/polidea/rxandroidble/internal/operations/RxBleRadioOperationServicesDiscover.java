@@ -4,10 +4,8 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -20,11 +18,7 @@ import rx.functions.Action0;
 import rx.functions.Func0;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxBleDeviceServices> {
-
-    private final RxBleGattCallback rxBleGattCallback;
-
-    private final BluetoothGatt bluetoothGatt;
+public class RxBleRadioOperationServicesDiscover extends RxBleGattRadioOperation<RxBleDeviceServices> {
 
     private final long timeout;
 
@@ -38,8 +32,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
             long timeout,
             TimeUnit timeoutTimeUnit,
             Scheduler timeoutScheduler) {
-        this.rxBleGattCallback = rxBleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY);
         this.timeout = timeout;
         this.timeoutTimeUnit = timeoutTimeUnit;
         this.timeoutScheduler = timeoutScheduler;
@@ -64,7 +57,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
         final boolean success = bluetoothGatt.discoverServices();
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
+            onError(newCannotStartException());
         }
     }
 
@@ -87,7 +80,7 @@ public class RxBleRadioOperationServicesDiscover extends RxBleRadioOperation<RxB
                 final List<BluetoothGattService> services = bluetoothGatt.getServices();
                 if (services.size() == 0) {
                     // if after the timeout services are empty we have no other option to declare a failed discovery
-                    return Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
+                    return Observable.error(newTimeoutException());
                 } else {
                 /*
                 it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time

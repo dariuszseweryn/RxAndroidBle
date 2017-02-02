@@ -3,26 +3,17 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
 import java.util.concurrent.TimeUnit;
-
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> {
-
-    private final RxBleGattCallback rxBleGattCallback;
-
-    private final BluetoothGatt bluetoothGatt;
+public class RxBleRadioOperationMtuRequest extends RxBleGattRadioOperation<Integer> {
 
     private final long timeout;
 
@@ -39,9 +30,8 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
             long timeout,
             TimeUnit timeoutTimeUnit,
             Scheduler timeoutScheduler) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.ON_MTU_CHANGED);
         this.mtu = mtu;
-        this.rxBleGattCallback = rxBleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
         this.timeout = timeout;
         this.timeoutTimeUnit = timeoutTimeUnit;
         this.timeoutScheduler = timeoutScheduler;
@@ -55,7 +45,7 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
                 .timeout(
                         timeout,
                         timeoutTimeUnit,
-                        Observable.<Integer>error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED)),
+                        Observable.<Integer>error(newTimeoutException()),
                         timeoutScheduler
                 )
                 .doOnTerminate(new Action0() {
@@ -69,7 +59,7 @@ public class RxBleRadioOperationMtuRequest extends RxBleRadioOperation<Integer> 
         boolean success = bluetoothGatt.requestMtu(mtu);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.ON_MTU_CHANGED));
+            onError(newCannotStartException());
         }
     }
 }

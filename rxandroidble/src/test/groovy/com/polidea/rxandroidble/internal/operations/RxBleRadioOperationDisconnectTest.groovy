@@ -25,6 +25,8 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
 
     BluetoothDevice mockDevice = Mock BluetoothDevice
 
+    String mockMacAddress = "mockMackAddress"
+
     Semaphore mockSemaphore = Mock Semaphore
 
     BluetoothManager mockBluetoothManager = Mock BluetoothManager
@@ -134,7 +136,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, gattAtomicReference, mockBluetoothManager, ImmediateScheduler.INSTANCE)
+        objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, mockMacAddress, gattAtomicReference, mockBluetoothManager, ImmediateScheduler.INSTANCE)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

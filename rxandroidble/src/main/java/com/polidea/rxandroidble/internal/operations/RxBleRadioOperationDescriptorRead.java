@@ -2,13 +2,9 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattDescriptor;
-
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
@@ -17,11 +13,7 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteAssociation<BluetoothGattDescriptor>> {
-
-    private final RxBleGattCallback rxBleGattCallback;
-
-    private final BluetoothGatt bluetoothGatt;
+public class RxBleRadioOperationDescriptorRead extends RxBleGattRadioOperation<ByteAssociation<BluetoothGattDescriptor>> {
 
     private final BluetoothGattDescriptor bluetoothGattDescriptor;
 
@@ -29,8 +21,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteA
 
     public RxBleRadioOperationDescriptorRead(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
                                              BluetoothGattDescriptor bluetoothGattDescriptor, Scheduler timeoutScheduler) {
-        this.rxBleGattCallback = rxBleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_READ);
         this.bluetoothGattDescriptor = bluetoothGattDescriptor;
         this.timeoutScheduler = timeoutScheduler;
     }
@@ -50,9 +41,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteA
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.<ByteAssociation<BluetoothGattDescriptor>>error(
-                                new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_READ)
-                        ),
+                        Observable.<ByteAssociation<BluetoothGattDescriptor>>error(newTimeoutException()),
                         timeoutScheduler
                 )
                 .doOnCompleted(new Action0() {
@@ -66,7 +55,7 @@ public class RxBleRadioOperationDescriptorRead extends RxBleRadioOperation<ByteA
         final boolean success = bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.DESCRIPTOR_READ));
+            onError(newCannotStartException());
         }
     }
 }

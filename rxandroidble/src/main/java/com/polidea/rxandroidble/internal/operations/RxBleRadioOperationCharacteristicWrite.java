@@ -2,13 +2,9 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
-
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -18,11 +14,7 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<byte[]> {
-
-    private final RxBleGattCallback rxBleGattCallback;
-
-    private final BluetoothGatt bluetoothGatt;
+public class RxBleRadioOperationCharacteristicWrite extends RxBleGattRadioOperation<byte[]> {
 
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
@@ -33,8 +25,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
     public RxBleRadioOperationCharacteristicWrite(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
                                                   BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] data,
                                                   Scheduler timeoutScheduler) {
-        this.rxBleGattCallback = rxBleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_WRITE);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.data = data;
         this.timeoutScheduler = timeoutScheduler;
@@ -60,9 +51,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
                 .timeout(
                         30,
                         TimeUnit.SECONDS,
-                        Observable.<byte[]>error(
-                                new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_WRITE)
-                        ),
+                        Observable.<byte[]>error(newTimeoutException()),
                         timeoutScheduler
                 )
                 .doOnCompleted(new Action0() {
@@ -77,7 +66,7 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleRadioOperation<
         final boolean success = bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
         if (!success) {
             subscription.unsubscribe();
-            onError(new BleGattCannotStartException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_WRITE));
+            onError(newCannotStartException());
         }
     }
 }

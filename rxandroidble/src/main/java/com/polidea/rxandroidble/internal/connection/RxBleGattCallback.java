@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.util.Pair;
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
@@ -22,6 +23,7 @@ import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 import rx.subjects.SerializedSubject;
 
+
 public class RxBleGattCallback {
 
     public interface Provider {
@@ -32,7 +34,7 @@ public class RxBleGattCallback {
     private final Scheduler callbackScheduler;
     private final BehaviorSubject statusErrorSubject = BehaviorSubject.create();
     private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
-    private final PublishSubject<RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create();
+    private final PublishSubject<Pair<BluetoothGatt, RxBleConnectionState>> gattAndConnectionStatePublishSubject = PublishSubject.create();
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> writeCharacteristicPublishSubject = PublishSubject.create();
@@ -42,17 +44,17 @@ public class RxBleGattCallback {
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create();
-    private final Observable disconnectedErrorObservable = connectionStatePublishSubject
-            .filter(new Func1<RxBleConnectionState, Boolean>() {
+    private final Observable disconnectedErrorObservable = gattAndConnectionStatePublishSubject
+            .filter(new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Boolean>() {
                 @Override
-                public Boolean call(RxBleConnectionState rxBleConnectionState) {
-                    return RxBleGattCallback.this.isDisconnectedOrDisconnecting(rxBleConnectionState);
+                public Boolean call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
+                    return RxBleGattCallback.this.isDisconnectedOrDisconnecting(pair);
                 }
             })
-            .flatMap(new Func1<RxBleConnectionState, Observable<?>>() {
+            .flatMap(new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Observable<?>>() {
                 @Override
-                public Observable<?> call(RxBleConnectionState rxBleConnectionState) {
-                    return Observable.error(new BleDisconnectedException());
+                public Observable<?> call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
+                    return Observable.error(new BleDisconnectedException(pair.first.getDevice().getAddress()));
                 }
             })
             .doOnTerminate(new Action0() {
@@ -68,7 +70,8 @@ public class RxBleGattCallback {
         this.callbackScheduler = callbackScheduler;
     }
 
-    private boolean isDisconnectedOrDisconnecting(RxBleConnectionState rxBleConnectionState) {
+    private boolean isDisconnectedOrDisconnecting(Pair<BluetoothGatt, RxBleConnectionState> pair) {
+        RxBleConnectionState rxBleConnectionState = pair.second;
         return rxBleConnectionState == RxBleConnectionState.DISCONNECTED || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
     }
 
@@ -81,7 +84,7 @@ public class RxBleGattCallback {
             bluetoothGattBehaviorSubject.onNext(gatt);
 
             propagateStatusErrorIfGattErrorOccurred(gatt, status, BleGattOperationType.CONNECTION_STATE);
-            connectionStatePublishSubject.onNext(mapConnectionStateToRxBleConnectionStatus(newState));
+            gattAndConnectionStatePublishSubject.onNext(new Pair<>(gatt, mapConnectionStateToRxBleConnectionStatus(newState)));
         }
 
         @Override
@@ -275,7 +278,15 @@ public class RxBleGattCallback {
      * Does NOT emit errors even if status != GATT_SUCCESS.
      */
     public Observable<RxBleConnectionState> getOnConnectionStateChange() {
-        return connectionStatePublishSubject.asObservable().observeOn(callbackScheduler);
+        return gattAndConnectionStatePublishSubject.map(
+                new Func1<Pair<BluetoothGatt, RxBleConnectionState>, RxBleConnectionState>() {
+                    @Override
+                    public RxBleConnectionState call(
+                            Pair<BluetoothGatt, RxBleConnectionState> bluetoothGattRxBleConnectionStatePair) {
+                        return bluetoothGattRxBleConnectionStatePair.second;
+                    }
+                }
+        ).observeOn(callbackScheduler);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {

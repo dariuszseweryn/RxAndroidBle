@@ -5,7 +5,9 @@ import static rx.Observable.just;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.os.DeadObjectException;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.concurrent.TimeUnit;
@@ -21,13 +23,16 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
     private static final int TIMEOUT_DISCONNECT = 10;
     private final RxBleGattCallback rxBleGattCallback;
+    private final String macAddress;
     private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference;
     private final BluetoothManager bluetoothManager;
     private final Scheduler mainThreadScheduler;
 
-    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, AtomicReference<BluetoothGatt> bluetoothGattAtomicReference,
+    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, String macAddress,
+                                         AtomicReference<BluetoothGatt> bluetoothGattAtomicReference,
                                          BluetoothManager bluetoothManager, Scheduler mainThreadScheduler) {
         this.rxBleGattCallback = rxBleGattCallback;
+        this.macAddress = macAddress;
         this.bluetoothGattAtomicReference = bluetoothGattAtomicReference;
         this.bluetoothManager = bluetoothManager;
         this.mainThreadScheduler = mainThreadScheduler;
@@ -129,5 +134,10 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                 }
             });
         }
+    }
+
+    @Override
+    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
+        return new BleDisconnectedException(deadObjectException, macAddress);
     }
 }
