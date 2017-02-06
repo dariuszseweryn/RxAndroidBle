@@ -55,7 +55,7 @@ public class BleGattException extends BleException {
     public String toString() {
         return getClass().getSimpleName()
                 + "{macAddress=" + getMacAddress()
-                + ", status=" + status + String.format(" (%x)", status)
+                + ", status=" + status + String.format(" (0x%x)", status)
                 + ", bleGattOperationType=" + bleGattOperationType
                 + '}';
     }
