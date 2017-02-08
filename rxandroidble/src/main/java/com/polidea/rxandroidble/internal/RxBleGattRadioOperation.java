@@ -4,6 +4,7 @@ package com.polidea.rxandroidble.internal;
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
@@ -32,7 +33,7 @@ public abstract class RxBleGattRadioOperation<T> extends RxBleRadioOperation<T> 
     }
 
     @Override
-    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
+    protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
     }
 }

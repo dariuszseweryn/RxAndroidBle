@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothProfile;
 import android.os.DeadObjectException;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.concurrent.TimeUnit;
@@ -137,7 +138,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
+    protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, macAddress);
     }
 }

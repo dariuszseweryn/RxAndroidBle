@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.DeadObjectException;
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleLog;
@@ -81,7 +81,7 @@ public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalSc
     }
 
     @Override
-    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, null);
+    protected BleException provideException(DeadObjectException deadObjectException) {
+        return new BleScanException(BleScanException.BLUETOOTH_DISABLED, deadObjectException);
     }
 }

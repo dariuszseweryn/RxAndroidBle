@@ -2,6 +2,7 @@ package com.polidea.rxandroidble
 
 import android.os.DeadObjectException
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.RxBleRadioOperation
 import rx.Observable
 import rx.subjects.BehaviorSubject
@@ -45,7 +46,7 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     }
 
     @Override
-    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
+    protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException("MockDeviceAddress")
     }
 
