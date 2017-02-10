@@ -47,7 +47,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private final Scheduler mainThreadScheduler;
 
     private final Scheduler callbackScheduler;
-    
+
     private final Scheduler timeoutScheduler;
 
     public RxBleRadioOperationCharacteristicLongWrite(
