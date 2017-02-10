@@ -64,10 +64,28 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     private final Scheduler timeoutScheduler = Schedulers.computation();
 
+    private Integer mtu = 20; // Default value at the beginning
+
     public RxBleConnectionImpl(RxBleRadio rxBleRadio, RxBleGattCallback gattCallback, BluetoothGatt bluetoothGatt) {
         this.rxBleRadio = rxBleRadio;
         this.gattCallback = gattCallback;
         this.bluetoothGatt = bluetoothGatt;
+    }
+
+    @Override
+    public LongWriteOperationBuilder createNewLongWriteBuilder() {
+        return new LongWriteOperationBuilderImpl(
+                bluetoothGatt,
+                gattCallback,
+                rxBleRadio,
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return RxBleConnectionImpl.this.mtu;
+                    }
+                },
+                this
+        );
     }
 
     @Override
@@ -87,7 +105,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
                         timeout,
                         timeUnit,
                         Schedulers.computation()
-                ));
+                ))
+                .doOnNext(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer newMtu) {
+                        RxBleConnectionImpl.this.mtu = newMtu;
+                    }
+                });
 
         return newObservable;
     }

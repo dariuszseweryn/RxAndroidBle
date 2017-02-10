@@ -6,6 +6,7 @@ public class BleGattOperationType {
     public static final BleGattOperationType SERVICE_DISCOVERY = new BleGattOperationType("SERVICE_DISCOVERY");
     public static final BleGattOperationType CHARACTERISTIC_READ = new BleGattOperationType("CHARACTERISTIC_READ");
     public static final BleGattOperationType CHARACTERISTIC_WRITE = new BleGattOperationType("CHARACTERISTIC_WRITE");
+    public static final BleGattOperationType CHARACTERISTIC_LONG_WRITE = new BleGattOperationType("CHARACTERISTIC_LONG_WRITE");
     public static final BleGattOperationType CHARACTERISTIC_CHANGED = new BleGattOperationType("CHARACTERISTIC_CHANGED");
     public static final BleGattOperationType DESCRIPTOR_READ = new BleGattOperationType("DESCRIPTOR_READ");
     public static final BleGattOperationType DESCRIPTOR_WRITE = new BleGattOperationType("DESCRIPTOR_WRITE");

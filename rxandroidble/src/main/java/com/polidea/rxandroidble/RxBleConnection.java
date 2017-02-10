@@ -15,8 +15,8 @@ import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 
 import java.util.UUID;
-
 import java.util.concurrent.TimeUnit;
+
 import rx.Observable;
 
 /**
@@ -46,6 +46,80 @@ public interface RxBleConnection {
         public String toString() {
             return "RxBleConnectionState{" + description + '}';
         }
+    }
+
+    /**
+     * The interface of a {@link com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicLongWrite} builder.
+     */
+    interface LongWriteOperationBuilder {
+
+        /**
+         * Setter for a byte array to write
+         * This function MUST be called prior to {@link #build()}
+         *
+         * @param bytes the bytes to write
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setBytes(byte[] bytes);
+
+        /**
+         * Setter for a {@link UUID} of the {@link BluetoothGattCharacteristic} to write to
+         * This function or {@link #setCharacteristic(BluetoothGattCharacteristic)} MUST be called prior to {@link #build()}
+         *
+         * @param uuid the UUID
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setCharacteristicUuid(UUID uuid);
+
+        /**
+         * Setter for a {@link BluetoothGattCharacteristic} to write to
+         * This function or {@link #setCharacteristicUuid(UUID)} MUST be called prior to {@link #build()}
+         *
+         * @param bluetoothGattCharacteristic the BluetoothGattCharacteristic
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setCharacteristic(BluetoothGattCharacteristic bluetoothGattCharacteristic);
+
+        /**
+         * Setter for a maximum size of a byte array that may be write at once
+         * If this is not specified - the default value of the connection's MTU is used
+         *
+         * @param maxBatchSize the maximum size of a byte array to write at once
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setMaxBatchSize(int maxBatchSize);
+
+        /**
+         * Setter for a strategy used to mark batch write completed. Only after previous batch has finished, the next (if any left) can be
+         * written.
+         * If this is not specified - the next batch of bytes is written right after the previous one has finished.
+         *
+         * A bytes batch is a part (slice) of the original byte array to write. Imagine a byte array of {0, 1, 2, 3, 4} where the maximum
+         * number of bytes that may be transmitted at once is 2. Then the original byte array will be transmitted in three batches:
+         * {0, 1}, {2, 3}, {4}
+         *
+         * It is expected that the Observable returned from the writeOperationAckStrategy will emit exactly the same events as the source,
+         * however you may delay them at your pace.
+         *
+         * @param writeOperationAckStrategy the function that acknowledges writing of the batch of bytes. It takes
+         *                                  an {@link Observable<Boolean>} that emits a null value each time the byte array batch
+         *                                  has finished to write. {@link Boolean#TRUE} means that there are more items in the buffer,
+         *                                  {@link Boolean#FALSE} otherwise. If you want to delay the next batch use provided observable
+         *                                  and add some custom behavior (delay, waiting for a message from the device, etc.)
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setWriteOperationAckStrategy(WriteOperationAckStrategy writeOperationAckStrategy);
+
+        /**
+         * Build function for the long write
+         *
+         * @return the Observable which will queue the long write on subscription.
+         */
+        Observable<byte[]> build();
+    }
+
+    interface WriteOperationAckStrategy extends Observable.Transformer<Boolean, Boolean> {
+
     }
 
     /**
@@ -264,6 +338,15 @@ public interface RxBleConnection {
      * @see #discoverServices() to obtain the characteristic.
      */
     Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data);
+
+    /**
+     * Returns a LongWriteOperationBuilder used for creating atomic write operations divided into multiple writes.
+     * This is useful when the BLE peripheral does NOT handle long writes on the firmware level (in which situation
+     * a regular {@link #writeCharacteristic(UUID, byte[])} should be sufficient.
+     *
+     * @return the LongWriteOperationBuilder
+     */
+    LongWriteOperationBuilder createNewLongWriteBuilder();
 
     /**
      * Performs GATT read operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.

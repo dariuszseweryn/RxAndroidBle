@@ -8,12 +8,15 @@ import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchActStrategy;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Observable;
 import rx.functions.Action0;
@@ -229,6 +232,96 @@ public class RxBleConnectionMock implements RxBleConnection {
     @Override
     public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
         return Observable.just(data);
+    }
+
+    @Override
+    public LongWriteOperationBuilder createNewLongWriteBuilder() {
+        return new LongWriteOperationBuilder() {
+
+            private Observable<BluetoothGattCharacteristic> bluetoothGattCharacteristicObservable;
+
+            private int maxBatchSize = 20; // default
+
+            private byte[] bytes;
+
+            private WriteOperationAckStrategy writeOperationAckStrategy = // default
+                    new ImmediateSerializedBatchActStrategy();
+
+            @Override
+            public LongWriteOperationBuilder setBytes(byte[] bytes) {
+                this.bytes = bytes;
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setCharacteristicUuid(final UUID uuid) {
+                bluetoothGattCharacteristicObservable = discoverServices().flatMap(
+                        new Func1<RxBleDeviceServices, Observable<BluetoothGattCharacteristic>>() {
+                            @Override
+                            public Observable<BluetoothGattCharacteristic> call(RxBleDeviceServices rxBleDeviceServices) {
+                                return rxBleDeviceServices.getCharacteristic(uuid);
+                            }
+                        }
+                );
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setCharacteristic(
+                    BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                bluetoothGattCharacteristicObservable = Observable.just(bluetoothGattCharacteristic);
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setMaxBatchSize(int maxBatchSize) {
+                this.maxBatchSize = maxBatchSize;
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setWriteOperationAckStrategy(WriteOperationAckStrategy writeOperationAckStrategy) {
+                this.writeOperationAckStrategy = writeOperationAckStrategy;
+                return this;
+            }
+
+            @Override
+            public Observable<byte[]> build() {
+
+                if (bluetoothGattCharacteristicObservable == null) {
+                    throw new IllegalArgumentException("setCharacteristicUuid() or setCharacteristic() needs to be called before build()");
+                }
+
+                if (bytes == null) {
+                    throw new IllegalArgumentException("setBytes() needs to be called before build()");
+                }
+
+                final boolean excess = bytes.length % maxBatchSize > 0;
+                final AtomicInteger numberOfBatches = new AtomicInteger(bytes.length / maxBatchSize + (excess ? 1 : 0));
+                return Observable
+                        .fromCallable(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() throws Exception {
+                                return numberOfBatches.get() > 0;
+                            }
+                        })
+                        .compose(writeOperationAckStrategy)
+                        .repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
+                            @Override
+                            public Observable<?> call(Observable<? extends Void> onWriteFinished) {
+                                return onWriteFinished
+                                        .takeWhile(new Func1<Void, Boolean>() {
+                                            @Override
+                                            public Boolean call(Void aVoid) {
+                                                return numberOfBatches.decrementAndGet() > 0;
+                                            }
+                                        });
+                            }
+                        })
+                        .toCompletable()
+                        .andThen(Observable.just(bytes));
+            }
+        };
     }
 
     @Override
