@@ -102,7 +102,7 @@ public interface RxBleConnection {
          * however you may delay them at your pace.
          *
          * @param writeOperationAckStrategy the function that acknowledges writing of the batch of bytes. It takes
-         *                                  an {@link Observable<Boolean>} that emits a null value each time the byte array batch
+         *                                  an {@link Observable<Boolean>} that emits a value each time the byte array batch
          *                                  has finished to write. {@link Boolean#TRUE} means that there are more items in the buffer,
          *                                  {@link Boolean#FALSE} otherwise. If you want to delay the next batch use provided observable
          *                                  and add some custom behavior (delay, waiting for a message from the device, etc.)
