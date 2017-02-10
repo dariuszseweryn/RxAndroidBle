@@ -10,30 +10,24 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicRead extends RxBleGattRadioOperation<byte[]> {
 
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
-    private final Scheduler timeoutScheduler;
-
     public RxBleRadioOperationCharacteristicRead(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
                                                  BluetoothGattCharacteristic bluetoothGattCharacteristicObservable,
                                                  Scheduler timeoutScheduler) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_READ);
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_READ, 30, TimeUnit.SECONDS, timeoutScheduler);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristicObservable;
-        this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
-    protected void protectedRun() {
-        //noinspection Convert2MethodRef
-        final Subscription subscription = rxBleGattCallback
+    protected Observable<byte[]> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback
                 .getOnCharacteristicRead()
-                .takeFirst(new Func1<ByteAssociation<UUID>, Boolean>() {
+                .filter(new Func1<ByteAssociation<UUID>, Boolean>() {
                     @Override
                     public Boolean call(ByteAssociation<UUID> uuidPair) {
                         return uuidPair.first.equals(bluetoothGattCharacteristic.getUuid());
@@ -44,25 +38,11 @@ public class RxBleRadioOperationCharacteristicRead extends RxBleGattRadioOperati
                     public byte[] call(ByteAssociation<UUID> uuidPair) {
                         return uuidPair.second;
                     }
-                })
-                .timeout(
-                        30,
-                        TimeUnit.SECONDS,
-                        Observable.<byte[]>error(newTimeoutException()),
-                        timeoutScheduler
-                )
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        RxBleRadioOperationCharacteristicRead.this.releaseRadio();
-                    }
-                })
-                .subscribe(getSubscriber());
+                });
+    }
 
-        final boolean success = bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);
-        if (!success) {
-            subscription.unsubscribe();
-            onError(newCannotStartException());
-        }
+    @Override
+    protected boolean startOperation(BluetoothGatt bluetoothGatt) {
+        return bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);
     }
 }

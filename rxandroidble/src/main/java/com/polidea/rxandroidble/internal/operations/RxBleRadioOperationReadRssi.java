@@ -7,42 +7,20 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action0;
 
 public class RxBleRadioOperationReadRssi extends RxBleGattRadioOperation<Integer> {
 
-    private final Scheduler timeoutScheduler;
-
     public RxBleRadioOperationReadRssi(RxBleGattCallback bleGattCallback, BluetoothGatt bluetoothGatt, Scheduler timeoutScheduler) {
-        super(bluetoothGatt, bleGattCallback, BleGattOperationType.READ_RSSI);
-        this.timeoutScheduler = timeoutScheduler;
+        super(bluetoothGatt, bleGattCallback, BleGattOperationType.READ_RSSI, 30, TimeUnit.SECONDS, timeoutScheduler);
     }
 
     @Override
-    protected void protectedRun() {
-        //noinspection Convert2MethodRef
-        final Subscription subscription = rxBleGattCallback
-                .getOnRssiRead()
-                .take(1)
-                .timeout(
-                        30,
-                        TimeUnit.SECONDS,
-                        Observable.<Integer>error(newTimeoutException()),
-                        timeoutScheduler
-                )
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        RxBleRadioOperationReadRssi.this.releaseRadio();
-                    }
-                })
-                .subscribe(getSubscriber());
+    protected Observable<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback.getOnRssiRead();
+    }
 
-        final boolean success = bluetoothGatt.readRemoteRssi();
-        if (!success) {
-            subscription.unsubscribe();
-            onError(newCannotStartException());
-        }
+    @Override
+    protected boolean startOperation(BluetoothGatt bluetoothGatt) {
+        return bluetoothGatt.readRemoteRssi();
     }
 }

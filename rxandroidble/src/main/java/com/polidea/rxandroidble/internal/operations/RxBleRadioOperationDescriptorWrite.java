@@ -10,8 +10,6 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Func1;
 
 public class RxBleRadioOperationDescriptorWrite extends RxBleGattRadioOperation<byte[]> {
@@ -21,8 +19,6 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleGattRadioOperation<
     private final byte[] data;
 
     private final int bluetoothGattCharacteristicDefaultWriteType;
-
-    private final Scheduler timeoutScheduler;
 
     /**
      * Write Descriptor Operator constructor
@@ -39,17 +35,15 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleGattRadioOperation<
                                               BluetoothGattDescriptor bluetoothGattDescriptor,
                                               byte[] data,
                                               Scheduler timeoutScheduler) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_WRITE);
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_WRITE, 30, TimeUnit.SECONDS, timeoutScheduler);
         this.bluetoothGattCharacteristicDefaultWriteType = bluetoothGattCharacteristicDefaultWriteType;
         this.bluetoothGattDescriptor = bluetoothGattDescriptor;
         this.data = data;
-        this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
-    protected void protectedRun() {
-        //noinspection Convert2MethodRef
-        final Subscription subscription = rxBleGattCallback
+    protected Observable<byte[]> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback
                 .getOnDescriptorWrite()
                 .filter(new Func1<ByteAssociation<BluetoothGattDescriptor>, Boolean>() {
                     @Override
@@ -57,27 +51,16 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleGattRadioOperation<
                         return uuidPair.first.equals(bluetoothGattDescriptor);
                     }
                 })
-                .first()
                 .map(new Func1<ByteAssociation<BluetoothGattDescriptor>, byte[]>() {
                     @Override
                     public byte[] call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
                         return uuidPair.second;
                     }
-                })
-                .timeout(
-                        30,
-                        TimeUnit.SECONDS,
-                        Observable.<byte[]>error(newTimeoutException()),
-                        timeoutScheduler
-                )
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        RxBleRadioOperationDescriptorWrite.this.releaseRadio();
-                    }
-                })
-                .subscribe(getSubscriber());
+                });
+    }
 
+    @Override
+    protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         bluetoothGattDescriptor.setValue(data);
 
         /*
@@ -95,10 +78,6 @@ public class RxBleRadioOperationDescriptorWrite extends RxBleGattRadioOperation<
         final boolean success = bluetoothGatt.writeDescriptor(bluetoothGattDescriptor);
 
         bluetoothGattCharacteristic.setWriteType(originalWriteType);
-
-        if (!success) {
-            subscription.unsubscribe();
-            onError(newCannotStartException());
-        }
+        return success;
     }
 }
