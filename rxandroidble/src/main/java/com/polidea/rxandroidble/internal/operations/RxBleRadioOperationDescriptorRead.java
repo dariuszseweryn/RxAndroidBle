@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattDescriptor;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +11,7 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationDescriptorRead extends RxBleGattRadioOperation<ByteAssociation<BluetoothGattDescriptor>> {
+public class RxBleRadioOperationDescriptorRead extends RxBleSingleGattRadioOperation<ByteAssociation<BluetoothGattDescriptor>> {
 
     private final BluetoothGattDescriptor bluetoothGattDescriptor;
 

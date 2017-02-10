@@ -8,7 +8,7 @@ import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
-import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchActStrategy;
+import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
@@ -245,7 +245,7 @@ public class RxBleConnectionMock implements RxBleConnection {
             private byte[] bytes;
 
             private WriteOperationAckStrategy writeOperationAckStrategy = // default
-                    new ImmediateSerializedBatchActStrategy();
+                    new ImmediateSerializedBatchAckStrategy();
 
             @Override
             public LongWriteOperationBuilder setBytes(byte[] bytes) {

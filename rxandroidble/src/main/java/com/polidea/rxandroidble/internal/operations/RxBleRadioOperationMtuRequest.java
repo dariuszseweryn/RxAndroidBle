@@ -4,14 +4,14 @@ import android.bluetooth.BluetoothGatt;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleGattRadioOperation;
+import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleRadioOperationMtuRequest extends RxBleGattRadioOperation<Integer> {
+public class RxBleRadioOperationMtuRequest extends RxBleSingleGattRadioOperation<Integer> {
 
     private final int mtu;
 

@@ -8,9 +8,11 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
@@ -28,6 +30,8 @@ import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperation<byte[]> {
 
+    private static final int SINGLE_BATCH_TIMEOUT = 30;
+
     private final BluetoothGatt bluetoothGatt;
 
     private final RxBleGattCallback rxBleGattCallback;
@@ -43,7 +47,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private final Scheduler mainThreadScheduler;
 
     private final Scheduler callbackScheduler;
-
+    
     private final Scheduler timeoutScheduler;
 
     public RxBleRadioOperationCharacteristicLongWrite(
@@ -70,38 +74,27 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     @Override
     protected void protectedRun() throws Throwable {
+        int batchSize = getBatchSize();
 
-        final int batchSize = batchSizeProvider.call();
         if (batchSize <= 0) {
-            onError(new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")"));
-            return;
+            throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
         }
-
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
         final Observable<ByteAssociation<UUID>> timeoutObservable = Observable.error(
                 new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_LONG_WRITE)
         );
-
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
         rxBleGattCallback.getOnCharacteristicWrite()
                 .doOnSubscribe(writeNextBatch(batchSize, byteBuffer))
                 .subscribeOn(mainThreadScheduler)
                 .observeOn(callbackScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic())
                 .timeout(
-                        30,
+                        SINGLE_BATCH_TIMEOUT,
                         TimeUnit.SECONDS,
                         timeoutObservable,
                         timeoutScheduler
                 )
-                .map(new Func1<ByteAssociation<UUID>, Boolean>() {
-                    @Override
-                    public Boolean call(ByteAssociation<UUID> uuidByteAssociation) {
-                        return byteBuffer.hasRemaining();
-                    }
-                })
-                .compose(writeOperationAckStrategy)
-                .ignoreElements()
-                .repeatWhen(bufferIsNotEmpty(byteBuffer))
+                .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledged(byteBuffer))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
@@ -119,6 +112,20 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                             }
                         }
                 );
+    }
+
+    @Override
+    protected BleException provideException(DeadObjectException deadObjectException) {
+        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+    }
+
+    private int getBatchSize() {
+        try {
+            return batchSizeProvider.call();
+        } catch (Exception e) {
+            RxBleLog.w(e, "Failed to get batch size.");
+            throw new RuntimeException("Failed to get batch size from the batchSizeProvider.", e);
+        }
     }
 
     private Action0 writeNextBatch(final int batchSize, final ByteBuffer byteBuffer) {
@@ -156,16 +163,16 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         };
     }
 
-    private Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmpty(final ByteBuffer byteBuffer) {
+    private Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledged(final ByteBuffer byteBuffer) {
         return new Func1<Observable<? extends Void>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Void> emittingOnBatchWriteFinished) {
-                return emittingOnBatchWriteFinished
-                        .takeWhile(onNextsIfBufferIsEmpty(byteBuffer));
+                return writeOperationAckStrategy.call(emittingOnBatchWriteFinished.map(bufferIsNotEmpty(byteBuffer)))
+                        .takeWhile(bufferIsNotEmpty(byteBuffer));
             }
 
             @NonNull
-            private Func1<Object, Boolean> onNextsIfBufferIsEmpty(final ByteBuffer byteBuffer) {
+            private Func1<Object, Boolean> bufferIsNotEmpty(final ByteBuffer byteBuffer) {
                 return new Func1<Object, Boolean>() {
                     @Override
                     public Boolean call(Object emittedFromActStrategy) {
@@ -174,10 +181,5 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                 };
             }
         };
-    }
-
-    @Override
-    protected BleDisconnectedException provideBleDisconnectedException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
     }
 }

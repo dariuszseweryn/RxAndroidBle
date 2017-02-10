@@ -26,7 +26,7 @@ final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOp
     private final RxBleRadio rxBleRadio;
 
     @NonNull
-    private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchActStrategy();
+    private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
 
     private byte[] bytes;
 

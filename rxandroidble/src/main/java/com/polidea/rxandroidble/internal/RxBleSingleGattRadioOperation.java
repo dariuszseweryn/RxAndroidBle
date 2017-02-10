@@ -15,7 +15,7 @@ import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 
-public abstract class RxBleGattRadioOperation<T> extends RxBleRadioOperation<T> {
+public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperation<T> {
 
     private final BluetoothGatt bluetoothGatt;
 
@@ -29,7 +29,7 @@ public abstract class RxBleGattRadioOperation<T> extends RxBleRadioOperation<T> 
 
     private final Scheduler timeoutScheduler;
 
-    public RxBleGattRadioOperation(
+    public RxBleSingleGattRadioOperation(
             BluetoothGatt bluetoothGatt,
             RxBleGattCallback rxBleGattCallback,
             BleGattOperationType operationType,
@@ -58,7 +58,7 @@ public abstract class RxBleGattRadioOperation<T> extends RxBleRadioOperation<T> 
                 .doOnCompleted(new Action0() {
                     @Override
                     public void call() {
-                        RxBleGattRadioOperation.this.releaseRadio();
+                        RxBleSingleGattRadioOperation.this.releaseRadio();
                     }
                 })
                 .subscribe(getSubscriber());

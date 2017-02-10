@@ -4,7 +4,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 
 import rx.Observable;
 
-public class ImmediateSerializedBatchActStrategy implements RxBleConnection.WriteOperationAckStrategy {
+public class ImmediateSerializedBatchAckStrategy implements RxBleConnection.WriteOperationAckStrategy {
 
     @Override
     public Observable<Boolean> call(Observable<Boolean> objectObservable) {

@@ -6,7 +6,7 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchActStrategy
+import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import rx.Observable
@@ -334,7 +334,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
-        writeOperationAckStrategy = new ImmediateSerializedBatchActStrategy();
+        writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
     }
 
     private AcknowledgementTrigger givenWillTriggerWriteAcknowledgement() {
