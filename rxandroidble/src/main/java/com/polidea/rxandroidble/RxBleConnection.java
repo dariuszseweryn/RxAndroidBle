@@ -17,6 +17,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import java.util.UUID;
 
 import java.util.concurrent.TimeUnit;
+
 import rx.Observable;
 
 /**
@@ -49,12 +50,18 @@ public interface RxBleConnection {
     }
 
     /**
+     * Request a connection priority update.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void requestConnectionPriority(int priority);
+
+    /**
      * Performs GATT service discovery and emits discovered results. After service discovery you can walk through
      * {@link android.bluetooth.BluetoothGattService}s and {@link BluetoothGattCharacteristic}s.
      * <p>
      * Result of the discovery is cached internally so consecutive calls won't trigger BLE operation and can be
      * considered relatively lightweight.
-     *
+     * <p>
      * Uses default timeout of 20 seconds
      *
      * @return Observable emitting result a GATT service discovery.
@@ -70,10 +77,10 @@ public interface RxBleConnection {
      * <p>
      * Result of the discovery is cached internally so consecutive calls won't trigger BLE operation and can be
      * considered relatively lightweight.
-     *
+     * <p>
      * Timeouts after specified amount of time.
      *
-     * @param timeout multiplier of TimeUnit after which the discovery will timeout in case of no return values
+     * @param timeout  multiplier of TimeUnit after which the discovery will timeout in case of no return values
      * @param timeUnit TimeUnit for the timeout
      * @return Observable emitting result a GATT service discovery.
      * @throws BleGattCannotStartException with {@link BleGattOperationType#SERVICE_DISCOVERY} type, when it wasn't possible to start
@@ -98,7 +105,7 @@ public interface RxBleConnection {
      * characteristic and the lifecycle of the notification will be shared among them.
      * <p>
      * Notification is automatically unregistered once this observable is unsubscribed.
-     *
+     * <p>
      * NOTE: due to stateful nature of characteristics if one will setupIndication() before setupNotification()
      * the notification will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      *
@@ -108,7 +115,7 @@ public interface RxBleConnection {
      * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
      * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
-     * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
+     * @throws BleConflictingNotificationAlreadySetException   if indication is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid, NotificationSetupMode setupMode);
 
@@ -130,7 +137,7 @@ public interface RxBleConnection {
      * @return Observable emitting another observable when the notification setup is complete.
      * @throws BleCannotSetCharacteristicNotificationException if setup process notification setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
-     * @throws BleConflictingNotificationAlreadySetException if indication is already setup for this characteristic
+     * @throws BleConflictingNotificationAlreadySetException   if indication is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic, NotificationSetupMode setupMode);
 
@@ -160,7 +167,7 @@ public interface RxBleConnection {
      * @throws BleCharacteristicNotFoundException              if characteristic with given UUID hasn't been found.
      * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
-     * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
+     * @throws BleConflictingNotificationAlreadySetException   if notification is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupIndication(@NonNull UUID characteristicUuid, @NonNull NotificationSetupMode setupMode);
 
@@ -182,7 +189,7 @@ public interface RxBleConnection {
      * @return Observable emitting another observable when the indication setup is complete.
      * @throws BleCannotSetCharacteristicNotificationException if setup process indication setup process fail. This may be an internal
      *                                                         reason or lack of permissions.
-     * @throws BleConflictingNotificationAlreadySetException if notification is already setup for this characteristic
+     * @throws BleConflictingNotificationAlreadySetException   if notification is already setup for this characteristic
      */
     Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic,
                                                    @NonNull NotificationSetupMode setupMode);
@@ -217,8 +224,8 @@ public interface RxBleConnection {
      *
      * @param characteristic Requested characteristic.
      * @return Observable emitting characteristic value or an error in case of failure.
-     * @throws BleGattCannotStartException        if read operation couldn't be started for internal reason.
-     * @throws BleGattException                   if read operation failed
+     * @throws BleGattCannotStartException if read operation couldn't be started for internal reason.
+     * @throws BleGattException            if read operation failed
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
@@ -240,7 +247,6 @@ public interface RxBleConnection {
      * by {@link BluetoothGattCharacteristic#getValue()} when this function is being called and reassigned at the time of internal execution
      * by {@link BluetoothGattCharacteristic#setValue(byte[])}
      * <p>
-     * @deprecated Use {@link #writeCharacteristic(BluetoothGattCharacteristic, byte[])} instead
      *
      * @param bluetoothGattCharacteristic Characteristic to write. Use {@link BluetoothGattCharacteristic#setValue(byte[])} to set value.
      * @return Observable emitting characteristic after write or an error in case of failure.
@@ -248,6 +254,7 @@ public interface RxBleConnection {
      * @throws BleGattException            if write operation failed
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
+     * @deprecated Use {@link #writeCharacteristic(BluetoothGattCharacteristic, byte[])} instead
      */
     @Deprecated
     Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
@@ -256,7 +263,7 @@ public interface RxBleConnection {
      * Performs GATT write operation on a given characteristic.
      *
      * @param bluetoothGattCharacteristic Characteristic to write.
-     * @param data the byte array to write
+     * @param data                        the byte array to write
      * @return Observable emitting written data or an error in case of failure.
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
@@ -268,9 +275,9 @@ public interface RxBleConnection {
     /**
      * Performs GATT read operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
      *
-     * @param serviceUuid Requested {@link android.bluetooth.BluetoothGattService} UUID
+     * @param serviceUuid        Requested {@link android.bluetooth.BluetoothGattService} UUID
      * @param characteristicUuid Requested {@link android.bluetooth.BluetoothGattCharacteristic} UUID
-     * @param descriptorUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @param descriptorUuid     Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
      * @return Observable emitting the descriptor value after read or an error in case of failure.
      * @throws BleGattCannotStartException if read operation couldn't be started for internal reason.
      * @throws BleGattException            if read operation failed
@@ -294,9 +301,9 @@ public interface RxBleConnection {
     /**
      * Performs GATT write operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
      *
-     * @param serviceUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @param serviceUuid        Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
      * @param characteristicUuid Requested {@link android.bluetooth.BluetoothGattCharacteristic} UUID
-     * @param descriptorUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
+     * @param descriptorUuid     Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
      * @return Observable emitting the written descriptor value after write or an error in case of failure.
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
@@ -324,7 +331,7 @@ public interface RxBleConnection {
 
     /**
      * Performs GATT request MTU
-     *
+     * <p>
      * Timeouts after 10 seconds.
      *
      * @return Observable emitting result the MTU requested.
