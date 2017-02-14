@@ -17,6 +17,7 @@ import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
+import com.polidea.rxandroidble.internal.util.OperatorDoAfterSubscribe;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -84,7 +85,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
         rxBleGattCallback.getOnCharacteristicWrite()
-                .doOnSubscribe(writeNextBatch(batchSize, byteBuffer))
+                .lift(new OperatorDoAfterSubscribe<ByteAssociation<UUID>>(writeNextBatch(batchSize, byteBuffer)))
                 .subscribeOn(mainThreadScheduler)
                 .observeOn(callbackScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic())
