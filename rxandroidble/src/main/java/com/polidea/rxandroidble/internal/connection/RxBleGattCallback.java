@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
+import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
 import java.util.UUID;
 import rx.Observable;
 import rx.Scheduler;
@@ -39,8 +40,8 @@ public class RxBleGattCallback {
     private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
     private final SerializedSubject<ByteAssociation<UUID>, ByteAssociation<UUID>> writeCharacteristicPublishSubject
             = PublishSubject.<ByteAssociation<UUID>>create().toSerialized();
-    private final SerializedSubject<ByteAssociation<Integer>, ByteAssociation<Integer>> changedCharacteristicPublishSubject
-            = PublishSubject.<ByteAssociation<Integer>>create().toSerialized();
+    private final SerializedSubject<CharacteristicChangedEvent, CharacteristicChangedEvent>
+            changedCharacteristicPublishSubject = PublishSubject.<CharacteristicChangedEvent>create().toSerialized();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> readDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorPublishSubject = PublishSubject.create();
     private final PublishSubject<Integer> readRssiPublishSubject = PublishSubject.create();
@@ -132,7 +133,13 @@ public class RxBleGattCallback {
              * characteristic could lead to out-of-order execution since onCharacteristicChanged may be called on arbitrary
              * threads.
              */
-            changedCharacteristicPublishSubject.onNext(new ByteAssociation<>(characteristic.getInstanceId(), characteristic.getValue()));
+            changedCharacteristicPublishSubject.onNext(
+                    new CharacteristicChangedEvent(
+                            characteristic.getUuid(),
+                            characteristic.getInstanceId(),
+                            characteristic.getValue()
+                    )
+            );
         }
 
         @Override
@@ -306,7 +313,7 @@ public class RxBleGattCallback {
         return withHandlingStatusErrorAndDisconnection(writeCharacteristicPublishSubject).observeOn(callbackScheduler);
     }
 
-    public Observable<ByteAssociation<Integer>> getOnCharacteristicChanged() {
+    public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
         return withHandlingStatusErrorAndDisconnection(changedCharacteristicPublishSubject).observeOn(callbackScheduler);
     }
 

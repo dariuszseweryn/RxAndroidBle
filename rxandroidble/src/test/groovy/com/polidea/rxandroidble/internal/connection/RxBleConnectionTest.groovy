@@ -8,6 +8,7 @@ import android.os.Build
 import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.util.ByteAssociation
+import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent
 import org.robolectric.annotation.Config
 import org.robospock.GradleRoboSpecification
 import rx.observers.TestSubscriber
@@ -438,7 +439,9 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should notify about value change and stay subscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
-        gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect { ByteAssociation.create(CHARACTERISTIC_INSTANCE_ID, it) })
+        gattCallback.getOnCharacteristicChanged() >> from(changeNotifications.collect {
+            new CharacteristicChangedEvent(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, it)
+        })
 
         when:
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
@@ -461,10 +464,10 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     }
 
     @Unroll
-    def "should not notify about value change if UUID is not matching"() {
+    def "should not notify about value change if UUID and / or instanceId is not matching"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
-        gattCallback.getOnCharacteristicChanged() >> just(ByteAssociation.create(OTHER_UUID, NOT_EMPTY_DATA))
+        gattCallback.getOnCharacteristicChanged() >> just(otherCharacteristicNotificationId)
 
         when:
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
@@ -474,12 +477,18 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertNotCompleted()
 
         where:
-        setupTriggerNotificationClosure << [
-                setupNotificationUuidClosure,
-                setupIndicationUuidClosure,
-                setupNotificationCharacteristicClosure,
-                setupIndicationCharacteristicClosure
-        ]
+        [setupTriggerNotificationClosure, otherCharacteristicNotificationId] << [
+                [
+                        setupNotificationUuidClosure,
+                        setupIndicationUuidClosure,
+                        setupNotificationCharacteristicClosure,
+                        setupIndicationCharacteristicClosure
+                ], [
+                        new CharacteristicChangedEvent(CHARACTERISTIC_UUID, OTHER_INSTANCE_ID, NOT_EMPTY_DATA),
+                        new CharacteristicChangedEvent(OTHER_UUID, CHARACTERISTIC_INSTANCE_ID, NOT_EMPTY_DATA),
+                        new CharacteristicChangedEvent(OTHER_UUID, OTHER_INSTANCE_ID, NOT_EMPTY_DATA)
+                ]
+        ].combinations()
     }
 
     @Unroll
@@ -568,7 +577,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(secondSubscriber)
 
         when:
-        characteristicChangeSubject.onNext(ByteAssociation.create(CHARACTERISTIC_INSTANCE_ID, NOT_EMPTY_DATA))
+        characteristicChangeSubject.onNext(new CharacteristicChangedEvent(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, NOT_EMPTY_DATA))
 
         then:
         testSubscriber.assertValue(NOT_EMPTY_DATA)
