@@ -37,7 +37,8 @@ public class RxBleGattCallback {
     private final PublishSubject<Pair<BluetoothGatt, RxBleConnectionState>> gattAndConnectionStatePublishSubject = PublishSubject.create();
     private final PublishSubject<RxBleDeviceServices> servicesDiscoveredPublishSubject = PublishSubject.create();
     private final PublishSubject<ByteAssociation<UUID>> readCharacteristicPublishSubject = PublishSubject.create();
-    private final PublishSubject<ByteAssociation<UUID>> writeCharacteristicPublishSubject = PublishSubject.create();
+    private final SerializedSubject<ByteAssociation<UUID>, ByteAssociation<UUID>> writeCharacteristicPublishSubject
+            = PublishSubject.<ByteAssociation<UUID>>create().toSerialized();
     private final SerializedSubject<ByteAssociation<Integer>, ByteAssociation<Integer>> changedCharacteristicPublishSubject
             = PublishSubject.<ByteAssociation<Integer>>create().toSerialized();
     private final PublishSubject<ByteAssociation<BluetoothGattDescriptor>> readDescriptorPublishSubject = PublishSubject.create();
