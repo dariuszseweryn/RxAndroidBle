@@ -182,7 +182,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         objectUnderTest.run()
 
         then:
-        1 * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
+        (1.._) * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
     }
 
     def "should complete part of the write if RxBleGattCallback.onCharacteristicWrite() will be called with proper characteristic"() {
