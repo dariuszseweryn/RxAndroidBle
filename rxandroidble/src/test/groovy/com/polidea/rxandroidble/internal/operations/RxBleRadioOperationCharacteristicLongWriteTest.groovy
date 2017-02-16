@@ -102,6 +102,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
         where:
         maxBatchSize | writtenBytesLength | expectedBatchesCount
+        20           | 17                 | 1
         20           | 57                 | 3
         4            | 16                 | 4
         4            | 17                 | 5
@@ -500,7 +501,6 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
                 },
                 writeOperationAckStrategy,
                 testData,
-                immediateScheduler,
                 immediateScheduler,
                 timeoutScheduler
         )

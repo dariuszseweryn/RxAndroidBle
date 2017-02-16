@@ -49,9 +49,9 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     private final Scheduler mainThreadScheduler;
 
-    private final Scheduler callbackScheduler;
-
     private final Scheduler timeoutScheduler;
+
+    private byte[] tempBatchArray;
 
     public RxBleRadioOperationCharacteristicLongWrite(
             BluetoothGatt bluetoothGatt,
@@ -61,7 +61,6 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
             byte[] bytesToWrite,
             Scheduler mainThreadScheduler,
-            Scheduler callbackScheduler,
             Scheduler timeoutScheduler
     ) {
         this.bluetoothGatt = bluetoothGatt;
@@ -71,7 +70,6 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         this.writeOperationAckStrategy = writeOperationAckStrategy;
         this.bytesToWrite = bytesToWrite;
         this.mainThreadScheduler = mainThreadScheduler;
-        this.callbackScheduler = callbackScheduler;
         this.timeoutScheduler = timeoutScheduler;
     }
 
@@ -89,7 +87,6 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
         writeBatchAndObserve(batchSize, byteBuffer)
                 .subscribeOn(mainThreadScheduler)
-                .observeOn(callbackScheduler) // TODO: potentially obsolete?
                 .takeFirst(writeResponseForMatchingCharacteristic())
                 .timeout(
                         SINGLE_BATCH_TIMEOUT,
@@ -133,17 +130,28 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     @NonNull
     private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
+        final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
         return Observable.fromEmitter(
                 new Action1<Emitter<ByteAssociation<UUID>>>() {
                     @Override
                     public void call(Emitter<ByteAssociation<UUID>> emitter) {
-                        final Subscription s = rxBleGattCallback.getOnCharacteristicWrite().subscribe(emitter);
+                        final Subscription s = onCharacteristicWrite.subscribe(emitter);
                         emitter.setCancellation(new Cancellable() {
                             @Override
                             public void cancel() throws Exception {
                                 s.unsubscribe();
                             }
                         });
+
+                        /**
+                         * Since Android OS calls {@link android.bluetooth.BluetoothGattCallback} callbacks on arbitrary background
+                         * threads - in case the {@link BluetoothGattCharacteristic} has
+                         * a {@link BluetoothGattCharacteristic#WRITE_TYPE_NO_RESPONSE} set it is possible that
+                         * a {@link android.bluetooth.BluetoothGattCallback#onCharacteristicWrite} may be called before the
+                         * {@link BluetoothGatt#writeCharacteristic(BluetoothGattCharacteristic)} will return.
+                         * Because of such a situation - it is important to first establish a full RxJava flow and only then
+                         * call writeCharacteristic.
+                         */
 
                         try {
                             final byte[] bytesBatch = getNextBatch(byteBuffer, batchSize);
@@ -159,9 +167,11 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private byte[] getNextBatch(ByteBuffer byteBuffer, int batchSize) {
         final int remainingBytes = byteBuffer.remaining();
         final int nextBatchSize = Math.min(remainingBytes, batchSize);
-        final byte[] bytesBatch = new byte[nextBatchSize];
-        byteBuffer.get(bytesBatch);
-        return bytesBatch;
+        if (tempBatchArray == null || tempBatchArray.length != nextBatchSize) {
+            tempBatchArray = new byte[nextBatchSize];
+        }
+        byteBuffer.get(tempBatchArray);
+        return tempBatchArray;
     }
 
     private void writeData(byte[] bytesBatch) {

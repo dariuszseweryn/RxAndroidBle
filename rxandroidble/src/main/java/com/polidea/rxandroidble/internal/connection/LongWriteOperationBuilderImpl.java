@@ -110,7 +110,6 @@ final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOp
                         writeOperationAckStrategy,
                         bytes,
                         AndroidSchedulers.mainThread(),
-                        Schedulers.computation(),
                         Schedulers.computation()
                 ));
             }
