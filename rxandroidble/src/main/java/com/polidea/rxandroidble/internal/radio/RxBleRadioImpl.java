@@ -7,15 +7,18 @@ import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import java.util.concurrent.Semaphore;
 
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.Scheduler;
 import rx.functions.Action0;
 import rx.functions.Action1;
 
 public class RxBleRadioImpl implements RxBleRadio {
 
     private OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
+    private final Scheduler scheduler;
 
-    public RxBleRadioImpl() {
+    public RxBleRadioImpl(final Scheduler scheduler) {
+        this.scheduler = scheduler;
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -34,20 +37,14 @@ public class RxBleRadioImpl implements RxBleRadio {
 
                         rxBleRadioOperation.setRadioBlockingSemaphore(semaphore);
 
-                        /**
-                         * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
-                         * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
-                         * on the main thread.
-                         */
                         Observable.just(rxBleRadioOperation)
-                                .observeOn(AndroidSchedulers.mainThread())
+                                .observeOn(RxBleRadioImpl.this.scheduler)
                                 .subscribe(new Action1<RxBleRadioOperation>() {
                                     @Override
                                     public void call(RxBleRadioOperation rxBleRadioOperation1) {
                                         rxBleRadioOperation1.run();
                                     }
                                 });
-
                         semaphore.acquire();
                         log("FINISHED", rxBleRadioOperation);
                     } catch (InterruptedException e) {
@@ -56,6 +53,11 @@ public class RxBleRadioImpl implements RxBleRadio {
                 }
             }
         }).start();
+    }
+
+    @Override
+    public Scheduler scheduler() {
+        return scheduler;
     }
 
     @Override

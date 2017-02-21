@@ -47,7 +47,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     private final byte[] bytesToWrite;
 
-    private final Scheduler mainThreadScheduler;
+    private final Scheduler scheduler;
 
     private final Scheduler timeoutScheduler;
 
@@ -60,7 +60,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             Callable<Integer> batchSizeProvider,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
             byte[] bytesToWrite,
-            Scheduler mainThreadScheduler,
+            Scheduler scheduler,
             Scheduler timeoutScheduler
     ) {
         this.bluetoothGatt = bluetoothGatt;
@@ -69,7 +69,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         this.batchSizeProvider = batchSizeProvider;
         this.writeOperationAckStrategy = writeOperationAckStrategy;
         this.bytesToWrite = bytesToWrite;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.scheduler = scheduler;
         this.timeoutScheduler = timeoutScheduler;
     }
 
@@ -86,7 +86,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
 
         writeBatchAndObserve(batchSize, byteBuffer)
-                .subscribeOn(mainThreadScheduler)
+                .subscribeOn(scheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic())
                 .timeout(
                         SINGLE_BATCH_TIMEOUT,

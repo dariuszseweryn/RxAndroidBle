@@ -3,13 +3,15 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicLongWrite;
+
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -109,7 +111,7 @@ final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOp
                         maxBatchSizeCallable,
                         writeOperationAckStrategy,
                         bytes,
-                        AndroidSchedulers.mainThread(),
+                        rxBleRadio.scheduler(),
                         Schedulers.computation()
                 ));
             }
