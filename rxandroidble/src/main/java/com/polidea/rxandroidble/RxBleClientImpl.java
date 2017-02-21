@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import rx.Observable;
 import rx.Scheduler;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -64,7 +65,7 @@ class RxBleClientImpl extends RxBleClient {
     public static RxBleClientImpl getInstance(@NonNull Context context) {
         final Context applicationContext = context.getApplicationContext();
         final RxBleAdapterWrapper rxBleAdapterWrapper = new RxBleAdapterWrapper(BluetoothAdapter.getDefaultAdapter());
-        final RxBleRadioImpl rxBleRadio = new RxBleRadioImpl();
+        final RxBleRadioImpl rxBleRadio = new RxBleRadioImpl(getRxBleRadioScheduler());
         final RxBleAdapterStateObservable adapterStateObservable = new RxBleAdapterStateObservable(applicationContext);
         final BleConnectionCompat bleConnectionCompat = new BleConnectionCompat(context);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -193,5 +194,14 @@ class RxBleClientImpl extends RxBleClient {
                     }
                 })
                 .share();
+    }
+
+    /**
+     * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
+     * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
+     * on the main thread.
+     */
+    private static Scheduler getRxBleRadioScheduler() {
+        return AndroidSchedulers.mainThread();
     }
 }

@@ -3,10 +3,6 @@ package com.polidea.rxandroidble.internal.radio
 import com.polidea.rxandroidble.MockOperation
 import rx.Observable
 import rx.Scheduler
-import rx.android.plugins.RxAndroidPlugins
-import rx.android.plugins.RxAndroidSchedulersHook
-import rx.android.schedulers.AndroidSchedulers
-import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import spock.lang.Specification
@@ -19,20 +15,12 @@ import java.util.concurrent.TimeUnit
 import static com.polidea.rxandroidble.internal.RxBleRadioOperation.Priority.NORMAL
 
 class RxBleRadioTest extends Specification {
-    public static final String MAIN_THREAD_NAME = "test-thread"
+    public static final String RADIO_SCHEDULER_THREAD_NAME = "radio-test-thread"
+
     RxBleRadioImpl objectUnderTest
 
-    void setupSpec() {
-        useThreadWithNameAsMainThread(MAIN_THREAD_NAME)
-    }
-
-    void teardownSpec() {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-    }
-
     void setup() {
-        objectUnderTest = new RxBleRadioImpl()
+        objectUnderTest = new RxBleRadioImpl(createSchedulerWithNamedThread(RADIO_SCHEDULER_THREAD_NAME))
     }
 
     def "should run operation instantly if queue is empty and no operation is in progress"() {
@@ -47,7 +35,7 @@ class RxBleRadioTest extends Specification {
         operation.wasRan()
 
         and:
-        operation.lastExecutedOnThread == MAIN_THREAD_NAME
+        operation.lastExecutedOnThread == RADIO_SCHEDULER_THREAD_NAME
 
         and:
         operation.executionCount == 1
@@ -187,20 +175,13 @@ class RxBleRadioTest extends Specification {
         waitForThreadsToCompleteWork()
     }
 
-    public useThreadWithNameAsMainThread(String threadName) {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-        RxAndroidPlugins.getInstance().registerSchedulersHook(new RxAndroidSchedulersHook() {
+    private static Scheduler createSchedulerWithNamedThread(String threadName) {
+        Schedulers.from(Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
-            Scheduler getMainThreadScheduler() {
-                return Schedulers.from(Executors.newSingleThreadExecutor(new ThreadFactory() {
-                    @Override
-                    Thread newThread(Runnable r) {
-                        return new Thread(r, threadName)
-                    }
-                }))
+            Thread newThread(Runnable r) {
+                return new Thread(r, threadName)
             }
-        })
+        }))
     }
 
     private static void waitForOperationsToFinishRunning(MockOperation... operations) {

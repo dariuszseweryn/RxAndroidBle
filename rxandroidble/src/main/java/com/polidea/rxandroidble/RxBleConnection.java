@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
@@ -13,11 +14,13 @@ import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetE
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
+import rx.Scheduler;
 
 /**
  * The BLE connection handle, supporting GATT operations. Operations are enqueued and the library makes sure that they are not
@@ -417,4 +420,33 @@ public interface RxBleConnection {
      */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     Observable<Integer> requestMtu(int mtu);
+
+    /**
+     * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know
+     * what your are doing.</b>
+     * <p>
+     * Queue an operation for future execution. The method accepts a {@link RxBleRadioOperationCustom} concrete implementation
+     * and will queue it inside connection operation queue. When ready to execute, the {@link Observable<T>} returned
+     * by the {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be
+     * subscribed to.
+     * <p>
+     * Every event emitted by the {@link Observable<T>} returned by
+     * {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be forwarded
+     * to the {@link Observable<T>} returned by this method.
+     * <p>
+     * You <b>must</b> ensure the custom operation's {@link Observable<T>} do terminate either via {@code onCompleted}
+     * or {@code onError(Throwable)}. Otherwise, the internal queue orchestrator will wait forever for
+     * your {@link Observable<T>} to complete. Normal queue processing will be resumed after the {@link Observable<T>}
+     * returned by {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}
+     * completes.
+     * <p>
+     * The operation will be added to the queue using a {@link com.polidea.rxandroidble.internal.RxBleRadioOperation.Priority#NORMAL}
+     * priority.
+     *
+     * @param operation The custom radio operation to queue.
+     * @param <T>       The type returned by the {@link RxBleRadioOperationCustom} instance.
+     * @return Observable emitting the value after execution or an error in case of failure.
+     */
+    <T> Observable<T> queue(RxBleRadioOperationCustom<T> operation);
+
 }

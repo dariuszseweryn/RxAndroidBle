@@ -5,15 +5,20 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.os.Build;
+import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.RxBleRadioOperationCustom;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
+import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicRead;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicWrite;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDescriptorRead;
@@ -22,8 +27,8 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationMtuReques
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
-import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
+import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
@@ -527,5 +532,31 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<Integer> readRssi() {
         return rxBleRadio.queue(new RxBleRadioOperationReadRssi(gattCallback, bluetoothGatt, timeoutScheduler));
+    }
+
+    @Override
+    public <T> Observable<T> queue(final RxBleRadioOperationCustom<T> operation) {
+        return rxBleRadio.queue(new RxBleRadioOperation<T>() {
+            @Override
+            @SuppressWarnings("ConstantConditions")
+            protected void protectedRun() throws Throwable {
+                Observable<T> operationObservable = operation.asObservable(bluetoothGatt, gattCallback, rxBleRadio.scheduler());
+                if (operationObservable == null) {
+                    throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
+                }
+
+                operationObservable.doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        releaseRadio();
+                    }
+                }).subscribe(getSubscriber());
+            }
+
+            @Override
+            protected BleException provideException(DeadObjectException deadObjectException) {
+                return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+            }
+        });
     }
 }

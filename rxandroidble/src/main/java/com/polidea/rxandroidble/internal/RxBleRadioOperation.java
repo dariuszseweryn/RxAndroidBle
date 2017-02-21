@@ -50,7 +50,7 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
     }
 
     /**
-     * This method will be overriden in concrete operation implementations and
+     * This method will be overridden in concrete operation implementations and
      * will contain specific operation logic.
      */
     protected abstract void protectedRun() throws Throwable;
