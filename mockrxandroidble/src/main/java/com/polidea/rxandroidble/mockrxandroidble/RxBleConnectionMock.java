@@ -231,6 +231,8 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
+        bluetoothGattCharacteristic.setValue(data);
+
         return Observable.just(data);
     }
 
