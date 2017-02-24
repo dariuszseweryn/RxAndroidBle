@@ -102,7 +102,7 @@ device.establishConnection(context, false)
 ```
 #### Multiple reads
 ```java
- device.establishConnection(context, false)
+device.establishConnection(context, false)
     .flatMap(rxBleConnection -> Observable.combineLatest(
         rxBleConnection.readCharacteristic(firstUUID),
         rxBleConnection.readCharacteristic(secondUUID),
@@ -115,6 +115,26 @@ device.establishConnection(context, false)
         throwable -> {
             // Handle an error here.
         }
+    );
+```
+#### Long write
+```java
+device.establishConnection(context, false)
+    .flatMap(rxBleConnection -> rxBleConnection.createNewLongWriteBuilder()
+            .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
+            // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
+            .setBytes(byteArray)
+            // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
+            // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
+            .build()
+    )
+    .subscribe(
+            byteArray -> {
+                // Written data.
+            },
+            throwable -> {
+                // Handle an error here.
+            }
     );
 ```
 #### Read and write combined
