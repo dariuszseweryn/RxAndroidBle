@@ -49,7 +49,7 @@ public class RxBleRadioImpl implements RxBleRadio {
                                 });
 
                         semaphore.acquire();
-                        RxBleRadioImpl.this.log("FINISHED", rxBleRadioOperation);
+                        log("FINISHED", rxBleRadioOperation);
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing RxBleRadioOperation queue");
                     }
@@ -79,7 +79,10 @@ public class RxBleRadioImpl implements RxBleRadio {
                 });
     }
 
-    private void log(String prefix, RxBleRadioOperation rxBleRadioOperation) {
-        RxBleLog.d("%8s %s(%d)", prefix, rxBleRadioOperation.getClass().getSimpleName(), System.identityHashCode(rxBleRadioOperation));
+    void log(String prefix, RxBleRadioOperation rxBleRadioOperation) {
+
+        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+            RxBleLog.d("%8s %s(%d)", prefix, rxBleRadioOperation.getClass().getSimpleName(), System.identityHashCode(rxBleRadioOperation));
+        }
     }
 }

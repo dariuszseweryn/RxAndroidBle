@@ -24,6 +24,7 @@ public class RxBleLog {
     public static final int NONE = Integer.MAX_VALUE;
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
+
     private static int logLevel = Integer.MAX_VALUE;
 
     private RxBleLog() {
@@ -133,5 +134,9 @@ public class RxBleLog {
                 Log.println(priority, tag, line);
             }
         }
+    }
+
+    public static boolean isAtLeast(int expectedLogLevel) {
+        return logLevel <= expectedLogLevel;
     }
 }
