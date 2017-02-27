@@ -1,15 +1,16 @@
 package com.polidea.rxandroidble.sample.example7_long_write;
 
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
+
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.RxBleConnection.LongWriteOperationBuilder;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+
 import java.util.UUID;
+
 import rx.Observable;
 import rx.Subscription;
 
@@ -29,25 +30,25 @@ import rx.Subscription;
  */
 public class LongWriteExampleActivity extends RxAppCompatActivity {
 
-    private UUID DEVICE_CALLBACK_0 = UUID.randomUUID();
-    private UUID DEVICE_CALLBACK_1 = UUID.randomUUID();
-    private UUID WRITE_CHARACTERISTIC = UUID.randomUUID();
+    public static final String DUMMY_DEVICE_ADDRESS = "AA:AA:AA:AA:AA:AA";
+    private static final UUID DEVICE_CALLBACK_0 = UUID.randomUUID();
+    private static final UUID DEVICE_CALLBACK_1 = UUID.randomUUID();
+
+    private static final UUID WRITE_CHARACTERISTIC = UUID.randomUUID();
 
     private byte[] bytesToWrite = new byte[1024]; // a kilobyte array
-
     private Subscription subscription;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String DUMMY_DEVICE_ADDRESS = "AA:AA:AA:AA:AA:AA";
-
         final RxBleClient rxBleClient = SampleApplication.getRxBleClient(this);
 
         subscription = rxBleClient.getBleDevice(DUMMY_DEVICE_ADDRESS) // get our assumed device
                 .establishConnection(this, false) // establish the connection
-                .flatMap(rxBleConnection -> Observable.combineLatest( // after establishing the connection lets setup the notifications
+                .flatMap(rxBleConnection -> Observable.combineLatest(
+                        // after establishing the connection lets setup the notifications
                         rxBleConnection.setupNotification(DEVICE_CALLBACK_0),
                         rxBleConnection.setupNotification(DEVICE_CALLBACK_1),
                         Pair::new
@@ -77,7 +78,8 @@ public class LongWriteExampleActivity extends RxAppCompatActivity {
                             .setWriteOperationAckStrategy(new RxBleConnection.WriteOperationAckStrategy() {
                                 @Override
                                 public Observable<Boolean> call(Observable<Boolean> booleanObservable) {
-                                    return Observable.zip( // so we zip three observables
+                                    return Observable.zip(
+                                            // so we zip three observables
                                             deviceCallback0, // DEVICE_CALLBACK_0
                                             deviceCallback1, // DEVICE_CALLBACK_1
                                             booleanObservable, /* previous batch of data was sent - we do not care if value emitted from
