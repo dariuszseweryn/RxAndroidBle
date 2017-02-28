@@ -236,6 +236,7 @@ When submitting code, please make every effort to follow existing conventions an
 * Michał Zieliński (michal.zielinski@polidea.com)
 * Fracturedpsyche (https://github.com/fracturedpsyche)
 * Andrea Pregnolato (https://github.com/pregno)
+* Matthieu Vachon (https://github.com/maoueh) - custom operations, yay!
 
 ## License
 
