@@ -7,6 +7,8 @@ import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
@@ -25,9 +27,11 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
     PublishSubject<ByteAssociation<UUID>> onCharacteristicReadSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
     TestScheduler testScheduler = new TestScheduler()
-    RxBleRadioOperationCharacteristicRead objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt, mockCharacteristic, testScheduler)
+    RxBleRadioOperationCharacteristicRead objectUnderTest
 
     def setup() {
+        objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt,
+                new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic)
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicRead() >> onCharacteristicReadSubject
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)

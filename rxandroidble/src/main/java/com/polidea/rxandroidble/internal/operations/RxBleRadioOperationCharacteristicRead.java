@@ -2,25 +2,29 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
+
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
+import javax.inject.Named;
+
 import rx.Observable;
-import rx.Scheduler;
 import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicRead extends RxBleSingleGattRadioOperation<byte[]> {
 
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
-    public RxBleRadioOperationCharacteristicRead(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
-                                                 BluetoothGattCharacteristic bluetoothGattCharacteristicObservable,
-                                                 Scheduler timeoutScheduler) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_READ, 30, TimeUnit.SECONDS, timeoutScheduler);
-        this.bluetoothGattCharacteristic = bluetoothGattCharacteristicObservable;
+    RxBleRadioOperationCharacteristicRead(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
+                                          @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+                                          BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_READ, timeoutConfiguration);
+        this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
     }
 
     @Override

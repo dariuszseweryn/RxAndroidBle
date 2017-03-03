@@ -5,6 +5,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
@@ -16,23 +17,14 @@ import java.util.concurrent.TimeUnit
 public class RxBleRadioOperationMtuRequestTest extends Specification {
 
     static long timeout = 10
-
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
-
     Semaphore mockSemaphore = Mock Semaphore
-
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
-
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
-
     TestScheduler testScheduler = new TestScheduler()
-
     PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create()
-
     RxBleRadioOperationMtuRequest objectUnderTest
-
     int mtu = 72
 
     def setup() {
@@ -105,7 +97,8 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationMtuRequest(72, mockGattCallback, mockBluetoothGatt,timeout, timeoutTimeUnit, testScheduler)
+        objectUnderTest = new RxBleRadioOperationMtuRequest(mockGattCallback, mockBluetoothGatt,
+                new MockOperationTimeoutConfiguration(timeout.intValue(), testScheduler), mtu)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

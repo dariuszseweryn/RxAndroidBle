@@ -28,7 +28,7 @@ public class RxBleDeviceTest extends Specification {
     TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
 
     def setup() {
-        mockConnector.prepareConnection(_, _) >> mockConnectorEstablishConnectionPublishSubject
+        mockConnector.prepareConnection(_) >> mockConnectorEstablishConnectionPublishSubject
     }
 
     def "should return the BluetoothDevice name"() {
@@ -74,7 +74,7 @@ public class RxBleDeviceTest extends Specification {
         rxBleDevice.establishConnection(theContext, theAutoConnectValue).subscribe()
 
         then:
-        1 * mockConnector.prepareConnection(theContext, theAutoConnectValue) >> connectionStatePublishSubject
+        1 * mockConnector.prepareConnection(theAutoConnectValue) >> connectionStatePublishSubject
 
         where:
         theContext    | theAutoConnectValue

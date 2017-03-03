@@ -1,18 +1,23 @@
 package com.polidea.rxandroidble.internal.operations;
 
-import static rx.Observable.just;
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.os.DeadObjectException;
+
+import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
+import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
@@ -20,69 +25,71 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
+import static rx.Observable.just;
+
 public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
-    private static final int TIMEOUT_DISCONNECT = 10;
     private final RxBleGattCallback rxBleGattCallback;
+    private final BluetoothGattProvider bluetoothGattProvider;
     private final String macAddress;
-    private final AtomicReference<BluetoothGatt> bluetoothGattAtomicReference;
     private final BluetoothManager bluetoothManager;
     private final Scheduler mainThreadScheduler;
+    private final TimeoutConfiguration timeoutConfiguration;
 
-    public RxBleRadioOperationDisconnect(RxBleGattCallback rxBleGattCallback, String macAddress,
-                                         AtomicReference<BluetoothGatt> bluetoothGattAtomicReference,
-                                         BluetoothManager bluetoothManager, Scheduler mainThreadScheduler) {
+    @Inject
+    RxBleRadioOperationDisconnect(
+            RxBleGattCallback rxBleGattCallback,
+            BluetoothGattProvider bluetoothGattProvider,
+            @Named(DeviceModule.MAC_ADDRESS) String macAddress,
+            BluetoothManager bluetoothManager,
+            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(DeviceModule.DISCONNECT_TIMEOUT) TimeoutConfiguration timeoutConfiguration) {
         this.rxBleGattCallback = rxBleGattCallback;
+        this.bluetoothGattProvider = bluetoothGattProvider;
         this.macAddress = macAddress;
-        this.bluetoothGattAtomicReference = bluetoothGattAtomicReference;
         this.bluetoothManager = bluetoothManager;
         this.mainThreadScheduler = mainThreadScheduler;
+        this.timeoutConfiguration = timeoutConfiguration;
     }
 
     @Override
     protected void protectedRun() {
         //noinspection Convert2MethodRef
-        just(bluetoothGattAtomicReference.get())
-                .filter(new Func1<BluetoothGatt, Boolean>() {
-                    @Override
-                    public Boolean call(BluetoothGatt bluetoothGatt) {
-                        return bluetoothGatt != null;
-                    }
-                })
-                .flatMap(new Func1<BluetoothGatt, Observable<BluetoothGatt>>() {
-                    @Override
-                    public Observable<BluetoothGatt> call(BluetoothGatt bluetoothGatt) {
-                        return RxBleRadioOperationDisconnect.this.isDisconnected(bluetoothGatt)
-                                ? just(bluetoothGatt) : RxBleRadioOperationDisconnect.this.disconnect(bluetoothGatt);
-                    }
-                })
-                .doOnTerminate(new Action0() {
-                    @Override
-                    public void call() {
-                        RxBleRadioOperationDisconnect.this.releaseRadio();
-                    }
-                })
-                .observeOn(mainThreadScheduler)
-                .subscribe(
-                        new Action1<BluetoothGatt>() {
-                            @Override
-                            public void call(BluetoothGatt bluetoothGatt) {
-                                bluetoothGatt.close();
-                            }
-                        },
-                        new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                RxBleRadioOperationDisconnect.this.onError(throwable);
-                            }
-                        },
-                        new Action0() {
-                            @Override
-                            public void call() {
-                                RxBleRadioOperationDisconnect.this.onCompleted();
-                            }
+        final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
+
+        if (bluetoothGatt == null) {
+            RxBleLog.w("Disconnect operation has been executed but GATT instance was null.");
+            onCompleted();
+        } else {
+            (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
+                    .doOnTerminate(new Action0() {
+                        @Override
+                        public void call() {
+                            releaseRadio();
                         }
-                );
+                    })
+                    .observeOn(mainThreadScheduler)
+                    .subscribe(
+                            new Action1<BluetoothGatt>() {
+                                @Override
+                                public void call(BluetoothGatt bluetoothGatt) {
+                                    bluetoothGatt.close();
+                                }
+                            },
+                            new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    onError(throwable);
+                                }
+                            },
+                            new Action0() {
+                                @Override
+                                public void call() {
+                                    onCompleted();
+                                }
+                            }
+                    );
+        }
     }
 
     private boolean isDisconnected(BluetoothGatt bluetoothGatt) {
@@ -97,7 +104,8 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
      */
     private Observable<BluetoothGatt> disconnect(BluetoothGatt bluetoothGatt) {
         return new DisconnectGattObservable(bluetoothGatt, rxBleGattCallback, mainThreadScheduler)
-                .timeout(TIMEOUT_DISCONNECT, TimeUnit.SECONDS, just(bluetoothGatt));
+                .timeout(timeoutConfiguration.timeout, timeoutConfiguration.timeoutTimeUnit, just(bluetoothGatt),
+                        timeoutConfiguration.timeoutScheduler);
     }
 
     private static class DisconnectGattObservable extends Observable<BluetoothGatt> {

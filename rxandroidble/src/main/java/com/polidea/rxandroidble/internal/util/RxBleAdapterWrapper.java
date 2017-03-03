@@ -6,10 +6,13 @@ import android.support.annotation.Nullable;
 
 import java.util.Set;
 
+import javax.inject.Inject;
+
 public class RxBleAdapterWrapper {
 
     private final BluetoothAdapter bluetoothAdapter;
 
+    @Inject
     public RxBleAdapterWrapper(@Nullable BluetoothAdapter bluetoothAdapter) {
         this.bluetoothAdapter = bluetoothAdapter;
     }

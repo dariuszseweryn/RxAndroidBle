@@ -8,14 +8,14 @@ import spock.lang.Unroll
 class LocationServicesStatusTest extends Specification {
 
     def mockCheckerLocationProvider = Mock CheckerLocationProvider
-
     def mockCheckerLocationPermission = Mock CheckerLocationPermission
+    int mockDeviceSdk
+    int mockApplicationTargetSdk
+    LocationServicesStatus objectUnderTest
 
-    def mockProviderDeviceSdk = Mock ProviderDeviceSdk
-
-    def mockProviderApplicationTargetSdk = Mock ProviderApplicationTargetSdk
-
-    def objectUnderTest = new LocationServicesStatus(mockCheckerLocationProvider, mockCheckerLocationPermission, mockProviderDeviceSdk, mockProviderApplicationTargetSdk)
+    private prepareObjectUnderTest() {
+        objectUnderTest = new LocationServicesStatus(mockCheckerLocationProvider, mockCheckerLocationPermission, mockDeviceSdk, mockApplicationTargetSdk)
+    }
 
     @Shared
     private def sdkVersionsPreM = [
@@ -40,7 +40,8 @@ class LocationServicesStatusTest extends Specification {
     def "(SDK <23) isLocationPermissionOk should return true (SDK=#sdkVersion)"() {
 
         given:
-        mockProviderDeviceSdk.provide() >> sdkVersion
+        mockDeviceSdk = sdkVersion
+        prepareObjectUnderTest()
 
         expect:
         objectUnderTest.isLocationPermissionOk()
@@ -53,7 +54,8 @@ class LocationServicesStatusTest extends Specification {
     def "(SDK <23) isLocationPermissionOk should not call CheckerLocationPermission (SDK=#sdkVersion)"() {
 
         given:
-        mockProviderDeviceSdk.provide() >> sdkVersion
+        mockDeviceSdk = sdkVersion
+        prepareObjectUnderTest()
 
         when:
         objectUnderTest.isLocationPermissionOk()
@@ -69,7 +71,8 @@ class LocationServicesStatusTest extends Specification {
     def "(SDK >=23) isLocationPermissionOk should return value from CheckerLocationPermission.isLocationPermissionGranted (permissionGranted:#permissionGranted SDK:#sdkVersion)"() {
 
         given:
-        mockProviderDeviceSdk.provide() >> sdkVersion
+        mockDeviceSdk = sdkVersion
+        prepareObjectUnderTest()
         mockCheckerLocationPermission.isLocationPermissionGranted() >> permissionGranted
 
         expect:
@@ -83,8 +86,9 @@ class LocationServicesStatusTest extends Specification {
     def "should check location provider only if needed (deviceSdk:#sdkVersion targetSdk:#targetSdk)"() {
 
         given:
-        mockProviderDeviceSdk.provide() >> sdkVersion
-        mockProviderApplicationTargetSdk.provide() >> targetSdk
+        mockDeviceSdk = sdkVersion
+        mockApplicationTargetSdk = targetSdk
+        prepareObjectUnderTest()
         int expectedCalls
         if (sdkVersion >= Build.VERSION_CODES.M && targetSdk >= Build.VERSION_CODES.M) {
             expectedCalls = 1

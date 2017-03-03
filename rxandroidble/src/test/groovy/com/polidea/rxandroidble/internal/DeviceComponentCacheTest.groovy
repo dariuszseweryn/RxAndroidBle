@@ -1,18 +1,17 @@
 package com.polidea.rxandroidble.internal
 
-import com.polidea.rxandroidble.RxBleDevice
+import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
 import com.polidea.rxandroidble.internal.cache.MockDeviceReferenceProvider
-import com.polidea.rxandroidble.internal.cache.RxBleDeviceCache
 import spock.lang.Specification
 
-class RxBleDeviceCacheTest extends Specification {
+class DeviceComponentCacheTest extends Specification {
     def deviceReferenceProvider = new MockDeviceReferenceProvider()
-    def objectUnderTest = new RxBleDeviceCache(deviceReferenceProvider)
+    def objectUnderTest = new DeviceComponentCache(deviceReferenceProvider)
 
     def "should get cached item if is hard referenced"() {
         given:
         def cacheKey = "someKey"
-        def cachedDevice = Mock RxBleDevice
+        def cachedDevice = Mock DeviceComponent
 
         when:
         objectUnderTest.put(cacheKey, cachedDevice)
@@ -29,9 +28,9 @@ class RxBleDeviceCacheTest extends Specification {
     def "should get all cached items if are hard referenced"() {
         given:
         def cacheKey = "someKey"
-        def cachedDevice = Mock RxBleDevice
+        def cachedDevice = Mock DeviceComponent
         def secondCacheKey = "someSecondKey"
-        def secondCachedDevice = Mock RxBleDevice
+        def secondCachedDevice = Mock DeviceComponent
 
         when:
         objectUnderTest.putAll(["someKey": cachedDevice, "someSecondKey": secondCachedDevice])
@@ -48,7 +47,7 @@ class RxBleDeviceCacheTest extends Specification {
     def "should return null if cached item was garbage collected"() {
         given:
         def cacheKey = "someKey"
-        def cachedDevice = Mock RxBleDevice
+        def cachedDevice = Mock DeviceComponent
         objectUnderTest.put(cacheKey, cachedDevice)
         deviceReferenceProvider.releaseReferenceFor cachedDevice
 
@@ -66,7 +65,7 @@ class RxBleDeviceCacheTest extends Specification {
     def "should not contain value after cache was cleared"() {
         given:
         def cacheKey = "someKey"
-        def cachedDevice = Mock RxBleDevice
+        def cachedDevice = Mock DeviceComponent
         objectUnderTest.put(cacheKey, cachedDevice)
 
         when:
@@ -83,7 +82,7 @@ class RxBleDeviceCacheTest extends Specification {
     def "should return null if entry was removed"() {
         given:
         def cacheKey = "someKey"
-        def cachedDevice = Mock RxBleDevice
+        def cachedDevice = Mock DeviceComponent
         objectUnderTest.put(cacheKey, cachedDevice)
 
         when:
@@ -97,7 +96,7 @@ class RxBleDeviceCacheTest extends Specification {
         deviceFromCache == null
     }
 
-    public assertCacheContainsValue(RxBleDevice cachedDevice) {
+    public assertCacheContainsValue(DeviceComponent cachedDevice) {
         objectUnderTest.containsValue(cachedDevice)
     }
 

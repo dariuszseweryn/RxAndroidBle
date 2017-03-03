@@ -3,6 +3,9 @@ package com.polidea.rxandroidble.internal.radio
 import com.polidea.rxandroidble.MockOperation
 import rx.Observable
 import rx.Scheduler
+import rx.android.plugins.RxAndroidPlugins
+import rx.android.plugins.RxAndroidSchedulersHook
+import rx.android.schedulers.AndroidSchedulers
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import spock.lang.Specification
