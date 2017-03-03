@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.exceptions;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -51,12 +52,17 @@ public class BleGattException extends BleException {
         return status;
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public String toString() {
-        return getClass().getSimpleName()
-                + "{macAddress=" + getMacAddress()
-                + ", status=" + status + String.format(" (0x%x)", status)
-                + ", bleGattOperationType=" + bleGattOperationType
-                + '}';
+        if (status == UNKNOWN_STATUS) {
+            return String.format("%s{macAddress=%s, bleGattOperationType=%s}",
+                    getClass().getSimpleName(), getMacAddress(), bleGattOperationType);
+        }
+
+        final String link
+                = "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h";
+        return String.format("%s{macAddress=%s, status=%d (0x%02x -> %s), bleGattOperationType=%s}",
+                getClass().getSimpleName(), getMacAddress(), status, status, link, bleGattOperationType);
     }
 }
