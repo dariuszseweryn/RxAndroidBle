@@ -63,7 +63,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
     private Observable<RxBleConnection> prepareConnectionObservable() {
         return bleDevice
-                .establishConnection(this, false)
+                .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
                 .compose(bindUntilEvent(PAUSE))
                 .doOnUnsubscribe(this::clearSubscription)

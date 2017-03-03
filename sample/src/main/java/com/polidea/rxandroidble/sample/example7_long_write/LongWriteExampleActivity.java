@@ -46,7 +46,7 @@ public class LongWriteExampleActivity extends RxAppCompatActivity {
         final RxBleClient rxBleClient = SampleApplication.getRxBleClient(this);
 
         subscription = rxBleClient.getBleDevice(DUMMY_DEVICE_ADDRESS) // get our assumed device
-                .establishConnection(this, false) // establish the connection
+                .establishConnection(false) // establish the connection
                 .flatMap(rxBleConnection -> Observable.combineLatest(
                         // after establishing the connection lets setup the notifications
                         rxBleConnection.setupNotification(DEVICE_CALLBACK_0),

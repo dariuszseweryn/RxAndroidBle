@@ -31,7 +31,13 @@ class RxBleDeviceProviderTest extends Specification {
         }
 
         @Override
+        @Deprecated
         Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
+            establishConnection(autoConnect)
+        }
+
+        @Override
+        Observable<RxBleConnection> establishConnection(boolean autoConnect) {
             throw UnsupportedOperationException()
         }
 
