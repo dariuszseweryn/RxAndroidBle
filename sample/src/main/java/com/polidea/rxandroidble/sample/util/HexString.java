@@ -21,6 +21,10 @@ public class HexString {
     }
 
     public static byte[] hexToBytes(String hexRepresentation) {
+        if (hexRepresentation.length() % 2 == 1) {
+            throw new IllegalArgumentException("hexToBytes requires an even-length String parameter");
+        }
+
         int len = hexRepresentation.length();
         byte[] data = new byte[len / 2];
 
