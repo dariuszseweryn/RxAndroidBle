@@ -3,14 +3,11 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.RxBleConnection
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.Subscription
 import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -23,14 +20,12 @@ public class RxBleRadioOperationConnectTest extends Specification {
     RxBleGattCallback mockCallback
     BleConnectionCompat mockBleConnectionCompat
     TestSubscriber<BluetoothGatt> testSubscriber = new TestSubscriber()
-    MockOperationTimeoutConfiguration timeoutConfiguration
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
     PublishSubject<BluetoothGatt> bluetoothGattPublishSubject = PublishSubject.create()
     PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
     Semaphore mockSemaphore = Mock Semaphore
     Subscription asObservableSubscription
     BluetoothGattProvider mockBluetoothGattProvider
-    TestScheduler timeoutScheduler
     RxBleRadioOperationConnect objectUnderTest
 
     def setup() {
@@ -40,9 +35,6 @@ public class RxBleRadioOperationConnectTest extends Specification {
         mockCallback.getOnConnectionStateChange() >> onConnectionStateSubject
         mockCallback.observeDisconnect() >> observeDisconnectPublishSubject
 
-        timeoutScheduler = new TestScheduler()
-        timeoutConfiguration = new MockOperationTimeoutConfiguration(timeoutScheduler)
-
         mockBleConnectionCompat = Mock(BleConnectionCompat)
         mockBleConnectionCompat.connectGatt(_, _, _) >> mockGatt
 
@@ -51,7 +43,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
 
     def prepareObjectUnderTest(boolean autoConnect) {
         objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockBleConnectionCompat, mockCallback,
-                mockBluetoothGattProvider, timeoutConfiguration, autoConnect)
+                mockBluetoothGattProvider, autoConnect)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         asObservableSubscription = objectUnderTest.asObservable().subscribe(testSubscriber)
     }
@@ -141,30 +133,6 @@ public class RxBleRadioOperationConnectTest extends Specification {
 
         then:
         1 * mockSemaphore.release()
-    }
-
-    def "should timeout after certain time without established connection in direct connect mode"() {
-        given:
-        prepareObjectUnderTest(false)
-
-        when:
-        objectUnderTest.run()
-        timeoutScheduler.advanceTimeBy(timeoutConfiguration.timeout, timeoutConfiguration.timeoutTimeUnit)
-
-        then:
-        testSubscriber.assertError(BleGattCallbackTimeoutException)
-    }
-
-    def "should not timeout after certain time without established connection in auto connect mode"() {
-        given:
-        prepareObjectUnderTest(true)
-
-        when:
-        objectUnderTest.run()
-        timeoutScheduler.advanceTimeBy(timeoutConfiguration.timeout, timeoutConfiguration.timeoutTimeUnit)
-
-        then:
-        testSubscriber.assertNoErrors()
     }
 
     private emitConnectedConnectionState() {
