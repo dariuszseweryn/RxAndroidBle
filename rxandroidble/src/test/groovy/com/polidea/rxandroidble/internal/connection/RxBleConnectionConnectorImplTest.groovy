@@ -10,12 +10,9 @@ import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.operations.MockConnectionComponentBuilder
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
-import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
-import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -31,9 +28,8 @@ public class RxBleConnectionConnectorImplTest extends Specification {
                            BluetoothDevice bluetoothDevice,
                            BleConnectionCompat connectionCompat,
                            RxBleGattCallback rxBleGattCallback,
-                           BluetoothGattProvider bluetoothGattProvider,
-                           TimeoutConfiguration timeoutConfiguration) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider, timeoutConfiguration)
+                           BluetoothGattProvider bluetoothGattProvider) {
+            super(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider)
             this.mockConnection = mockConnection
         }
 
@@ -61,7 +57,6 @@ public class RxBleConnectionConnectorImplTest extends Specification {
     BluetoothGatt mockGatt = Mock BluetoothGatt
     ConnectionComponent.Builder mockConnectionComponentBuilder
     MockConnectBuilder mockConnectBuilder
-    TimeoutConfiguration mockConnectionTimeoutConfiguration = new MockOperationTimeoutConfiguration(ImmediateScheduler.INSTANCE)
 
     RxBleConnectionConnectorImpl objectUnderTest
 
@@ -69,7 +64,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.never()
         mockConnectBuilder = new MockConnectBuilder(mockConnect, mockDevice, Mock(BleConnectionCompat),
-                mockCallback, Mock(BluetoothGattProvider), mockConnectionTimeoutConfiguration)
+                mockCallback, Mock(BluetoothGattProvider))
         mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
                 Mock(RxBleConnection),
                 mockCallback,
