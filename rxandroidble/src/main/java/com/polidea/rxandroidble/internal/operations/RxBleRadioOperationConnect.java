@@ -1,26 +1,28 @@
 package com.polidea.rxandroidble.internal.operations;
 
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
+
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
-
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
+import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
-
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import rx.Observable;
+import rx.Scheduler;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.subjects.BehaviorSubject;
-
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
 
@@ -32,7 +34,13 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
     private final boolean autoConnect;
 
-    private BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
+    private final long timeout;
+
+    private final TimeUnit timeoutTimeUnit;
+
+    private final Scheduler timeoutScheduler;
+
+    private final BehaviorSubject<BluetoothGatt> bluetoothGattBehaviorSubject = BehaviorSubject.create();
 
     private final Runnable releaseRadioRunnable = new Runnable() {
         @Override
@@ -65,11 +73,15 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             .share();
 
     public RxBleRadioOperationConnect(BluetoothDevice bluetoothDevice, RxBleGattCallback rxBleGattCallback,
-                                      BleConnectionCompat connectionCompat, boolean autoConnect) {
+                                      BleConnectionCompat connectionCompat, boolean autoConnect, long timeout, TimeUnit timeoutTimeUnit,
+                                      Scheduler timeoutScheduler) {
         this.bluetoothDevice = bluetoothDevice;
         this.rxBleGattCallback = rxBleGattCallback;
         this.connectionCompat = connectionCompat;
         this.autoConnect = autoConnect;
+        this.timeout = timeout;
+        this.timeoutTimeUnit = timeoutTimeUnit;
+        this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
@@ -83,6 +95,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
         final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
 
         getConnectedBluetoothGatt()
+                .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
                 .takeUntil(asObservableHasNoSubscribers().doOnNext(new Action1<Boolean>() {
                     @Override
@@ -104,6 +117,24 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                 })
                 .subscribe(getSubscriber());
         onConnectCalledRunnable.run();
+    }
+
+    private Observable.Transformer<BluetoothGatt, BluetoothGatt> wrapWithTimeoutWhenNotAutoconnecting() {
+        return new Observable.Transformer<BluetoothGatt, BluetoothGatt>() {
+            @Override
+            public Observable<BluetoothGatt> call(Observable<BluetoothGatt> bluetoothGattObservable) {
+                return autoConnect
+                        ? bluetoothGattObservable
+                        : bluetoothGattObservable
+                        .timeout(timeout, timeoutTimeUnit, prepareConnectionTimeoutErrorObservable(), timeoutScheduler);
+            }
+        };
+    }
+
+    @NonNull
+    private Observable<BluetoothGatt> prepareConnectionTimeoutErrorObservable() {
+        return Observable.error(
+                new BleGattCallbackTimeoutException(bluetoothGattBehaviorSubject.getValue(), BleGattOperationType.CONNECTION_STATE));
     }
 
     @NonNull

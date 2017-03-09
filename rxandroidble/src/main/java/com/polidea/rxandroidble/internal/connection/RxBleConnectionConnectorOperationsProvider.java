@@ -9,10 +9,12 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Actions;
+import rx.schedulers.Schedulers;
 
 public class RxBleConnectionConnectorOperationsProvider {
 
@@ -37,7 +39,10 @@ public class RxBleConnectionConnectorOperationsProvider {
         RxBleRadioOperationConnect operationConnect = new RxBleRadioOperationConnect(bluetoothDevice,
                 gattCallback,
                 connectionCompat,
-                autoConnect);
+                autoConnect,
+                35,
+                TimeUnit.SECONDS,
+                Schedulers.computation());
         final RxBleRadioOperationDisconnect operationDisconnect = new RxBleRadioOperationDisconnect(
                 gattCallback,
                 bluetoothDevice.getAddress(),
