@@ -40,7 +40,7 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionSubscription = bleDevice.establishConnection(false)
+            connectionSubscription = bleDevice.establishConnection(this, false)
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::clearSubscription)

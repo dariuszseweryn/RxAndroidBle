@@ -44,7 +44,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionSubscription = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
+            connectionSubscription = bleDevice.establishConnection(this, autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::clearSubscription)
@@ -54,7 +54,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
 
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
-        bleDevice.establishConnection(false)
+        bleDevice.establishConnection(this, false)
                 .flatMap(rxBleConnection -> rxBleConnection.requestMtu(72))
                 .first() // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
