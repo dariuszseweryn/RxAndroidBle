@@ -1,47 +1,70 @@
 package com.polidea.rxandroidble.internal;
 
+import android.bluetooth.BluetoothDevice;
+
+import com.polidea.rxandroidble.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.ClientScope;
-import com.polidea.rxandroidble.internal.cache.DeviceComponentCache;
+import com.polidea.rxandroidble.internal.cache.RxBleDeviceCache;
+import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorImpl;
+import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorOperationsProvider;
+import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
 import java.util.Map;
+import rx.Observable;
+import rx.Scheduler;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
-@ClientScope
 public class RxBleDeviceProvider {
 
-    private final Map<String, DeviceComponent> cachedDeviceComponents;
-    private final Provider<DeviceComponent.Builder> deviceComponentBuilder;
+    private final Map<String, RxBleDevice> availableDevices = new RxBleDeviceCache();
+    private final RxBleAdapterWrapper rxBleAdapterWrapper;
+    private final RxBleRadio rxBleRadio;
+    private final BleConnectionCompat bleConnectionCompat;
+    private final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable;
+    private final Scheduler gattCallbacksProcessingScheduler;
 
-    @Inject
-    public RxBleDeviceProvider(DeviceComponentCache deviceComponentCache, Provider<DeviceComponent.Builder> deviceComponentBuilder) {
-        this.cachedDeviceComponents = deviceComponentCache;
-        this.deviceComponentBuilder = deviceComponentBuilder;
+    public RxBleDeviceProvider(RxBleAdapterWrapper rxBleAdapterWrapper, RxBleRadio rxBleRadio, BleConnectionCompat bleConnectionCompat,
+                               Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable,
+                               Scheduler gattCallbacksProcessingScheduler) {
+        this.rxBleAdapterWrapper = rxBleAdapterWrapper;
+        this.rxBleRadio = rxBleRadio;
+        this.bleConnectionCompat = bleConnectionCompat;
+        this.adapterStateObservable = adapterStateObservable;
+        this.gattCallbacksProcessingScheduler = gattCallbacksProcessingScheduler;
     }
 
     public RxBleDevice getBleDevice(String macAddress) {
-        final DeviceComponent cachedDeviceComponent = cachedDeviceComponents.get(macAddress);
+        final RxBleDevice rxBleDevice = availableDevices.get(macAddress);
 
-        if (cachedDeviceComponent != null) {
-            return cachedDeviceComponent.provideDevice();
+        if (rxBleDevice != null) {
+            return rxBleDevice;
         }
 
-        synchronized (cachedDeviceComponents) {
-            final DeviceComponent secondCheckRxBleDevice = cachedDeviceComponents.get(macAddress);
+        synchronized (availableDevices) {
+            final RxBleDevice secondCheckRxBleDevice = availableDevices.get(macAddress);
 
             if (secondCheckRxBleDevice != null) {
-                return secondCheckRxBleDevice.provideDevice();
+                return secondCheckRxBleDevice;
             }
 
-            final DeviceComponent deviceComponent =
-                    deviceComponentBuilder.get()
-                    .deviceModule(new DeviceModule(macAddress))
-                    .build();
-
-            final RxBleDevice newRxBleDevice = deviceComponent.provideDevice();
-            cachedDeviceComponents.put(macAddress, deviceComponent);
+            final BluetoothDevice bluetoothDevice = rxBleAdapterWrapper.getRemoteDevice(macAddress);
+            final RxBleDeviceImpl newRxBleDevice = new RxBleDeviceImpl(
+                    bluetoothDevice,
+                    new RxBleConnectionConnectorImpl(bluetoothDevice,
+                            new RxBleGattCallback.Provider() {
+                                @Override
+                                public RxBleGattCallback provide() {
+                                    return new RxBleGattCallback(gattCallbacksProcessingScheduler);
+                                }
+                            },
+                            new RxBleConnectionConnectorOperationsProvider(),
+                            rxBleRadio,
+                            bleConnectionCompat,
+                            rxBleAdapterWrapper,
+                            adapterStateObservable)
+            );
+            availableDevices.put(macAddress, newRxBleDevice);
             return newRxBleDevice;
         }
     }

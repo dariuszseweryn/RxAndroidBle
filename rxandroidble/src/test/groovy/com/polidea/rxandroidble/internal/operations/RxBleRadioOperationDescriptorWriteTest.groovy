@@ -3,35 +3,45 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
-
 public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
     BluetoothGatt mockGatt = Mock BluetoothGatt
+
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
+
     BluetoothGattDescriptor mockDescriptor = Mock BluetoothGattDescriptor
+
     BluetoothGattDescriptor differentDescriptor = Mock BluetoothGattDescriptor
+
     BluetoothGattCharacteristic mockParentCharacteristic = Mock BluetoothGattCharacteristic
+
     def testSubscriber = new TestSubscriber()
+
     TestScheduler testScheduler = new TestScheduler()
+
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
+
     Semaphore mockSemaphore = Mock Semaphore
+
     RxBleRadioOperationDescriptorWrite objectUnderTest
+
     byte[] testData = ['t', 'e', 's', 't']
+
     int bluetoothGattCharacteristicDefaultWriteType = 99
+
     int originalParentBluetoothGattCharacteristicWriteType = 1337
 
     def setup() {
@@ -275,8 +285,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt,
-                new MockOperationTimeoutConfiguration(testScheduler), bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData)
+        objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt, bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

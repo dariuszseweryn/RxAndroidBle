@@ -1,44 +1,57 @@
 package com.polidea.rxandroidble.internal.connection;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.operations.OperationsProvider;
+import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicLongWrite;
 
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import rx.Observable;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
-public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
 
+final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
+
+    @NonNull
+    private final BluetoothGatt bluetoothGatt;
+
+    @NonNull
+    private final RxBleGattCallback rxBleGattCallback;
+
+    @NonNull
     private final RxBleRadio rxBleRadio;
-    private final RxBleConnection rxBleConnection;
-    private final OperationsProvider operationsProvider;
 
-    private Observable<BluetoothGattCharacteristic> writtenCharacteristicObservable;
-    private Callable<Integer> maxBatchSizeCallable;
+    @NonNull
     private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
 
     private byte[] bytes;
 
-    @Inject
+    private Observable<BluetoothGattCharacteristic> writtenCharacteristicObservable;
+
+    @NonNull
+    private Callable<Integer> maxBatchSizeCallable;
+
+    @NonNull
+    private final RxBleConnection rxBleConnection;
+
     LongWriteOperationBuilderImpl(
-            RxBleRadio rxBleRadio,
-            @Named(ConnectionModule.CURRENT_MTU) Callable<Integer> defaultMaxBatchSizeCallable,
-            RxBleConnection rxBleConnection,
-            OperationsProvider operationsProvider
+            @NonNull BluetoothGatt bluetoothGatt,
+            @NonNull RxBleGattCallback rxBleGattCallback,
+            @NonNull RxBleRadio rxBleRadio,
+            @NonNull Callable<Integer> defaultMaxBatchSizeCallable,
+            @NonNull RxBleConnection rxBleConnection
     ) {
+        this.bluetoothGatt = bluetoothGatt;
+        this.rxBleGattCallback = rxBleGattCallback;
         this.rxBleRadio = rxBleRadio;
         this.maxBatchSizeCallable = defaultMaxBatchSizeCallable;
         this.rxBleConnection = rxBleConnection;
-        this.operationsProvider = operationsProvider;
     }
 
     @Override
@@ -54,7 +67,8 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     }
 
     @Override
-    public RxBleConnection.LongWriteOperationBuilder setCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    public RxBleConnection.LongWriteOperationBuilder setCharacteristic(
+            @NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         this.writtenCharacteristicObservable = Observable.just(bluetoothGattCharacteristic);
         return this;
     }
@@ -90,10 +104,16 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
         return writtenCharacteristicObservable.flatMap(new Func1<BluetoothGattCharacteristic, Observable<byte[]>>() {
             @Override
             public Observable<byte[]> call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                return rxBleRadio.queue(
-                        operationsProvider.provideLongWriteOperation(bluetoothGattCharacteristic,
-                                writeOperationAckStrategy, maxBatchSizeCallable, bytes)
-                );
+                return rxBleRadio.queue(new RxBleRadioOperationCharacteristicLongWrite(
+                        bluetoothGatt,
+                        rxBleGattCallback,
+                        bluetoothGattCharacteristic,
+                        maxBatchSizeCallable,
+                        writeOperationAckStrategy,
+                        bytes,
+                        rxBleRadio.scheduler(),
+                        Schedulers.computation()
+                ));
             }
         });
     }

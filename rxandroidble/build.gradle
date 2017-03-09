@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'groovyx.android'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
@@ -13,7 +12,7 @@ android {
         versionCode 1
         versionName VERSION_NAME
     }
-
+    
     buildTypes {
         release {
             minifyEnabled false
@@ -48,8 +47,6 @@ dependencies {
     compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.rxandroid
     compile rootProject.ext.libs.support_annotations
-    compile rootProject.ext.libs.dagger
-    apt rootProject.ext.libs.dagger_compiler
 
     // Test dependencies
     testCompile rootProject.ext.libs.junit

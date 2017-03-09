@@ -7,8 +7,6 @@ import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
@@ -34,11 +32,9 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     Semaphore mockSemaphore = Mock Semaphore
 
-    RxBleRadioOperationDescriptorRead objectUnderTest
+    RxBleRadioOperationDescriptorRead objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt, mockDescriptor, testScheduler)
 
     def setup() {
-        objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt,
-                new MockOperationTimeoutConfiguration(testScheduler), mockDescriptor)
         mockCallback.getOnDescriptorRead() >> onDescriptorReadSubject
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)

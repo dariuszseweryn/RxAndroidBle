@@ -9,8 +9,6 @@ import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Inject;
-
 import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -21,7 +19,6 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONN
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
-@DeviceScope
 class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
@@ -29,7 +26,6 @@ class RxBleDeviceImpl implements RxBleDevice {
     private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateSubject = BehaviorSubject.create(DISCONNECTED);
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
-    @Inject
     public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
@@ -46,13 +42,13 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
-    public Observable<RxBleConnection> establishConnection(Context context, final boolean autoConnect) {
+    public Observable<RxBleConnection> establishConnection(final Context context, final boolean autoConnect) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(autoConnect)
+                    return connector.prepareConnection(context, autoConnect)
                             .doOnSubscribe(new Action0() {
                                 @Override
                                 public void call() {

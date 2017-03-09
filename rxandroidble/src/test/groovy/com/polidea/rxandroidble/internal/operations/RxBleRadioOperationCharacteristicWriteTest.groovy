@@ -2,19 +2,17 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
-
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
 
 public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
 
@@ -251,8 +249,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt,
-                new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic, testData)
+        objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt, mockCharacteristic, testData, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

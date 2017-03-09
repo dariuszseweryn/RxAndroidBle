@@ -7,8 +7,6 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.Observable
@@ -178,8 +176,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt,
-                new MockOperationTimeoutConfiguration(timeout.toInteger(), testScheduler))
+        objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt, timeout, timeoutTimeUnit, testScheduler)
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)
     }

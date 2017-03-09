@@ -3,18 +3,15 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
-
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func0;
@@ -22,11 +19,13 @@ import rx.functions.Func1;
 
 public class RxBleRadioOperationServicesDiscover extends RxBleSingleGattRadioOperation<RxBleDeviceServices> {
 
-    RxBleRadioOperationServicesDiscover(
+    public RxBleRadioOperationServicesDiscover(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
-            TimeoutConfiguration timeoutConfiguration) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeoutConfiguration);
+            long timeout,
+            TimeUnit timeoutTimeUnit,
+            Scheduler timeoutScheduler) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeout, timeoutTimeUnit, timeoutScheduler);
     }
 
     @Override

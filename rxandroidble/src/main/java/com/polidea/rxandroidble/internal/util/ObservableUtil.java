@@ -5,7 +5,6 @@ import rx.Observable;
 public class ObservableUtil {
 
     private ObservableUtil() {
-
     }
 
     public static <T> Observable<T> justOnNext(T onNext) {

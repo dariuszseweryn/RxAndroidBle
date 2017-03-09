@@ -9,7 +9,6 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.Observable
 import rx.functions.Func1
 import rx.internal.schedulers.ImmediateScheduler
@@ -20,6 +19,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.nio.ByteBuffer
+import java.util.concurrent.Callable
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -27,19 +27,33 @@ import java.util.concurrent.atomic.AtomicInteger
 public class RxBleRadioOperationCharacteristicLongWriteTest extends Specification {
 
     private static long DEFAULT_WRITE_DELAY = 1
+
     UUID mockCharacteristicUUID = UUID.randomUUID()
+
     UUID differentCharacteristicUUID = UUID.randomUUID()
+
     BluetoothGatt mockGatt = Mock BluetoothGatt
+
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
+
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
+
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
+
     def testSubscriber = new TestSubscriber()
+
     TestScheduler testScheduler = new TestScheduler()
+
     TestScheduler timeoutScheduler = new TestScheduler()
+
     ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
+
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
+
     Semaphore mockSemaphore = Mock Semaphore
+
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
+
     Exception testException = new Exception("testException")
 
     def setup() {
@@ -88,6 +102,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
         where:
         maxBatchSize | writtenBytesLength | expectedBatchesCount
+        20           | 17                 | 1
         20           | 57                 | 3
         4            | 16                 | 4
         4            | 17                 | 5
@@ -456,6 +471,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
     private givenCharacteristicWriteOkButEventuallyStalls(int failingWriteIndex) {
         AtomicInteger writeIndex = new AtomicInteger(0)
+
         mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
             UUID uuid = characteristic.getUuid()
             byte[] returnBytes = new byte[0]
@@ -475,12 +491,18 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         objectUnderTest = new RxBleRadioOperationCharacteristicLongWrite(
                 mockGatt,
                 mockCallback,
-                immediateScheduler,
-                new MockOperationTimeoutConfiguration(10, timeoutScheduler),
                 mockCharacteristic,
-                { maxBatchSize },
+                new Callable<Integer>() {
+
+                    @Override
+                    Integer call() throws Exception {
+                        return maxBatchSize
+                    }
+                },
                 writeOperationAckStrategy,
-                testData
+                testData,
+                immediateScheduler,
+                timeoutScheduler
         )
         objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
         objectUnderTest.asObservable().subscribe(testSubscriber)

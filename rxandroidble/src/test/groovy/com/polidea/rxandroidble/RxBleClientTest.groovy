@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble
 
-import java.util.concurrent.Executors
-
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_CANNOT_START
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_DISABLED
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_NOT_AVAILABLE
@@ -49,8 +47,7 @@ class RxBleClientTest extends Specification {
                 adapterStateObservable.asObservable(),
                 uuidParserSpy,
                 locationServicesStatusMock,
-                mockDeviceProvider,
-                Executors.newSingleThreadExecutor()
+                mockDeviceProvider
         )
     }
 

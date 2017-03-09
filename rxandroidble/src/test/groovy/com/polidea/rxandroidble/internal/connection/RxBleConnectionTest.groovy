@@ -8,17 +8,13 @@ import android.os.Build
 import android.support.annotation.NonNull
 import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
-import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import org.robolectric.annotation.Config
 import org.robospock.GradleRoboSpecification
 import rx.Observable
 import rx.Scheduler
 import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
 import rx.subjects.BehaviorSubject
 import rx.subjects.PublishSubject
 import spock.lang.Unroll
@@ -41,13 +37,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def flatRadio = new FlatRxBleRadio()
     def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
-    def testScheduler = new TestScheduler()
-    def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
-    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
-            testScheduler, { new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattMock, timeoutConfig) })
-    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock, operationsProviderMock,
-            { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler
-    )
+    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock)
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
 
