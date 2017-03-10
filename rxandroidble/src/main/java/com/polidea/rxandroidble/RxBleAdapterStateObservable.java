@@ -6,11 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
-
+import rx.Emitter;
 import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
+import rx.functions.Action1;
+import rx.functions.Cancellable;
+import rx.internal.operators.OnSubscribeCreate;
 
 /**
  * Observes Bluetooth adapter state. This responds to user interactions as well as system controlled state changes.
@@ -39,37 +39,32 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
     }
 
     public RxBleAdapterStateObservable(@NonNull final Context context) {
-        super(new OnSubscribe<BleAdapterState>() {
-            @Override
-            public void call(Subscriber<? super BleAdapterState> subscriber) {
-                onSubscribe(context.getApplicationContext(), subscriber);
-            }
-        });
-    }
+        super(new OnSubscribeCreate<>(
+                new Action1<Emitter<BleAdapterState>>() {
+                    @Override
+                    public void call(final Emitter<BleAdapterState> emitter) {
+                        final BroadcastReceiver receiver = new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                String action = intent.getAction();
 
-    private static void onSubscribe(final Context context, final Subscriber<? super BleAdapterState> subscriber) {
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                onStateBroadcastReceived(intent, subscriber);
-            }
-        };
-        context.registerReceiver(receiver, createFilter());
-        subscriber.add(Subscriptions.create(new Action0() {
-            @Override
-            public void call() {
-                context.unregisterReceiver(receiver);
-            }
-        }));
-    }
-
-    private static void onStateBroadcastReceived(Intent intent, Subscriber<? super BleAdapterState> subscriber) {
-        String action = intent.getAction();
-
-        if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-            subscriber.onNext(mapToBleAdapterState(state));
-        }
+                                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                                    emitter.onNext(mapToBleAdapterState(state));
+                                }
+                            }
+                        };
+                        context.registerReceiver(receiver, createFilter());
+                        emitter.setCancellation(new Cancellable() {
+                            @Override
+                            public void cancel() throws Exception {
+                                context.unregisterReceiver(receiver);
+                            }
+                        });
+                    }
+                },
+                Emitter.BackpressureMode.LATEST
+        ));
     }
 
     private static BleAdapterState mapToBleAdapterState(int state) {
