@@ -18,7 +18,7 @@ import rx.Emitter;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
-import rx.internal.operators.OnSubscribeFromEmitter;
+import rx.internal.operators.OnSubscribeCreate;
 
 /**
  * An Observable that emits true when {@link com.polidea.rxandroidble.RxBleClient#scanBleDevices(UUID...)} would not
@@ -44,7 +44,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
     }
 
     LocationServicesOkObservable(@NonNull final Context context, @NonNull final LocationServicesStatus locationServicesStatus) {
-        super(new OnSubscribeFromEmitter<>(
+        super(new OnSubscribeCreate<>(
                 new Action1<Emitter<Boolean>>() {
                     @Override
                     public void call(final Emitter<Boolean> emitter) {
