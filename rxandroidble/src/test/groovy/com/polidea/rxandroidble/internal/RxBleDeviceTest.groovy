@@ -28,7 +28,7 @@ public class RxBleDeviceTest extends Specification {
     TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
 
     def setup() {
-        mockConnector.prepareConnection(_, _) >> mockConnectorEstablishConnectionPublishSubject
+        mockConnector.prepareConnection(_) >> mockConnectorEstablishConnectionPublishSubject
     }
 
     def "should return the BluetoothDevice name"() {
@@ -71,17 +71,13 @@ public class RxBleDeviceTest extends Specification {
     def "establishConnection() should call RxBleConnection.Connector.prepareConnection() #id"() {
 
         when:
-        rxBleDevice.establishConnection(theContext, theAutoConnectValue).subscribe()
+        rxBleDevice.establishConnection(theAutoConnectValue).subscribe()
 
         then:
-        1 * mockConnector.prepareConnection(theContext, theAutoConnectValue) >> connectionStatePublishSubject
+        1 * mockConnector.prepareConnection(theAutoConnectValue) >> connectionStatePublishSubject
 
         where:
-        theContext    | theAutoConnectValue
-        null          | true
-        null          | false
-        Mock(Context) | true
-        Mock(Context) | false
+        theAutoConnectValue << [true, false]
     }
 
     def "should emit DISCONNECTED when subscribed and RxBleDevice was not connected yet"() {
@@ -236,7 +232,7 @@ public class RxBleDeviceTest extends Specification {
         subscription.unsubscribe()
 
         when:
-        rxBleDevice.establishConnection(Mock(Context), false).subscribe(secondSubscriber)
+        rxBleDevice.establishConnection(false).subscribe(secondSubscriber)
 
         then:
         firstSubscriber.assertValueCount 1
@@ -315,7 +311,7 @@ public class RxBleDeviceTest extends Specification {
     }
 
     public Observable<RxBleConnection> rxStartConnecting() {
-        return rxBleDevice.establishConnection(Mock(Context), false)
+        return rxBleDevice.establishConnection(false)
     }
 
     public void notifyConnectionWasEstablished() {

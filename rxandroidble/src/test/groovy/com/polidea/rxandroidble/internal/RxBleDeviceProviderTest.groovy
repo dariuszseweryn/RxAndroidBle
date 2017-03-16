@@ -1,32 +1,96 @@
 package com.polidea.rxandroidble.internal
 
 import android.bluetooth.BluetoothDevice
-import com.polidea.rxandroidble.FlatRxBleRadio
-import com.polidea.rxandroidble.MockRxBleAdapterWrapper
-import com.polidea.rxandroidble.internal.util.BleConnectionCompat
+import android.content.Context
+import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.RxBleDevice
+import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
 import rx.Observable
-import rx.Scheduler
 import spock.lang.Specification
 
+import javax.inject.Provider
+
 class RxBleDeviceProviderTest extends Specification {
-    def mockRadio = new FlatRxBleRadio()
-    def mockAdapterWrapper = Mock MockRxBleAdapterWrapper
-    def adapterStateObservable = Observable.never()
-    def objectUnderTest = new RxBleDeviceProvider(
-            mockAdapterWrapper,
-            mockRadio,
-            Mock(BleConnectionCompat),
-            adapterStateObservable,
-            Mock(Scheduler)
-    )
+
+    class StubDevice implements RxBleDevice {
+
+        StubDevice(String macAddress) {
+            this.macAddress = macAddress
+        }
+
+        private final String macAddress;
+
+        @Override
+        Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
+            throw UnsupportedOperationException()
+        }
+
+        @Override
+        RxBleConnection.RxBleConnectionState getConnectionState() {
+            throw UnsupportedOperationException()
+        }
+
+        @Override
+        @Deprecated
+        Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
+            establishConnection(autoConnect)
+        }
+
+        @Override
+        Observable<RxBleConnection> establishConnection(boolean autoConnect) {
+            throw UnsupportedOperationException()
+        }
+
+        @Override
+        String getName() {
+            throw UnsupportedOperationException()
+        }
+
+        @Override
+        String getMacAddress() {
+            return macAddress
+        }
+
+        @Override
+        BluetoothDevice getBluetoothDevice() {
+            throw UnsupportedOperationException()
+        }
+    }
+
+    RxBleDeviceProvider objectUnderTest
 
     def setup() {
-        mockAdapterWrapper.getRemoteDevice(_) >> {
-            String address ->
-                def device = Mock(BluetoothDevice)
-                device.getAddress() >> address
-                device
-        }
+
+
+        objectUnderTest = new RxBleDeviceProvider(
+                new DeviceComponentCache(),
+                new Provider<DeviceComponent.Builder>() {
+
+                    @Override
+                    DeviceComponent.Builder get() {
+                        return new DeviceComponent.Builder() {
+
+                            private RxBleDevice device
+
+                            @Override
+                            DeviceComponent build() {
+                                return new DeviceComponent() {
+                                    @Override
+                                    RxBleDevice provideDevice() {
+                                        return device
+                                    }
+                                }
+                            }
+
+                            @Override
+                            DeviceComponent.Builder deviceModule(DeviceModule module) {
+                                this.device = new StubDevice(module.macAddress)
+                                return this
+                            }
+                        }
+                    }
+                }
+        )
     }
 
     def "should return new BleDevice if getBleDevice was called for the first time"() {

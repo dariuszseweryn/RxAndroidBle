@@ -2,26 +2,29 @@ package com.polidea.rxandroidble.internal.util;
 
 import android.os.Build;
 
+import com.polidea.rxandroidble.ClientComponent;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 public class LocationServicesStatus {
 
     private final CheckerLocationProvider checkerLocationProvider;
-
     private final CheckerLocationPermission checkerLocationPermission;
+    private final int deviceSdk;
+    private final int targetSdk;
 
-    private final ProviderDeviceSdk providerDeviceSdk;
-
-    private final ProviderApplicationTargetSdk providerApplicationTargetSdk;
-
+    @Inject
     public LocationServicesStatus(
             CheckerLocationProvider checkerLocationProvider,
             CheckerLocationPermission checkerLocationPermission,
-            ProviderDeviceSdk providerDeviceSdk,
-            ProviderApplicationTargetSdk providerApplicationTargetSdk
+            @Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+            @Named(ClientComponent.PlatformConstants.INT_TARGET_SDK) int targetSdk
     ) {
         this.checkerLocationProvider = checkerLocationProvider;
         this.checkerLocationPermission = checkerLocationPermission;
-        this.providerDeviceSdk = providerDeviceSdk;
-        this.providerApplicationTargetSdk = providerApplicationTargetSdk;
+        this.deviceSdk = deviceSdk;
+        this.targetSdk = targetSdk;
     }
 
     public boolean isLocationPermissionOk() {
@@ -33,7 +36,7 @@ public class LocationServicesStatus {
     }
 
     private boolean isLocationPermissionGrantedRequired() {
-        return providerDeviceSdk.provide() >= Build.VERSION_CODES.M;
+        return deviceSdk >= Build.VERSION_CODES.M;
     }
 
     /**
@@ -43,7 +46,7 @@ public class LocationServicesStatus {
      * @return true if Location Services need to be turned ON
      */
     private boolean isLocationProviderEnabledRequired() {
-        return providerApplicationTargetSdk.provide() >= Build.VERSION_CODES.M
-                && providerDeviceSdk.provide() >= Build.VERSION_CODES.M;
+        return targetSdk >= Build.VERSION_CODES.M
+                && deviceSdk >= Build.VERSION_CODES.M;
     }
 }

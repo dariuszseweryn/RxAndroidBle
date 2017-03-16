@@ -12,12 +12,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
 /**
  * @link http://stackoverflow.com/questions/31668791/how-can-i-read-uuids-from-advertisement-data-ios-overflow-area-in-android
  */
 public class UUIDUtil {
 
-    public UUIDUtil() {
+    @Inject
+    UUIDUtil() {
     }
 
     public List<UUID> extractUUIDs(byte[] scanResult) {

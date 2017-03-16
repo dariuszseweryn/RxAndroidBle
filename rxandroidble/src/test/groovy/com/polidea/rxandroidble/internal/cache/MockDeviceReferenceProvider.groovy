@@ -1,15 +1,16 @@
 package com.polidea.rxandroidble.internal.cache
 
-import com.polidea.rxandroidble.RxBleDevice
-
-class MockDeviceReferenceProvider implements DeviceWeakReference.Provider {
+import com.polidea.rxandroidble.internal.DeviceComponent
 
 
-    private final HashMap<RxBleDevice, List<MockDeviceWeakReference>> devices = new HashMap<>()
+class MockDeviceReferenceProvider implements DeviceComponentWeakReference.Provider {
 
-    class MockDeviceWeakReference extends DeviceWeakReference {
 
-        MockDeviceWeakReference(RxBleDevice device) {
+    private final HashMap<DeviceComponent, List<MockDeviceComponentWeakReference>> devices = new HashMap<>()
+
+    class MockDeviceComponentWeakReference extends DeviceComponentWeakReference {
+
+        MockDeviceComponentWeakReference(DeviceComponent device) {
             super(device)
         }
 
@@ -24,22 +25,22 @@ class MockDeviceReferenceProvider implements DeviceWeakReference.Provider {
     }
 
     @Override
-    DeviceWeakReference provide(RxBleDevice rxBleDevice) {
-        def reference = new MockDeviceWeakReference(rxBleDevice)
-        storeReference(rxBleDevice, reference)
+    DeviceComponentWeakReference provide(DeviceComponent component) {
+        def reference = new MockDeviceComponentWeakReference(component)
+        storeReference(component, reference)
         return reference
     }
 
-    public releaseReferenceFor(RxBleDevice rxBleDevice) {
-        devices.get(rxBleDevice)?.each { it.release() }
+    public releaseReferenceFor(DeviceComponent component) {
+        devices.get(component)?.each { it.release() }
     }
 
-    private storeReference(RxBleDevice rxBleDevice, MockDeviceWeakReference reference) {
+    private storeReference(DeviceComponent component, MockDeviceComponentWeakReference reference) {
 
-        if (devices.containsKey(rxBleDevice)) {
-            devices.get(rxBleDevice).add(reference)
+        if (devices.containsKey(component)) {
+            devices.get(component).add(reference)
         } else {
-            devices.put(rxBleDevice, [reference])
+            devices.put(component, [reference])
         }
     }
 }

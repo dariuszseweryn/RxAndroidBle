@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
+
+import javax.inject.Inject;
+
 import rx.Emitter;
 import rx.Observable;
 import rx.functions.Action1;
@@ -38,6 +41,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
     }
 
+    @Inject
     public RxBleAdapterStateObservable(@NonNull final Context context) {
         super(new OnSubscribeCreate<>(
                 new Action1<Emitter<BleAdapterState>>() {

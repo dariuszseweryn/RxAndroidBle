@@ -2,7 +2,6 @@ package com.polidea.rxandroidble.mockrxandroidble
 
 import android.os.Build
 import com.polidea.rxandroidble.RxBleConnection
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
 import rx.observers.TestSubscriber
@@ -111,7 +110,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection ->
             rxBleConnection
                     .requestMtu(72)
@@ -154,7 +153,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection ->
             rxBleConnection
                     .discoverServices()
@@ -175,7 +174,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
                 .map { data -> new String(data) }
                 .subscribe(testSubscriber)
@@ -192,7 +191,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
                 .map { data -> new String(data) }
                 .subscribe(testSubscriber)
@@ -207,7 +206,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(RuntimeEnvironment.application, false) }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicNotifiedUUID) }
                 .subscribe { obs -> obs.map { data -> new String(data) } subscribe(testSubscriber) }
 
@@ -225,7 +224,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         device.observeConnectionStateChanges().subscribe(testSubscriber);
 
         when:
-        device.establishConnection(RuntimeEnvironment.application, false).subscribe {}
+        device.establishConnection(false).subscribe {}
 
         then:
         testSubscriber.assertValues(
@@ -239,7 +238,7 @@ public class RxBleClientMockTest extends RoboSpecification {
         def testSubscriber = TestSubscriber.create()
         def device = rxBleClient.getBleDevice("AA:BB:CC:DD:EE:FF")
         device.observeConnectionStateChanges().subscribe(testSubscriber);
-        def subscription = device.establishConnection(RuntimeEnvironment.application, false).subscribe {}
+        def subscription = device.establishConnection(false).subscribe {}
 
         when:
         subscription.unsubscribe()

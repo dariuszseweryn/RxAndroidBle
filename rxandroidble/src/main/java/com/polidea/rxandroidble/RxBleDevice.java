@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 
 import rx.Observable;
@@ -24,6 +25,28 @@ public interface RxBleDevice {
     RxBleConnection.RxBleConnectionState getConnectionState();
 
     /**
+     * @param context     Android's context.
+     * @param autoConnect Marker related with
+     *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
+     *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
+     *                    auto connect flag set to true the connection will fail
+     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range.
+     * @return Observable emitting the connection.
+     * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
+     *                                         was already established or was in pending connection state. This occurs when the
+     *                                         connection was released as a part of expected behavior
+     *                                         (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
+     * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
+     *                                         The exception contains detailed explanation of the error source (type of operation) and
+     *                                         the code proxied from the Android system.
+     * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
+     *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
+     * @see #establishConnection(boolean). The context is no longer required.
+     */
+    @Deprecated
+    Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect);
+
+    /**
      * Establishes connection with a given BLE device. {@link RxBleConnection} is a handle, used to process BLE operations with a connected
      * device.
      * <p>
@@ -37,21 +60,23 @@ public interface RxBleDevice {
      * won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
      * the moment of #establishConnection call.
      *
-     * @param context     Android's context.
      * @param autoConnect Marker related with
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
      *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
      *                    auto connect flag set to true the connection will fail
      *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range.
      * @return Observable emitting the connection.
-     * @throws BleDisconnectedException emitted when the BLE link has been disconnected either when the connection was already established
-     *                                  or was in pending connection state. This occurs when the connection was released as a
-     *                                  part of expected behavior (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
-     * @throws BleGattException         emitted when the BLE link has been interrupted as a result of an error. The exception contains
-     *                                  detailed explanation of the error source (type of operation) and the code proxied from
-     *                                  the Android system.
+     * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
+     *                                         was already established or was in pending connection state. This occurs when the
+     *                                         connection was released as a part of expected behavior
+     *                                         (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
+     * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
+     *                                         The exception contains detailed explanation of the error source (type of operation) and
+     *                                         the code proxied from the Android system.
+     * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
+     *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
      */
-    Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect);
+    Observable<RxBleConnection> establishConnection(boolean autoConnect);
 
     /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.

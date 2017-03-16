@@ -6,10 +6,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
 
+import javax.inject.Inject;
+
 public class CheckerLocationPermission {
 
     private final Context context;
 
+    @Inject
     public CheckerLocationPermission(Context context) {
         this.context = context;
     }

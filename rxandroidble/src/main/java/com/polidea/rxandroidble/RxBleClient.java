@@ -20,7 +20,11 @@ public abstract class RxBleClient {
      * @return BLE client instance.
      */
     public static RxBleClient create(@NonNull Context context) {
-        return RxBleClientImpl.getInstance(context);
+        return DaggerClientComponent
+                .builder()
+                .clientModule(new ClientComponent.ClientModule(context))
+                .build()
+                .rxBleClient();
     }
 
     /**

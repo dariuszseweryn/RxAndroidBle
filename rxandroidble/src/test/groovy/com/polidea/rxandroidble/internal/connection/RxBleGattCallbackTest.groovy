@@ -24,7 +24,7 @@ import spock.lang.Unroll
 
 class RxBleGattCallbackTest extends RoboSpecification {
 
-    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE)
+    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider))
     def testSubscriber = new TestSubscriber()
     @Shared def mockBluetoothGatt = Mock BluetoothGatt
     @Shared def mockBluetoothGattCharacteristic = Mock BluetoothGattCharacteristic

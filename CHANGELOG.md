@@ -5,6 +5,7 @@ Version 1.2.0-SNAPSHOT
 * Added Proguard rules for the library. (https://github.com/Polidea/RxAndroidBle/issues/104)
 * Added support for MTU negotiation, thanks pregno!
 * Fixed connecting with autoConnect = true on Android 7.0.0+, thanks JIUgia!
+* Internal refactoring introducing Dagger2 support
 
 Version 1.1.0
 * Fixed issue that sometimes happened where `RxBleRadioOperationConnect` was not yet subscribed while running. (https://github.com/Polidea/RxAndroidBle/issues/94)

@@ -15,12 +15,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.inject.Inject;
+
 import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 
 public class BleConnectionCompat {
 
     private final Context context;
 
+    @Inject
     public BleConnectionCompat(Context context) {
         this.context = context;
     }

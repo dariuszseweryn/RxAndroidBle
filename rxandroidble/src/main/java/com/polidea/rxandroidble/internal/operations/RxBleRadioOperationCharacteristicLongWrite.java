@@ -6,12 +6,14 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
-import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.ClientComponent;
+import com.polidea.rxandroidble.RxBleConnection.WriteOperationAckStrategy;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -20,7 +22,8 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+
+import javax.inject.Named;
 
 import rx.Emitter;
 import rx.Observable;
@@ -33,44 +36,33 @@ import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperation<byte[]> {
 
-    private static final int SINGLE_BATCH_TIMEOUT = 30;
-
     private final BluetoothGatt bluetoothGatt;
-
     private final RxBleGattCallback rxBleGattCallback;
-
+    private final Scheduler mainThreadScheduler;
+    private final TimeoutConfiguration timeoutConfiguration;
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
-
     private final Callable<Integer> batchSizeProvider;
-
-    private final RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy;
-
+    private final WriteOperationAckStrategy writeOperationAckStrategy;
     private final byte[] bytesToWrite;
-
-    private final Scheduler scheduler;
-
-    private final Scheduler timeoutScheduler;
-
     private byte[] tempBatchArray;
 
-    public RxBleRadioOperationCharacteristicLongWrite(
+    RxBleRadioOperationCharacteristicLongWrite(
             BluetoothGatt bluetoothGatt,
             RxBleGattCallback rxBleGattCallback,
+            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             Callable<Integer> batchSizeProvider,
-            RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
-            byte[] bytesToWrite,
-            Scheduler scheduler,
-            Scheduler timeoutScheduler
-    ) {
+            WriteOperationAckStrategy writeOperationAckStrategy,
+            byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
+        this.mainThreadScheduler = mainThreadScheduler;
+        this.timeoutConfiguration = timeoutConfiguration;
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.batchSizeProvider = batchSizeProvider;
         this.writeOperationAckStrategy = writeOperationAckStrategy;
         this.bytesToWrite = bytesToWrite;
-        this.scheduler = scheduler;
-        this.timeoutScheduler = timeoutScheduler;
     }
 
     @Override
@@ -86,13 +78,13 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
 
         writeBatchAndObserve(batchSize, byteBuffer)
-                .subscribeOn(scheduler)
+                .subscribeOn(mainThreadScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic())
                 .timeout(
-                        SINGLE_BATCH_TIMEOUT,
-                        TimeUnit.SECONDS,
+                        timeoutConfiguration.timeout,
+                        timeoutConfiguration.timeoutTimeUnit,
                         timeoutObservable,
-                        timeoutScheduler
+                        timeoutConfiguration.timeoutScheduler
                 )
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledged(byteBuffer))
                 .toCompletable()
