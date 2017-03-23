@@ -123,7 +123,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     @NonNull
     private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
         final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
-        return Observable.fromEmitter(
+        return Observable.create(
                 new Action1<Emitter<ByteAssociation<UUID>>>() {
                     @Override
                     public void call(Emitter<ByteAssociation<UUID>> emitter) {
