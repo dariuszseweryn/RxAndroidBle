@@ -16,13 +16,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 25
     buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         applicationId "com.polidea.rxandroidble.sample"
         minSdkVersion 18
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
     }
@@ -45,10 +45,10 @@ configurations.all {
 dependencies {
     // compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.1.0', changing: false
     compile project(path: ':rxandroidble')
-    compile "com.android.support:appcompat-v7:$rootProject.ext.buildToolsVersionVariable"
-    compile "com.android.support:design:$rootProject.ext.buildToolsVersionVariable"
-    compile 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
+    compile "com.android.support:design:$rootProject.ext.supportVersion"
+    compile 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.rxandroid
     compile 'com.trello:rxlifecycle:1.0'
