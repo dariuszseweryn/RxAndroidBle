@@ -11,10 +11,11 @@ class LocationServicesStatusTest extends Specification {
     def mockCheckerLocationPermission = Mock CheckerLocationPermission
     int mockDeviceSdk
     int mockApplicationTargetSdk
+    boolean mockIsAndroidWear
     LocationServicesStatus objectUnderTest
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new LocationServicesStatus(mockCheckerLocationProvider, mockCheckerLocationPermission, mockDeviceSdk, mockApplicationTargetSdk)
+        objectUnderTest = new LocationServicesStatus(mockCheckerLocationProvider, mockCheckerLocationPermission, mockDeviceSdk, mockApplicationTargetSdk, mockIsAndroidWear)
     }
 
     @Shared
@@ -35,6 +36,9 @@ class LocationServicesStatusTest extends Specification {
 
     @Shared
     private def sdkVersions = sdkVersionsPreM + sdkVersionsPostM
+
+    @Shared
+    private def isAndroidWear = [true, false]
 
     @Unroll
     def "(SDK <23) isLocationPermissionOk should return true (SDK=#sdkVersion)"() {
@@ -83,14 +87,15 @@ class LocationServicesStatusTest extends Specification {
     }
 
     @Unroll
-    def "should check location provider only if needed (deviceSdk:#sdkVersion targetSdk:#targetSdk)"() {
+    def "should check location provider only if needed (deviceSdk:#sdkVersion targetSdk:#targetSdk isAndroidWear:#isAndroidWearValue)"() {
 
         given:
         mockDeviceSdk = sdkVersion
         mockApplicationTargetSdk = targetSdk
+        mockIsAndroidWear = isAndroidWearValue
         prepareObjectUnderTest()
         int expectedCalls
-        if (sdkVersion >= Build.VERSION_CODES.M && targetSdk >= Build.VERSION_CODES.M) {
+        if (sdkVersion >= Build.VERSION_CODES.M && targetSdk >= Build.VERSION_CODES.M && !isAndroidWearValue) {
             expectedCalls = 1
         } else {
             expectedCalls = 0
@@ -103,6 +108,6 @@ class LocationServicesStatusTest extends Specification {
         expectedCalls * mockCheckerLocationProvider.isLocationProviderEnabled() >> true
 
         where:
-        [sdkVersion, targetSdk] << [sdkVersions, sdkVersions].combinations()
+        [sdkVersion, targetSdk, isAndroidWearValue] << [sdkVersions, sdkVersions, isAndroidWear].combinations()
     }
 }

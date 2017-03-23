@@ -1,8 +1,10 @@
 package com.polidea.rxandroidble;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 
@@ -44,6 +46,7 @@ public interface ClientComponent {
 
         public static final String INT_TARGET_SDK = "target-sdk";
         public static final String INT_DEVICE_SDK = "device-sdk";
+        public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
         private PlatformConstants() {
 
         }
@@ -135,6 +138,14 @@ public interface ClientComponent {
             } catch (Throwable catchThemAll) {
                 return Integer.MAX_VALUE;
             }
+        }
+
+        @Provides
+        @Named(PlatformConstants.BOOL_IS_ANDROID_WEAR)
+        @SuppressLint("InlinedApi")
+        boolean provideIsAndroidWear(@Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
+            return deviceSdk >= Build.VERSION_CODES.KITKAT_WATCH
+                    && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
         }
 
         @Provides

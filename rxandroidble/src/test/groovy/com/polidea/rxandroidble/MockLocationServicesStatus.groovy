@@ -7,7 +7,7 @@ class MockLocationServicesStatus extends LocationServicesStatus {
     boolean isLocationProviderOk = true
 
     MockLocationServicesStatus() {
-        super(null, null, 25, 25)
+        super(null, null, 25, 25, false)
     }
 
     @Override

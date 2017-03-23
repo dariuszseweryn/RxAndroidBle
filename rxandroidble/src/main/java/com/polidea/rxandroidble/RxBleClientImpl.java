@@ -55,7 +55,6 @@ class RxBleClientImpl extends RxBleClient {
         this.rxBleDeviceProvider = rxBleDeviceProvider;
         this.executorService = executorService;
     }
-
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
