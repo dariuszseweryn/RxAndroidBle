@@ -26,7 +26,6 @@ import javax.inject.Named;
 
 import rx.Observable;
 import rx.Scheduler;
-import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
@@ -59,12 +58,6 @@ public class RxBleGattCallback {
                 @Override
                 public Observable<?> call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
                     return Observable.error(new BleDisconnectedException(pair.first.getDevice().getAddress()));
-                }
-            })
-            .doOnTerminate(new Action0() {
-                @Override
-                public void call() {
-                    bluetoothGattProvider.invalidate();
                 }
             })
             .replay()
@@ -246,7 +239,6 @@ public class RxBleGattCallback {
 
     private boolean propagateStatusError(BleGattException exception) {
         statusErrorSubject.onError(exception);
-        bluetoothGattProvider.invalidate();
         return true;
     }
 

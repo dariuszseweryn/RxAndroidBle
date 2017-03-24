@@ -24,13 +24,6 @@ public class BluetoothGattProvider {
     }
 
     /**
-     * Invalidates GATT storage.
-     */
-    public void invalidate() {
-        reference.set(null);
-    }
-
-    /**
      * Updates GATT instance storage if it wasn't initialized previously.
      */
     public void updateBluetoothGatt(@NonNull BluetoothGatt bluetoothGatt) {

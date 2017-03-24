@@ -13,18 +13,6 @@ class BluetoothGattProviderTest extends Specification {
         testSubscriber = new TestSubscriber<>()
     }
 
-    def "should return null after GATT storage was invalidated"() {
-        given:
-        objectUnderTest.updateBluetoothGatt(Mock(BluetoothGatt))
-        objectUnderTest.invalidate()
-
-        when:
-        def capturedGatt = objectUnderTest.getBluetoothGatt()
-
-        then:
-        capturedGatt == null
-    }
-
     def "should return null when asked for GATT initially"() {
         when:
         def capturedGatt = objectUnderTest.getBluetoothGatt()
