@@ -221,6 +221,15 @@ compile "com.polidea.rxandroidble:rxandroidble:1.1.0"
 </dependency>
 ```
 
+### Snapshot
+If your are interested in cutting-edge build you can get a `SNAPSHOT` version of the library. 
+NOTE: It is built from the top of the `master` branch and a subject to more frequent changes that may break the API and/or change behavior.
+
+To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
+```groovy
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+```
+
 ## Unit testing
 Using RxAndroidBle enables you to unit test your application easily. For examples how to use mocking head to [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble).
 ## Contributing
