@@ -104,7 +104,7 @@ public interface RxBleConnection {
          * however you may delay them at your pace.
          *
          * @param writeOperationAckStrategy the function that acknowledges writing of the batch of bytes. It takes
-         *                                  an {@link Observable<Boolean>} that emits a value each time the byte array batch
+         *                                  an {@link Observable} that emits a boolean value each time the byte array batch
          *                                  has finished to write. {@link Boolean#TRUE} means that there are more items in the buffer,
          *                                  {@link Boolean#FALSE} otherwise. If you want to delay the next batch use provided observable
          *                                  and add some custom behavior (delay, waiting for a message from the device, etc.)
@@ -425,17 +425,17 @@ public interface RxBleConnection {
      * what your are doing.</b>
      * <p>
      * Queue an operation for future execution. The method accepts a {@link RxBleRadioOperationCustom} concrete implementation
-     * and will queue it inside connection operation queue. When ready to execute, the {@link Observable<T>} returned
+     * and will queue it inside connection operation queue. When ready to execute, the {@link Observable} returned
      * by the {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be
      * subscribed to.
      * <p>
-     * Every event emitted by the {@link Observable<T>} returned by
+     * Every event emitted by the {@link Observable} returned by
      * {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be forwarded
-     * to the {@link Observable<T>} returned by this method.
+     * to the {@link Observable} returned by this method.
      * <p>
-     * You <b>must</b> ensure the custom operation's {@link Observable<T>} do terminate either via {@code onCompleted}
+     * You <b>must</b> ensure the custom operation's {@link Observable} do terminate either via {@code onCompleted}
      * or {@code onError(Throwable)}. Otherwise, the internal queue orchestrator will wait forever for
-     * your {@link Observable<T>} to complete. Normal queue processing will be resumed after the {@link Observable<T>}
+     * your {@link Observable} to complete. Normal queue processing will be resumed after the {@link Observable}
      * returned by {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}
      * completes.
      * <p>
