@@ -3,6 +3,8 @@ package com.polidea.rxandroidble.internal;
 import android.support.annotation.IntDef;
 import android.util.Log;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import java.util.regex.Pattern;
 public class RxBleLog {
 
     @IntDef({VERBOSE, DEBUG, INFO, WARN, ERROR, NONE})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface LogLevel {
 
     }
