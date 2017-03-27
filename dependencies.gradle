@@ -1,7 +1,7 @@
 ext {
     supportVersion = '25.3.0'
     buildToolsVersionVariable = "25.0.2"
-    rxJavaVersion = '1.2.7'
+    rxJavaVersion = '1.2.9'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     daggerVersion = '2.8'
