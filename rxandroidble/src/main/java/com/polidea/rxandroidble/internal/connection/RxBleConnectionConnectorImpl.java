@@ -100,7 +100,6 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             }
         });
     }
-
     private Observable<BleAdapterState> adapterNotUsableObservable() {
         return adapterStateObservable
                 .filter(new Func1<BleAdapterState, Boolean>() {

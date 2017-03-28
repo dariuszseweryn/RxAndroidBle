@@ -1,17 +1,13 @@
 package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
-
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
-
-import java.util.concurrent.Callable;
-
-import javax.inject.Named;
-
 import dagger.Module;
 import dagger.Provides;
+import java.util.concurrent.Callable;
+import javax.inject.Named;
 
 @Module
 public class ConnectionModule {

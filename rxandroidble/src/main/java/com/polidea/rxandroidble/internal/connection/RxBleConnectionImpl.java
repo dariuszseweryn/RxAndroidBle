@@ -3,7 +3,6 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
@@ -27,11 +26,9 @@ import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -61,8 +58,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     private final OperationsProvider operationsProvider;
     private final Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider;
     private final Scheduler callbackScheduler;
+    private final ServiceDiscoveryManager serviceDiscoveryManager;
 
-    private final AtomicReference<Observable<RxBleDeviceServices>> discoveredServicesCache = new AtomicReference<>();
     private final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
     private final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
     Integer currentMtu = 20; // Default value at the beginning
@@ -72,6 +69,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
             RxBleRadio rxBleRadio,
             RxBleGattCallback gattCallback,
             BluetoothGatt bluetoothGatt,
+            ServiceDiscoveryManager serviceDiscoveryManager,
             OperationsProvider operationProvider,
             Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider,
             @Named(ClientComponent.NamedSchedulers.RADIO_OPERATIONS) Scheduler callbackScheduler
@@ -79,6 +77,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.rxBleRadio = rxBleRadio;
         this.gattCallback = gattCallback;
         this.bluetoothGatt = bluetoothGatt;
+        this.serviceDiscoveryManager = serviceDiscoveryManager;
         this.operationsProvider = operationProvider;
         this.longWriteOperationBuilderProvider = longWriteOperationBuilderProvider;
         this.callbackScheduler = callbackScheduler;
@@ -104,36 +103,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices() {
-        return privateDiscoverServices(20, TimeUnit.SECONDS);
+        return serviceDiscoveryManager.getDiscoverServicesObservable(20L, TimeUnit.SECONDS);
     }
 
     @Override
     public Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit) {
-        return privateDiscoverServices(timeout, timeUnit);
-    }
-
-    private Observable<RxBleDeviceServices> privateDiscoverServices(long timeout, TimeUnit timeUnit) {
-        // TODO: [PU] 16.02.2017 This caching logic potentially could be extracted.
-        synchronized (discoveredServicesCache) {
-            // checking if there are already cached services
-            final Observable<RxBleDeviceServices> sharedObservable = discoveredServicesCache.get();
-            if (sharedObservable != null) {
-                return sharedObservable;
-            }
-
-            final List<BluetoothGattService> services = bluetoothGatt.getServices();
-            final Observable<RxBleDeviceServices> newObservable;
-            if (services.size() > 0) { // checking if bluetoothGatt has already discovered services (internal cache?)
-                newObservable = just(new RxBleDeviceServices(services));
-            } else { // performing actual discovery
-                newObservable = rxBleRadio
-                        .queue(operationsProvider.provideServiceDiscoveryOperation(timeout, timeUnit))
-                        .cacheWithInitialCapacity(1);
-            }
-
-            discoveredServicesCache.set(newObservable);
-            return newObservable;
-        }
+        return serviceDiscoveryManager.getDiscoverServicesObservable(timeout, timeUnit);
     }
 
     @Override

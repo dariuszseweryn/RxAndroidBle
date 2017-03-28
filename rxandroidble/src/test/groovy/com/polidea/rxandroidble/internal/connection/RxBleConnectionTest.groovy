@@ -12,6 +12,7 @@ import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent
+import java.util.concurrent.TimeUnit
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import org.robolectric.annotation.Config
 import org.robospock.GradleRoboSpecification
@@ -24,7 +25,6 @@ import rx.subjects.PublishSubject
 import spock.lang.Unroll
 
 import static com.polidea.rxandroidble.exceptions.BleGattOperationType.DESCRIPTOR_WRITE
-import static java.util.Collections.emptyList
 import static rx.Observable.from
 import static rx.Observable.just
 
@@ -41,12 +41,13 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def flatRadio = new FlatRxBleRadio()
     def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
+    def mockServiceDiscoveryManager = Mock ServiceDiscoveryManager
     def testScheduler = new TestScheduler()
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
     def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
             testScheduler, { new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattMock, timeoutConfig) })
-    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock, operationsProviderMock,
-            { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler
+    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
+            operationsProviderMock, { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler
     )
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
@@ -56,18 +57,18 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
     }
 
-    def "should emit BleGattCannotStartException if failed to start retrieving services"() {
-        given:
-        gattCallback.getOnServicesDiscovered() >> PublishSubject.create()
-        shouldGattContainNoServices()
-        shouldFailStartingDiscovery()
+    def "should proxy all calls to .discoverServices() to ServiceDiscoveryManager with proper timeouts"() {
 
         when:
-        objectUnderTest.discoverServices().subscribe(testSubscriber)
+        invokationClosure.call(objectUnderTest)
 
         then:
-        testSubscriber.assertError BleGattCannotStartException
-        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.SERVICE_DISCOVERY }
+        1 * mockServiceDiscoveryManager.getDiscoverServicesObservable(timeout, timeoutTimeUnit) >> Observable.empty()
+
+        where:
+        timeout | timeoutTimeUnit  | invokationClosure
+        20      | TimeUnit.SECONDS | { RxBleConnection objectUnderTest -> objectUnderTest.discoverServices() }
+        2       | TimeUnit.HOURS   | { RxBleConnection objectUnderTest -> objectUnderTest.discoverServices(2, TimeUnit.HOURS) }
     }
 
     @Unroll
@@ -129,56 +130,9 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.READ_RSSI }
     }
 
-    def "should return cached services during service discovery"() {
-        given:
-        def expectedServices = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
-        shouldSuccessfullyStartDiscovery()
-
-        when:
-        objectUnderTest.discoverServices().subscribe() // <-- it must be here hence mocks are not configured yet in given block.
-        objectUnderTest.discoverServices().subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertServices expectedServices
-        testSubscriber.assertCompleted()
-        (_..1) * bluetoothGattMock.getServices() >> emptyList()
-        1 * gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(expectedServices))
-    }
-
-    def "should return services instantly if they were already discovered and are in BluetoothGatt cache"() {
-        given:
-        def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
-        bluetoothGattMock.getServices() >> services
-
-        when:
-        objectUnderTest.discoverServices().subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertServices services
-        testSubscriber.assertCompleted()
-        0 * bluetoothGattMock.discoverServices()
-    }
-
-    def "should try to discover services if there are no services cached within BluetoothGatt"() {
-        given:
-        def services = [Mock(BluetoothGattService), Mock(BluetoothGattService)]
-        shouldSuccessfullyStartDiscovery()
-        shouldGattContainNoServices()
-        gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
-
-        when:
-        objectUnderTest.discoverServices().subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertServices services
-        testSubscriber.assertCompleted()
-        1 * bluetoothGattMock.discoverServices() >> true
-    }
-
     def "should emit BleCharacteristicNotFoundException during read operation if no services were found"() {
         given:
-        shouldGattCallbackReturnServicesOnDiscovery([])
-        shouldGattContainNoServices()
+        shouldDiscoverServices([])
 
         when:
         objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
@@ -190,8 +144,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
     def "should emit BleCharacteristicNotFoundException during read operation if characteristic was not found"() {
         given:
         def service = Mock BluetoothGattService
-        shouldGattCallbackReturnServicesOnDiscovery([service])
-        shouldGattContainServices([service])
+        shouldDiscoverServices([service])
         service.getCharacteristic(_) >> null
 
         when:
@@ -207,8 +160,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         def service = Mock BluetoothGattService
         shouldServiceContainCharacteristic(service, CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, NOT_EMPTY_DATA)
         shouldServiceContainCharacteristic(service, OTHER_UUID, OTHER_INSTANCE_ID, OTHER_DATA)
-        shouldGattCallbackReturnServicesOnDiscovery([service])
-        shouldGattContainNoServices()
+        shouldDiscoverServices([service])
         shouldGattCallbackReturnDataOnRead(
                 [uuid: OTHER_UUID, value: OTHER_DATA],
                 [uuid: CHARACTERISTIC_UUID, value: NOT_EMPTY_DATA])
@@ -222,8 +174,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
     def "should emit BleCharacteristicNotFoundException if there are no services during write operation"() {
         given:
-        shouldGattCallbackReturnServicesOnDiscovery([])
-        shouldGattContainNoServices()
+        shouldDiscoverServices([])
 
         when:
         objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
@@ -768,8 +719,7 @@ class RxBleConnectionTest extends GradleRoboSpecification {
 
     public shouldContainOneServiceWithoutCharacteristics() {
         def service = Mock BluetoothGattService
-        shouldGattCallbackReturnServicesOnDiscovery([service])
-        shouldGattContainServices([service])
+        shouldDiscoverServices([service])
         service
     }
 
@@ -802,25 +752,8 @@ class RxBleConnectionTest extends GradleRoboSpecification {
         characteristic
     }
 
-    public shouldGattContainServices(List list) {
-        bluetoothGattMock.getServices() >> list
-    }
-
-    public shouldGattContainNoServices() {
-        shouldGattContainServices(emptyList())
-    }
-
-    public shouldFailStartingDiscovery() {
-        bluetoothGattMock.discoverServices() >> false
-    }
-
-    public shouldSuccessfullyStartDiscovery() {
-        bluetoothGattMock.discoverServices() >> true
-    }
-
-    public shouldGattCallbackReturnServicesOnDiscovery(ArrayList<BluetoothGattService> services) {
-        bluetoothGattMock.discoverServices() >> true
-        gattCallback.getOnServicesDiscovered() >> just(new RxBleDeviceServices(services))
+    public shouldDiscoverServices(ArrayList<BluetoothGattService> services) {
+        mockServiceDiscoveryManager.getDiscoverServicesObservable(_, _) >> just(new RxBleDeviceServices(services))
     }
 
     public shouldFailStartingCharacteristicWrite() {
