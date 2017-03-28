@@ -10,7 +10,7 @@ ext {
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
             rxjava             : ["io.reactivex:rxjava:$rxJavaVersion",
-                                  "com.artemzin.rxjava:proguard-rules:$rxJavaVersion.+"],
+                                  "com.artemzin.rxjava:proguard-rules:$rxJavaVersion.0"],
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
             junit              : 'junit:junit:4.12',
             groovy             : 'org.codehaus.groovy:groovy:2.4.7:grooid',
