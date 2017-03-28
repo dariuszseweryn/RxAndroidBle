@@ -5,6 +5,20 @@ Version 1.2.0-SNAPSHOT
 * Added Proguard rules for the library. (https://github.com/Polidea/RxAndroidBle/issues/104)
 * Added support for MTU negotiation, thanks pregno!
 * Fixed connecting with autoConnect = true on Android 7.0.0+, thanks JIUgia!
+* Fixed notifications for characteristics with the same UUID
+* Adjusted scan location services check for various scenarios (https://github.com/Polidea/RxAndroidBle/issues/106)
+* Fixed occasional out-of-order emissions from notifications (https://github.com/Polidea/RxAndroidBle/issues/75)
+* Fixed stalled operations by adding timeouts (https://github.com/Polidea/RxAndroidBle/issues/118)
+* Added `LocationServicesOkObservable` helper for observing if scan can be successfully started
+* Added Jack compatibility (https://github.com/Polidea/RxAndroidBle/issues/123)
+* Added compatibility mode for notifications on characteristic that do not contain a Client Characteristic Config descriptor
+* Fixed logic of UUID filtering during scan
+* Added long write support (https://github.com/Polidea/RxAndroidBle/issues/68)
+* Fixed issue with a stalled library when write operations were too quick (https://github.com/Polidea/RxAndroidBle/issues/135)
+* Optimised logging
+* Added support for custom `BluetoothGatt` operations (https://github.com/Polidea/RxAndroidBle/issues/137)
+* Updated `RxJava` to 1.2.9
+* Added support for scanning on Android Wear
 * Internal refactoring introducing Dagger2 support
 
 Version 1.1.0
