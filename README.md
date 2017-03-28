@@ -140,7 +140,7 @@ device.establishConnection(context, false)
 #### Read and write combined
 
 ```java
- device.establishConnection(context, false)
+device.establishConnection(context, false)
     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
 	    .doOnNext(bytes -> {
 	        // Process read data.
@@ -157,7 +157,7 @@ device.establishConnection(context, false)
 ```
 ### Change notifications
 ```java
- device.establishConnection(context, false)
+device.establishConnection(context, false)
     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
     .doOnNext(notificationObservable -> {
     	// Notification has been set up
@@ -207,7 +207,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ## Download
 ### Gradle
 
-```java
+```groovy
 compile "com.polidea.rxandroidble:rxandroidble:1.1.0"
 ```
 ### Maven
