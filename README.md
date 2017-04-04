@@ -48,7 +48,7 @@ For further BLE interactions the connection is required.
 String macAddress = "AA:BB:CC:DD:EE:FF";
 RxBleDevice device = rxBleClient.getBleDevice(macAddress);
 
-Subscription subscription = device.establishConnection(context, false) // <-- autoConnect flag
+Subscription subscription = device.establishConnection(false) // <-- autoConnect flag
 	.subscribe(
 	    rxBleConnection -> {
 		    // All GATT operations are done through the rxBleConnection.
@@ -75,7 +75,7 @@ Be careful not to overuse the autoConnect flag. On the other side it has negativ
 ### Read / write operations
 #### Read
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
 	.flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
 	.subscribe(
 	    characteristicValue -> {
@@ -89,7 +89,7 @@ device.establishConnection(context, false)
 ```
 #### Write
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
 	.flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
 	.subscribe(
 	    characteristicValue -> {
@@ -102,7 +102,7 @@ device.establishConnection(context, false)
 ```
 #### Multiple reads
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
     .flatMap(rxBleConnection -> Observable.combineLatest(
         rxBleConnection.readCharacteristic(firstUUID),
         rxBleConnection.readCharacteristic(secondUUID),
@@ -119,7 +119,7 @@ device.establishConnection(context, false)
 ```
 #### Long write
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.createNewLongWriteBuilder()
             .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
             // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
@@ -140,7 +140,7 @@ device.establishConnection(context, false)
 #### Read and write combined
 
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
 	    .doOnNext(bytes -> {
 	        // Process read data.
@@ -157,7 +157,7 @@ device.establishConnection(context, false)
 ```
 ### Change notifications
 ```java
-device.establishConnection(context, false)
+device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
     .doOnNext(notificationObservable -> {
     	// Notification has been set up
