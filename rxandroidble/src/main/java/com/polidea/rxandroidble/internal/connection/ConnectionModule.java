@@ -6,23 +6,25 @@ import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
 import dagger.Module;
 import dagger.Provides;
-import java.util.concurrent.Callable;
 import javax.inject.Named;
 
 @Module
 public class ConnectionModule {
 
-    public static final String CURRENT_MTU = "current-mtu";
+    private static final String CURRENT_MTU_PROVIDER = "current-mtu-provider";
+    static final String CURRENT_MAX_WRITE_PAYLOAD_SIZE_PROVIDER = "current-max-write-batch-size-provider";
 
     @Provides
-    @Named(CURRENT_MTU)
-    Callable<Integer> provideCurrentMtuProvider(final RxBleConnectionImpl rxBleConnection) {
-        return new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return rxBleConnection.currentMtu;
-            }
-        };
+    @Named(CURRENT_MTU_PROVIDER)
+    IntProvider provideMtuProvider(RxBleConnectionImpl rxBleConnectionImpl) {
+        return rxBleConnectionImpl;
+    }
+
+    @Provides
+    @ConnectionScope
+    @Named(CURRENT_MAX_WRITE_PAYLOAD_SIZE_PROVIDER)
+    IntProvider provideWriteBatchSizeProvider(@Named(CURRENT_MTU_PROVIDER) IntProvider mtuProvider) {
+        return new MaxWritePayloadSizeProvider(mtuProvider, RxBleConnection.GATT_WRITE_MTU_OVERHEAD);
     }
 
     @Provides

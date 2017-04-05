@@ -6,8 +6,8 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.internal.connection.IntProvider;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public interface OperationsProvider {
@@ -15,7 +15,7 @@ public interface OperationsProvider {
     RxBleRadioOperationCharacteristicLongWrite provideLongWriteOperation(
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
-            Callable<Integer> maxBatchSizeCallable,
+            IntProvider maxBatchSizeProvider,
             byte[] bytes);
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

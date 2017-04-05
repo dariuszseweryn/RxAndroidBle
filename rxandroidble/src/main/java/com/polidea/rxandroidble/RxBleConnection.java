@@ -27,6 +27,20 @@ import rx.Scheduler;
  */
 public interface RxBleConnection {
 
+    /**
+     * The overhead value that is subtracted from the amount of bytes available when writing to a characteristic.
+     * The default MTU value on Android is 23 bytes which gives effectively 23 - GATT_WRITE_MTU_OVERHEAD = 20 bytes
+     * available for payload.
+     */
+    int GATT_WRITE_MTU_OVERHEAD = 3;
+
+    /**
+     * The overhead value that is subtracted from the amount of bytes available when reading from a characteristic.
+     * The default MTU value on Android is 23 bytes which gives effectively 23 - GATT_READ_MTU_OVERHEAD = 22 bytes
+     * available for payload.
+     */
+    int GATT_READ_MTU_OVERHEAD = 1;
+
     interface Connector {
 
         Observable<RxBleConnection> prepareConnection(boolean autoConnect);

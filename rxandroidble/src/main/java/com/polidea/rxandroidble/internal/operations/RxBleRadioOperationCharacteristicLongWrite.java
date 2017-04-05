@@ -14,14 +14,13 @@ import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.connection.IntProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import javax.inject.Named;
 
@@ -41,7 +40,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private final Scheduler mainThreadScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
-    private final Callable<Integer> batchSizeProvider;
+    private final IntProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
@@ -52,7 +51,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
-            Callable<Integer> batchSizeProvider,
+            IntProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
@@ -67,7 +66,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     @Override
     protected void protectedRun() throws Throwable {
-        int batchSize = getBatchSize();
+        int batchSize = batchSizeProvider.getValue();
 
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
@@ -109,15 +108,6 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
-    }
-
-    private int getBatchSize() {
-        try {
-            return batchSizeProvider.call();
-        } catch (Exception e) {
-            RxBleLog.w(e, "Failed to get batch size.");
-            throw new RuntimeException("Failed to get batch size from the batchSizeProvider.", e);
-        }
     }
 
     @NonNull
