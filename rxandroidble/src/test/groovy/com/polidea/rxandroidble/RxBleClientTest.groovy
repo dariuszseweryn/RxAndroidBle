@@ -416,6 +416,30 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.stopLeScan(_)
     }
 
+    def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {
+
+        given:
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> false
+
+        when:
+        objectUnderTest.getBleDevice("AA:BB:CC:DD:EE:FF")
+
+        then:
+        thrown UnsupportedOperationException
+    }
+
+    def "should throw UnsupportedOperationException if .getBondedDevices() is called on system that has no Bluetooth capabilities"() {
+
+        given:
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> false
+
+        when:
+        objectUnderTest.getBondedDevices()
+
+        then:
+        thrown UnsupportedOperationException
+    }
+
     public waitForThreadsToCompleteWork() {
         Thread.sleep(200) // Nasty :<
         true

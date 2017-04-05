@@ -63,11 +63,13 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public RxBleDevice getBleDevice(@NonNull String macAddress) {
+        guardBluetoothAdapterAvailable();
         return rxBleDeviceProvider.getBleDevice(macAddress);
     }
 
     @Override
     public Set<RxBleDevice> getBondedDevices() {
+        guardBluetoothAdapterAvailable();
         Set<RxBleDevice> rxBleDevices = new HashSet<>();
         Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
         for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
@@ -153,5 +155,12 @@ class RxBleClientImpl extends RxBleClient {
                     }
                 })
                 .share();
+    }
+
+    private void guardBluetoothAdapterAvailable() {
+        if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
+            throw new UnsupportedOperationException("RxAndroidBle library needs a BluetoothAdapter to be available in the system to work."
+            + " If this is a test on an emulator then you can use 'https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble'");
+        }
     }
 }

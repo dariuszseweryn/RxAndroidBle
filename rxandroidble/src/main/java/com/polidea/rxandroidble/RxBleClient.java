@@ -43,9 +43,19 @@ public abstract class RxBleClient {
      *
      * @param macAddress Bluetooth LE device MAC address.
      * @return Handle for Bluetooth LE operations.
+     * @throws UnsupportedOperationException if called on system without Bluetooth capabilities
      */
     public abstract RxBleDevice getBleDevice(@NonNull String macAddress);
 
+    /**
+     * A function returning a set of currently bonded devices
+     *
+     * If Bluetooth state is not STATE_ON, this API will return an empty set. After turning on Bluetooth, wait for ACTION_STATE_CHANGED
+     * with STATE_ON to get the updated value.
+     *
+     * @return set of currently bonded devices
+     * @throws UnsupportedOperationException if called on system without Bluetooth capabilities
+     */
     public abstract Set<RxBleDevice> getBondedDevices();
 
     /**

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 
+import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 import com.polidea.rxandroidble.internal.RxBleRadio;
@@ -77,7 +78,8 @@ public interface ClientComponent {
         }
 
         @Provides
-        BluetoothAdapter provideBlutetoothAdapter() {
+        @Nullable
+        BluetoothAdapter provideBluetoothAdapter() {
             return BluetoothAdapter.getDefaultAdapter();
         }
 
