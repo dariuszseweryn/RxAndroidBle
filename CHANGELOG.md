@@ -1,7 +1,12 @@
 Change Log
 ==========
 
-Version 1.2.0-SNAPSHOT
+Version 1.3.0-SNAPSHOT
+* Added `ByteArrayBatchObservable` helper for splitting long byte arrays
+* Fixed behaviour in non-Bluetooth environments. (https://github.com/Polidea/RxAndroidBle/issues/158)
+* Fixed `RxBleConnectionMock` overwriting `BluetoothCharacteristic` value on setting notification. (https://github.com/Polidea/RxAndroidBle/issues/160)
+
+Version 1.2.0
 * Added Proguard rules for the library. (https://github.com/Polidea/RxAndroidBle/issues/104)
 * Added support for MTU negotiation, thanks pregno!
 * Fixed connecting with autoConnect = true on Android 7.0.0+, thanks JIUgia!
