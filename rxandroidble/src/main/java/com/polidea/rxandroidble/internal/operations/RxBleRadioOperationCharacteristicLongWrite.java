@@ -135,7 +135,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                             }
                         });
 
-                        /**
+                        /*
                          * Since Android OS calls {@link android.bluetooth.BluetoothGattCallback} callbacks on arbitrary background
                          * threads - in case the {@link BluetoothGattCharacteristic} has
                          * a {@link BluetoothGattCharacteristic#WRITE_TYPE_NO_RESPONSE} set it is possible that
