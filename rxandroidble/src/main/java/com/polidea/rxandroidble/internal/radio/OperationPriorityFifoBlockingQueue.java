@@ -40,12 +40,12 @@ class OperationPriorityFifoBlockingQueue {
 
         final RxBleRadioOperation entry;
 
-        public FIFOEntry(RxBleRadioOperation entry) {
+        FIFOEntry(RxBleRadioOperation entry) {
             seqNum = SEQUENCE.getAndIncrement();
             this.entry = entry;
         }
 
-        public RxBleRadioOperation getEntry() {
+        RxBleRadioOperation getEntry() {
             return entry;
         }
 

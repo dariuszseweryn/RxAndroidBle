@@ -22,23 +22,23 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(android.R.id.text1)
-        public TextView line1;
+        TextView line1;
         @BindView(android.R.id.text2)
-        public TextView line2;
+        TextView line2;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public interface OnAdapterItemClickListener {
+    interface OnAdapterItemClickListener {
 
         void onAdapterViewClick(View view);
     }
 
     private static final Comparator<RxBleScanResult> SORTING_COMPARATOR = (lhs, rhs) -> {
-        return lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
+       return lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
     };
     private final List<RxBleScanResult> data = new ArrayList<>();
     private OnAdapterItemClickListener onAdapterItemClickListener;
@@ -52,7 +52,7 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         }
     };
 
-    public void addScanResult(RxBleScanResult bleScanResult) {
+    void addScanResult(RxBleScanResult bleScanResult) {
         // Not the best way to ensure distinct devices, just for sake on the demo.
 
         for (int i = 0; i < data.size(); i++) {
@@ -69,7 +69,7 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         notifyDataSetChanged();
     }
 
-    public void clearScanResults() {
+    void clearScanResults() {
         data.clear();
         notifyDataSetChanged();
     }
@@ -98,7 +98,7 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         return new ViewHolder(itemView);
     }
 
-    public void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
+    void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
         this.onAdapterItemClickListener = onAdapterItemClickListener;
     }
 }

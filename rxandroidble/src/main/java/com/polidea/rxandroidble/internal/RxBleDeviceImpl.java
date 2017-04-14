@@ -30,7 +30,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
-    public RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
+    RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
     }

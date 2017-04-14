@@ -12,16 +12,16 @@ class DeviceComponentWeakReference extends WeakReference<DeviceComponent> {
         DeviceComponentWeakReference provide(DeviceComponent rxBleDevice);
     }
 
-    public DeviceComponentWeakReference(DeviceComponent device) {
+    DeviceComponentWeakReference(DeviceComponent device) {
         super(device);
     }
 
     @SuppressWarnings("unused")
-    public DeviceComponentWeakReference(DeviceComponent r, ReferenceQueue<? super DeviceComponent> q) {
+    DeviceComponentWeakReference(DeviceComponent r, ReferenceQueue<? super DeviceComponent> q) {
         super(r, q);
     }
 
-    public boolean contains(Object object) {
+    boolean contains(Object object) {
         final DeviceComponent thisDevice = get();
         return object instanceof DeviceComponent
                 && thisDevice != null
