@@ -26,6 +26,7 @@ import javax.inject.Named;
 
 import rx.Observable;
 import rx.functions.Action0;
+import rx.functions.Func0;
 import rx.functions.Func1;
 
 class RxBleClientImpl extends RxBleClient {
@@ -55,6 +56,7 @@ class RxBleClientImpl extends RxBleClient {
         this.rxBleDeviceProvider = rxBleDeviceProvider;
         this.executorService = executorService;
     }
+
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
@@ -80,19 +82,23 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @Override
-    public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
-
-        if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
-            return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
-        } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
-            return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
-        } else if (!locationServicesStatus.isLocationPermissionOk()) {
-            return Observable.error(new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING));
-        } else if (!locationServicesStatus.isLocationProviderOk()) {
-            return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
-        } else {
-            return initializeScan(filterServiceUUIDs);
-        }
+    public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
+        return Observable.defer(new Func0<Observable<RxBleScanResult>>() {
+            @Override
+            public Observable<RxBleScanResult> call() {
+                if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
+                    return Observable.error(new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE));
+                } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+                    return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
+                } else if (!locationServicesStatus.isLocationPermissionOk()) {
+                    return Observable.error(new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING));
+                } else if (!locationServicesStatus.isLocationProviderOk()) {
+                    return Observable.error(new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED));
+                } else {
+                    return initializeScan(filterServiceUUIDs);
+                }
+            }
+        });
     }
 
     private Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
