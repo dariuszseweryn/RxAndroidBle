@@ -49,6 +49,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     private HashMap<UUID, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
+    private int currentMtu = 23;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
 
@@ -61,8 +62,19 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Integer> requestMtu(int mtu) {
-        return Observable.just(mtu);
+    public Observable<Integer> requestMtu(final int mtu) {
+        return Observable.fromCallable(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                currentMtu = mtu;
+                return mtu;
+            }
+        });
+    }
+
+    @Override
+    public int getMtu() {
+        return currentMtu;
     }
 
     @Override

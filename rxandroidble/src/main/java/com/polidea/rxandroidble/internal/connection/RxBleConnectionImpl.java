@@ -49,7 +49,7 @@ import static rx.Observable.error;
 import static rx.Observable.just;
 
 @ConnectionScope
-public class RxBleConnectionImpl implements RxBleConnection, IntProvider {
+public class RxBleConnectionImpl implements RxBleConnection {
 
     static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     private final RxBleRadio rxBleRadio;
@@ -99,6 +99,11 @@ public class RxBleConnectionImpl implements RxBleConnection, IntProvider {
                         RxBleConnectionImpl.this.currentMtu = newMtu;
                     }
                 });
+    }
+
+    @Override
+    public int getMtu() {
+        return currentMtu;
     }
 
     @Override
@@ -490,12 +495,5 @@ public class RxBleConnectionImpl implements RxBleConnection, IntProvider {
                 return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
             }
         });
-    }
-
-    // IntProvider
-
-    @Override
-    public int getValue() {
-        return currentMtu;
     }
 }

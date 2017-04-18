@@ -1,17 +1,18 @@
 package com.polidea.rxandroidble.internal.connection
 
+import com.polidea.rxandroidble.RxBleConnection
 import spock.lang.Specification
 import spock.lang.Unroll
 
 
-class MaxWritePayloadSizeProviderTest extends Specification {
+class MtuBasedPayloadSizeLimitTest extends Specification {
 
-    def mockMtuProvider = Mock IntProvider
+    def mockBleConnection = Mock RxBleConnection
 
-    MaxWritePayloadSizeProvider objectUnderTest
+    MtuBasedPayloadSizeLimit objectUnderTest
 
     private void prepareObjectUnderTest(int gattWriteMtuOverhead) {
-        objectUnderTest = new MaxWritePayloadSizeProvider(mockMtuProvider, gattWriteMtuOverhead)
+        objectUnderTest = new MtuBasedPayloadSizeLimit(mockBleConnection, gattWriteMtuOverhead)
     }
 
     @Unroll
@@ -19,10 +20,10 @@ class MaxWritePayloadSizeProviderTest extends Specification {
 
         given:
         prepareObjectUnderTest(gattWriteMtuOverhead)
-        mockMtuProvider.getValue() >> currentMtu
+        mockBleConnection.getMtu() >> currentMtu
 
         expect:
-        objectUnderTest.getValue() == expectedValue
+        objectUnderTest.getPayloadSizeLimit() == expectedValue
 
         where:
         currentMtu | gattWriteMtuOverhead | expectedValue

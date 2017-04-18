@@ -10,7 +10,6 @@ import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import rx.Observable;
 import rx.functions.Func1;
@@ -22,7 +21,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     private final OperationsProvider operationsProvider;
 
     private Observable<BluetoothGattCharacteristic> writtenCharacteristicObservable;
-    private IntProvider maxBatchSizeProvider;
+    private PayloadSizeLimitProvider maxBatchSizeProvider;
     private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
 
     private byte[] bytes;
@@ -30,12 +29,12 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     @Inject
     LongWriteOperationBuilderImpl(
             RxBleRadio rxBleRadio,
-            @Named(ConnectionModule.CURRENT_MAX_WRITE_PAYLOAD_SIZE_PROVIDER) IntProvider defaultMaxBatchSizeCallable,
+            MtuBasedPayloadSizeLimit defaultMaxBatchSizeProvider,
             RxBleConnection rxBleConnection,
             OperationsProvider operationsProvider
     ) {
         this.rxBleRadio = rxBleRadio;
-        this.maxBatchSizeProvider = defaultMaxBatchSizeCallable;
+        this.maxBatchSizeProvider = defaultMaxBatchSizeProvider;
         this.rxBleConnection = rxBleConnection;
         this.operationsProvider = operationsProvider;
     }
@@ -60,12 +59,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
     @Override
     public RxBleConnection.LongWriteOperationBuilder setMaxBatchSize(final int maxBatchSize) {
-        this.maxBatchSizeProvider = new IntProvider() {
-            @Override
-            public int getValue() {
-                return maxBatchSize;
-            }
-        };
+        this.maxBatchSizeProvider = new ConstantPayloadSizeLimit(maxBatchSize);
         return this;
     }
 

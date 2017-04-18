@@ -15,7 +15,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-import com.polidea.rxandroidble.internal.connection.IntProvider;
+import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
@@ -40,7 +40,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private final Scheduler mainThreadScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
-    private final IntProvider batchSizeProvider;
+    private final PayloadSizeLimitProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
@@ -51,7 +51,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
-            IntProvider batchSizeProvider,
+            PayloadSizeLimitProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
@@ -66,7 +66,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     @Override
     protected void protectedRun() throws Throwable {
-        int batchSize = batchSizeProvider.getValue();
+        int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");

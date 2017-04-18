@@ -435,6 +435,13 @@ public interface RxBleConnection {
     Observable<Integer> requestMtu(int mtu);
 
     /**
+     * Get currently negotiated MTU value. On pre-lollipop Android versions it will always return 23.
+     *
+     * @return currently negotiated MTU value.
+     */
+    int getMtu();
+
+    /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know
      * what your are doing.</b>
      * <p>

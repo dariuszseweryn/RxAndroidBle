@@ -4,7 +4,7 @@ package com.polidea.rxandroidble.internal.connection;
 import android.support.annotation.RestrictTo;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public interface IntProvider {
+public interface PayloadSizeLimitProvider {
 
-    int getValue();
+    int getPayloadSizeLimit();
 }
