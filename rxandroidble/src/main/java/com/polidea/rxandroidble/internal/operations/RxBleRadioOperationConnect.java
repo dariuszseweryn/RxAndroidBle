@@ -24,6 +24,7 @@ import javax.inject.Named;
 import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.subjects.BehaviorSubject;
 
@@ -151,8 +152,12 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
     @NonNull
     private Observable<BluetoothGatt> prepareConnectionTimeoutErrorObservable() {
-        return Observable.error(
-                new BleGattCallbackTimeoutException(bluetoothGattProvider.getBluetoothGatt(), BleGattOperationType.CONNECTION_STATE));
+        return Observable.fromCallable(new Func0<BluetoothGatt>() {
+            @Override
+            public BluetoothGatt call() {
+                throw new BleGattCallbackTimeoutException(bluetoothGattProvider.getBluetoothGatt(), BleGattOperationType.CONNECTION_STATE);
+            }
+        });
     }
 
     @NonNull
