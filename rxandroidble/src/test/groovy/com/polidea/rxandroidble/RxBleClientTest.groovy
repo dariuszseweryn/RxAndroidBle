@@ -31,7 +31,7 @@ class RxBleClientTest extends Specification {
     UUIDUtil uuidParserSpy = Spy UUIDUtil
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
-    MockLocationServicesStatus locationServicesStatusMock = new MockLocationServicesStatus()
+    MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
     RxBleDeviceProvider mockDeviceProvider = Mock RxBleDeviceProvider
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
@@ -79,31 +79,14 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.startLeScan(_) >> true
     }
 
-    def "should start BLE scan if bluetooth is enabled before subscribing to the scan observable"() {
-        given:
-        TestSubscriber testSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true
-        bleAdapterWrapperSpy.isBluetoothEnabled() >> true
-
-        when:
-        def scanObservable = objectUnderTest.scanBleDevices(null)
-
-        then:
-        0 * bleAdapterWrapperSpy.isBluetoothEnabled()
-
-        when:
-        scanObservable.subscribe(testSubscriber)
-
-        then:
-        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
-    }
-
-    def "should start scan for only subscribers with no exceptions from scan observable"() {
+    def "should check if all the conditions are met at the time of each subscription"() {
         given:
         def firstSubscriber = new TestSubscriber<>()
         def secondSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true
-        bleAdapterWrapperSpy.isBluetoothEnabled() >> false >> true
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> bluetoothAvailable >> true
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> bluetoothEnabled >> true
+        locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionsOk >> true
+        locationServicesStatusMock.isLocationProviderOk() >> locationProviderOk >> true
         def scanObservable = objectUnderTest.scanBleDevices(null)
 
         when:
@@ -111,7 +94,7 @@ class RxBleClientTest extends Specification {
 
         then:
         firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
+            BleScanException exception -> exception.reason == reason
         }
 
         when:
@@ -120,6 +103,47 @@ class RxBleClientTest extends Specification {
         then:
         secondSubscriber.assertNoErrors()
         1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+
+        where:
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
+        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+    }
+
+
+    def "should not start if all the conditions are not met at the time of subscription"() {
+        given:
+        def firstSubscriber = new TestSubscriber<>()
+        def secondSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true >> bluetoothAvailable
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> true >> bluetoothEnabled
+        locationServicesStatusMock.isLocationPermissionOk() >> true >> locationPermissionsOk
+        locationServicesStatusMock.isLocationProviderOk() >> true >> locationProviderOk
+        def scanObservable = objectUnderTest.scanBleDevices(null)
+
+        when:
+        scanObservable.subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertNoErrors()
+        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+
+        when:
+        scanObservable.subscribe(secondSubscriber)
+
+        then:
+        secondSubscriber.assertError {
+            BleScanException exception -> exception.reason == reason
+        }
+
+        where:
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
+        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
     }
 
     def "should not start scan until observable is subscribed"() {
@@ -259,21 +283,6 @@ class RxBleClientTest extends Specification {
         }
     }
 
-    def "should emit BleScanException if bluetooth was disabled before starting scan"() {
-        given:
-        TestSubscriber firstSubscriber = new TestSubscriber<>()
-        def scanObservable = objectUnderTest.scanBleDevices(null)
-        adapterStateObservable.disableBluetooth()
-
-        when:
-        scanObservable.subscribe(firstSubscriber)
-
-        then:
-        firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
-        }
-    }
-
     def "should emit error if bluetooth is not available"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
@@ -295,21 +304,6 @@ class RxBleClientTest extends Specification {
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
-
-        then:
-        firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == LOCATION_PERMISSION_MISSING
-        }
-    }
-
-    def "should emit BleScanException if location permission was not granted before starting scan"() {
-        given:
-        TestSubscriber firstSubscriber = new TestSubscriber<>()
-        def scanObservable = objectUnderTest.scanBleDevices(null)
-        locationServicesStatusMock.isLocationPermissionOk = false
-
-        when:
-        scanObservable.subscribe(firstSubscriber)
 
         then:
         firstSubscriber.assertError {
