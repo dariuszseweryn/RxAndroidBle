@@ -94,8 +94,10 @@ public abstract class RxBleRadioOperation<T> implements Runnable, Comparable<RxB
 
     /**
      * A convenience method for calling the Subscriber's onCompleted()
+     * Calling this method automatically releases the radio -> calls releaseRadio().
      */
     protected final void onCompleted() {
+        releaseRadio();
         replaySubject.onCompleted();
     }
 

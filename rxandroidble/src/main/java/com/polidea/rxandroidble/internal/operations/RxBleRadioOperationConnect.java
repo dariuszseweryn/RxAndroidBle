@@ -72,17 +72,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final BluetoothGattProvider bluetoothGattProvider;
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
-    private final Runnable releaseRadioRunnable = new Runnable() {
-        @Override
-        public void run() {
-            releaseRadio();
-        }
-    };
-    private final Runnable emptyRunnable = new Runnable() {
-        @Override
-        public void run() {
-        }
-    };
 
     private final BehaviorSubject<Boolean> isSubscribed = BehaviorSubject.create();
 
@@ -124,9 +113,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
     @Override
     protected void protectedRun() {
-        final Runnable onConnectionEstablishedRunnable = autoConnect ? emptyRunnable : releaseRadioRunnable;
-        final Runnable onConnectCalledRunnable = autoConnect ? releaseRadioRunnable : emptyRunnable;
-
         getConnectedBluetoothGatt()
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
@@ -136,12 +122,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                         RxBleLog.d("No subscribers, finishing operation");
                     }
                 }))
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        onConnectionEstablishedRunnable.run();
-                    }
-                })
                 .doOnNext(new Action1<BluetoothGatt>() {
                     @Override
                     public void call(BluetoothGatt ignored) {
@@ -149,7 +129,11 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                     }
                 })
                 .subscribe(getSubscriber());
-        onConnectCalledRunnable.run();
+
+        if (autoConnect) {
+            // with autoConnect the connection may be established after a really long time
+            releaseRadio();
+        }
     }
 
     private Observable.Transformer<BluetoothGatt, BluetoothGatt> wrapWithTimeoutWhenNotAutoconnecting() {

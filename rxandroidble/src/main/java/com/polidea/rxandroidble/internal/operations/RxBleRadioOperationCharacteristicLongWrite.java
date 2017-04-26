@@ -93,7 +93,6 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                             public void call() {
                                 onNext(bytesToWrite);
                                 onCompleted();
-                                releaseRadio();
                             }
                         },
                         new Action1<Throwable>() {

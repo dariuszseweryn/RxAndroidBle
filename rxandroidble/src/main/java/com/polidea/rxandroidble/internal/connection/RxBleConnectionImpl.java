@@ -482,12 +482,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
-                operationObservable.doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        releaseRadio();
-                    }
-                }).subscribe(getSubscriber());
+                operationObservable.subscribe(getSubscriber());
             }
 
             @Override

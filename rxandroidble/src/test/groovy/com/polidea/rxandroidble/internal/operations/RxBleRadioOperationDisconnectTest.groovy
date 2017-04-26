@@ -55,15 +55,19 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         RxAndroidPlugins.getInstance().reset()
     }
 
-    def setup() {
+    private def testWithGattProviderReturning(BluetoothGatt providedBluetoothGatt) {
         mockBluetoothGattProvider = Mock(BluetoothGattProvider)
-        mockBluetoothGattProvider.getBluetoothGatt() >>mockBluetoothGatt
+        mockBluetoothGattProvider.getBluetoothGatt() >> providedBluetoothGatt
         mockGattCallback.getOnConnectionStateChange() >> connectionStatePublishSubject
         mockBluetoothGatt.getDevice() >> mockDevice
         prepareObjectUnderTest()
     }
 
     def "should complete if AtomicReference<BluetoothGatt> contains null and then release the radio"() {
+
+        given:
+        testWithGattProviderReturning(null)
+
         when:
         objectUnderTest.run()
 
@@ -78,6 +82,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     def "should call BluetoothGatt.close() if BluetoothGatt is disconnected at the time of running and then release the radio"() {
 
         given:
+        testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_DISCONNECTED
 
         when:
@@ -94,6 +99,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     def "should call BluetoothGatt.disconnect() if BluetoothGatt is not disconnected at the time of running and then BluetoothGatt.close() when RxBleGattCallback.getOnConnectionStateChange() will emit RxBleConnection.RxBleConnectionState.DISCONNECTED and then release the radio"() {
 
         given:
+        testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> initialState
 
         when:

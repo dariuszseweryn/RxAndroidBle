@@ -15,7 +15,6 @@ import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
-import rx.functions.Action0;
 
 public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperation<T> {
 
@@ -44,12 +43,6 @@ public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperati
                         timeoutFallbackProcedure(bluetoothGatt, rxBleGattCallback, timeoutConfiguration.timeoutScheduler),
                         timeoutConfiguration.timeoutScheduler
                 )
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        RxBleSingleGattRadioOperation.this.releaseRadio();
-                    }
-                })
                 .subscribe(getSubscriber());
 
         boolean success = startOperation(bluetoothGatt);

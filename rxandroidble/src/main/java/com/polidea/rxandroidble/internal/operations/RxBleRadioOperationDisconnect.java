@@ -62,12 +62,6 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             onCompleted();
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
-                    .doOnTerminate(new Action0() {
-                        @Override
-                        public void call() {
-                            releaseRadio();
-                        }
-                    })
                     .observeOn(mainThreadScheduler)
                     .subscribe(
                             new Action1<BluetoothGatt>() {
