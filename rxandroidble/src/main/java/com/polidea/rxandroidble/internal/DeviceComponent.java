@@ -5,7 +5,7 @@ import com.polidea.rxandroidble.RxBleDevice;
 import dagger.Subcomponent;
 
 @DeviceScope
-@Subcomponent(modules = DeviceModule.class)
+@Subcomponent(modules = {DeviceModule.class, DeviceModuleBinder.class})
 public interface DeviceComponent {
 
     @Subcomponent.Builder

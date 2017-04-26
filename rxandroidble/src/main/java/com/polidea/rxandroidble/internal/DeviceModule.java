@@ -4,10 +4,7 @@ import android.bluetooth.BluetoothDevice;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.ClientComponent.NamedSchedulers;
-import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.internal.connection.ConnectionComponent;
-import com.polidea.rxandroidble.internal.connection.RxBleConnectionConnectorImpl;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
@@ -48,30 +45,20 @@ public class DeviceModule {
     }
 
     @Provides
-    RxBleConnection.Connector provideRxBleConnectionConnector(RxBleConnectionConnectorImpl rxBleConnectionConnector) {
-        return rxBleConnectionConnector;
-    }
-
-    @Provides
-    RxBleDevice provideRxBleDevice(RxBleDeviceImpl rxBleDevice) {
-        return rxBleDevice;
-    }
-
-    @Provides
     @Named(OPERATION_TIMEOUT)
-    TimeoutConfiguration providesOperationTimeoutConfiguration(@Named(NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
+    static TimeoutConfiguration providesOperationTimeoutConf(@Named(NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
         return new TimeoutConfiguration(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
     }
 
     @Provides
     @Named(CONNECT_TIMEOUT)
-    TimeoutConfiguration providesConnectTimeoutConfiguration(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
+    static TimeoutConfiguration providesConnectTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
         return new TimeoutConfiguration(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
     }
 
     @Provides
     @Named(DISCONNECT_TIMEOUT)
-    TimeoutConfiguration providesDisconnectTimeoutConfiguration(@Named(NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
+    static TimeoutConfiguration providesDisconnectTimeoutConf(@Named(NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
         return new TimeoutConfiguration(DEFAULT_DISCONNECT_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
     }
 }
