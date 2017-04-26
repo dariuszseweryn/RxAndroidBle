@@ -149,6 +149,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     }
 
     private emitConnectedConnectionState() {
+        mockBluetoothGattProvider.getBluetoothGatt() >> mockGatt
         onConnectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTED)
     }
 
