@@ -1,10 +1,8 @@
 ext {
-    supportVersion = '25.3.0'
-    buildToolsVersionVariable = "25.0.2"
+    supportVersion = '25.3.1'
+    buildToolsVersionVariable = "26.0.0-rc1"
     rxJavaVersion = '1.2.9'
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
-    targetCompatibilityVersion = JavaVersion.VERSION_1_7
-    daggerVersion = '2.8'
+    daggerVersion = '2.11-rc1'
     libs = [
             /* Application dependencies */
             support            : "com.android.support:support-v4:$supportVersion",
@@ -19,6 +17,6 @@ ext {
                                   'org.objenesis:objenesis:2.4'],
             robospock          : 'org.robospock:robospock:1.0.1',
             dagger             : "com.google.dagger:dagger:$daggerVersion",
-            dagger_compiler    : "com.google.dagger:dagger-compiler:$daggerVersion"
+            dagger_compiler    : "com.google.dagger:dagger-compiler:$daggerVersion",
     ]
 }
