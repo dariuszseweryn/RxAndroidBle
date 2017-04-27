@@ -2,9 +2,17 @@ Change Log
 ==========
 
 Version 1.3.0-SNAPSHOT
+
+Version 1.2.1
 * Added `ByteArrayBatchObservable` helper for splitting long byte arrays
 * Fixed behaviour in non-Bluetooth environments. (https://github.com/Polidea/RxAndroidBle/issues/158)
 * Fixed `RxBleConnectionMock` overwriting `BluetoothCharacteristic` value on setting notification. (https://github.com/Polidea/RxAndroidBle/issues/160)
+* Fixed default payload size of Long Write operation when non-standard MTU was negotiated (https://github.com/Polidea/RxAndroidBle/issues/161)
+* Added possibility to get the current MTU value of `RxBleConnection` (https://github.com/Polidea/RxAndroidBle/issues/166)
+* Fixed retrying of `RxBleClient.scanBleDevices(UUID...)`, thanks BharathMG! (https://github.com/Polidea/RxAndroidBle/pull/174)
+* Fixed connection not being noticed as established due to a race condition (https://github.com/Polidea/RxAndroidBle/issues/178)
+* Fixed `BleBluetoothGattCallbackTimeout` macAddress being null on connection (https://github.com/Polidea/RxAndroidBle/issues/178)
+* Fixed disconnect operation behaviour in an edge case situation (https://github.com/Polidea/RxAndroidBle/issues/178)
 
 Version 1.2.0
 * Added Proguard rules for the library. (https://github.com/Polidea/RxAndroidBle/issues/104)

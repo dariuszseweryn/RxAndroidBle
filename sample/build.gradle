@@ -43,7 +43,6 @@ configurations.all {
 }
 
 dependencies {
-    // compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.1.0', changing: false
     compile project(path: ':rxandroidble')
     compile "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
     compile "com.android.support:design:$rootProject.ext.supportVersion"

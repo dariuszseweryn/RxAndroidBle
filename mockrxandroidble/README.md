@@ -40,7 +40,7 @@ Get MockRxAndroidBle via Maven:
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>mockclient</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <type>aar</type>
 </dependency>
 ```
