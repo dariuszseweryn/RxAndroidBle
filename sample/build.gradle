@@ -1,18 +1,14 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 buildscript {
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
-    }
 }
 
 repositories {
     mavenLocal()
+    mavenCentral()
 }
 
 android {
@@ -21,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId "com.polidea.rxandroidble.sample"
-        minSdkVersion 18
+        minSdkVersion 24
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -44,13 +40,13 @@ configurations.all {
 
 dependencies {
     // compile group: 'com.polidea.rxandroidble', name: 'rxandroidble', version: '1.1.0', changing: false
-    compile project(path: ':rxandroidble')
-    compile "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
-    compile "com.android.support:design:$rootProject.ext.supportVersion"
-    compile 'com.jakewharton:butterknife:8.5.1'
+    implementation project(path: ':rxandroidble')
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
+    implementation "com.android.support:design:$rootProject.ext.supportVersion"
+    implementation 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
-    compile rootProject.ext.libs.rxjava
-    compile rootProject.ext.libs.rxandroid
-    compile 'com.trello:rxlifecycle:1.0'
-    compile 'com.trello:rxlifecycle-components:1.0'
+    implementation rootProject.ext.libs.rxjava
+    implementation rootProject.ext.libs.rxandroid
+    implementation 'com.trello:rxlifecycle:1.0'
+    implementation 'com.trello:rxlifecycle-components:1.0'
 }
