@@ -20,7 +20,7 @@ import javax.inject.Inject;
 public class UUIDUtil {
 
     @Inject
-    UUIDUtil() {
+    public UUIDUtil() {
     }
 
     public List<UUID> extractUUIDs(byte[] scanResult) {
