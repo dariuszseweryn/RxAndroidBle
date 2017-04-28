@@ -2,6 +2,8 @@ Change Log
 ==========
 
 Version 1.3.0-SNAPSHOT
+
+Version 1.2.2
 * Fixed visibility of `UUIDUtil`. Deprecated it. Introduced `AdvertisedServiceUUIDExtractor` helper, thanks marciogranzotto! (https://github.com/Polidea/RxAndroidBle/pull/184)
 
 Version 1.2.1
