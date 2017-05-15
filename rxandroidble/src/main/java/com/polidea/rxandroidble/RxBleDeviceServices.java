@@ -11,6 +11,7 @@ import com.polidea.rxandroidble.exceptions.BleServiceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
+import java.util.concurrent.Callable;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -62,11 +63,19 @@ public class RxBleDeviceServices {
      * @return Observable emitting matching characteristic or error if hasn't been found.
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      */
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid) {
-        return Observable.from(bluetoothGattServices)
-                .compose(extractCharacteristic(characteristicUuid))
-                .take(1)
-                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
+        return Observable.fromCallable(new Callable<BluetoothGattCharacteristic>() {
+            @Override
+            public BluetoothGattCharacteristic call() throws Exception {
+                for (BluetoothGattService service : bluetoothGattServices) {
+                    BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUuid);
+                    if (characteristic != null) {
+                        return characteristic;
+                    }
+                }
+                throw new BleCharacteristicNotFoundException(characteristicUuid);
+            }
+        });
     }
 
     /**
@@ -79,31 +88,21 @@ public class RxBleDeviceServices {
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      * @see RxBleDeviceServices#getCharacteristic(UUID)
      */
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid) {
+    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID serviceUuid, @NonNull final UUID characteristicUuid) {
         return getService(serviceUuid)
-                .compose(extractCharacteristic(characteristicUuid))
-                .take(1)
-                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
-    }
-
-    private Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic> extractCharacteristic(final UUID characteristicUuid) {
-        return new Observable.Transformer<BluetoothGattService, BluetoothGattCharacteristic>() {
-            @Override
-            public Observable<BluetoothGattCharacteristic> call(Observable<BluetoothGattService> source) {
-                return source.map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
+                .map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
                     @Override
                     public BluetoothGattCharacteristic call(BluetoothGattService bluetoothGattService) {
                         return bluetoothGattService.getCharacteristic(characteristicUuid);
                     }
                 })
-                        .takeFirst(new Func1<BluetoothGattCharacteristic, Boolean>() {
-                            @Override
-                            public Boolean call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                                return bluetoothGattCharacteristic != null;
-                            }
-                        }); // Services may be empty;
-            }
-        };
+                .takeFirst(new Func1<BluetoothGattCharacteristic, Boolean>() {
+                    @Override
+                    public Boolean call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                        return bluetoothGattCharacteristic != null;
+                    }
+                })
+                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
     }
 
     // TODO: [PU] 15.03.2016 Consider moving getDescriptor to the characteristic
