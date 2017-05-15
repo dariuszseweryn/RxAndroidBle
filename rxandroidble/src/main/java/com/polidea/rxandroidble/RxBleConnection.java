@@ -46,12 +46,9 @@ public interface RxBleConnection {
         Observable<RxBleConnection> prepareConnection(boolean autoConnect);
     }
 
-    class RxBleConnectionState {
+    enum RxBleConnectionState {
+        CONNECTING("CONNECTING"), CONNECTED("CONNECTED"), DISCONNECTED("DISCONNECTED"), DISCONNECTING("DISCONNECTING");
 
-        public static final RxBleConnectionState CONNECTING = new RxBleConnectionState("CONNECTING");
-        public static final RxBleConnectionState CONNECTED = new RxBleConnectionState("CONNECTED");
-        public static final RxBleConnectionState DISCONNECTED = new RxBleConnectionState("DISCONNECTED");
-        public static final RxBleConnectionState DISCONNECTING = new RxBleConnectionState("DISCONNECTING");
         private final String description;
 
         RxBleConnectionState(String description) {
