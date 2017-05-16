@@ -2,6 +2,7 @@ package com.polidea.rxandroidble;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -50,6 +51,16 @@ public interface ClientComponent {
         public static final String INT_DEVICE_SDK = "device-sdk";
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
         private PlatformConstants() {
+
+        }
+    }
+
+    class BluetoothConstants {
+
+        public static final String ENABLE_NOTIFICATION_VALUE = "enable-notification-value";
+        public static final String ENABLE_INDICATION_VALUE = "enable-indication-value";
+        public static final String DISABLE_NOTIFICATION_VALUE = "disable-notification-value";
+        private BluetoothConstants() {
 
         }
     }
@@ -132,6 +143,24 @@ public interface ClientComponent {
         boolean provideIsAndroidWear(@Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
             return deviceSdk >= Build.VERSION_CODES.KITKAT_WATCH
                     && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
+        }
+
+        @Provides
+        @Named(BluetoothConstants.ENABLE_NOTIFICATION_VALUE)
+        static byte[] provideEnableNotificationValue() {
+            return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+        }
+
+        @Provides
+        @Named(BluetoothConstants.ENABLE_INDICATION_VALUE)
+        static byte[] provideEnableIndicationValue() {
+            return BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
+        }
+
+        @Provides
+        @Named(BluetoothConstants.DISABLE_NOTIFICATION_VALUE)
+        static byte[] provideDisableNotificationValue() {
+            return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
         }
     }
 
