@@ -197,6 +197,39 @@ RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 
+### Observable behaviour
+From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
+There are three types of `Observable`s that you may encounter.
+1. Single value, completing — i.e. `RxBleConnection.readCharacteristic()`, `RxBleConnection.writeCharacteristic()`, etc.
+2. Multiple values, not completing - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
+3. Single value, not completing — these usually are meant for auto cleanup upon unsubscribing i.e. `setupNotification()` / `setupIndication()` — when you will unsubscribe the notification / indication will be disabled 
+
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should unsubscribe from it which will cause disconnection and cleanup of resources. 
+
+The below table contains an overview of used `Observable` patterns
+
+| Interface | Function | Number of values | Completes |
+| --- | --- | --- | --- |
+| RxBleClient | scanBleDevices()* | Infinite | false |
+| RxBleDevice | observeConnectionStateChanges() | Infinite | false |
+| RxBleDevice | establishConnection()* | Single | false |
+| RxBleConnection | discoverServices() | Single | true |
+| RxBleConnection | setupNotification()* | Single | false |
+| RxBleConnection | setupNotification() emitted Observable | Infinite | false |
+| RxBleConnection | setupIndication()* | Single | false |
+| RxBleConnection | setupIndication() emitted Observable | Infinite | false |
+| RxBleConnection | getCharacteristic() | Single | true |
+| RxBleConnection | readCharacteristic() | Single | true |
+| RxBleConnection | writeCharacteristic() | Single | true |
+| RxBleConnection | readDescriptor() | Single | true |
+| RxBleConnection | writeDescriptor() | Single | true |
+| RxBleConnection | readRssi() | Single | true |
+| RxBleConnection | requestMtu() | Single | true |
+| RxBleConnection | queue() | User defined | User defined |
+| LongWriteOperationBuilder | build() | Single | true |
+
+\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)
+
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
 
