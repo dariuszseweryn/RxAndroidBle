@@ -2,8 +2,7 @@ package com.polidea.rxandroidble.internal.radio;
 
 import android.support.annotation.NonNull;
 
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
-
+import com.polidea.rxandroidble.internal.operations.Operation;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -11,11 +10,11 @@ class OperationPriorityFifoBlockingQueue {
 
     private final PriorityBlockingQueue<FIFOEntry> q = new PriorityBlockingQueue<>();
 
-    public void add(RxBleRadioOperation object) {
+    public void add(Operation object) {
         q.add(new FIFOEntry(object));
     }
 
-    public RxBleRadioOperation take() throws InterruptedException {
+    public Operation take() throws InterruptedException {
         return q.take().getEntry();
     }
 
@@ -23,7 +22,7 @@ class OperationPriorityFifoBlockingQueue {
         return q.isEmpty();
     }
 
-    public boolean remove(RxBleRadioOperation rxBleRadioOperation) {
+    public boolean remove(Operation rxBleRadioOperation) {
         for (FIFOEntry entry : q) {
             if (entry.getEntry() == rxBleRadioOperation) {
                 return q.remove(entry);
@@ -38,14 +37,14 @@ class OperationPriorityFifoBlockingQueue {
 
         final long seqNum;
 
-        final RxBleRadioOperation entry;
+        final Operation<?> entry;
 
-        FIFOEntry(RxBleRadioOperation entry) {
+        FIFOEntry(Operation entry) {
             seqNum = SEQUENCE.getAndIncrement();
             this.entry = entry;
         }
 
-        RxBleRadioOperation getEntry() {
+        Operation getEntry() {
             return entry;
         }
 

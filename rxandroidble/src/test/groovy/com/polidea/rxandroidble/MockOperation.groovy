@@ -41,7 +41,7 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     }
 
     @Override
-    protected RxBleRadioOperation.Priority definedPriority() {
+    public RxBleRadioOperation.Priority definedPriority() {
         return priority
     }
 

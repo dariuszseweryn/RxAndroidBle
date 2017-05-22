@@ -5,12 +5,13 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleScanResult;
-
+import com.polidea.rxandroidble.scan.ScanFilter;
+import com.polidea.rxandroidble.scan.ScanResult;
+import com.polidea.rxandroidble.scan.ScanSettings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import rx.Observable;
 import rx.functions.Func1;
 import rx.subjects.ReplaySubject;
@@ -327,5 +327,10 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         return true;
+    }
+
+    @Override
+    public Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters) {
+        throw new Error("not implemented"); // TODO
     }
 }

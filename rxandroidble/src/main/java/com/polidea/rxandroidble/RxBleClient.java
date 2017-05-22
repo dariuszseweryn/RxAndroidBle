@@ -6,6 +6,9 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.internal.RxBleLog;
 
+import com.polidea.rxandroidble.scan.ScanFilter;
+import com.polidea.rxandroidble.scan.ScanResult;
+import com.polidea.rxandroidble.scan.ScanSettings;
 import java.util.Set;
 import java.util.UUID;
 
@@ -71,6 +74,24 @@ public abstract class RxBleClient {
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      *                           All specified UUIDs must be present in the advertisement data to match the filter.
      * @throws com.polidea.rxandroidble.exceptions.BleScanException emits in case of error starting the scan
+     * @deprecated use {@link #scanBleDevices(ScanSettings, ScanFilter...)} instead
      */
+    @Deprecated
     public abstract Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs);
+
+
+    /**
+     * Returns an infinite observable emitting BLE scan results.
+     * Scan is automatically started and stopped based on the Observable lifecycle.
+     * Scan is started on subscribe and stopped on unsubscribe. You can safely subscribe multiple observers to this observable.
+     * <p>
+     * The library automatically handles Bluetooth adapter state changes but you are supposed to prompt the user
+     * to enable it if it is disabled
+     *
+     * This function works on Android 4.3 in compatibility (emulated) mode.
+     *
+     * @param scanSettings Scan settings
+     * @param scanFilters Filtering settings
+     */
+    public abstract Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters);
 }

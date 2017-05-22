@@ -1,14 +1,14 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble.internal.scan;
 
 import android.bluetooth.BluetoothDevice;
 
-public class RxBleInternalScanResult {
+public class RxBleInternalScanResultLegacy {
 
     private final BluetoothDevice bluetoothDevice;
     private final int rssi;
     private final byte[] scanRecord;
 
-    public RxBleInternalScanResult(BluetoothDevice bleDevice, int rssi, byte[] scanRecords) {
+    public RxBleInternalScanResultLegacy(BluetoothDevice bleDevice, int rssi, byte[] scanRecords) {
         this.bluetoothDevice = bleDevice;
         this.rssi = rssi;
         this.scanRecord = scanRecords;

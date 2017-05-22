@@ -9,11 +9,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.polidea.rxandroidble.RxBleClient;
-import com.polidea.rxandroidble.RxBleScanResult;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
+import com.polidea.rxandroidble.scan.ScanFilter;
+import com.polidea.rxandroidble.scan.ScanResult;
+import com.polidea.rxandroidble.scan.ScanSettings;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,7 +48,15 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanSubscription.unsubscribe();
         } else {
-            scanSubscription = rxBleClient.scanBleDevices()
+            scanSubscription = rxBleClient.scanBleDevices(
+                    new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                            .build(),
+                    new ScanFilter.Builder()
+                            // add custom filters if needed
+                            .build()
+            )
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
@@ -71,6 +81,22 @@ public class ScanActivity extends AppCompatActivity {
             case BleScanException.LOCATION_SERVICES_DISABLED:
                 Toast.makeText(ScanActivity.this, "Location services needs to be enabled on Android 6.0", Toast.LENGTH_SHORT).show();
                 break;
+            case BleScanException.SCAN_FAILED_ALREADY_STARTED:
+                Toast.makeText(ScanActivity.this, "Scan with the same filters is already started", Toast.LENGTH_SHORT).show();
+                break;
+            case BleScanException.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+                Toast.makeText(ScanActivity.this, "Failed to register application for bluetooth scan", Toast.LENGTH_SHORT).show();
+                break;
+            case BleScanException.SCAN_FAILED_FEATURE_UNSUPPORTED:
+                Toast.makeText(ScanActivity.this, "Scan with specified parameters is not supported", Toast.LENGTH_SHORT).show();
+                break;
+            case BleScanException.SCAN_FAILED_INTERNAL_ERROR:
+                Toast.makeText(ScanActivity.this, "Scan failed due to internal error", Toast.LENGTH_SHORT).show();
+                break;
+            case BleScanException.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
+                Toast.makeText(ScanActivity.this, "Scan cannot start due to limited hardware resources", Toast.LENGTH_SHORT).show();
+                break;
+            case BleScanException.UNKNOWN_ERROR_CODE:
             case BleScanException.BLUETOOTH_CANNOT_START:
             default:
                 Toast.makeText(ScanActivity.this, "Unable to start scanning", Toast.LENGTH_SHORT).show();
@@ -98,7 +124,7 @@ public class ScanActivity extends AppCompatActivity {
         recyclerView.setAdapter(resultsAdapter);
         resultsAdapter.setOnAdapterItemClickListener(view -> {
             final int childAdapterPosition = recyclerView.getChildAdapterPosition(view);
-            final RxBleScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
+            final ScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
             onAdapterItemClick(itemAtPosition);
         });
     }
@@ -107,7 +133,7 @@ public class ScanActivity extends AppCompatActivity {
         return scanSubscription != null;
     }
 
-    private void onAdapterItemClick(RxBleScanResult scanResults) {
+    private void onAdapterItemClick(ScanResult scanResults) {
         final String macAddress = scanResults.getBleDevice().getMacAddress();
         final Intent intent = new Intent(this, DeviceActivity.class);
         intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);

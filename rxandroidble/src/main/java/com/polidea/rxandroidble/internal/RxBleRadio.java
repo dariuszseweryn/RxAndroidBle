@@ -1,8 +1,11 @@
 package com.polidea.rxandroidble.internal;
 
+import android.support.annotation.RestrictTo;
+import com.polidea.rxandroidble.internal.operations.Operation;
 import rx.Observable;
 
 public interface RxBleRadio {
 
-    <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation);
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    <T> Observable<T> queue(Operation<T> operation);
 }

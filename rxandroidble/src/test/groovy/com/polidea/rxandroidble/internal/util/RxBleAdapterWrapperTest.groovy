@@ -45,7 +45,7 @@ class RxBleAdapterWrapperTest extends Specification {
         def callback = Mock BluetoothAdapter.LeScanCallback
 
         when:
-        def startLeScan = objectUnderTest.startLeScan(callback)
+        def startLeScan = objectUnderTest.startLegacyLeScan(callback)
 
         then:
         1 * mockAdapter.startLeScan(callback) >> startResult
@@ -64,7 +64,7 @@ class RxBleAdapterWrapperTest extends Specification {
         def callback = Mock BluetoothAdapter.LeScanCallback
 
         when:
-        objectUnderTest.stopLeScan(callback)
+        objectUnderTest.stopLegacyLeScan(callback)
 
         then:
         1 * mockAdapter.stopLeScan(callback)

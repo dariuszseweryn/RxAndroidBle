@@ -3,14 +3,14 @@ package com.polidea.rxandroidble.internal;
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
-import android.support.annotation.RestrictTo;
+import com.jakewharton.rxrelay.PublishRelay;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.operations.Operation;
 import java.util.concurrent.Semaphore;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.subjects.ReplaySubject;
+import rx.functions.Func1;
 
 /**
  * The base class for all operations that are executed on the Bluetooth Radio.
@@ -19,13 +19,18 @@ import rx.subjects.ReplaySubject;
  *
  * @param <T> What is returned from this operation onNext()
  */
-public abstract class RxBleRadioOperation<T> implements Operation<T> {
+public abstract class RxBleRadioOperationReusable<T> implements Operation<T> {
 
-    /**
-     * Operation may start emission even before anyone is looking for it's values. It is safe to replay here as this subject is subscribed
-     * only once, after queueing.
-     */
-    private ReplaySubject<T> replaySubject = ReplaySubject.create();
+    private final PublishRelay<T> nextPublishSubject = PublishRelay.create();
+    private final PublishRelay<Throwable> errorPublishSubject = PublishRelay.create();
+    private final PublishRelay<Boolean> completePublishSubject = PublishRelay.create();
+    private final Observable<T> errorObservable = errorPublishSubject.flatMap(
+            new Func1<Throwable, Observable<T>>() {
+                @Override
+                public Observable<T> call(Throwable throwable) {
+                    return Observable.error(throwable);
+                }
+            });
 
     private Semaphore radioBlockingSemaphore;
 
@@ -36,7 +41,7 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      * This operation is expected to call releaseRadio() at appropriate point after the run() was called.
      */
     public Observable<T> asObservable() {
-        return replaySubject;
+        return nextPublishSubject.mergeWith(errorObservable).takeUntil(completePublishSubject);
     }
 
     @Override
@@ -70,17 +75,17 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
         return new Subscriber<T>() {
             @Override
             public void onCompleted() {
-                RxBleRadioOperation.this.onCompleted();
+                RxBleRadioOperationReusable.this.onCompleted();
             }
 
             @Override
             public void onError(Throwable e) {
-                RxBleRadioOperation.this.onError(e);
+                RxBleRadioOperationReusable.this.onError(e);
             }
 
             @Override
             public void onNext(T t) {
-                RxBleRadioOperation.this.onNext(t);
+                RxBleRadioOperationReusable.this.onNext(t);
             }
         };
     }
@@ -91,16 +96,14 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      * @param next the next value
      */
     protected final void onNext(T next) {
-        replaySubject.onNext(next);
+        nextPublishSubject.call(next);
     }
 
     /**
      * A convenience method for calling the Subscriber's onCompleted()
-     * Calling this method automatically releases the radio -> calls releaseRadio().
      */
     protected final void onCompleted() {
-        releaseRadio();
-        replaySubject.onCompleted();
+        completePublishSubject.call(Boolean.TRUE);
     }
 
     /**
@@ -111,7 +114,7 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      */
     protected final void onError(Throwable throwable) {
         releaseRadio();
-        replaySubject.onError(throwable);
+        errorPublishSubject.call(throwable);
     }
 
     /**
@@ -136,9 +139,8 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      *
      * @return the priority of this operation
      */
-    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
-    public Priority definedPriority() {
-        return Priority.NORMAL;
+    public RxBleRadioOperation.Priority definedPriority() {
+        return RxBleRadioOperation.Priority.NORMAL;
     }
 
     /**
@@ -149,30 +151,7 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      * @return the comparison result
      */
     @Override
-    public int compareTo(@NonNull Operation<?> another) {
-        return another.definedPriority().priority - definedPriority().priority;
-    }
-
-    // TODO: [DS] 07.04.2017 Move to a separate class for 2.0.0
-    /**
-     * The class representing a priority with which an RxBleRadioOperation should be executed.
-     * Used in @Override definedPriority()
-     */
-    public static class Priority {
-
-        public static final Priority HIGH = new Priority(100);
-        public static final Priority NORMAL = new Priority(50);
-        public static final Priority LOW = new Priority(0);
-        private final int priority;
-
-        private Priority(int priority) {
-
-            this.priority = priority;
-        }
-
-        @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-        public int value() {
-            return priority;
-        }
+    public int compareTo(@NonNull Operation another) {
+        return another.definedPriority().value() - definedPriority().value();
     }
 }
