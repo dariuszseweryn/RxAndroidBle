@@ -28,14 +28,14 @@ Scanning devices in the area is simple as that:
 
 ```java
 Subscription scanSubscription = rxBleClient.scanBleDevices()
-	.subscribe(
-	    rxBleScanResult -> {
-	        // Process scan result here.
-	    },
-	    throwable -> {
-	        // Handle an error here.
-	    }
-	);
+    .subscribe(
+        rxBleScanResult -> {
+            // Process scan result here.
+        },
+        throwable -> {
+            // Handle an error here.
+        }
+    );
 
 // When done, just unsubscribe.
 scanSubscription.unsubscribe();
@@ -49,10 +49,10 @@ String macAddress = "AA:BB:CC:DD:EE:FF";
 RxBleDevice device = rxBleClient.getBleDevice(macAddress);
 
 Subscription subscription = device.establishConnection(false) // <-- autoConnect flag
-	.subscribe(
-	    rxBleConnection -> {
-		    // All GATT operations are done through the rxBleConnection.
-	    },
+    .subscribe(
+        rxBleConnection -> {
+            // All GATT operations are done through the rxBleConnection.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -76,25 +76,24 @@ Be careful not to overuse the autoConnect flag. On the other side it has negativ
 #### Read
 ```java
 device.establishConnection(false)
-	.flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
-	.subscribe(
-	    characteristicValue -> {
-		    // Read characteristic value.
-	    },
+    .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
+    .subscribe(
+        characteristicValue -> {
+            // Read characteristic value.
+        },
         throwable -> {
             // Handle an error here.
         }
     );
-
 ```
 #### Write
 ```java
 device.establishConnection(false)
-	.flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
-	.subscribe(
-	    characteristicValue -> {
-		    // Characteristic value confirmed.
-	    },
+    .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
+    .subscribe(
+        characteristicValue -> {
+            // Characteristic value confirmed.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -108,10 +107,10 @@ device.establishConnection(false)
         rxBleConnection.readCharacteristic(secondUUID),
         YourModelCombiningTwoValues::new
     ))
-	.subscribe(
-	    model -> {
-	        // Process your model.
-	    },
+    .subscribe(
+        model -> {
+            // Process your model.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -142,15 +141,15 @@ device.establishConnection(false)
 ```java
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
-	    .doOnNext(bytes -> {
-	        // Process read data.
-	    })
-	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
-	)
-	.subscribe(
-	    writeBytes -> {
-		    // Written data.
-	    },
+        .doOnNext(bytes -> {
+            // Process read data.
+        })
+        .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
+    )
+    .subscribe(
+        writeBytes -> {
+            // Written data.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -161,7 +160,7 @@ device.establishConnection(false)
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
     .doOnNext(notificationObservable -> {
-    	// Notification has been set up
+        // Notification has been set up
     })
     .flatMap(notificationObservable -> notificationObservable) // <-- Notification has been set up, now observe value changes.
     .subscribe(
@@ -172,7 +171,6 @@ device.establishConnection(false)
             // Handle an error here.
         }
     );
-
 ```
 ### Observing connection state
 If you want to observe changes in device connection state just subscribe like below. On subscription you will receive the most current state instantly.
