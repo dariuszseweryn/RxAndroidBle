@@ -121,20 +121,20 @@ device.establishConnection(false)
 ```java
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.createNewLongWriteBuilder()
-            .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
-            // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
-            .setBytes(byteArray)
-            // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
-            // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
-            .build()
+        .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
+        // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
+        .setBytes(byteArray)
+        // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
+        // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
+        .build()
     )
     .subscribe(
-            byteArray -> {
-                // Written data.
-            },
-            throwable -> {
-                // Handle an error here.
-            }
+        byteArray -> {
+            // Written data.
+        },
+        throwable -> {
+            // Handle an error here.
+        }
     );
 ```
 #### Read and write combined
@@ -145,7 +145,8 @@ device.establishConnection(false)
 	    .doOnNext(bytes -> {
 	        // Process read data.
 	    })
-	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite)))
+	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
+	)
 	.subscribe(
 	    writeBytes -> {
 		    // Written data.
