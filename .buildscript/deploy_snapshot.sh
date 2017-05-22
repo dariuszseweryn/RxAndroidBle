@@ -7,7 +7,7 @@
 
 SLUG="Polidea/RxAndroidBle"
 JDK="oraclejdk8"
-BRANCH="master"
+BRANCH="develop"
 
 set -e
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
