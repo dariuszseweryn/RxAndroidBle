@@ -2,6 +2,9 @@ Change Log
 ==========
 
 Version 1.3.0-SNAPSHOT
+* Added partial support for API 21 BLE scan in a backwards compatible manner. (https://github.com/Polidea/RxAndroidBle/issues/16)
+* Added support for filtering by Manufacturer Data (https://github.com/Polidea/RxAndroidBle/issues/127)
+* Added RxBleClient State observing for determining what functionality of the library may work (https://github.com/Polidea/RxAndroidBle/issues/55)
 
 Version 1.2.2
 * Fixed visibility of `UUIDUtil`. Deprecated it. Introduced `AdvertisedServiceUUIDExtractor` helper, thanks marciogranzotto! (https://github.com/Polidea/RxAndroidBle/pull/184)
