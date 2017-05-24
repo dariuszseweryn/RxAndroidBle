@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble
 
+import com.polidea.rxandroidble.internal.util.ClientStateObservable
+import dagger.Lazy
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter
@@ -39,6 +41,7 @@ class RxBleClientTest extends Specification {
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
     RxBleDeviceProvider mockDeviceProvider = Mock RxBleDeviceProvider
+    Lazy<ClientStateObservable> mockLazyClientStateObservable = Mock Lazy
     ScanSetupBuilder mockScanSetupBuilder = Mock ScanSetupBuilder
     RxBleRadioOperationScan mockOperationScan = Mock RxBleRadioOperationScan
     Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> mockObservableTransformer =
@@ -72,6 +75,7 @@ class RxBleClientTest extends Specification {
                 adapterStateObservable.asObservable(),
                 uuidParserSpy,
                 locationServicesStatusMock,
+                mockLazyClientStateObservable,
                 mockDeviceProvider,
                 mockScanSetupBuilder,
                 mockMapper,
@@ -609,6 +613,15 @@ class RxBleClientTest extends Specification {
 
         then:
         thrown UnsupportedOperationException
+    }
+
+    def "should get ClientStateObservable from Lazy when called .observeStateChanges()"() {
+
+        when:
+        objectUnderTest.observeStateChanges()
+
+        then:
+        1 * mockLazyClientStateObservable.get() >> Mock(ClientStateObservable)
     }
 
     public waitForThreadsToCompleteWork() {

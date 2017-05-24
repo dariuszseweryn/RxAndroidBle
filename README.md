@@ -48,6 +48,47 @@ scanSubscription.unsubscribe();
 ```
 For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
 
+### Observing client state
+On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. i.e. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted permission to use either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` and `Location Services` needs to be turned on.
+To be sure that the scan will work only when everything is ready you could use:
+
+```java
+Subscription flowSubscription = rxBleClient.observeState()
+    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
+        switch (state) {
+
+            case READY:
+                // everything should work
+                return rxBleClient.scanBleDevices();
+            case BLUETOOTH_NOT_AVAILABLE:
+                // basically no functionality will work here
+            case LOCATION_PERMISSION_NOT_GRANTED:
+                // scanning and connecting will not work
+            case BLUETOOTH_OFF:
+                // scanning and connecting will not work
+            case BLUETOOTH_TURNING_ON:
+                // scanning and connecting will not work
+            case BLUETOOTH_TURNING_OFF:
+                // scanning and connecting will not work
+            case LOCATION_SERVICES_NOT_ENABLED:
+                // scanning will not work
+            default:
+                return Observable.empty();
+        }
+    })
+    .subscribe(
+    	rxBleScanResult -> {
+    	    // Process scan result here.
+    	},
+    	throwable -> {
+    	    // Handle an error here.
+    	}
+    );
+    
+// When done, just unsubscribe.
+flowSubscription.unsubscribe();
+```
+
 ### Connection
 For further BLE interactions the connection is required.
 

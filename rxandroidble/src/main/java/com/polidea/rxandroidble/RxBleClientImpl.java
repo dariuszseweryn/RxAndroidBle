@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResultLegacy;
@@ -17,9 +18,12 @@ import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
 
+import dagger.Lazy;
+
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,6 +53,7 @@ class RxBleClientImpl extends RxBleClient {
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
     private final LocationServicesStatus locationServicesStatus;
+    private final Lazy<ClientStateObservable> lazyClientStateObservable;
 
     @Inject
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -56,6 +61,7 @@ class RxBleClientImpl extends RxBleClient {
                     Observable<BleAdapterState> adapterStateObservable,
                     UUIDUtil uuidUtil,
                     LocationServicesStatus locationServicesStatus,
+                    Lazy<ClientStateObservable> lazyClientStateObservable,
                     RxBleDeviceProvider rxBleDeviceProvider,
                     ScanSetupBuilder scanSetupBuilder,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
@@ -65,6 +71,7 @@ class RxBleClientImpl extends RxBleClient {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleAdapterStateObservable = adapterStateObservable;
         this.locationServicesStatus = locationServicesStatus;
+        this.lazyClientStateObservable = lazyClientStateObservable;
         this.rxBleDeviceProvider = rxBleDeviceProvider;
         this.scanSetupBuilder = scanSetupBuilder;
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
@@ -209,6 +216,29 @@ class RxBleClientImpl extends RxBleClient {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
             throw new UnsupportedOperationException("RxAndroidBle library needs a BluetoothAdapter to be available in the system to work."
             + " If this is a test on an emulator then you can use 'https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble'");
+        }
+    }
+
+    @Override
+    public Observable<State> observeStateChanges() {
+        return lazyClientStateObservable.get();
+    }
+
+    @Override
+    public State getState() {
+        if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
+            return State.BLUETOOTH_NOT_AVAILABLE;
+        }
+        if (!locationServicesStatus.isLocationPermissionOk()) {
+            return State.LOCATION_PERMISSION_NOT_GRANTED;
+        }
+        if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+            return State.BLUETOOTH_NOT_ENABLED;
+        }
+        if (!locationServicesStatus.isLocationProviderOk()) {
+            return State.LOCATION_SERVICES_NOT_ENABLED;
+        } else {
+            return State.READY;
         }
     }
 }

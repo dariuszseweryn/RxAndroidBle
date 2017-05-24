@@ -331,6 +331,16 @@ public class RxBleClientMock extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters) {
-        throw new Error("not implemented"); // TODO
+        return Observable.error(new RuntimeException("not implemented")); // TODO [DS]
+    }
+
+    @Override
+    public Observable<State> observeStateChanges() {
+        return Observable.just(State.READY);
+    }
+
+    @Override
+    public State getState() {
+        return State.READY;
     }
 }

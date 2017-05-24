@@ -60,6 +60,14 @@ public interface ClientComponent {
         }
     }
 
+    class NamedBooleanObservables {
+
+        public static final String LOCATION_SERVICES_OK = "location-ok-boolean-observable";
+        private NamedBooleanObservables() {
+
+        }
+    }
+
     class BluetoothConstants {
 
         public static final String ENABLE_NOTIFICATION_VALUE = "enable-notification-value";
@@ -190,6 +198,10 @@ public interface ClientComponent {
 
         @Binds
         abstract Observable<RxBleAdapterStateObservable.BleAdapterState> bindStateObs(RxBleAdapterStateObservable stateObservable);
+
+        @Binds
+        @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
+        abstract Observable<Boolean> bindLocationServicesOkObs(LocationServicesOkObservable locationServicesOkObservable);
 
         @Binds
         @ClientScope
