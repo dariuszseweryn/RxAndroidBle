@@ -45,7 +45,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     private final NotificationAndIndicationManager notificationIndicationManager;
     private final DescriptorWriter descriptorWriter;
 
-    private int currentMtu = 23; // Default value at the beginning
+    private int currentMtu = GATT_MTU_MINIMUM; // Default value at the beginning
 
     @Inject
     public RxBleConnectionImpl(
@@ -99,7 +99,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit) {
+    public Observable<RxBleDeviceServices> discoverServices(long timeout, @NonNull TimeUnit timeUnit) {
         return serviceDiscoveryManager.getDiscoverServicesObservable(timeout, timeUnit);
     }
 
@@ -125,7 +125,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid, final NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid,
+                                                            @NonNull final NotificationSetupMode setupMode) {
         return getCharacteristic(characteristicUuid)
                 .flatMap(new Func1<BluetoothGattCharacteristic, Observable<? extends Observable<byte[]>>>() {
                     @Override
@@ -137,7 +138,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic,
-                                                            NotificationSetupMode setupMode) {
+                                                            @NonNull NotificationSetupMode setupMode) {
         return notificationIndicationManager.setupServerInitiatedCharacteristicRead(characteristic, setupMode, false);
     }
 
@@ -216,7 +217,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid) {
+    public Observable<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
+                                             @NonNull final UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
                     @Override
@@ -233,7 +235,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(BluetoothGattDescriptor descriptor) {
+    public Observable<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
         return rxBleRadio
                 .queue(operationsProvider.provideReadDescriptor(descriptor))
                 .map(new Func1<ByteAssociation<BluetoothGattDescriptor>, byte[]>() {
@@ -246,7 +248,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<byte[]> writeDescriptor(
-            final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid, final byte[] data
+            @NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid, @NonNull final UUID descriptorUuid,
+            @NonNull final byte[] data
     ) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
@@ -264,7 +267,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
+    public Observable<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor bluetoothGattDescriptor, @NonNull byte[] data) {
         return descriptorWriter.writeDescriptor(bluetoothGattDescriptor, data);
     }
 
@@ -274,7 +277,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public <T> Observable<T> queue(final RxBleRadioOperationCustom<T> operation) {
+    public <T> Observable<T> queue(@NonNull final RxBleRadioOperationCustom<T> operation) {
         return rxBleRadio.queue(new RxBleRadioOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
