@@ -114,7 +114,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid, @NonNull final UUID descriptorUuid) {
+    public Observable<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
+                                             @NonNull final UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
                     @Override
@@ -151,7 +152,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull final UUID characteristicUuid, @NonNull final NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull final UUID characteristicUuid,
+                                                            @NonNull final NotificationSetupMode setupMode) {
         if (indicationObservableMap.containsKey(characteristicUuid)) {
             return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, true));
         }
