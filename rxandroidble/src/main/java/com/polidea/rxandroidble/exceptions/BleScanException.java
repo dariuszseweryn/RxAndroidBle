@@ -91,8 +91,7 @@ public class BleScanException extends BleException {
     /**
      * Returns the reason code of scan failure.
      *
-     * @return One of {@link #BLUETOOTH_CANNOT_START}, {@link #BLUETOOTH_DISABLED}, {@link #BLUETOOTH_NOT_AVAILABLE},
-     * {@link #LOCATION_PERMISSION_MISSING}, {@link #LOCATION_SERVICES_DISABLED}.
+     * @return One of the {@link Reason} codes.
      */
     @Reason
     public int getReason() {
@@ -129,6 +128,8 @@ public class BleScanException extends BleException {
                 return "SCAN_FAILED_FEATURE_UNSUPPORTED";
             case SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
                 return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+            case UNKNOWN_ERROR_CODE:
+                // fallthrough
             default:
                 return "UNKNOWN";
         }
