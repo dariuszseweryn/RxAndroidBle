@@ -73,6 +73,10 @@ public class ValueInterpreter {
      */
     public static final int FORMAT_FLOAT = 0x34;
 
+    private ValueInterpreter() {
+
+    }
+
     /**
      * Return the integer value interpreted from the passed byte array.
      *
@@ -89,8 +93,9 @@ public class ValueInterpreter {
      */
     public static Integer getIntValue(@NonNull byte[] value, @IntFormatType int formatType, @IntRange(from = 0) int offset) {
         if ((offset + getTypeLen(formatType)) > value.length) {
-            RxBleLog.w("Cannot interpret int format type (0x%x) from remaining bytes length (%d) at offset (%d) - returning null",
-                    formatType, value.length - offset, offset);
+            RxBleLog.w(
+                    "Int formatType (0x%x) is longer than remaining bytes (%d) - returning null", formatType, value.length - offset
+            );
             return null;
         }
 
@@ -99,25 +104,25 @@ public class ValueInterpreter {
                 return unsignedByteToInt(value[offset]);
 
             case FORMAT_UINT16:
-                return unsignedBytesToInt(value[offset], value[offset+1]);
+                return unsignedBytesToInt(value[offset], value[offset + 1]);
 
             case FORMAT_UINT32:
-                return unsignedBytesToInt(value[offset],   value[offset+1],
-                        value[offset+2], value[offset+3]);
+                return unsignedBytesToInt(value[offset],   value[offset + 1],
+                        value[offset + 2], value[offset + 3]);
             case FORMAT_SINT8:
                 return unsignedToSigned(unsignedByteToInt(value[offset]), 8);
 
             case FORMAT_SINT16:
                 return unsignedToSigned(unsignedBytesToInt(value[offset],
-                        value[offset+1]), 16);
+                        value[offset + 1]), 16);
 
             case FORMAT_SINT32:
                 return unsignedToSigned(unsignedBytesToInt(value[offset],
-                        value[offset+1], value[offset+2], value[offset+3]), 32);
+                        value[offset + 1], value[offset + 2], value[offset + 3]), 32);
+            default:
+                RxBleLog.w("Passed an invalid integer formatType (0x%x) - returning null", formatType);
+                return null;
         }
-
-        RxBleLog.w("Passed an invalid integer formatType (0x%x) - returning null", formatType);
-        return null;
     }
 
     /**
@@ -130,22 +135,23 @@ public class ValueInterpreter {
      */
     public static Float getFloatValue(@NonNull byte[] value, @FloatFormatType int formatType, @IntRange(from = 0) int offset) {
         if ((offset + getTypeLen(formatType)) > value.length) {
-            RxBleLog.w("Cannot interpret float format type (0x%x) from remaining bytes length (%d) at offset (%d) - returning null",
-                    formatType, value.length - offset, offset);
+            RxBleLog.w(
+                    "Float formatType (0x%x) is longer than remaining bytes (%d) - returning null", formatType, value.length - offset
+            );
             return null;
         }
 
         switch (formatType) {
             case FORMAT_SFLOAT:
-                return bytesToFloat(value[offset], value[offset+1]);
+                return bytesToFloat(value[offset], value[offset + 1]);
 
             case FORMAT_FLOAT:
-                return bytesToFloat(value[offset],   value[offset+1],
-                        value[offset+2], value[offset+3]);
+                return bytesToFloat(value[offset],   value[offset + 1],
+                        value[offset + 2], value[offset + 3]);
+            default:
+                RxBleLog.w("Passed an invalid float formatType (0x%x) - returning null", formatType);
+                return null;
         }
-
-        RxBleLog.w("Passed an invalid float formatType (0x%x) - returning null", formatType);
-        return null;
     }
 
     /**
@@ -160,7 +166,9 @@ public class ValueInterpreter {
             return null;
         }
         byte[] strBytes = new byte[value.length - offset];
-        for (int i=0; i != (value.length-offset); ++i) strBytes[i] = value[offset+i];
+        for (int i = 0; i != (value.length - offset); ++i) {
+            strBytes[i] = value[offset + i];
+        }
         return new String(strBytes);
     }
 
@@ -200,7 +208,7 @@ public class ValueInterpreter {
         int mantissa = unsignedToSigned(unsignedByteToInt(b0)
                 + ((unsignedByteToInt(b1) & 0x0F) << 8), 12);
         int exponent = unsignedToSigned(unsignedByteToInt(b1) >> 4, 4);
-        return (float)(mantissa * Math.pow(10, exponent));
+        return (float) (mantissa * Math.pow(10, exponent));
     }
 
     /**
@@ -210,7 +218,7 @@ public class ValueInterpreter {
         int mantissa = unsignedToSigned(unsignedByteToInt(b0)
                 + (unsignedByteToInt(b1) << 8)
                 + (unsignedByteToInt(b2) << 16), 24);
-        return (float)(mantissa * Math.pow(10, b3));
+        return (float) (mantissa * Math.pow(10, b3));
     }
 
     /**
@@ -218,8 +226,8 @@ public class ValueInterpreter {
      * signed value.
      */
     private static int unsignedToSigned(int unsigned, int size) {
-        if ((unsigned & (1 << size-1)) != 0) {
-            unsigned = -1 * ((1 << size-1) - (unsigned & ((1 << size-1) - 1)));
+        if ((unsigned & (1 << size - 1)) != 0) {
+            unsigned = -1 * ((1 << size - 1) - (unsigned & ((1 << size - 1) - 1)));
         }
         return unsigned;
     }
