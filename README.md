@@ -248,6 +248,10 @@ Every error you may encounter is provided via onError callback. Each public meth
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
 
+#### Value interpretation
+Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
+Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `ValueIntepreter` helper to retrieve the same data easily.
+
 ## More examples
 
 Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
