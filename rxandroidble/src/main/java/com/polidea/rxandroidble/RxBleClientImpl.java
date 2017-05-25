@@ -148,7 +148,6 @@ class RxBleClientImpl extends RxBleClient {
                     public void call() {
 
                         synchronized (queuedScanOperations) {
-                            scanOperation.stop();
                             queuedScanOperations.remove(filteredUUIDs);
                         }
                     }

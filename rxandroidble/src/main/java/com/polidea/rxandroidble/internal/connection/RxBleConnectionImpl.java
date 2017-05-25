@@ -15,6 +15,7 @@ import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.RxBleRadioOperationCustom;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
+import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
@@ -27,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action1;
@@ -281,13 +283,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return rxBleRadio.queue(new RxBleRadioOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
-            protected void protectedRun() throws Throwable {
+            protected void protectedRun(Emitter<T> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
                 Observable<T> operationObservable = operation.asObservable(bluetoothGatt, gattCallback, callbackScheduler);
                 if (operationObservable == null) {
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
-                operationObservable.subscribe(getSubscriber());
+                operationObservable.subscribe(emitter);
             }
 
             @Override

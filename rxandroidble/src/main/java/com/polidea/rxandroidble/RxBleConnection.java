@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetE
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.Priority;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.UUID;
@@ -471,7 +472,7 @@ public interface RxBleConnection {
      * returned by {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}
      * completes.
      * <p>
-     * The operation will be added to the queue using a {@link com.polidea.rxandroidble.internal.RxBleRadioOperation.Priority#NORMAL}
+     * The operation will be added to the queue using a {@link Priority#NORMAL}
      * priority.
      *
      * @param operation The custom radio operation to queue.

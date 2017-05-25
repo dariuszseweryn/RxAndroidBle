@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.observers.TestSubscriber
@@ -11,14 +12,13 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 public class RxBleRadioOperationMtuRequestTest extends Specification {
 
     static long timeout = 10
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
@@ -35,7 +35,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
     def "should call BluetoothGatt.requestMtu(int) exactly once when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.requestMtu(mtu) >> true
@@ -47,7 +47,7 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         mockBluetoothGatt.requestMtu(72) >> false
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -58,14 +58,14 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         }
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnMtuChanged() and release radio"() {
 
         given:
         mockBluetoothGatt.requestMtu(72) >> true
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def testException = new Exception("test")
 
         when:
@@ -75,14 +75,14 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
+        (1.._) * mockRadioReleaseInterface.release() // technically it's not an error to call it more than once
     }
 
     def "should timeout if will not response after 10 seconds "() {
 
         given:
         mockBluetoothGatt.requestMtu(72) >> true
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)
@@ -99,7 +99,5 @@ public class RxBleRadioOperationMtuRequestTest extends Specification {
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationMtuRequest(mockGattCallback, mockBluetoothGatt,
                 new MockOperationTimeoutConfiguration(timeout.intValue(), testScheduler), mtu)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

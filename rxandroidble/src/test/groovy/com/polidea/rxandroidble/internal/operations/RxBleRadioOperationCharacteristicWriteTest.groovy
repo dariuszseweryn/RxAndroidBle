@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
@@ -13,7 +14,6 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
@@ -26,7 +26,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     RxBleRadioOperationCharacteristicWrite objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
 
@@ -39,7 +39,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     def "should call only once BluetoothGattCharacteristic.setValue() before calling BluetoothGatt.writeCharacteristic() on single write when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockCharacteristic.setValue(testData) >> true
@@ -54,7 +54,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         givenCharacteristicWithUUIDWritesData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -66,7 +66,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         givenCharacteristicWriteFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -84,7 +84,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         shouldEmitErrorOnCharacteristicWrite(testException)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -97,7 +97,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         onCharacteristicWriteSubject.onNext(new ByteAssociation(mockCharacteristicUUID, new byte[0]))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -114,7 +114,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -131,7 +131,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -146,7 +146,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         givenCharacteristicWithUUIDWritesData([uuid: differentCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -163,7 +163,7 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -172,46 +172,46 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release RadioReleaseInterface after successful write"() {
 
         given:
         givenCharacteristicWithUUIDWritesData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed to start"() {
+    def "should release RadioReleaseInterface when write failed to start"() {
 
         given:
         givenCharacteristicWriteFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed"() {
+    def "should release RadioReleaseInterface when write failed"() {
         given:
         shouldEmitErrorOnCharacteristicWrite(new Throwable("test"))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should timeout if RxBleGattCallback.onCharacteristicWrite() won't trigger in 30 seconds"() {
 
         given:
         givenCharacteristicWriteStartsOk()
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
@@ -253,7 +253,5 @@ public class RxBleRadioOperationCharacteristicWriteTest extends Specification {
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic, testData)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

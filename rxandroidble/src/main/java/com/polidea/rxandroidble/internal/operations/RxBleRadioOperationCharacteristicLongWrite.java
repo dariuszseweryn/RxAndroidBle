@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -65,7 +66,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     }
 
     @Override
-    protected void protectedRun() throws Throwable {
+    protected void protectedRun(final Emitter<byte[]> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
         int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
@@ -91,14 +92,14 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                         new Action0() {
                             @Override
                             public void call() {
-                                onNext(bytesToWrite);
-                                onCompleted();
+                                emitter.onNext(bytesToWrite);
+                                emitter.onCompleted();
                             }
                         },
                         new Action1<Throwable>() {
                             @Override
                             public void call(Throwable throwable) {
-                                onError(throwable);
+                                emitter.onError(throwable);
                             }
                         }
                 );
