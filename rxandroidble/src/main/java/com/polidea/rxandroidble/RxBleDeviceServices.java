@@ -16,7 +16,7 @@ import rx.Observable;
 import rx.functions.Func1;
 
 /**
- * Service discovery result containing list of services and characteristics withing the services.
+ * Service discovery result containing list of services and characteristics within the services.
  */
 public class RxBleDeviceServices {
 

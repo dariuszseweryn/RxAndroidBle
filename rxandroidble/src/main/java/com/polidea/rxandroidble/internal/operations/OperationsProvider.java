@@ -32,4 +32,10 @@ public interface OperationsProvider {
     RxBleRadioOperationCharacteristicWrite provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data);
 
     RxBleRadioOperationDescriptorWrite provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data);
+
+    RxBleRadioOperationConnectionPriorityRequest provideConnectionPriorityChangeOperation(
+            int connectionPriority,
+            long delay,
+            TimeUnit timeUnit
+    );
 }

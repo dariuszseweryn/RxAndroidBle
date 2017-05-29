@@ -13,6 +13,7 @@ public class BleGattOperationType {
     public static final BleGattOperationType RELIABLE_WRITE_COMPLETED = new BleGattOperationType("RELIABLE_WRITE_COMPLETED");
     public static final BleGattOperationType READ_RSSI = new BleGattOperationType("READ_RSSI");
     public static final BleGattOperationType ON_MTU_CHANGED = new BleGattOperationType("ON_MTU_CHANGED");
+    public static final BleGattOperationType CONNECTION_PRIORITY_CHANGE = new BleGattOperationType("CONNECTION_PRIORITY_CHANGE");
     private final String description;
 
     private BleGattOperationType(String description) {
