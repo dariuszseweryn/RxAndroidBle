@@ -64,7 +64,9 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Completable requestConnectionPriority(int connectionPriority, long delay, @NonNull TimeUnit timeUnit) {
+    public Completable requestConnectionPriority(int connectionPriority,
+                                                 long delay,
+                                                 @NonNull TimeUnit timeUnit) {
         return Completable.complete();
     }
 
