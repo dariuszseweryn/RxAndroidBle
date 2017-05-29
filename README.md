@@ -232,6 +232,9 @@ The below table contains an overview of used `Observable` patterns
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
 
+#### Observing BluetoothAdapter state
+If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
+
 ## More examples
 
 Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
