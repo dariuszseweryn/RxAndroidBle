@@ -36,7 +36,7 @@ import javax.inject.Named;
 
 import rx.Completable;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.Scheduler;
 import rx.functions.Action0;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -49,6 +49,7 @@ class RxBleClientImpl extends RxBleClient {
     private final ScanSetupBuilder scanSetupBuilder;
     private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ExecutorService executorService;
+    private final Scheduler mainThreadScheduler;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
@@ -65,7 +66,8 @@ class RxBleClientImpl extends RxBleClient {
                     RxBleDeviceProvider rxBleDeviceProvider,
                     ScanSetupBuilder scanSetupBuilder,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
-                    @Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) ExecutorService executorService) {
+                    @Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) ExecutorService executorService,
+                    @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -76,6 +78,7 @@ class RxBleClientImpl extends RxBleClient {
         this.scanSetupBuilder = scanSetupBuilder;
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
         this.executorService = executorService;
+        this.mainThreadScheduler = mainThreadScheduler;
     }
 
     @Override
@@ -115,9 +118,10 @@ class RxBleClientImpl extends RxBleClient {
                                 scanSetup.scanOperation.stop();
                             }
                         })
-                        .unsubscribeOn(AndroidSchedulers.mainThread())
+                        .unsubscribeOn(mainThreadScheduler)
                         .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
-                        .map(internalToExternalScanResultMapFunction);
+                        .map(internalToExternalScanResultMapFunction)
+                        .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());
             }
         }));
     }

@@ -3,12 +3,14 @@ package com.polidea.rxandroidble.internal.util;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble.internal.RxBleLog;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +52,13 @@ public class RxBleAdapterWrapper {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void stopLeScan(ScanCallback scanCallback) {
-        bluetoothAdapter.getBluetoothLeScanner().stopScan(scanCallback);
+        final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        if (bluetoothLeScanner == null) {
+            RxBleLog.d("Cannot perform BluetoothLeScanner.stopScan(ScanCallback) because scanner is unavailable (Probably adapter is off)");
+            // if stopping the scan is not possible due to BluetoothLeScanner not accessible then it is probably stopped anyway
+            return;
+        }
+        bluetoothLeScanner.stopScan(scanCallback);
     }
 
     public Set<BluetoothDevice> getBondedDevices() {

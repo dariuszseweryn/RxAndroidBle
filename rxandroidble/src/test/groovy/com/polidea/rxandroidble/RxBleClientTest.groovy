@@ -26,6 +26,7 @@ import com.polidea.rxandroidble.internal.operations.Operation
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.Observable
 import rx.Scheduler
+import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import spock.lang.Specification
@@ -79,7 +80,8 @@ class RxBleClientTest extends Specification {
                 mockDeviceProvider,
                 mockScanSetupBuilder,
                 mockMapper,
-                Executors.newSingleThreadExecutor()
+                Executors.newSingleThreadExecutor(),
+                ImmediateScheduler.INSTANCE
         )
     }
 
@@ -438,6 +440,27 @@ class RxBleClientTest extends Specification {
 
         where:
         providerOk << [true, false]
+    }
+
+    def "should emit BleScanException if BluetoothAdapter will be turned off during a scan"() {
+
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber()
+        mockMapper.call(_) >> {
+            RxBleInternalScanResult _ ->
+                System.out.println("XXX")
+                return null
+        } // does not matter as it will never be called
+        mockOperationScan.asObservable() >> Observable.never()
+        objectUnderTest.scanBleDevices(Mock(ScanSettings)).subscribe(testSubscriber)
+
+        when:
+        adapterStateObservable.disableBluetooth()
+
+        then:
+        testSubscriber.assertError {
+            BleScanException scanException -> scanException.reason == BLUETOOTH_DISABLED
+        }
     }
 
     @Unroll
