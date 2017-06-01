@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public class AdvertisedServiceUUIDExtractor {
 
+    private static final String UUID_BASE = "%08x-0000-1000-8000-00805f9b34fb";
+
     public List<UUID> extractUUIDs(byte[] scanResult) {
         List<UUID> uuids = new ArrayList<>();
         ByteBuffer buffer = ByteBuffer.wrap(scanResult).order(ByteOrder.LITTLE_ENDIAN);
@@ -27,12 +29,21 @@ public class AdvertisedServiceUUIDExtractor {
                 case 0x02: // Partial list of 16-bit UUIDs
                 case 0x03: // Complete list of 16-bit UUIDs
                     while (length >= 2) {
-                        final String serviceUuidString = String.format("%08x-0000-1000-8000-00805f9b34fb", buffer.getShort());
+                        final String serviceUuidString = String.format(UUID_BASE, buffer.getShort());
                         final UUID serviceUuid = UUID.fromString(serviceUuidString);
                         uuids.add(serviceUuid);
                         length -= 2;
                     }
                     break;
+
+                case 0x04: // Partial list of 32-bit UUIDs
+                case 0x05: // Complete list of 32-bit UUIDs
+                    while (length >= 4) {
+                        final String serviceUuidString = String.format(UUID_BASE, buffer.getInt());
+                        final UUID serviceUuid = UUID.fromString(serviceUuidString);
+                        uuids.add(serviceUuid);
+                        length -= 4;
+                    }
 
                 case 0x06: // Partial list of 128-bit UUIDs
                 case 0x07: // Complete list of 128-bit UUIDs
