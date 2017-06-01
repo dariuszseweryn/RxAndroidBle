@@ -243,7 +243,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.2.2"
+compile "com.polidea.rxandroidble:rxandroidble:1.2.3"
 ```
 ### Maven
 
@@ -251,7 +251,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.2.2"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.3</version>
   <type>aar</type>
 </dependency>
 ```

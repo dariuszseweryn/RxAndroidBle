@@ -3,7 +3,7 @@ Change Log
 
 Version 1.3.0-SNAPSHOT
 
-Version 1.2.3-SNAPSHOT
+Version 1.2.3
 * Fixed scan when filter with 32-bit UUID was specified (https://github.com/Polidea/RxAndroidBle/issues/207)
 * Fixed memory leak of scan operation (and potentially any other that would emit an infinite stream of events) (https://github.com/Polidea/RxAndroidBle/issues/194)
 * Lowered memory pressure when using functions that accept `UUID`.
