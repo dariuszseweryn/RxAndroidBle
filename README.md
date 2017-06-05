@@ -237,14 +237,13 @@ If you would like to observe `BluetoothAdapter` state changes you can use `RxBle
 
 ### Permissions
 
-RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these
-when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission 
-on a lower version of Android use:
+RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
 
-```<uses-permission
+```
+<uses-permission
   android:name="android.permission.ACCESS_COARSE_LOCATION"
   android:maxSdkVersion="22"/>
-  ```
+```
 
 
 ## More examples
