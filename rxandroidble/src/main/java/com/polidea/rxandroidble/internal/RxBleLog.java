@@ -66,63 +66,65 @@ public class RxBleLog {
     }
 
     public static void v(String message, Object... args) {
-        throwShade(Log.VERBOSE, formatString(message, args), null);
+        throwShade(Log.VERBOSE, null, message, args);
     }
 
     public static void v(Throwable t, String message, Object... args) {
-        throwShade(Log.VERBOSE, formatString(message, args), t);
+        throwShade(Log.VERBOSE, t, message, args);
     }
 
     public static void d(String message, Object... args) {
-        throwShade(Log.DEBUG, formatString(message, args), null);
+        throwShade(Log.DEBUG, null, message, args);
     }
 
     public static void d(Throwable t, String message, Object... args) {
-        throwShade(Log.DEBUG, formatString(message, args), t);
+        throwShade(Log.DEBUG, t, message, args);
     }
 
     public static void i(String message, Object... args) {
-        throwShade(Log.INFO, formatString(message, args), null);
+        throwShade(Log.INFO, null, message, args);
     }
 
     public static void i(Throwable t, String message, Object... args) {
-        throwShade(Log.INFO, formatString(message, args), t);
+        throwShade(Log.INFO, t, message, args);
     }
 
     public static void w(String message, Object... args) {
-        throwShade(Log.WARN, formatString(message, args), null);
+        throwShade(Log.WARN, null, message, args);
     }
 
     public static void w(Throwable t, String message, Object... args) {
-        throwShade(Log.WARN, formatString(message, args), t);
+        throwShade(Log.WARN, t, message, args);
     }
 
     public static void e(String message, Object... args) {
-        throwShade(Log.ERROR, formatString(message, args), null);
+        throwShade(Log.ERROR, null, message, args);
     }
 
     public static void e(Throwable t, String message, Object... args) {
-        throwShade(Log.ERROR, formatString(message, args), t);
+        throwShade(Log.ERROR, t, message, args);
     }
 
-    private static void throwShade(int priority, String message, Throwable t) {
+    private static void throwShade(int priority, Throwable t, String message, Object... args) {
         if (priority < logLevel) {
             return;
         }
+        
+        String formattedMessage = formatString(message, args);
 
-        if (message == null || message.length() == 0) {
+        if (formattedMessage == null || formattedMessage.length() == 0) {
             if (t != null) {
-                message = Log.getStackTraceString(t);
+                formattedMessage = Log.getStackTraceString(t);
             } else {
                 // Swallow message if it's null and there's no throwable.
                 return;
             }
         } else if (t != null) {
-            message += "\n" + Log.getStackTraceString(t);
+            formattedMessage += "\n" + Log.getStackTraceString(t);
         }
 
         String tag = createTag();
-        println(priority, tag, message);
+        println(priority, tag, formattedMessage);
     }
 
     private static void println(int priority, String tag, String message) {
