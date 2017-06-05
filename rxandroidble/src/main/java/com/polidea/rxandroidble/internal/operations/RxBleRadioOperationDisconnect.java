@@ -10,6 +10,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
@@ -18,6 +19,7 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
@@ -53,13 +55,13 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    protected void protectedRun() {
+    protected void protectedRun(final Emitter<Void> emitter, RadioReleaseInterface radioReleaseInterface) {
         //noinspection Convert2MethodRef
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
         if (bluetoothGatt == null) {
             RxBleLog.w("Disconnect operation has been executed but GATT instance was null.");
-            onCompleted();
+            emitter.onCompleted();
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
                     .observeOn(mainThreadScheduler)
@@ -73,13 +75,13 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                             new Action1<Throwable>() {
                                 @Override
                                 public void call(Throwable throwable) {
-                                    onError(throwable);
+                                    emitter.onError(throwable);
                                 }
                             },
                             new Action0() {
                                 @Override
                                 public void call() {
-                                    onCompleted();
+                                    emitter.onCompleted();
                                 }
                             }
                     );

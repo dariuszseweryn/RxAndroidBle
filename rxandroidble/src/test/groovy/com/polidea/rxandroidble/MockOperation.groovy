@@ -3,36 +3,39 @@ package com.polidea.rxandroidble
 import android.os.DeadObjectException
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.exceptions.BleException
+import com.polidea.rxandroidble.internal.Priority
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.RxBleRadioOperation
+import rx.Emitter
 import rx.Observable
 import rx.subjects.BehaviorSubject
 
 public class MockOperation extends RxBleRadioOperation<Object> {
 
-    RxBleRadioOperation.Priority priority
+    Priority priority
     public String lastExecutedOnThread
     int executionCount
     Closure<MockOperation> closure
     BehaviorSubject<MockOperation> behaviorSubject = BehaviorSubject.create()
 
-    public static RxBleRadioOperation mockOperation(RxBleRadioOperation.Priority priority, Closure runClosure) {
+    public static RxBleRadioOperation mockOperation(Priority priority, Closure runClosure) {
         return new MockOperation(priority, runClosure)
     }
 
-    public static RxBleRadioOperation mockOperation(RxBleRadioOperation.Priority priority) {
+    public static RxBleRadioOperation mockOperation(Priority priority) {
         return new MockOperation(priority, null)
     }
 
-    MockOperation(RxBleRadioOperation.Priority priority, Closure closure) {
+    MockOperation(Priority priority, Closure closure) {
         this.closure = closure
         this.priority = priority
     }
 
     @Override
-    void protectedRun() {
+    void protectedRun(Emitter<Object> emitter, RadioReleaseInterface radioReleaseInterface) {
         executionCount++
         lastExecutedOnThread = Thread.currentThread().getName()
-        closure?.call(this)
+        closure?.call(emitter)
         behaviorSubject.onNext(this)
     }
 
@@ -41,7 +44,7 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     }
 
     @Override
-    public RxBleRadioOperation.Priority definedPriority() {
+    Priority definedPriority() {
         return priority
     }
 

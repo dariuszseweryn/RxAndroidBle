@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
 import com.polidea.rxandroidble.internal.scan.InternalScanResultCreator
@@ -18,7 +19,7 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     TestSubscriber testSubscriber = new TestSubscriber()
 
@@ -34,17 +35,15 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
 
     def prepareObjectUnderTest(RxBleAdapterWrapper adapterWrapper) {
         objectUnderTest = new RxBleRadioOperationScanApi18(adapterWrapper, mockInternalScanResultCreator, mockEmulatedScanFilterMatcher)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
     }
 
     def "asObservable() should not emit error when RxBleAdapterWrapper.startScan() returns true"() {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> true
-        objectUnderTest.asObservable().subscribe(testSubscriber)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -54,7 +53,7 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> false
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         objectUnderTest.run()
@@ -67,8 +66,7 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
 
         given:
         AtomicReference<BluetoothAdapter.LeScanCallback> capturedLeScanCallbackRef = captureScanCallback()
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def scannedDevice = Mock(BluetoothDevice)
         def scannedBytes = new byte[5]
         def scannedRssi = 5
@@ -91,8 +89,7 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
         def capturedLeScanCallbackRef = captureScanCallback()
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_, _, _) >> mockInternalScanResult
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onLeScan(Mock(BluetoothDevice), 0, new byte[0])
@@ -114,52 +111,13 @@ public class RxBleRadioOperationScanApi18Test extends Specification {
         mockAdapterWrapper.startLegacyLeScan(_) >> startScanResult
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        (1.._) * mockSemaphore.release()
+        (1.._) * mockRadioReleaseInterface.release()
 
         where:
         startScanResult << [true, false]
-    }
-
-    def "should call RxBleAdapterWrapper.stopLegacyLeScan() when stopScan() will be called before RxBleAdapterWrapper.startLegacyLeScan() will return true"() {
-
-        /*
-        [D.S] The idea behind is:
-        1. RxBleRadioOperationScanTest is started but RxBleAdapterWrapper.startLeScan() doesn't return yet
-        2. RxBleRadioOperationScanTest is stopped
-        3. RxBleAdapterWrapper.startLeScan() returns true
-        Creating elegant tests for threading issues is dirty :/
-         */
-
-        given:
-        Semaphore startScanReturnSemaphore = new Semaphore(0)
-        Semaphore stopScanSemaphore = new Semaphore(0)
-        def mockBleAdapterWrapper = new MockBleAdapterWrapper(null, startScanReturnSemaphore)
-        prepareObjectUnderTest(mockBleAdapterWrapper)
-
-        new Thread(new Runnable() {
-
-            @Override
-            void run() {
-                stopScanSemaphore.release()
-                objectUnderTest.run()
-            }
-        }).start()
-
-        stopScanSemaphore.acquire()
-        Thread.sleep(500)
-        objectUnderTest.stop()
-        mockBleAdapterWrapper.numberOfTimesStopCalled = 0
-        Thread.sleep(500)
-
-        when:
-        startScanReturnSemaphore.release()
-        Thread.sleep(1000)
-
-        then:
-        mockBleAdapterWrapper.numberOfTimesStopCalled == 1
     }
 
     private AtomicReference<BluetoothAdapter.LeScanCallback> captureScanCallback() {

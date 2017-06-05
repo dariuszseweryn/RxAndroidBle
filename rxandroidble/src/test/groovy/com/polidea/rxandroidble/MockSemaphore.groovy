@@ -1,16 +1,16 @@
 package com.polidea.rxandroidble
 
-import java.util.concurrent.Semaphore
+import com.polidea.rxandroidble.internal.RadioAwaitReleaseInterface
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 
-class MockSemaphore extends Semaphore {
+class MockSemaphore implements RadioReleaseInterface, RadioAwaitReleaseInterface {
     int permits = 0;
 
     MockSemaphore() {
-        super(0)
     }
 
     @Override
-    void acquire() throws InterruptedException {
+    void awaitRelease() throws InterruptedException {
         permits++
     }
 
@@ -20,6 +20,6 @@ class MockSemaphore extends Semaphore {
     }
 
     boolean isReleased() {
-        permits == 0;
+        permits <= 0;
     }
 }

@@ -3,13 +3,13 @@ package com.polidea.rxandroidble.internal.operations
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import rx.Observable
 import rx.observers.TestSubscriber
@@ -23,7 +23,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
 
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -45,7 +45,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
     def "should call BluetoothGatt.discoverServices() exactly once when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.discoverServices() >> true
@@ -57,7 +57,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> false
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -68,14 +68,14 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         }
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnServicesDiscovered() and release radio"() {
 
         given:
         mockBluetoothGatt.discoverServices() >> true
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def testException = new Exception("test")
 
         when:
@@ -85,7 +85,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        (1.._) * mockSemaphore.release() // technically it's not an error to call it more than once
+        (1.._) * mockRadioReleaseInterface.release() // technically it's not an error to call it more than once
     }
 
     def "should emit exactly one value when RxBleGattCallback.getOnServicesDiscovered() emits value"() {
@@ -103,7 +103,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertNoValues()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -115,7 +115,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         testSubscriber.assertValue(value2)
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         when:
         onServicesDiscoveredPublishSubject.onNext(value3)
@@ -130,7 +130,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> true
         mockGattCallback.onServicesDiscovered >> Observable.never()
         mockBluetoothGatt.getServices() >> []
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
@@ -150,7 +150,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> true
         mockGattCallback.onServicesDiscovered >> Observable.never()
         mockBluetoothGatt.getServices() >> createMockedBluetoothGattServiceList()
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
@@ -166,7 +166,7 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
         mockGattCallback.onServicesDiscovered >> Observable.never()
         def mockedBluetoothGattServiceList = createMockedBluetoothGattServiceList()
         mockBluetoothGatt.getServices() >> mockedBluetoothGattServiceList
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)
@@ -180,8 +180,6 @@ public class RxBleRadioOperationServicesDiscoverTest extends Specification {
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt,
                 new MockOperationTimeoutConfiguration(timeout.toInteger(), testScheduler))
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 
     private List<BluetoothGattService> createMockedBluetoothGattServiceList() {

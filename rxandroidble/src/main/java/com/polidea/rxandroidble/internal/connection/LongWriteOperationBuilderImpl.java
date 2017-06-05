@@ -65,7 +65,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
     @Override
     public RxBleConnection.LongWriteOperationBuilder setWriteOperationAckStrategy(
-            RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy) {
+            @NonNull RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy) {
         this.writeOperationAckStrategy = writeOperationAckStrategy;
         return this;
     }
@@ -79,6 +79,8 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
         if (bytes == null) {
             throw new IllegalArgumentException("setBytes() needs to be called before build()");
         }
+
+        // TODO: [DS 24.05.2017] Think about a warning if specified maxBatchSize is greater than MTU
 
         return writtenCharacteristicObservable.flatMap(new Func1<BluetoothGattCharacteristic, Observable<byte[]>>() {
             @Override

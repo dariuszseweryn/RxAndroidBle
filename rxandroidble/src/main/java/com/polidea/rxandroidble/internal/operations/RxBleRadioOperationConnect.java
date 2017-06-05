@@ -10,7 +10,7 @@ import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleLog;
+import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -27,7 +27,6 @@ import rx.functions.Action1;
 import rx.functions.Cancellable;
 import rx.functions.Func0;
 import rx.functions.Func1;
-import rx.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
@@ -75,23 +74,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
 
-    private final BehaviorSubject<Boolean> isSubscribed = BehaviorSubject.create();
-
-    private final Observable<BluetoothGatt> operationConnectAsObservableWithSubscribersMonitoring = super.asObservable()
-            .doOnSubscribe(new Action0() {
-                @Override
-                public void call() {
-                    isSubscribed.onNext(true);
-                }
-            })
-            .doOnUnsubscribe(new Action0() {
-                @Override
-                public void call() {
-                    isSubscribed.onNext(false);
-                }
-            })
-            .share();
-
     @Inject
     RxBleRadioOperationConnect(
             BluetoothDevice bluetoothDevice,
@@ -109,32 +91,23 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     }
 
     @Override
-    public Observable<BluetoothGatt> asObservable() {
-        return operationConnectAsObservableWithSubscribersMonitoring;
-    }
-
-    @Override
-    protected void protectedRun() {
-        getConnectedBluetoothGatt()
+    protected void protectedRun(final Emitter<BluetoothGatt> emitter, final RadioReleaseInterface radioReleaseInterface) {
+        final Subscription subscription = getConnectedBluetoothGatt()
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
-                .takeUntil(asObservableHasNoSubscribers().doOnNext(new Action1<Boolean>() {
+                .doOnUnsubscribe(new Action0() {
                     @Override
-                    public void call(Boolean noSubscribers) {
-                        RxBleLog.d("No subscribers, finishing operation");
-                    }
-                }))
-                .doOnNext(new Action1<BluetoothGatt>() {
-                    @Override
-                    public void call(BluetoothGatt ignored) {
-                        isSubscribed.onCompleted();
+                    public void call() {
+                        radioReleaseInterface.release();
                     }
                 })
-                .subscribe(getSubscriber());
+                .subscribe(emitter);
+
+        emitter.setSubscription(subscription);
 
         if (autoConnect) {
             // with autoConnect the connection may be established after a really long time
-            releaseRadio();
+            radioReleaseInterface.release();
         }
     }
 
@@ -157,16 +130,6 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             @Override
             public BluetoothGatt call() {
                 throw new BleGattCallbackTimeoutException(bluetoothGattProvider.getBluetoothGatt(), BleGattOperationType.CONNECTION_STATE);
-            }
-        });
-    }
-
-    @NonNull
-    private Observable<Boolean> asObservableHasNoSubscribers() {
-        return isSubscribed.filter(new Func1<Boolean, Boolean>() {
-            @Override
-            public Boolean call(Boolean aBoolean) {
-                return !aBoolean;
             }
         });
     }
@@ -208,6 +171,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                                 )
                                 // disconnect may happen even if the connection was not established yet
                                 .mergeWith(rxBleGattCallback.<BluetoothGatt>observeDisconnect())
+                                .take(1)
                                 .subscribe(emitter);
 
                         emitter.setCancellation(new Cancellable() {

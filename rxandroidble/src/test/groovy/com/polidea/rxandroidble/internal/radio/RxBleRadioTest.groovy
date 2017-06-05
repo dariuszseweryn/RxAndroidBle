@@ -1,11 +1,10 @@
 package com.polidea.rxandroidble.internal.radio
 
 import com.polidea.rxandroidble.MockOperation
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import rx.Emitter
 import rx.Observable
 import rx.Scheduler
-import rx.android.plugins.RxAndroidPlugins
-import rx.android.plugins.RxAndroidSchedulersHook
-import rx.android.schedulers.AndroidSchedulers
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import spock.lang.Specification
@@ -15,7 +14,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 
-import static com.polidea.rxandroidble.internal.RxBleRadioOperation.Priority.NORMAL
+import static com.polidea.rxandroidble.internal.Priority.NORMAL
 
 class RxBleRadioTest extends Specification {
     public static final String RADIO_SCHEDULER_THREAD_NAME = "radio-test-thread"
@@ -137,7 +136,7 @@ class RxBleRadioTest extends Specification {
 
         def secondOperation = new MockOperation(NORMAL, null) {
             @Override
-            void protectedRun() {
+            void protectedRun(Emitter<Object> emitter, RadioReleaseInterface radioReleaseInterface) {
                 // simulate that a not handled exception was thrown somewhere
                 throw new Exception("Second throwable")
             }
@@ -169,7 +168,7 @@ class RxBleRadioTest extends Specification {
     public operationReleasingRadioAfterSemaphoreIsReleased(semaphore) {
         MockOperation.mockOperation(NORMAL, {
             semaphore.acquire()
-            it.releaseRadio()
+            it.onCompleted()
         })
     }
 

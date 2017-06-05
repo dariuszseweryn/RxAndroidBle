@@ -5,7 +5,6 @@ import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.Operation;
-import java.util.concurrent.Semaphore;
 import javax.inject.Inject;
 import javax.inject.Named;
 import rx.Emitter;
@@ -27,32 +26,21 @@ public class RxBleRadioImpl implements RxBleRadio {
                 //noinspection InfiniteLoopStatement
                 while (true) {
                     try {
-                        final Operation operation = queue.take();
+                        final FIFORunnableEntry<?> entry = queue.take();
+                        final Operation<?> operation = entry.operation;
                         log("STARTED", operation);
 
-                        /**
+                        /*
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
-                         * status. Below Semaphore is passed to the RxBleRadioOperation and is meant to be released at appropriate time
-                         * when the next operation should be able to start successfully.
+                         * status. Below RadioSynchronizationInterface is passed to the RxBleRadioOperation and is meant to be released
+                         * at appropriate time when the next operation should be able to start successfully.
                          */
-                        final Semaphore semaphore = new Semaphore(0);
+                        final RadioSemaphore radioSemaphore = new RadioSemaphore();
 
-                        operation.setRadioBlockingSemaphore(semaphore);
+                        Subscription subscription = entry.run(radioSemaphore, callbackScheduler);
+                        entry.emitter.setSubscription(subscription);
 
-                        /**
-                         * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
-                         * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
-                         * on the main thread.
-                         */
-                        Observable.just(operation)
-                                .observeOn(callbackScheduler)
-                                .subscribe(new Action1<Operation>() {
-                                    @Override
-                                    public void call(Operation operation) {
-                                        operation.run();
-                                    }
-                                });
-                        semaphore.acquire();
+                        radioSemaphore.awaitRelease();
                         log("FINISHED", operation);
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing RxBleRadioOperation queue");
@@ -68,22 +56,19 @@ public class RxBleRadioImpl implements RxBleRadio {
         return Observable.create(new Action1<Emitter<T>>() {
             @Override
             public void call(Emitter<T> tEmitter) {
-                final Subscription subscription = operation
-                        .asObservable()
-                        .subscribe(tEmitter);
-
-                queue.add(operation);
-                log("QUEUED", operation);
+                final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
 
                 tEmitter.setCancellation(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
-                        subscription.unsubscribe();
-                        if (queue.remove(operation)) {
+                        if (queue.remove(entry)) {
                             log("REMOVED", operation);
                         }
                     }
                 });
+
+                log("QUEUED", operation);
+                queue.add(entry);
             }
         }, Emitter.BackpressureMode.NONE);
     }

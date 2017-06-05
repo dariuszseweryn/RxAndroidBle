@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.internal.operations.Operation;
 import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
@@ -111,13 +112,8 @@ class RxBleClientImpl extends RxBleClient {
             @Override
             public Observable<ScanResult> call() {
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
-                return rxBleRadio.queue(scanSetup.scanOperation)
-                        .doOnUnsubscribe(new Action0() {
-                            @Override
-                            public void call() {
-                                scanSetup.scanOperation.stop();
-                            }
-                        })
+                final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
+                return rxBleRadio.queue(scanOperation)
                         .unsubscribeOn(mainThreadScheduler)
                         .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
                         .map(internalToExternalScanResultMapFunction)
@@ -201,7 +197,6 @@ class RxBleClientImpl extends RxBleClient {
                     public void call() {
 
                         synchronized (queuedScanOperations) {
-                            scanOperation.stop();
                             queuedScanOperations.remove(filteredUUIDs);
                         }
                     }

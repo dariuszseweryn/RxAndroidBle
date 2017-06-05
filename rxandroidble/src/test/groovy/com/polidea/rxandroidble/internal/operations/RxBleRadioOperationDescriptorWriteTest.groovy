@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
@@ -15,7 +16,6 @@ import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 public class RxBleRadioOperationDescriptorWriteTest extends Specification {
@@ -28,7 +28,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     RxBleRadioOperationDescriptorWrite objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
     int bluetoothGattCharacteristicDefaultWriteType = 99
@@ -44,7 +44,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     def "should call only once BluetoothGattDescriptor.setValue() before calling BluetoothGatt.writeDescriptor() on single write when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockDescriptor.setValue(testData) >> true
@@ -59,7 +59,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -71,7 +71,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -89,7 +89,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         shouldEmitErrorOnDescriptorWrite(testException)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -102,7 +102,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         onDescriptorWriteSubject.onNext(new ByteAssociation<BluetoothGattDescriptor>(mockDescriptor, new byte[0]))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -119,7 +119,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -136,7 +136,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -151,7 +151,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         givenDescriptorWithUUIDWritesData([descriptor: differentDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -168,7 +168,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -177,39 +177,39 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release RadioReleaseInterface after successful write"() {
 
         given:
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed to start"() {
+    def "should release RadioReleaseInterface when write failed to start"() {
 
         given:
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when write failed"() {
+    def "should release RadioReleaseInterface when write failed"() {
         given:
         shouldEmitErrorOnDescriptorWrite(new Throwable("test"))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     @Unroll
@@ -219,7 +219,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
         mockGatt.writeDescriptor(mockDescriptor) >> writeStartSuccess
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockParentCharacteristic.setWriteType(bluetoothGattCharacteristicDefaultWriteType)
@@ -235,7 +235,7 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
 
         given:
         givenDescriptorWriteStartsOk()
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
@@ -277,7 +277,5 @@ public class RxBleRadioOperationDescriptorWriteTest extends Specification {
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

@@ -55,6 +55,7 @@ public class UUIDUtil {
     /** Length of bytes for 128 bit UUID */
     public static final int UUID_BYTES_128_BIT = 16;
 
+    private static final String UUID_BASE_FORMAT = "%08x-0000-1000-8000-00805f9b34fb";
 
     @Inject
     public UUIDUtil() {
@@ -73,11 +74,17 @@ public class UUIDUtil {
                 case DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL: // Partial list of 16-bit UUIDs
                 case DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE: // Complete list of 16-bit UUIDs
                     while (length >= 2) {
-                        uuids.add(UUID.fromString(String.format(
-                                "%08x-0000-1000-8000-00805f9b34fb", buffer.getShort())));
+                        uuids.add(UUID.fromString(String.format(UUID_BASE_FORMAT, buffer.getShort())));
                         length -= 2;
                     }
                     break;
+
+                case DATA_TYPE_SERVICE_UUIDS_32_BIT_PARTIAL: // Partial list of 32-bit UUIDs
+                case DATA_TYPE_SERVICE_UUIDS_32_BIT_COMPLETE: // Complete list of 32-bit UUIDs
+                    while (length >= 4) {
+                        uuids.add(UUID.fromString(String.format(UUID_BASE_FORMAT, buffer.getInt())));
+                        length -= 4;
+                    }
 
                 case DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL: // Partial list of 128-bit UUIDs
                 case DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE: // Complete list of 128-bit UUIDs

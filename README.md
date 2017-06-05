@@ -254,6 +254,17 @@ We encourage you to check the package `com.polidea.rxandroidble.helpers` which c
 Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
 Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `ValueIntepreter` helper to retrieve the same data easily.
 
+#### Observing BluetoothAdapter state
+If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
+
+### Permissions
+RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
+
+```
+<uses-permission
+  android:name="android.permission.ACCESS_COARSE_LOCATION"
+  android:maxSdkVersion="22"/>
+```
 ## More examples
 
 Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
@@ -262,7 +273,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.2.2"
+compile "com.polidea.rxandroidble:rxandroidble:1.2.4"
 ```
 ### Maven
 
@@ -270,7 +281,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.2.2"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.4</version>
   <type>aar</type>
 </dependency>
 ```

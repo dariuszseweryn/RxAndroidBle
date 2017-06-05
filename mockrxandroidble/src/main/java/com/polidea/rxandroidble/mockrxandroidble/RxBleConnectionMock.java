@@ -90,7 +90,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<RxBleDeviceServices> discoverServices(long timeout, TimeUnit timeUnit) {
+    public Observable<RxBleDeviceServices> discoverServices(long timeout, @NonNull TimeUnit timeUnit) {
         return Observable.just(rxBleDeviceServices);
     }
 
@@ -121,7 +121,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid) {
+    public Observable<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
+                                             @NonNull final UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
                     @Override
@@ -138,7 +139,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> readDescriptor(BluetoothGattDescriptor descriptor) {
+    public Observable<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
         return Observable.just(descriptor.getValue());
     }
 
@@ -158,7 +159,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<Observable<byte[]>> setupNotification(@NonNull final UUID characteristicUuid, final NotificationSetupMode setupMode) {
+    public Observable<Observable<byte[]>> setupNotification(@NonNull final UUID characteristicUuid,
+                                                            @NonNull final NotificationSetupMode setupMode) {
         if (indicationObservableMap.containsKey(characteristicUuid)) {
             return Observable.error(new BleConflictingNotificationAlreadySetException(characteristicUuid, true));
         }
@@ -191,7 +193,7 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Observable<Observable<byte[]>> setupNotification(@NonNull BluetoothGattCharacteristic characteristic,
-                                                            NotificationSetupMode setupMode) {
+                                                            @NonNull NotificationSetupMode setupMode) {
         return setupNotification(characteristic.getUuid(), setupMode);
     }
 
@@ -283,13 +285,13 @@ public class RxBleConnectionMock implements RxBleConnection {
                     new ImmediateSerializedBatchAckStrategy();
 
             @Override
-            public LongWriteOperationBuilder setBytes(byte[] bytes) {
+            public LongWriteOperationBuilder setBytes(@NonNull byte[] bytes) {
                 this.bytes = bytes;
                 return this;
             }
 
             @Override
-            public LongWriteOperationBuilder setCharacteristicUuid(final UUID uuid) {
+            public LongWriteOperationBuilder setCharacteristicUuid(@NonNull final UUID uuid) {
                 bluetoothGattCharacteristicObservable = discoverServices().flatMap(
                         new Func1<RxBleDeviceServices, Observable<BluetoothGattCharacteristic>>() {
                             @Override
@@ -303,7 +305,7 @@ public class RxBleConnectionMock implements RxBleConnection {
 
             @Override
             public LongWriteOperationBuilder setCharacteristic(
-                    BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                    @NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
                 bluetoothGattCharacteristicObservable = Observable.just(bluetoothGattCharacteristic);
                 return this;
             }
@@ -315,7 +317,7 @@ public class RxBleConnectionMock implements RxBleConnection {
             }
 
             @Override
-            public LongWriteOperationBuilder setWriteOperationAckStrategy(WriteOperationAckStrategy writeOperationAckStrategy) {
+            public LongWriteOperationBuilder setWriteOperationAckStrategy(@NonNull WriteOperationAckStrategy writeOperationAckStrategy) {
                 this.writeOperationAckStrategy = writeOperationAckStrategy;
                 return this;
             }
@@ -377,8 +379,8 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeDescriptor(final UUID serviceUuid, final UUID characteristicUuid,
-                                              final UUID descriptorUuid, final byte[] data) {
+    public Observable<byte[]> writeDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
+                                              @NonNull final UUID descriptorUuid, @NonNull final byte[] data) {
         return discoverServices()
                 .flatMap(new Func1<RxBleDeviceServices, Observable<BluetoothGattDescriptor>>() {
                     @Override
@@ -400,7 +402,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Observable<byte[]> writeDescriptor(final BluetoothGattDescriptor descriptor, final byte[] data) {
+    public Observable<byte[]> writeDescriptor(@NonNull final BluetoothGattDescriptor descriptor, @NonNull final byte[] data) {
         return Completable.fromAction(new Action0() {
             @Override
             public void call() {
@@ -493,7 +495,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public <T> Observable<T> queue(RxBleRadioOperationCustom<T> operation) {
+    public <T> Observable<T> queue(@NonNull RxBleRadioOperationCustom<T> operation) {
         throw new UnsupportedOperationException("Mock does not support queuing custom operation.");
     }
 }

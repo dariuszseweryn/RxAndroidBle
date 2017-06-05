@@ -4,33 +4,37 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
-import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher;
-import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.scan.AndroidScanObjectsConverter;
+import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher;
 import com.polidea.rxandroidble.internal.scan.InternalScanResultCreator;
+import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
 import java.util.List;
+import rx.Emitter;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan {
+public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan<RxBleInternalScanResult, ScanCallback> {
 
-    private final ScanSettings scanSettings;
-    private final ScanFilter[] scanFilters;
+    @NonNull
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
-    private volatile boolean isStarted = false;
-    private volatile boolean isStopped = false;
-
-    private final ScanCallback scanCallback;
+    @NonNull
+    private final InternalScanResultCreator internalScanResultCreator;
+    @NonNull
     private final AndroidScanObjectsConverter androidScanObjectsConverter;
+    @NonNull
+    private final ScanSettings scanSettings;
+    @NonNull
+    private final EmulatedScanFilterMatcher emulatedScanFilterMatcher;
+    @Nullable
+    private final ScanFilter[] scanFilters;
+
 
     public RxBleRadioOperationScanApi21(
             @NonNull RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -40,16 +44,23 @@ public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan {
             @NonNull final EmulatedScanFilterMatcher emulatedScanFilterMatcher,
             @Nullable final ScanFilter[] offloadedScanFilters
     ) {
+        super(rxBleAdapterWrapper);
+        this.internalScanResultCreator = internalScanResultCreator;
         this.scanSettings = scanSettings;
+        this.emulatedScanFilterMatcher = emulatedScanFilterMatcher;
         this.scanFilters = offloadedScanFilters;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.androidScanObjectsConverter = androidScanObjectsConverter;
-        this.scanCallback = new ScanCallback() {
+    }
+
+    @Override
+    ScanCallback createScanCallback(final Emitter<RxBleInternalScanResult> emitter) {
+        return new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
                 final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(callbackType, result);
                 if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                    onNext(internalScanResult);
+                    emitter.onNext(internalScanResult);
                 }
             }
 
@@ -58,52 +69,31 @@ public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan {
                 for (ScanResult result : results) {
                     final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(result);
                     if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                        onNext(internalScanResult);
+                        emitter.onNext(internalScanResult);
                     }
                 }
             }
 
             @Override
             public void onScanFailed(int errorCode) {
-                onError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
+                emitter.onError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
             }
         };
     }
 
     @Override
-    protected void protectedRun() {
-
-        try {
-            rxBleAdapterWrapper.startLeScan(
-                    androidScanObjectsConverter.toNativeFilters(scanFilters),
-                    androidScanObjectsConverter.toNativeSettings(scanSettings),
-                    scanCallback
-            );
-        } catch (Throwable e) {
-            onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START, e));
-        }
-
-        synchronized (this) { // synchronization added for stopping the scan
-            isStarted = true;
-            if (isStopped) {
-                stop();
-            }
-        }
-
-        releaseRadio();
-    }
-
-    // synchronized keyword added to be sure that operation will be stopped no matter which thread will call it
-    public synchronized void stop() {
-        isStopped = true;
-        if (isStarted) {
-            rxBleAdapterWrapper.stopLeScan(scanCallback);
-        }
+    boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, ScanCallback scanCallback) {
+        rxBleAdapterWrapper.startLeScan(
+                androidScanObjectsConverter.toNativeFilters(scanFilters),
+                androidScanObjectsConverter.toNativeSettings(scanSettings),
+                scanCallback
+        );
+        return true;
     }
 
     @Override
-    protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleScanException(BleScanException.BLUETOOTH_DISABLED, deadObjectException);
+    void stopScan(RxBleAdapterWrapper rxBleAdapterWrapper, ScanCallback scanCallback) {
+        rxBleAdapterWrapper.stopLeScan(scanCallback);
     }
 
     @BleScanException.Reason private static int errorCodeToBleErrorCode(int errorCode) {

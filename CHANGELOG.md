@@ -7,6 +7,17 @@ Version 1.3.0-SNAPSHOT
 * Added RxBleClient State observing for determining what functionality of the library may work (https://github.com/Polidea/RxAndroidBle/issues/55)
 * Added `ValueInterpreter` for interpreting standardized (Bluetooth Specification) int/float/String values from byte[] (https://github.com/Polidea/RxAndroidBle/issues/199)
 
+Version 1.2.4
+* Lowered memory pressure caused by `RxBleLog` when logs are disabled (https://github.com/Polidea/RxAndroidBle/issues/212)
+
+Version 1.2.3
+* Fixed scan when filter with 32-bit UUID was specified (https://github.com/Polidea/RxAndroidBle/issues/207)
+* Fixed memory leak of scan operation (and potentially any other that would emit an infinite stream of events) (https://github.com/Polidea/RxAndroidBle/issues/194)
+* Lowered memory pressure when using functions that accept `UUID`.
+* Changed `RxBleConnectionState` from a class to an enum for convenience.
+* Minor optimisations to `RxBleRadio` queue processing time.
+* Updated `RxJava` to 1.3.0
+
 Version 1.2.2
 * Fixed visibility of `UUIDUtil`. Deprecated it. Introduced `AdvertisedServiceUUIDExtractor` helper, thanks marciogranzotto! (https://github.com/Polidea/RxAndroidBle/pull/184)
 
@@ -63,7 +74,7 @@ Version 1.0.2
 * Exposed android.bluetooth.BluetoothDevice in RxBleDevice (https://github.com/Polidea/RxAndroidBle/issues/23)
 * Fixed stale RxBleRadio on RxBleOperation unhandled throw (https://github.com/Polidea/RxAndroidBle/issues/18)
 * Fixed possible BluetoothCharacteristic value overwrites with multiple writes (https://github.com/Polidea/RxAndroidBle/issues/27)
-* Updated rxJava (1.1.0 -> 1.1.7) and rxAndroid (1.1.0 -> 1.2.1) libraries dependency
+* Updated `RxJava` (1.1.0 -> 1.1.7) and `RxAndroid` (1.1.0 -> 1.2.1) libraries dependency
 * Added interface methods for usage with BluetoothCharacteristic object (https://github.com/Polidea/RxAndroidBle/issues/38)
 * Fixed lost connection when BluetoothAdapter disabled before the connection established (https://github.com/Polidea/RxAndroidBle/issues/45)
 * Added RxBleClient.getBondedDevices() method, thanks fracturedpsyche! (https://github.com/Polidea/RxAndroidBle/pull/46)

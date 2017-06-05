@@ -6,10 +6,14 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import rx.Observable
 import rx.functions.Func1
 import rx.internal.schedulers.ImmediateScheduler
@@ -18,11 +22,6 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import java.nio.ByteBuffer
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 public class RxBleRadioOperationCharacteristicLongWriteTest extends Specification {
 
@@ -38,7 +37,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     TestScheduler timeoutScheduler = new TestScheduler()
     ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
     Exception testException = new Exception("testException")
 
@@ -55,7 +54,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, writtenBytes)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockCharacteristic.setValue(writtenBytes) >> true
@@ -76,7 +75,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(maxBatchSize, writtenBytes)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(expectedBatchesCount)
 
         then:
@@ -88,6 +87,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
         where:
         maxBatchSize | writtenBytesLength | expectedBatchesCount
+        20           | 17                 | 1
         20           | 57                 | 3
         4            | 16                 | 4
         4            | 17                 | 5
@@ -102,7 +102,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(3)
 
         then:
@@ -118,7 +118,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(failingWriteIndex)
 
         then:
@@ -142,7 +142,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
@@ -165,7 +165,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         0 * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         (1.._) * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
@@ -179,7 +179,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(1)
 
         then:
@@ -199,7 +199,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(1)
 
         then:
@@ -218,7 +218,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         1 * mockCharacteristic.setValue(_) >> true
     }
 
-    def "should release Semaphore after successful write"() {
+    def "should release RadioReleaseInterface after successful write"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -226,15 +226,15 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(3)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     @Unroll
-    def "should release Semaphore when write failed to start"() {
+    def "should release RadioReleaseInterface when write failed to start"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -242,18 +242,18 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(failingWriteIndex)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
     }
 
     @Unroll
-    def "should release Semaphore when write failed"() {
+    def "should release RadioReleaseInterface when write failed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -261,11 +261,11 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
@@ -278,7 +278,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         givenWillWriteNextBatchImmediatelyAfterPrevious()
         givenCharacteristicWriteOkButEventuallyStalls(failingWriteIndex)
         prepareObjectUnderTest(20, byteArray(60))
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         advanceTimeForWritesToComplete(failingWriteIndex)
@@ -310,7 +310,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         prepareObjectUnderTest(maxBatchSize, byteArray(20))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(IllegalArgumentException)
@@ -456,6 +456,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
     private givenCharacteristicWriteOkButEventuallyStalls(int failingWriteIndex) {
         AtomicInteger writeIndex = new AtomicInteger(0)
+
         mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
             UUID uuid = characteristic.getUuid()
             byte[] returnBytes = new byte[0]
@@ -482,7 +483,5 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
                 writeOperationAckStrategy,
                 testData
         )
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

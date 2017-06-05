@@ -2,13 +2,12 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import spock.lang.Specification
-
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
@@ -18,7 +17,7 @@ class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
     TimeUnit delayUnit = TimeUnit.MILLISECONDS
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     TimeoutConfiguration mockTimeoutConfiguration = new MockOperationTimeoutConfiguration(
@@ -33,7 +32,7 @@ class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
 
     def "should call BluetoothGatt.requestConnectionPriority(int) exactly once when run()"() {
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.requestConnectionPriority(_) >> true
@@ -42,7 +41,7 @@ class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
     def "should complete after specified time if BluetoothGatt.requestConnectionPriority() will return true"() {
         given:
         mockBluetoothGatt.requestConnectionPriority(_) >> true
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(completedDelay + 500, delayUnit)
@@ -56,7 +55,7 @@ class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
         mockBluetoothGatt.requestConnectionPriority(_) >> false
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -72,7 +71,5 @@ class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
                 delayUnit,
                 testScheduler
         )
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 }

@@ -6,6 +6,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
 import com.polidea.rxandroidble.internal.scan.AndroidScanObjectsConverter
@@ -23,7 +24,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     TestSubscriber testSubscriber = new TestSubscriber()
 
@@ -41,7 +42,6 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
 
     private prepareObjectUnderTest(RxBleAdapterWrapper rxBleAdapterWrapper, ScanSettings scanSettings, ScanFilter[] offloadedScanFilters) {
         objectUnderTest = new RxBleRadioOperationScanApi21(rxBleAdapterWrapper, mockInternalScanResultCreator, mockAndroidScanObjectsCreator, scanSettings, mockEmulatedScanFilterMatecher, offloadedScanFilters)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
     }
 
     def "should call AndroidScanObjectsCreator and RxBleAdapterWrapper.startLeScan() when run() and release radio"() {
@@ -54,7 +54,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         prepareObjectUnderTest(scanSettings, scanFilters)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockAndroidScanObjectsCreator.toNativeFilters(scanFilters) >> mockAndroidScanFilters
@@ -64,17 +64,16 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         1 * mockAdapterWrapper.startLeScan(mockAndroidScanFilters, mockAndroidScanSettings, _)
 
         and:
-        (1.._) * mockSemaphore.release()
+        (1.._) * mockRadioReleaseInterface.release()
     }
 
     def "asObservable() should not emit error when BluetoothLeScannerCompat.startScan() will not throw"() {
 
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -85,10 +84,9 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         mockAdapterWrapper.startLeScan(_, _, _) >> { _, _1, _2 -> throw new Throwable("test") }
-        objectUnderTest.asObservable().subscribe(testSubscriber)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleScanException)
@@ -100,8 +98,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         AtomicReference<ScanCallback> scanCallbackAtomicReference = captureScanCallback()
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def mockAndroidScanResult = Mock(ScanResult)
         def mockInternalScanResult = Mock(RxBleInternalScanResult)
         mockEmulatedScanFilterMatecher.matches(_) >> true
@@ -129,8 +126,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         AtomicReference<ScanCallback> scanCallbackAtomicReference = captureScanCallback()
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def mockAndroidScanResult = Mock(ScanResult)
         def mockInternalScanResult = Mock(RxBleInternalScanResult)
         def mockAndroidScanResult1 = Mock(ScanResult)
@@ -156,8 +152,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_, _) >> mockInternalScanResult
         prepareObjectUnderTest(Mock(ScanSettings), null)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onScanResult(0, Mock(ScanResult))
@@ -179,8 +174,7 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_) >> mockInternalScanResult
         prepareObjectUnderTest(Mock(ScanSettings), null)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onBatchScanResults(Arrays.asList(Mock(ScanResult), Mock(ScanResult)))
@@ -195,45 +189,6 @@ public class RxBleRadioOperationScanApi21Test extends Specification {
         [true, false]        | 1
         [false, true]        | 1
         [true, true]         | 2
-    }
-
-    def "should call RxBleAdapterWrapper.stopScan() when stopScan() will be called before RxBleAdapterWrapper.startScan() will return true"() {
-
-        /*
-        [D.S] The idea behind is:
-        1. RxBleRadioOperationScanTest is started but RxBleAdapterWrapper.startLeScan() doesn't return yet
-        2. RxBleRadioOperationScanTest is stopped
-        3. RxBleAdapterWrapper.startLeScan() returns true
-        Creating elegant tests for threading issues is dirty :/
-         */
-
-        given:
-        Semaphore startScanReturnSemaphore = new Semaphore(0)
-        Semaphore stopScanSemaphore = new Semaphore(0)
-        def mockRxBleAdapterWrapper = new MockBleAdapterWrapper(null, startScanReturnSemaphore)
-        prepareObjectUnderTest(mockRxBleAdapterWrapper, Mock(ScanSettings), null, null)
-
-        new Thread(new Runnable() {
-
-            @Override
-            void run() {
-                stopScanSemaphore.release()
-                objectUnderTest.run()
-            }
-        }).start()
-
-        stopScanSemaphore.acquire()
-        Thread.sleep(500)
-        objectUnderTest.stop()
-        mockRxBleAdapterWrapper.numberOfTimesStopCalled = 0
-        Thread.sleep(500)
-
-        when:
-        startScanReturnSemaphore.release()
-        Thread.sleep(1000)
-
-        then:
-        mockRxBleAdapterWrapper.numberOfTimesStopCalled == 1
     }
 
     private AtomicReference<ScanCallback> captureScanCallback() {
