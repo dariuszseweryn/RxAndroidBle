@@ -109,22 +109,25 @@ public class RxBleLog {
         if (priority < logLevel) {
             return;
         }
-        
-        String formattedMessage = formatString(message, args);
+
+        final String formattedMessage = formatString(message, args);
+        final String finalMessage;
 
         if (formattedMessage == null || formattedMessage.length() == 0) {
             if (t != null) {
-                formattedMessage = Log.getStackTraceString(t);
+                finalMessage = Log.getStackTraceString(t);
             } else {
                 // Swallow message if it's null and there's no throwable.
                 return;
             }
         } else if (t != null) {
-            formattedMessage += "\n" + Log.getStackTraceString(t);
+            finalMessage = formattedMessage + "\n" + Log.getStackTraceString(t);
+        } else {
+            finalMessage = formattedMessage;
         }
 
         String tag = createTag();
-        println(priority, tag, formattedMessage);
+        println(priority, tag, finalMessage);
     }
 
     private static void println(int priority, String tag, String message) {
