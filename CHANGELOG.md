@@ -3,7 +3,7 @@ Change Log
 
 Version 1.3.0-SNAPSHOT
 
-Version 1.2.4-SNAPSHOT
+Version 1.2.4
 * Lowered memory pressure caused by `RxBleLog` when logs are disabled (https://github.com/Polidea/RxAndroidBle/issues/212)
 
 Version 1.2.3
