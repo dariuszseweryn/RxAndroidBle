@@ -3,7 +3,9 @@ package com.polidea.rxandroidble.internal.connection
 import static android.bluetooth.BluetoothGatt.GATT_FAILURE
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.STATE_CONNECTED
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTING
 import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTING
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
 import android.bluetooth.BluetoothDevice
@@ -108,9 +110,8 @@ class RxBleGattCallbackTest extends RoboSpecification {
         testSubscriber.assertError(BleDisconnectedException)
     }
 
-    // TODO: This test will be deprecated in 2.0.0
     @Unroll
-    def "observeDisconnect() should emit error if any of BluetoothGatt.on*() callbacks will receive status != GATT_SUCCESS"() {
+    def "observeDisconnect() should not emit error if any of BluetoothGatt.on*() [other than onConnectionStateChanged()] callbacks will receive status != GATT_SUCCESS"() {
 
         given:
         objectUnderTest.observeDisconnect().subscribe(testSubscriber)
@@ -119,32 +120,21 @@ class RxBleGattCallbackTest extends RoboSpecification {
         callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
 
         then:
-        errorAssertion.call(testSubscriber)
+        testSubscriber.assertNoErrors()
 
         where:
         callbackCaller << [
-                { (it as BluetoothGattCallback).onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED) },
                 { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onCharacteristicRead(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
-        ]
-        errorAssertion << [
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } }
         ]
     }
 
-    // TODO: This test will be deprecated in 2.0.0
     @Unroll
-    def "observeDisconnect() should emit error even if any of BluetoothGatt.on*() callbacks received status != GATT_SUCCESS before the subscription"() {
+    def "observeDisconnect() should not emit error even if any of BluetoothGatt.on*() [other than onConnectionStateChanged()] callbacks received status != GATT_SUCCESS before the subscription"() {
 
         given:
         callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
@@ -153,11 +143,10 @@ class RxBleGattCallbackTest extends RoboSpecification {
         objectUnderTest.observeDisconnect().subscribe(testSubscriber)
 
         then:
-        errorAssertion.call(testSubscriber)
+        testSubscriber.assertNoErrors()
 
         where:
         callbackCaller << [
-                { (it as BluetoothGattCallback).onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED) },
                 { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onCharacteristicRead(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
@@ -165,15 +154,30 @@ class RxBleGattCallbackTest extends RoboSpecification {
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
         ]
-        errorAssertion << [
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } },
-                { (it as TestSubscriber).assertError { it instanceof BleGattException && it.getMacAddress().equals(mockBluetoothDeviceMacAddress) } }
-        ]
+    }
+
+    def "observeDisconnect() should emit error if BluetoothGatt.onConnectionStateChange() callback will receive status != GATT_SUCCESS"() {
+
+        given:
+        objectUnderTest.observeDisconnect().subscribe(testSubscriber)
+
+        when:
+        objectUnderTest.getBluetoothGattCallback().onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED)
+
+        then:
+        testSubscriber.assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress }
+    }
+
+    def "observeDisconnect() should emit error even if BluetoothGatt.onConnectionStateChange() callback received status != GATT_SUCCESS before the subscription"() {
+
+        given:
+        objectUnderTest.getBluetoothGattCallback().onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, STATE_CONNECTED)
+
+        when:
+        objectUnderTest.observeDisconnect().subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress }
     }
 
     @Unroll
@@ -224,10 +228,10 @@ class RxBleGattCallbackTest extends RoboSpecification {
     def "callbacks should emit error if their respective BluetoothGatt.on*() callbacks received status != GATT_SUCCESS"() {
 
         given:
-        callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
+        observablePicker.call(objectUnderTest).subscribe(testSubscriber)
 
         when:
-        observablePicker.call(objectUnderTest).subscribe(testSubscriber)
+        callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
 
         then:
         errorAssertion.call(testSubscriber)
@@ -259,4 +263,110 @@ class RxBleGattCallbackTest extends RoboSpecification {
         ]
     }
 
+    @Unroll
+    def "should transmit error to all callbacks [other than getOnConnectionStateChanged()] when onConnectionStateChanged() will get status != BluetoothGatt.GATT_SUCCESS"() {
+
+        given:
+        givenSubscription.call(objectUnderTest).subscribe(testSubscriber)
+
+        when:
+        objectUnderTest.getBluetoothGattCallback().onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, (int) newStateGatt)
+
+        then:
+        testSubscriber.assertError(BleGattException.class)
+
+        where:
+        newStateGatt        | givenSubscription
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicRead() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicWrite() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicChanged() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorRead() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorWrite() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnRssiRead() }
+        STATE_DISCONNECTED  | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnServicesDiscovered() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicRead() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicWrite() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicChanged() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorRead() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorWrite() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnRssiRead() }
+        STATE_CONNECTING    | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnServicesDiscovered() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicRead() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicWrite() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicChanged() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorRead() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorWrite() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnRssiRead() }
+        STATE_CONNECTED     | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnServicesDiscovered() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicRead() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicWrite() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnCharacteristicChanged() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorRead() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnDescriptorWrite() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnRssiRead() }
+        STATE_DISCONNECTING | { RxBleGattCallback objectUnderTest-> objectUnderTest.getOnServicesDiscovered() }
+    }
+
+    @Unroll
+    def "should transmit error on proper callback when status != BluetoothGatt.GATT_SUCCESS, subsequent calls to callbacks will work normally"() {
+
+        given:
+        def secondTestSubscriber = new TestSubscriber()
+        givenSubscription.call(objectUnderTest, testSubscriber)
+
+        when:
+        whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_FAILURE)
+
+        then:
+        testSubscriber.assertError({ it instanceof BleGattException && ((BleGattException) it).status == GATT_FAILURE })
+
+        when:
+        givenSubscription.call(objectUnderTest, secondTestSubscriber)
+        whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_SUCCESS)
+
+        then:
+        secondTestSubscriber.assertValueCount(1)
+
+        where:
+        givenSubscription << [
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnCharacteristicRead().subscribe(testSubscriber) },
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnCharacteristicWrite().subscribe(testSubscriber) },
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnDescriptorRead().subscribe(testSubscriber) },
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnDescriptorWrite().subscribe(testSubscriber) },
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnRssiRead().subscribe(testSubscriber) },
+                { RxBleGattCallback objectUnderTest, TestSubscriber testSubscriber -> objectUnderTest.getOnServicesDiscovered().subscribe(testSubscriber) }
+        ]
+        whenAction << [
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicWrite(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(Mock(BluetoothGatt), 0, status) },
+                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(Mock(BluetoothGatt), status) }
+        ]
+    }
+
+    @Unroll
+    def "should not transmit error to onConnectionStateChanged if other callbacks will get status != BluetoothGatt.GATT_SUCCESS"() {
+
+        given:
+        objectUnderTest.getOnConnectionStateChange().subscribe(testSubscriber)
+
+        when:
+        whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_FAILURE)
+
+        then:
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNoValues()
+
+        where:
+        whenAction << [
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicWrite(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(Mock(BluetoothGatt), 0, status) },
+                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(Mock(BluetoothGatt), status) }
+        ]
+    }
 }
