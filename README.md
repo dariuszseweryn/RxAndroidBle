@@ -97,10 +97,10 @@ String macAddress = "AA:BB:CC:DD:EE:FF";
 RxBleDevice device = rxBleClient.getBleDevice(macAddress);
 
 Subscription subscription = device.establishConnection(false) // <-- autoConnect flag
-	.subscribe(
-	    rxBleConnection -> {
-		    // All GATT operations are done through the rxBleConnection.
-	    },
+    .subscribe(
+        rxBleConnection -> {
+            // All GATT operations are done through the rxBleConnection.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -124,25 +124,24 @@ Be careful not to overuse the autoConnect flag. On the other side it has negativ
 #### Read
 ```java
 device.establishConnection(false)
-	.flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
-	.subscribe(
-	    characteristicValue -> {
-		    // Read characteristic value.
-	    },
+    .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
+    .subscribe(
+        characteristicValue -> {
+            // Read characteristic value.
+        },
         throwable -> {
             // Handle an error here.
         }
     );
-
 ```
 #### Write
 ```java
 device.establishConnection(false)
-	.flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
-	.subscribe(
-	    characteristicValue -> {
-		    // Characteristic value confirmed.
-	    },
+    .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
+    .subscribe(
+        characteristicValue -> {
+            // Characteristic value confirmed.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -156,10 +155,10 @@ device.establishConnection(false)
         rxBleConnection.readCharacteristic(secondUUID),
         YourModelCombiningTwoValues::new
     ))
-	.subscribe(
-	    model -> {
-	        // Process your model.
-	    },
+    .subscribe(
+        model -> {
+            // Process your model.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -169,20 +168,20 @@ device.establishConnection(false)
 ```java
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.createNewLongWriteBuilder()
-            .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
-            // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
-            .setBytes(byteArray)
-            // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
-            // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
-            .build()
+        .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
+        // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
+        .setBytes(byteArray)
+        // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
+        // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
+        .build()
     )
     .subscribe(
-            byteArray -> {
-                // Written data.
-            },
-            throwable -> {
-                // Handle an error here.
-            }
+        byteArray -> {
+            // Written data.
+        },
+        throwable -> {
+            // Handle an error here.
+        }
     );
 ```
 #### Read and write combined
@@ -190,14 +189,15 @@ device.establishConnection(false)
 ```java
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
-	    .doOnNext(bytes -> {
-	        // Process read data.
-	    })
-	    .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite)))
-	.subscribe(
-	    writeBytes -> {
-		    // Written data.
-	    },
+        .doOnNext(bytes -> {
+            // Process read data.
+        })
+        .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
+    )
+    .subscribe(
+        writeBytes -> {
+            // Written data.
+        },
         throwable -> {
             // Handle an error here.
         }
@@ -208,7 +208,7 @@ device.establishConnection(false)
 device.establishConnection(false)
     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
     .doOnNext(notificationObservable -> {
-    	// Notification has been set up
+        // Notification has been set up
     })
     .flatMap(notificationObservable -> notificationObservable) // <-- Notification has been set up, now observe value changes.
     .subscribe(
@@ -219,7 +219,6 @@ device.establishConnection(false)
             // Handle an error here.
         }
     );
-
 ```
 ### Observing connection state
 If you want to observe changes in device connection state just subscribe like below. On subscription you will receive the most current state instantly.
@@ -245,7 +244,40 @@ RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 
-*Important* — Prior to version `1.3.0` each failure on `BluetoothGatt` was effectively closing the connection. From `1.3.0` onwards individual errors will not close the connection if they are not directly related to it. This change does allow to retry operations (i.e. after Android will establish a device bond). 
+*Important* — Prior to version `1.3.0` each failure on `BluetoothGatt` was effectively closing the connection. From `1.3.0` onwards individual errors will not close the connection if they are not directly related to it. This change does allow to retry operations (i.e. after Android will establish a device bond).
+
+### Observable behaviour
+From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
+There are three types of `Observable`s that you may encounter.
+1. Single value, completing — i.e. `RxBleConnection.readCharacteristic()`, `RxBleConnection.writeCharacteristic()`, etc.
+2. Multiple values, not completing - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
+3. Single value, not completing — these usually are meant for auto cleanup upon unsubscribing i.e. `setupNotification()` / `setupIndication()` — when you will unsubscribe the notification / indication will be disabled 
+
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should unsubscribe from it which will cause disconnection and cleanup of resources. 
+
+The below table contains an overview of used `Observable` patterns
+
+| Interface | Function | Number of values | Completes |
+| --- | --- | --- | --- |
+| RxBleClient | scanBleDevices()* | Infinite | false |
+| RxBleDevice | observeConnectionStateChanges() | Infinite | false |
+| RxBleDevice | establishConnection()* | Single | false |
+| RxBleConnection | discoverServices() | Single | true |
+| RxBleConnection | setupNotification()* | Single | false |
+| RxBleConnection | setupNotification() emitted Observable | Infinite | false |
+| RxBleConnection | setupIndication()* | Single | false |
+| RxBleConnection | setupIndication() emitted Observable | Infinite | false |
+| RxBleConnection | getCharacteristic() | Single | true |
+| RxBleConnection | readCharacteristic() | Single | true |
+| RxBleConnection | writeCharacteristic() | Single | true |
+| RxBleConnection | readDescriptor() | Single | true |
+| RxBleConnection | writeDescriptor() | Single | true |
+| RxBleConnection | readRssi() | Single | true |
+| RxBleConnection | requestMtu() | Single | true |
+| RxBleConnection | queue() | User defined | User defined |
+| LongWriteOperationBuilder | build() | Single | true |
+
+\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
@@ -273,7 +305,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.2.4"
+compile "com.polidea.rxandroidble:rxandroidble:1.3.0"
 ```
 ### Maven
 
@@ -281,7 +313,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.2.4"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.2.4</version>
+  <version>1.3.0</version>
   <type>aar</type>
 </dependency>
 ```

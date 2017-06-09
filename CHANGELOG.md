@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 1.3.0-SNAPSHOT
+Version 1.3.0
 * _Changed Behaviour_ of `RxBleConnection` - connection is no longer closed on individual operation errors. (https://github.com/Polidea/RxAndroidBle/issues/26) 
 * Added partial support for API 21 BLE scan in a backwards compatible manner. (https://github.com/Polidea/RxAndroidBle/issues/16)
 * Added support for filtering by Manufacturer Data (https://github.com/Polidea/RxAndroidBle/issues/127)
