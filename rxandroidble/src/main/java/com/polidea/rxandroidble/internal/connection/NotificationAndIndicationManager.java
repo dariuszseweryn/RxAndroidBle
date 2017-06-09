@@ -123,7 +123,9 @@ class NotificationAndIndicationManager {
                     @Override
                     public void call(Boolean enabledWithSuccess) {
                         if (!enabledWithSuccess) {
-                            throw new BleCannotSetCharacteristicNotificationException(characteristic);
+                            throw new BleCannotSetCharacteristicNotificationException(
+                                    characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION
+                            );
                         }
                     }
                 })
@@ -210,11 +212,17 @@ class NotificationAndIndicationManager {
                     .onErrorResumeNext(new Func1<Throwable, Observable<byte[]>>() {
                         @Override
                         public Observable<byte[]> call(Throwable throwable) {
-                            return Observable.error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic));
+                            return Observable.error(new BleCannotSetCharacteristicNotificationException(
+                                    bluetoothGattCharacteristic,
+                                    BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+                            ));
                         }
                     })
                     .switchIfEmpty(
-                            Observable.<byte[]>error(new BleCannotSetCharacteristicNotificationException(bluetoothGattCharacteristic))
+                            Observable.<byte[]>error(new BleCannotSetCharacteristicNotificationException(
+                                    bluetoothGattCharacteristic,
+                                    BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+                            ))
                     )
                     .map(new Func1<byte[], Boolean>() {
                         @Override
