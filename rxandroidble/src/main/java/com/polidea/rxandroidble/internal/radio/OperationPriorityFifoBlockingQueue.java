@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal.radio;
 
+
 import java.util.concurrent.PriorityBlockingQueue;
 
 class OperationPriorityFifoBlockingQueue {

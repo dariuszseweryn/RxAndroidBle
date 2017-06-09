@@ -2,6 +2,12 @@ Change Log
 ==========
 
 Version 1.3.0-SNAPSHOT
+* _Changed Behaviour_ of `RxBleConnection` - connection is no longer closed on individual operation errors. (https://github.com/Polidea/RxAndroidBle/issues/26) 
+* Added partial support for API 21 BLE scan in a backwards compatible manner. (https://github.com/Polidea/RxAndroidBle/issues/16)
+* Added support for filtering by Manufacturer Data (https://github.com/Polidea/RxAndroidBle/issues/127)
+* Added RxBleClient State observing for determining what functionality of the library may work (https://github.com/Polidea/RxAndroidBle/issues/55)
+* Added `ValueInterpreter` for interpreting standardized (Bluetooth Specification) int/float/String values from byte[] (https://github.com/Polidea/RxAndroidBle/issues/199)
+* Added support for requesting connection priority on API 21+ (https://github.com/Polidea/RxAndroidBle/issues/111)
 
 Version 1.2.4
 * Lowered memory pressure caused by `RxBleLog` when logs are disabled (https://github.com/Polidea/RxAndroidBle/issues/212)

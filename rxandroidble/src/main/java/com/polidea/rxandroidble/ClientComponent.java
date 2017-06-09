@@ -8,25 +8,30 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
-
 import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
+import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
+import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
-
+import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
+import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
+import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
+import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
+import com.polidea.rxandroidble.scan.ScanResult;
 import dagger.Binds;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.inject.Named;
-
 import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.inject.Named;
+import javax.inject.Provider;
 import rx.Observable;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 @ClientScope
@@ -51,6 +56,14 @@ public interface ClientComponent {
         public static final String INT_DEVICE_SDK = "device-sdk";
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
         private PlatformConstants() {
+
+        }
+    }
+
+    class NamedBooleanObservables {
+
+        public static final String LOCATION_SERVICES_OK = "location-ok-boolean-observable";
+        private NamedBooleanObservables() {
 
         }
     }
@@ -146,6 +159,22 @@ public interface ClientComponent {
         }
 
         @Provides
+        @ClientScope
+        static ScanSetupBuilder provideScanSetupProvider(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<ScanSetupBuilderImplApi18> scanSetupBuilderProviderForApi18,
+                Provider<ScanSetupBuilderImplApi21> scanSetupBuilderProviderForApi21,
+                Provider<ScanSetupBuilderImplApi23> scanSetupBuilderProviderForApi23
+        ) {
+            if (deviceSdk < Build.VERSION_CODES.LOLLIPOP) {
+                return scanSetupBuilderProviderForApi18.get();
+            } else if (deviceSdk < Build.VERSION_CODES.M) {
+                return scanSetupBuilderProviderForApi21.get();
+            }
+            return scanSetupBuilderProviderForApi23.get();
+        }
+
+        @Provides
         @Named(BluetoothConstants.ENABLE_NOTIFICATION_VALUE)
         static byte[] provideEnableNotificationValue() {
             return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
@@ -171,6 +200,10 @@ public interface ClientComponent {
         abstract Observable<RxBleAdapterStateObservable.BleAdapterState> bindStateObs(RxBleAdapterStateObservable stateObservable);
 
         @Binds
+        @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
+        abstract Observable<Boolean> bindLocationServicesOkObs(LocationServicesOkObservable locationServicesOkObservable);
+
+        @Binds
         @ClientScope
         abstract RxBleClient bindRxBleClient(RxBleClientImpl rxBleClient);
 
@@ -185,6 +218,9 @@ public interface ClientComponent {
         @Binds
         @Named(NamedSchedulers.TIMEOUT)
         abstract Scheduler bindTimeoutScheduler(@Named(NamedSchedulers.COMPUTATION) Scheduler computationScheduler);
+
+        @Binds
+        abstract Func1<RxBleInternalScanResult, ScanResult> provideScanResultMapper(InternalToExternalScanResultConverter mapper);
     }
 
     LocationServicesOkObservable locationServicesOkObservable();

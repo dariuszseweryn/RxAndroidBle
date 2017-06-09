@@ -1,7 +1,13 @@
 package com.polidea.rxandroidble
 
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
-import com.polidea.rxandroidble.internal.RxBleInternalScanResult
+import com.polidea.rxandroidble.internal.operations.Operation
+import com.polidea.rxandroidble.internal.util.ClientStateObservable
+import dagger.Lazy
+import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
+import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter
+import com.polidea.rxandroidble.internal.scan.ScanSetup
+import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder
+import com.polidea.rxandroidble.scan.ScanSettings
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan
 import java.util.concurrent.Executors
 
@@ -16,13 +22,10 @@ import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble.internal.RxBleRadio
-import com.polidea.rxandroidble.internal.operations.Operation
 import com.polidea.rxandroidble.internal.util.UUIDUtil
-import rx.Emitter
 import rx.Observable
-import rx.Scheduler
+import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -36,24 +39,46 @@ class RxBleClientTest extends Specification {
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
     RxBleDeviceProvider mockDeviceProvider = Mock RxBleDeviceProvider
+    Lazy<ClientStateObservable> mockLazyClientStateObservable = Mock Lazy
+    ScanSetupBuilder mockScanSetupBuilder = Mock ScanSetupBuilder
+    Operation mockOperationScan = Mock Operation
+    Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> mockObservableTransformer =
+            new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+                @Override
+                Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
+                    return observable
+                }
+            }
+    ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
+    InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
 
     def setup() {
+        setupWithRadio(rxBleRadio)
+    }
+
+    private void setupWithRadio(RxBleRadio radio) {
         contextMock.getApplicationContext() >> contextMock
         mockDeviceProvider.getBleDevice(_ as String) >> { String macAddress ->
             def device = Mock(RxBleDevice)
             device.macAddress >> macAddress
             device
         }
+        mockOperationScan.run(_) >> Observable.never()
+        mockScanSetupBuilder.build(_, _) >> mockScanSetup
         objectUnderTest = new RxBleClientImpl(
                 bleAdapterWrapperSpy,
-                rxBleRadio,
+                radio,
                 adapterStateObservable.asObservable(),
                 uuidParserSpy,
                 locationServicesStatusMock,
+                mockLazyClientStateObservable,
                 mockDeviceProvider,
-                Executors.newSingleThreadExecutor()
+                mockScanSetupBuilder,
+                mockMapper,
+                Executors.newSingleThreadExecutor(),
+                ImmediateScheduler.INSTANCE
         )
     }
 
@@ -79,7 +104,7 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
 
         then:
-        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+        1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
     }
 
     def "should check if all the conditions are met at the time of each subscription to scan (Legacy)"() {
@@ -105,7 +130,7 @@ class RxBleClientTest extends Specification {
 
         then:
         secondSubscriber.assertNoErrors()
-        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+        1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
 
         where:
         bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
@@ -131,7 +156,86 @@ class RxBleClientTest extends Specification {
 
         then:
         firstSubscriber.assertNoErrors()
-        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+        1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
+
+        when:
+        scanObservable.subscribe(secondSubscriber)
+
+        then:
+        secondSubscriber.assertError {
+            BleScanException exception -> exception.reason == reason
+        }
+
+        where:
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
+        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+    }
+
+    def "should queue scan operation on subscribe (New API)"() {
+        given:
+        def radio = Mock(RxBleRadio)
+        setupWithRadio(radio)
+        def testSubscriber = new TestSubscriber<>()
+        def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
+
+        when:
+        scanObservable.subscribe(testSubscriber)
+
+        then:
+        1 * radio.queue(mockOperationScan) >> Observable.empty()
+    }
+
+    def "should check if all the conditions are met at the time of each subscription to scan (New API)"() {
+        given:
+        def firstSubscriber = new TestSubscriber<>()
+        def secondSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> bluetoothAvailable >> true
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> bluetoothEnabled >> true
+        locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionsOk >> true
+        locationServicesStatusMock.isLocationProviderOk() >> locationProviderOk >> true
+        def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
+
+        when:
+        scanObservable.subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertError {
+            BleScanException exception -> exception.reason == reason
+        }
+
+        when:
+        scanObservable.subscribe(secondSubscriber)
+
+        then:
+        secondSubscriber.assertNoErrors()
+
+        where:
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
+        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+    }
+
+
+    def "should not start if all the conditions are not met at the time of subscription to scan (New API)"() {
+        given:
+        def firstSubscriber = new TestSubscriber<>()
+        def secondSubscriber = new TestSubscriber<>()
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> true >> bluetoothAvailable
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> true >> bluetoothEnabled
+        locationServicesStatusMock.isLocationPermissionOk() >> true >> locationPermissionsOk
+        locationServicesStatusMock.isLocationProviderOk() >> true >> locationProviderOk
+        def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
+
+        when:
+        scanObservable.subscribe(firstSubscriber)
+
+        then:
+        firstSubscriber.assertNoErrors()
 
         when:
         scanObservable.subscribe(secondSubscriber)
@@ -154,32 +258,32 @@ class RxBleClientTest extends Specification {
         objectUnderTest.scanBleDevices(null)
 
         then:
-        0 * bleAdapterWrapperSpy.startLeScan(_)
+        0 * bleAdapterWrapperSpy.startLegacyLeScan(_)
     }
 
     def "should stop scan after subscriber is unsubscribed from scan observable"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.startLeScan(_) >> true
+        bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
 
         when:
         def scanSubscription = objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
         scanSubscription.unsubscribe()
 
         then:
-        1 * bleAdapterWrapperSpy.stopLeScan(_)
+        1 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
     }
 
     def "should stop and unsubscribe in case of scan throws exception"() {
         given:
         TestSubscriber testSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.startLeScan(_) >> { throw new NullPointerException() }
+        bleAdapterWrapperSpy.startLegacyLeScan(_) >> { throw new NullPointerException() }
 
         when:
         def scanSubscription = objectUnderTest.scanBleDevices(null).subscribe(testSubscriber)
 
         then:
-        1 * bleAdapterWrapperSpy.stopLeScan(_)
+        1 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
 
         and:
         scanSubscription.isUnsubscribed()
@@ -197,7 +301,7 @@ class RxBleClientTest extends Specification {
         secondSubscription.unsubscribe()
 
         then:
-        1 * bleAdapterWrapperSpy.stopLeScan(_)
+        1 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
     }
 
     def "should not stop scan if not all subscribers are unsubscribed"() {
@@ -212,7 +316,7 @@ class RxBleClientTest extends Specification {
         // keep second subscriber subscribed
 
         then:
-        0 * bleAdapterWrapperSpy.stopLeScan(_)
+        0 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
     }
 
     def "should start scan only once even if observable has more subscribers"() {
@@ -222,7 +326,7 @@ class RxBleClientTest extends Specification {
         scanObservable.subscribe()
 
         then:
-        1 * bleAdapterWrapperSpy.startLeScan(_) >> true
+        1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
     }
 
     def "should not replay scan results to second observer if it subscribed after scan emission"() {
@@ -246,7 +350,7 @@ class RxBleClientTest extends Specification {
     def "should emit BleScanException if bluetooth scan failed to start"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.startLeScan(_) >> false
+        bleAdapterWrapperSpy.startLegacyLeScan(_) >> false
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
@@ -333,6 +437,26 @@ class RxBleClientTest extends Specification {
 
         where:
         providerOk << [true, false]
+    }
+
+    def "should emit BleScanException if BluetoothAdapter will be turned off during a scan"() {
+
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber()
+        mockMapper.call(_) >> {
+            RxBleInternalScanResult _ ->
+                System.out.println("XXX")
+                return null
+        } // does not matter as it will never be called
+        objectUnderTest.scanBleDevices(Mock(ScanSettings)).subscribe(testSubscriber)
+
+        when:
+        adapterStateObservable.disableBluetooth()
+
+        then:
+        testSubscriber.assertError {
+            BleScanException scanException -> scanException.reason == BLUETOOTH_DISABLED
+        }
     }
 
     @Unroll
@@ -492,6 +616,15 @@ class RxBleClientTest extends Specification {
 
         then:
         thrown UnsupportedOperationException
+    }
+
+    def "should get ClientStateObservable from Lazy when called .observeStateChanges()"() {
+
+        when:
+        objectUnderTest.observeStateChanges()
+
+        then:
+        1 * mockLazyClientStateObservable.get() >> Mock(ClientStateObservable)
     }
 
     public waitForThreadsToCompleteWork() {

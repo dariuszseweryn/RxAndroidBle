@@ -12,6 +12,7 @@ ext {
             rxjava             : ["io.reactivex:rxjava:$rxJavaVersion",
                                   "com.artemzin.rxjava:proguard-rules:$rxJavaVersion.0"],
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
+            rxrelay            : 'com.jakewharton.rxrelay:rxrelay:1.2.0',
             junit              : 'junit:junit:4.12',
             groovy             : 'org.codehaus.groovy:groovy:2.4.7:grooid',
             spock              : ['org.spockframework:spock-core:1.0-groovy-2.4',

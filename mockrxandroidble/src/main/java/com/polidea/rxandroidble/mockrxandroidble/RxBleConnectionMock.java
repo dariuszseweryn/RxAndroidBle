@@ -62,6 +62,13 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    public Completable requestConnectionPriority(int connectionPriority,
+                                                 long delay,
+                                                 @NonNull TimeUnit timeUnit) {
+        return Completable.timer(delay, timeUnit);
+    }
+
+    @Override
     public Observable<Integer> requestMtu(final int mtu) {
         return Observable.fromCallable(new Callable<Integer>() {
             @Override

@@ -9,8 +9,6 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.NotificationSetupMode
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException
-import com.polidea.rxandroidble.internal.RxBleLog
-import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
@@ -67,10 +65,10 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should emit BleCannotSetCharacteristicNotificationException if CLIENT_CONFIGURATION_DESCRIPTION wasn't found when in DEFAULT mode"() {
+    def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR reason if CLIENT_CONFIGURATION_DESCRIPTION wasn't found when in DEFAULT mode"() {
 
         given:
-        descriptorWriterMock.writeDescriptor(_, _) >> Observable.just(new byte[0])
+        descriptorWriterMock.writeDescriptor(_, _) >> just(new byte[0])
         bluetoothGattMock.setCharacteristicNotification(_, _) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
@@ -80,7 +78,9 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+        testSubscriber.assertError {
+            BleCannotSetCharacteristicNotificationException e -> e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+        }
 
         where:
         ack << ACK_VALUES
@@ -90,7 +90,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should setup notification even if CLIENT_CONFIGURATION_DESCRIPTION wasn't found when in COMPAT mode"() {
 
         given:
-        descriptorWriterMock.writeDescriptor(_, _) >> Observable.just(new byte[0])
+        descriptorWriterMock.writeDescriptor(_, _) >> just(new byte[0])
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         characteristic.getDescriptor(_) >> null
@@ -107,7 +107,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should emit BleCannotSetCharacteristicNotificationException if failed to set characteristic notification"() {
+    def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_SET_LOCAL_NOTIFICATION reason if failed to set characteristic notification"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -117,14 +117,16 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+        testSubscriber.assertError {
+            BleCannotSetCharacteristicNotificationException e -> e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION
+        }
 
         where:
         [ack, mode] << [ACK_VALUES, MODES].combinations()
     }
 
     @Unroll
-    def "should emit BleCannotSetCharacteristicNotificationException if failed to write successfully CCC Descriptor when in DEFAULT mode"() {
+    def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR reason if failed to write successfully CCC Descriptor when in DEFAULT mode"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -135,7 +137,9 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCannotSetCharacteristicNotificationException)
+        testSubscriber.assertError {
+            BleCannotSetCharacteristicNotificationException e -> e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+        }
 
         where:
         ack << ACK_VALUES

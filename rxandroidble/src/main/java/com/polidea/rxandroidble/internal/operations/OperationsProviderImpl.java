@@ -99,4 +99,13 @@ public class OperationsProviderImpl implements OperationsProvider {
         return new RxBleRadioOperationDescriptorWrite(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT, bluetoothGattDescriptor, data);
     }
+
+    @Override
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public RxBleRadioOperationConnectionPriorityRequest provideConnectionPriorityChangeOperation(int connectionPriority,
+                                                                                                 long delay,
+                                                                                                 TimeUnit timeUnit) {
+        return new RxBleRadioOperationConnectionPriorityRequest(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
+                connectionPriority, delay, timeUnit, timeoutScheduler);
+    }
 }

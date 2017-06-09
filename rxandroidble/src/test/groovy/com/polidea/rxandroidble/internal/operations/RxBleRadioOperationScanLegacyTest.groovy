@@ -13,7 +13,7 @@ import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleRadioOperationScanTest extends Specification {
+public class RxBleRadioOperationScanLegacyTest extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
     UUIDUtil mockUUIDUtil = Mock UUIDUtil
@@ -21,14 +21,14 @@ public class RxBleRadioOperationScanTest extends Specification {
     TestSubscriber testSubscriber = new TestSubscriber()
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
 
-    RxBleRadioOperationScan objectUnderTest
+    RxBleRadioOperationScanLegacy objectUnderTest
 
     def setup() {
         prepareObjectUnderTest(mockAdapterWrapper)
     }
 
     def prepareObjectUnderTest(RxBleAdapterWrapper adapterWrapper) {
-        objectUnderTest = new RxBleRadioOperationScan(null, adapterWrapper, mockUUIDUtil)
+        objectUnderTest = new RxBleRadioOperationScanLegacy(null, adapterWrapper, mockUUIDUtil)
     }
 
     def "should call RxBleAdapterWrapper.startScan() when run()"() {
@@ -37,13 +37,13 @@ public class RxBleRadioOperationScanTest extends Specification {
         objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockAdapterWrapper.startLeScan(_) >> true
+        1 * mockAdapterWrapper.startLegacyLeScan(_) >> true
     }
 
     def "asObservable() should not emit error when RxBleAdapterWrapper.startScan() returns true"() {
 
         given:
-        mockAdapterWrapper.startLeScan(_) >> true
+        mockAdapterWrapper.startLegacyLeScan(_) >> true
 
         when:
         objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
@@ -55,7 +55,7 @@ public class RxBleRadioOperationScanTest extends Specification {
     def "asObservable() should emit error when RxBleAdapterWrapper.startScan() returns false"() {
 
         given:
-        mockAdapterWrapper.startLeScan(_) >> false
+        mockAdapterWrapper.startLegacyLeScan(_) >> false
 
         when:
         objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
@@ -68,7 +68,7 @@ public class RxBleRadioOperationScanTest extends Specification {
 
         given:
         AtomicReference<BluetoothAdapter.LeScanCallback> leScanCallbackAtomicReference = new AtomicReference<>()
-        mockAdapterWrapper.startLeScan({ BluetoothAdapter.LeScanCallback leScanCallback ->
+        mockAdapterWrapper.startLegacyLeScan({ BluetoothAdapter.LeScanCallback leScanCallback ->
             leScanCallbackAtomicReference.set(leScanCallback)
             true
         }) >> true
@@ -93,7 +93,7 @@ public class RxBleRadioOperationScanTest extends Specification {
     def "should release radio after run()"() {
 
         given:
-        mockAdapterWrapper.startLeScan(_) >> startScanResult
+        mockAdapterWrapper.startLegacyLeScan(_) >> startScanResult
 
         when:
         objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
@@ -171,14 +171,14 @@ public class RxBleRadioOperationScanTest extends Specification {
         }
 
         @Override
-        boolean startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+        boolean startLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
             acquireBeforeReturnStartScan.acquire()
             Thread.sleep(500)
             return true
         }
 
         @Override
-        void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+        void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
             numberOfTimesStopCalled++
         }
     }

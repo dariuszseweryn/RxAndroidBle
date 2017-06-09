@@ -10,7 +10,9 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class BleScanException extends BleException {
 
-    @IntDef({BLUETOOTH_CANNOT_START, BLUETOOTH_DISABLED, BLUETOOTH_NOT_AVAILABLE, LOCATION_PERMISSION_MISSING, LOCATION_SERVICES_DISABLED})
+    @IntDef({BLUETOOTH_CANNOT_START, BLUETOOTH_DISABLED, BLUETOOTH_NOT_AVAILABLE, LOCATION_PERMISSION_MISSING, LOCATION_SERVICES_DISABLED,
+            SCAN_FAILED_ALREADY_STARTED, SCAN_FAILED_APPLICATION_REGISTRATION_FAILED, SCAN_FAILED_INTERNAL_ERROR,
+            SCAN_FAILED_FEATURE_UNSUPPORTED, SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES, UNKNOWN_ERROR_CODE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Reason {
 
@@ -44,6 +46,36 @@ public class BleScanException extends BleException {
      */
     public static final int LOCATION_SERVICES_DISABLED = 4;
 
+    /**
+     * Fails to start scan as BLE scan with the same settings is already started by the app. Only on API >=21.
+     */
+    public static final int SCAN_FAILED_ALREADY_STARTED = 5;
+
+    /**
+     * Fails to start scan as app cannot be registered. Only on API >=21.
+     */
+    public static final int SCAN_FAILED_APPLICATION_REGISTRATION_FAILED = 6;
+
+    /**
+     * Fails to start scan due an internal error. Only on API >=21.
+     */
+    public static final int SCAN_FAILED_INTERNAL_ERROR = 7;
+
+    /**
+     * Fails to start power optimized scan as this feature is not supported. Only on API >=21.
+     */
+    public static final int SCAN_FAILED_FEATURE_UNSUPPORTED = 8;
+
+    /**
+     * Fails to start scan as it is out of hardware resources. Only on API >=21.
+     */
+    public static final int SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES = 9;
+
+    /**
+     * Unknown error code. Only on API >=21.
+     */
+    public static final int UNKNOWN_ERROR_CODE = Integer.MAX_VALUE;
+
     @Reason
     private final int reason;
 
@@ -59,8 +91,7 @@ public class BleScanException extends BleException {
     /**
      * Returns the reason code of scan failure.
      *
-     * @return One of {@link #BLUETOOTH_CANNOT_START}, {@link #BLUETOOTH_DISABLED}, {@link #BLUETOOTH_NOT_AVAILABLE},
-     * {@link #LOCATION_PERMISSION_MISSING}, {@link #LOCATION_SERVICES_DISABLED}.
+     * @return One of the {@link Reason} codes.
      */
     @Reason
     public int getReason() {
@@ -87,6 +118,18 @@ public class BleScanException extends BleException {
                 return "LOCATION_PERMISSION_MISSING";
             case LOCATION_SERVICES_DISABLED:
                 return "LOCATION_SERVICES_DISABLED";
+            case SCAN_FAILED_ALREADY_STARTED:
+                return "SCAN_FAILED_ALREADY_STARTED";
+            case SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+                return "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
+            case SCAN_FAILED_INTERNAL_ERROR:
+                return "SCAN_FAILED_INTERNAL_ERROR";
+            case SCAN_FAILED_FEATURE_UNSUPPORTED:
+                return "SCAN_FAILED_FEATURE_UNSUPPORTED";
+            case SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
+                return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+            case UNKNOWN_ERROR_CODE:
+                // fallthrough
             default:
                 return "UNKNOWN";
         }

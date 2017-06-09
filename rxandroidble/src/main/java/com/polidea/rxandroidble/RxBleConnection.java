@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Build;
+import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -17,9 +18,12 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.Priority;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
 
@@ -53,6 +57,16 @@ public interface RxBleConnection {
      * https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h#119
      */
     int GATT_MTU_MAXIMUM = 517;
+
+    /**
+     * Description of correct values of connection priority
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @IntDef({BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER,
+            BluetoothGatt.CONNECTION_PRIORITY_BALANCED,
+            BluetoothGatt.CONNECTION_PRIORITY_HIGH})
+    @interface ConnectionPriority { }
 
     interface Connector {
 
@@ -425,6 +439,46 @@ public interface RxBleConnection {
      * @see #discoverServices() to obtain the characteristic.
      */
     Observable<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
+
+
+    /**
+     * Performs a GATT request connection priority operation, which requests a connection parameter
+     * update on the remote device. NOTE: peripheral may silently decline request.
+     * <p>
+     * Tells Android to request an update of connection interval and slave latency parameters.
+     * Using {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH} will increase transmission speed and
+     * battery drainage, if accepted by the device, compared to {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED},
+     * while using {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER} will cause higher latencies
+     * and save battery, if accepted by the device, compared to {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}.
+     * <p>
+     * By default connection is balanced.
+     * <p>
+     * NOTE: Due to lack of support for `BluetoothGattCallback.onConnectionPriorityChanged()` or similar it
+     * is not possible to know if the request was successful (accepted by the peripheral). This also causes
+     * the need of specifying when the request is considered finished (parameter delay and timeUnit).
+     * <p>
+     * As of Lollipop the connection parameters are:
+     * * {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}: min interval 30 ms, max interval 50 ms, slave latency 0
+     * * {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH}: min interval 7.5 ms, max interval 10ms, slave latency 0
+     * * {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER}: min interval 100ms, max interval 125 ms, slave latency 2
+     * <p>
+     * Returned completable completes after the specified delay if and only if
+     * {@link BluetoothGatt#requestConnectionPriority(int)} has returned true.
+     *
+     * @param connectionPriority requested connection priority
+     * @param delay              delay after which operation is assumed to be successful (must be shorter than 30 seconds)
+     * @param timeUnit           time unit of the delay
+     * @return Completable which finishes after calling the request and the specified delay
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#CONNECTION_PRIORITY_CHANGE} type
+     *                                     if requested operation returned false or threw exception
+     * @throws IllegalArgumentException    in case of invalid connection priority or delay
+     */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    Completable requestConnectionPriority(
+            @ConnectionPriority int connectionPriority,
+            @IntRange(from = 1) long delay,
+            @NonNull TimeUnit timeUnit
+    );
 
     /**
      * Performs GATT read rssi operation.

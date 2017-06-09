@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import rx.Completable;
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
@@ -75,6 +76,29 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public LongWriteOperationBuilder createNewLongWriteBuilder() {
         return longWriteOperationBuilderProvider.get();
+    }
+
+    @Override
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public Completable requestConnectionPriority(int connectionPriority, long delay, @NonNull TimeUnit timeUnit) {
+        if (connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
+                && connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+                && connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_HIGH) {
+            return Completable.error(
+                    new IllegalArgumentException(
+                            "Connection priority must have valid value from BluetoothGatt (received "
+                                    + connectionPriority + ")"
+                    )
+            );
+        }
+
+        if (delay <= 0) {
+            return Completable.error(new IllegalArgumentException("Delay must be bigger than 0"));
+        }
+
+        return rxBleRadio
+                .queue(operationsProvider.provideConnectionPriorityChangeOperation(connectionPriority, delay, timeUnit))
+                .toCompletable();
     }
 
     @Override

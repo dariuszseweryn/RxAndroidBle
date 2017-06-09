@@ -27,9 +27,15 @@ RxBleClient rxBleClient = RxBleClient.create(context);
 Scanning devices in the area is simple as that:
 
 ```java
-Subscription scanSubscription = rxBleClient.scanBleDevices()
+Subscription scanSubscription = rxBleClient.scanBleDevices(
+        new ScanSettings.Builder()
+            // .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // change if needed
+            // .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES) // change if needed
+            .build()
+        // add filters if needed
+)
     .subscribe(
-        rxBleScanResult -> {
+        scanResult -> {
             // Process scan result here.
         },
         throwable -> {
@@ -39,6 +45,48 @@ Subscription scanSubscription = rxBleClient.scanBleDevices()
 
 // When done, just unsubscribe.
 scanSubscription.unsubscribe();
+```
+For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
+
+### Observing client state
+On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. i.e. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted permission to use either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` and `Location Services` needs to be turned on.
+To be sure that the scan will work only when everything is ready you could use:
+
+```java
+Subscription flowSubscription = rxBleClient.observeState()
+    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
+        switch (state) {
+
+            case READY:
+                // everything should work
+                return rxBleClient.scanBleDevices();
+            case BLUETOOTH_NOT_AVAILABLE:
+                // basically no functionality will work here
+            case LOCATION_PERMISSION_NOT_GRANTED:
+                // scanning and connecting will not work
+            case BLUETOOTH_OFF:
+                // scanning and connecting will not work
+            case BLUETOOTH_TURNING_ON:
+                // scanning and connecting will not work
+            case BLUETOOTH_TURNING_OFF:
+                // scanning and connecting will not work
+            case LOCATION_SERVICES_NOT_ENABLED:
+                // scanning will not work
+            default:
+                return Observable.empty();
+        }
+    })
+    .subscribe(
+    	rxBleScanResult -> {
+    	    // Process scan result here.
+    	},
+    	throwable -> {
+    	    // Handle an error here.
+    	}
+    );
+    
+// When done, just unsubscribe.
+flowSubscription.unsubscribe();
 ```
 
 ### Connection
@@ -196,6 +244,8 @@ RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 
+*Important* — Prior to version `1.3.0` each failure on `BluetoothGatt` was effectively closing the connection. From `1.3.0` onwards individual errors will not close the connection if they are not directly related to it. This change does allow to retry operations (i.e. after Android will establish a device bond).
+
 ### Observable behaviour
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
 There are three types of `Observable`s that you may encounter.
@@ -232,11 +282,14 @@ The below table contains an overview of used `Observable` patterns
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
 
+#### Value interpretation
+Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
+Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `ValueIntepreter` helper to retrieve the same data easily.
+
 #### Observing BluetoothAdapter state
 If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
 
 ### Permissions
-
 RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
 
 ```
@@ -244,8 +297,6 @@ RxAndroidBle already provides all the necessary bluetooth permissions for you. R
   android:name="android.permission.ACCESS_COARSE_LOCATION"
   android:maxSdkVersion="22"/>
 ```
-
-
 ## More examples
 
 Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).

@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal;
 
 import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.operations.Operation;
 
@@ -94,5 +95,4 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
     public int compareTo(@NonNull Operation another) {
         return another.definedPriority().priority - definedPriority().priority;
     }
-
 }
