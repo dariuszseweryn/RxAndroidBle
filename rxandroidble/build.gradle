@@ -1,19 +1,19 @@
 apply plugin: 'com.android.library'
-apply plugin: 'groovyx.grooid.groovy-android'
-apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'groovyx.android'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 25
     buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName VERSION_NAME
     }
-    
+
     buildTypes {
         release {
             minifyEnabled false
@@ -40,13 +40,17 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    preBuild.dependsOn 'checkstyle'
 }
 
 dependencies {
     compile rootProject.ext.libs.rxjava
     compile rootProject.ext.libs.rxandroid
-    compile rootProject.ext.libs.support
+    compile rootProject.ext.libs.rxrelay
     compile rootProject.ext.libs.support_annotations
+    compile rootProject.ext.libs.dagger
+    apt rootProject.ext.libs.dagger_compiler
 
     // Test dependencies
     testCompile rootProject.ext.libs.junit

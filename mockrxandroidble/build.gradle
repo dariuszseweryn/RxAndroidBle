@@ -1,15 +1,14 @@
 apply plugin: 'com.android.library'
-apply plugin: 'groovyx.grooid.groovy-android'
-apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'groovyx.android'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 25
     buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName VERSION_NAME
     }

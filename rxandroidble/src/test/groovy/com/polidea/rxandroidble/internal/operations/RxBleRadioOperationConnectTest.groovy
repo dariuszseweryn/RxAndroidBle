@@ -2,47 +2,62 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import android.content.Context
 import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
+import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-import java.util.concurrent.Semaphore
-
 public class RxBleRadioOperationConnectTest extends Specification {
 
-    Context mockContext = Mock Context
-    BleConnectionCompat connectionCompat = new BleConnectionCompat(mockContext)
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     BluetoothGatt mockGatt = Mock BluetoothGatt
-    RxBleGattCallback mockCallback = Mock RxBleGattCallback
+    String mockMacAddress = "test"
+    RxBleGattCallback mockCallback
+    BleConnectionCompat mockBleConnectionCompat
     TestSubscriber<BluetoothGatt> testSubscriber = new TestSubscriber()
-    TestSubscriber<BluetoothGatt> getGattSubscriber = new TestSubscriber()
+    MockOperationTimeoutConfiguration timeoutConfiguration
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
-    PublishSubject<BluetoothGatt> bluetoothGattPublishSubject = PublishSubject.create()
-    Semaphore mockSemaphore = Mock Semaphore
+    PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    BluetoothGattProvider mockBluetoothGattProvider
+    TestScheduler timeoutScheduler
     RxBleRadioOperationConnect objectUnderTest
 
     def setup() {
+        mockBluetoothGattProvider = Mock(BluetoothGattProvider)
+        mockCallback = Mock RxBleGattCallback
         mockCallback.getOnConnectionStateChange() >> onConnectionStateSubject
-        mockCallback.getBluetoothGatt() >> bluetoothGattPublishSubject
+        mockCallback.observeDisconnect() >> observeDisconnectPublishSubject
+
+        timeoutScheduler = new TestScheduler()
+        timeoutConfiguration = new MockOperationTimeoutConfiguration(timeoutScheduler)
+
+        mockBleConnectionCompat = Mock(BleConnectionCompat)
+        mockBleConnectionCompat.connectGatt(_, _, _) >> mockGatt
+
+        mockGatt.getDevice() >> mockBluetoothDevice
+        mockBluetoothDevice.getAddress() >> mockMacAddress
+
         prepareObjectUnderTest(false)
     }
 
     def prepareObjectUnderTest(boolean autoConnect) {
-        objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockCallback, connectionCompat, autoConnect)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
-        objectUnderTest.getBluetoothGatt().subscribe(getGattSubscriber)
+        objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockBleConnectionCompat, mockCallback,
+                mockBluetoothGattProvider, timeoutConfiguration, autoConnect)
     }
 
     def "asObservable() should not emit onNext before connection is established"() {
 
         given:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectingConnectionState()
@@ -54,7 +69,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     def "asObservable() should emit onNext after connection is established"() {
 
         given:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
@@ -66,7 +81,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     def "asObservable() should emit onNext with BluetoothGatt after connection is established"() {
 
         given:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
@@ -77,101 +92,79 @@ public class RxBleRadioOperationConnectTest extends Specification {
         }
     }
 
-    def "getBluetoothGatt() should emit onNext each time RxBleCallback emits getBluetoothGatt()"() {
+    def "should complete after successful connection"() {
 
         given:
-        objectUnderTest.run()
-        emitConnectingConnectionState()
-        emitConnectedConnectionState()
-
-        expect:
-        getGattSubscriber.assertValueCount(3) // + 1 after returning from run()
-    }
-
-    def "getBluetoothGatt() should not emit onError when connection error comes"() {
-
-        given:
-        objectUnderTest.run()
-
-        when:
-        emitConnectionError(new Throwable("test"))
-
-        then:
-        getGattSubscriber.assertNoErrors()
-    }
-
-    def "getBluetoothGatt() should emit onNext even when connection error comes"() {
-
-        given:
-        objectUnderTest.run()
-
-        when:
-        emitConnectionError(new Throwable("test"))
-
-        then:
-        getGattSubscriber.assertValueCount(2) // + 1 after returning from run()
-    }
-
-    def "getBluetoothGatt() should complete RxBleGattCallback.getBluetoothGatt() completes"() {
-
-        given:
-        objectUnderTest.run()
-
-        when:
-        bluetoothGattPublishSubject.onCompleted()
-
-        then:
-        getGattSubscriber.assertCompleted()
-    }
-
-    def "getBluetoothGatt() should complete when error comes"() {
-
-        given:
-        objectUnderTest.run()
-
-        when:
-        emitConnectionError(new Throwable("test"))
-
-        then:
-        getGattSubscriber.assertCompleted()
-    }
-
-    def "should release Semaphore after successful connection"() {
-
-        given:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
 
         then:
-        1 * mockSemaphore.release()
+        testSubscriber.assertCompleted()
     }
 
-    def "should release Semaphore when connection failed"() {
+    def "should release RadioReleaseInterface after successful connection"() {
 
         given:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        emitConnectedConnectionState()
+
+        then:
+        (1.._) * mockRadioReleaseInterface.release()
+    }
+
+    def "should release RadioReleaseInterface when connection failed"() {
+
+        given:
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectionError(new Throwable("test"))
 
         then:
-        1 * mockSemaphore.release()
+        (1.._) * mockRadioReleaseInterface.release()
+    }
+
+    def "should release RadioReleaseInterface when unsubscribed before connection is established"() {
+
+        given:
+        def asObservableSubscription = objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        asObservableSubscription.unsubscribe()
+
+        then:
+        1 * mockRadioReleaseInterface.release()
+    }
+
+    def "should emit BluetoothGattCallbackTimeoutException with a valid mac address on CallbackTimeout"() {
+
+        given:
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        mockBluetoothGattProvider.getBluetoothGatt() >> mockGatt
+
+        when:
+        timeoutScheduler.advanceTimeBy(35, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError {
+            it instanceof BleGattCallbackTimeoutException && it.getMacAddress() == mockMacAddress
+        }
     }
 
     private emitConnectedConnectionState() {
-        bluetoothGattPublishSubject.onNext(mockGatt)
+        mockBluetoothGattProvider.getBluetoothGatt() >> mockGatt
         onConnectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTED)
     }
 
     private emitConnectingConnectionState() {
-        bluetoothGattPublishSubject.onNext(mockGatt)
         onConnectionStateSubject.onNext(RxBleConnection.RxBleConnectionState.CONNECTING)
     }
 
     private emitConnectionError(Throwable throwable) {
-        bluetoothGattPublishSubject.onNext(mockGatt)
         onConnectionStateSubject.onError(throwable)
     }
 }

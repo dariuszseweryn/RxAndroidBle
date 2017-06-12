@@ -1,15 +1,17 @@
 package com.polidea.rxandroidble.internal.radio
 
 import com.polidea.rxandroidble.MockOperation
-import com.polidea.rxandroidble.internal.RxBleRadioOperation
+import com.polidea.rxandroidble.internal.Priority
+import com.polidea.rxandroidble.internal.operations.Operation
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 public class OperationPriorityFifoBlockingQueueTest extends Specification {
 
-    def static LOW = RxBleRadioOperation.Priority.LOW
-    def static NORMAL = RxBleRadioOperation.Priority.NORMAL
-    def static HIGH = RxBleRadioOperation.Priority.HIGH
+    def static LOW = Priority.LOW
+    def static NORMAL = Priority.NORMAL
+    def static HIGH = Priority.HIGH
     def static lowPriority0 = MockOperation.mockOperation(LOW)
     def static lowPriority1 = MockOperation.mockOperation(LOW)
     def static lowPriority2 = MockOperation.mockOperation(LOW)
@@ -19,6 +21,9 @@ public class OperationPriorityFifoBlockingQueueTest extends Specification {
     def static highPriority0 = MockOperation.mockOperation(HIGH)
     def static highPriority1 = MockOperation.mockOperation(HIGH)
     def static highPriority2 = MockOperation.mockOperation(HIGH)
+
+    @Shared def static entryOperation0 = new FIFORunnableEntry(MockOperation.mockOperation(NORMAL), null)
+    @Shared def static entryOperation1 = new FIFORunnableEntry(MockOperation.mockOperation(NORMAL), null)
     OperationPriorityFifoBlockingQueue objectUnderTest
 
     def setup() {
@@ -29,12 +34,12 @@ public class OperationPriorityFifoBlockingQueueTest extends Specification {
     def "should return operations in proper order #id"() {
 
         given:
-        for (RxBleRadioOperation operation : entryOrder) {
-            objectUnderTest.add(operation)
+        for (Operation operation : entryOrder) {
+            objectUnderTest.add(new FIFORunnableEntry(operation, null))
         }
 
         expect:
-        dumpQueue() == properOrder
+        dumpQueueOperations() == properOrder
 
         where:
         id | entryOrder                                                                                  | properOrder
@@ -67,23 +72,33 @@ public class OperationPriorityFifoBlockingQueueTest extends Specification {
         }
 
         then:
-        dumpQueue() == expectedItems
+        dumpQueueEntries() == expectedItems
 
         where:
         addedItems                         | removedItems                       | expectedItems
-        [normalPriority0]                  | [normalPriority0]                  | []
-        [normalPriority0]                  | []                                 | [normalPriority0]
-        [normalPriority0, normalPriority1] | [normalPriority0]                  | [normalPriority1]
-        [normalPriority0, normalPriority1] | [normalPriority1, normalPriority0] | []
+        [entryOperation0]                  | [entryOperation0]                  | []
+        [entryOperation0]                  | []                                 | [entryOperation0]
+        [entryOperation0, entryOperation1] | [entryOperation0]                  | [entryOperation1]
+        [entryOperation0, entryOperation1] | [entryOperation1, entryOperation0] | []
     }
 
-    private List<RxBleRadioOperation> dumpQueue() {
-        def operationsQueueList = new ArrayList<RxBleRadioOperation>()
+    private List<Operation> dumpQueueOperations() {
+        def operationsQueueList = new ArrayList<Operation>()
 
         while (!objectUnderTest.isEmpty()) {
-            operationsQueueList.add(objectUnderTest.take())
+            operationsQueueList.add(objectUnderTest.take().operation)
         }
 
         return operationsQueueList
+    }
+
+    private List<Operation> dumpQueueEntries() {
+        def entriesQueueList = new ArrayList<FIFORunnableEntry>()
+
+        while (!objectUnderTest.isEmpty()) {
+            entriesQueueList.add(objectUnderTest.take())
+        }
+
+        return entriesQueueList
     }
 }

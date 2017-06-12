@@ -2,15 +2,18 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.util.ByteAssociation
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
-
-import java.util.concurrent.Semaphore
 
 public class RxBleRadioOperationCharacteristicReadTest extends Specification {
 
@@ -20,21 +23,22 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     TestSubscriber<byte[]> testSubscriber = new TestSubscriber()
-    PublishSubject<Pair<UUID, byte[]>> onCharacteristicReadSubject = PublishSubject.create()
-    Semaphore mockSemaphore = Mock Semaphore
-    RxBleRadioOperationCharacteristicRead objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt, mockCharacteristic)
+    PublishSubject<ByteAssociation<UUID>> onCharacteristicReadSubject = PublishSubject.create()
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    TestScheduler testScheduler = new TestScheduler()
+    RxBleRadioOperationCharacteristicRead objectUnderTest
 
     def setup() {
+        objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt,
+                new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic)
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicRead() >> onCharacteristicReadSubject
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 
     def "should call BluetoothGatt.readCharacteristic() only once on single read when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockGatt.readCharacteristic(mockCharacteristic) >> true
@@ -46,7 +50,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -58,7 +62,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         givenCharacteristicReadFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -76,7 +80,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         shouldEmitErrorOnCharacteristicRead(testException)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -86,10 +90,10 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         // XXX [PU] I'm not sure if it is really desired
         given:
         mockGatt.readCharacteristic(mockCharacteristic) >> true
-        onCharacteristicReadSubject.onNext(new Pair(mockCharacteristicUUID, []))
+        onCharacteristicReadSubject.onNext(new ByteAssociation(mockCharacteristicUUID, new byte[0]))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -105,7 +109,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: dataFromCharacteristic])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -121,7 +125,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
                 [uuid: mockCharacteristicUUID, value: secondValueFromCharacteristic])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -136,7 +140,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         givenCharacteristicWithUUIDContainData([uuid: differentCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -152,7 +156,7 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
                 [uuid: mockCharacteristicUUID, value: secondValueFromCharacteristic])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -161,45 +165,63 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release Semaphore after successful read"() {
+    def "should release RadioReleaseInterface after successful read"() {
 
         given:
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed to start"() {
+    def "should release RadioReleaseInterface when read failed to start"() {
 
         given:
         givenCharacteristicReadFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed"() {
+    def "should release RadioReleaseInterface when read failed"() {
         given:
         shouldEmitErrorOnCharacteristicRead(new Throwable("test"))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
+    }
+
+    def "should timeout if RxBleGattCallback.onCharacteristicRead() won't trigger in 30 seconds"() {
+
+        given:
+        givenCharacteristicReadStartsOk()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.CHARACTERISTIC_READ
+        }
     }
 
     private givenCharacteristicWithUUIDContainData(Map... returnedDataOnRead) {
         mockGatt.readCharacteristic(mockCharacteristic) >> {
             returnedDataOnRead.each {
-                onCharacteristicReadSubject.onNext(new Pair(it['uuid'], it['value'] as byte[]))
+                onCharacteristicReadSubject.onNext(new ByteAssociation(it['uuid'], it['value'] as byte[]))
             }
 
             true
@@ -215,5 +237,9 @@ public class RxBleRadioOperationCharacteristicReadTest extends Specification {
 
     private givenCharacteristicReadFailToStart() {
         mockGatt.readCharacteristic(mockCharacteristic) >> false
+    }
+
+    private givenCharacteristicReadStartsOk() {
+        mockGatt.readCharacteristic(mockCharacteristic) >> true
     }
 }

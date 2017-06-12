@@ -1,23 +1,30 @@
 package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import java.util.concurrent.Semaphore
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
 public class RxBleRadioOperationReadRssiTest extends Specification {
 
-    Semaphore mockSemaphore = Mock Semaphore
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
 
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
+
+    TestScheduler testScheduler = new TestScheduler()
 
     PublishSubject<Integer> onReadRemoteRssiPublishSubject = PublishSubject.create()
 
@@ -31,7 +38,7 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
     def "should call BluetoothGatt.readRemoteRssi() exactly once when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.readRemoteRssi() >> true
@@ -43,7 +50,7 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         mockBluetoothGatt.readRemoteRssi() >> false
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -54,14 +61,14 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         }
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit and error if RxBleGattCallback will emit error on getOnRssiRead() and release radio"() {
 
         given:
         mockBluetoothGatt.readRemoteRssi() >> true
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
         def testException = new Exception("test")
 
         when:
@@ -71,7 +78,7 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
     def "should emit exactly one value when RxBleGattCallback.getOnRssiRead() emits value"() {
@@ -89,7 +96,7 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         testSubscriber.assertNoValues()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -101,7 +108,7 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         testSubscriber.assertValue(rssi2)
 
         and:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
 
         when:
         onReadRemoteRssiPublishSubject.onNext(rssi3)
@@ -110,9 +117,26 @@ public class RxBleRadioOperationReadRssiTest extends Specification {
         testSubscriber.assertValueCount(1) // no more values
     }
 
+    def "should timeout if RxBleGattCallback.onReadRssi() won't trigger in 30 seconds"() {
+
+        given:
+        mockBluetoothGatt.readRemoteRssi() >> true
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.READ_RSSI
+        }
+    }
+
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationReadRssi(mockGattCallback, mockBluetoothGatt)
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest = new RxBleRadioOperationReadRssi(mockGattCallback, mockBluetoothGatt,
+                new MockOperationTimeoutConfiguration(testScheduler))
     }
 }

@@ -1,37 +1,57 @@
 package com.polidea.rxandroidble.internal.util;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
+
+import com.polidea.rxandroidble.ClientComponent;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 public class LocationServicesStatus {
 
-    private final Context context;
-    private final LocationManager locationManager;
+    private final CheckerLocationProvider checkerLocationProvider;
+    private final CheckerLocationPermission checkerLocationPermission;
+    private final boolean isAndroidWear;
+    private final int deviceSdk;
+    private final int targetSdk;
 
-    public LocationServicesStatus(Context context, LocationManager locationManager) {
-        this.context = context;
-        this.locationManager = locationManager;
+    @Inject
+    public LocationServicesStatus(
+            CheckerLocationProvider checkerLocationProvider,
+            CheckerLocationPermission checkerLocationPermission,
+            @Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+            @Named(ClientComponent.PlatformConstants.INT_TARGET_SDK) int targetSdk,
+            @Named(ClientComponent.PlatformConstants.BOOL_IS_ANDROID_WEAR) boolean isAndroidWear
+    ) {
+        this.checkerLocationProvider = checkerLocationProvider;
+        this.checkerLocationPermission = checkerLocationPermission;
+        this.deviceSdk = deviceSdk;
+        this.targetSdk = targetSdk;
+        this.isAndroidWear = isAndroidWear;
     }
 
-    public boolean isLocationPermissionApproved() {
-        return isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
-                || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    public boolean isLocationPermissionOk() {
+        return !isLocationPermissionGrantedRequired() || checkerLocationPermission.isLocationPermissionGranted();
     }
 
-    public boolean isLocationProviderEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    public boolean isLocationProviderOk() {
+        return !isLocationProviderEnabledRequired() || checkerLocationProvider.isLocationProviderEnabled();
     }
 
-    public boolean isLocationProviderRequired() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+    private boolean isLocationPermissionGrantedRequired() {
+        return deviceSdk >= Build.VERSION_CODES.M;
     }
 
-    private boolean isPermissionGranted(String permission) {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+    /**
+     * A function that returns true if the location services may be needed to be turned ON. Since there are no official guidelines
+     * for Android Wear check is disabled.
+     *
+     * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
+     * @return true if Location Services need to be turned ON
+     */
+    private boolean isLocationProviderEnabledRequired() {
+        return !isAndroidWear
+                && targetSdk >= Build.VERSION_CODES.M
+                && deviceSdk >= Build.VERSION_CODES.M;
     }
 }

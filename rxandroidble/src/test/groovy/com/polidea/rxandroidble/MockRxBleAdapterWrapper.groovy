@@ -46,7 +46,7 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     }
 
     @Override
-    boolean startLeScan(BluetoothAdapter.LeScanCallback callback) {
+    boolean startLegacyLeScan(BluetoothAdapter.LeScanCallback callback) {
 
         scanDataList.each {
             callback.onLeScan(it.device, it.rssi, it.scanRecord)
@@ -66,7 +66,7 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     }
 
     @Override
-    void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+    void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
 
     }
 

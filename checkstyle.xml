@@ -69,7 +69,7 @@
             <property name="max" value="140"/>
         </module>
         <!--<module name="MethodLength"/>-->
-        <module name="ParameterNumber"/>
+        <!--<module name="ParameterNumber"/>-->
 
 
         <!-- Checks for whitespace                               -->
@@ -116,7 +116,6 @@
         <module name="InnerAssignment"/>
         <!--<module name="MagicNumber"/>-->
         <module name="MissingSwitchDefault"/>
-        <module name="RedundantThrows"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
 

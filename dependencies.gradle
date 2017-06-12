@@ -1,21 +1,25 @@
 ext {
-    supportVersion = '23.1.1'
-    buildToolsVersionVariable = "23.0.2"
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
-    targetCompatibilityVersion = JavaVersion.VERSION_1_8
+    supportVersion = '25.3.0'
+    buildToolsVersionVariable = "25.0.3"
+    rxJavaVersion = '1.3.0'
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
+    targetCompatibilityVersion = JavaVersion.VERSION_1_7
+    daggerVersion = '2.8'
     libs = [
             /* Application dependencies */
-            retrolambda        : 'me.tatarka:gradle-retrolambda:3.2.4',
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
-            rxjava             : 'io.reactivex:rxjava:1.1.7',
+            rxjava             : ["io.reactivex:rxjava:$rxJavaVersion",
+                                  "com.artemzin.rxjava:proguard-rules:$rxJavaVersion.0"],
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
+            rxrelay            : 'com.jakewharton.rxrelay:rxrelay:1.2.0',
             junit              : 'junit:junit:4.12',
-            groovy             : 'org.codehaus.groovy:groovy:2.4.6:grooid',
+            groovy             : 'org.codehaus.groovy:groovy:2.4.7:grooid',
             spock              : ['org.spockframework:spock-core:1.0-groovy-2.4',
-                                  'cglib:cglib-nodep:3.2.1',
-                                  'org.objenesis:objenesis:2.2'],
-            robospock          : 'org.robospock:robospock:1.0.0'
-
+                                  'cglib:cglib-nodep:3.2.5',
+                                  'org.objenesis:objenesis:2.5.1'],
+            robospock          : 'org.robospock:robospock:1.0.1',
+            dagger             : "com.google.dagger:dagger:$daggerVersion",
+            dagger_compiler    : "com.google.dagger:dagger-compiler:$daggerVersion"
     ]
 }

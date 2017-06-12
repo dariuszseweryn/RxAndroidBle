@@ -1,20 +1,37 @@
 package com.polidea.rxandroidble
 
 import com.polidea.rxandroidble.internal.RxBleRadio
-import com.polidea.rxandroidble.internal.RxBleRadioOperation
+import com.polidea.rxandroidble.internal.operations.Operation
+import rx.Emitter
 import rx.Observable
+import rx.Subscription
+import rx.functions.Action1
+import rx.functions.Cancellable
 
 class FlatRxBleRadio implements RxBleRadio {
     public final MockSemaphore semaphore = new MockSemaphore()
 
     @Override
-    def <T> Observable<T> queue(RxBleRadioOperation<T> rxBleRadioOperation) {
-        return rxBleRadioOperation
-                .asObservable()
-                .doOnSubscribe({
-            rxBleRadioOperation.setRadioBlockingSemaphore(semaphore)
-            semaphore.acquire()
-            rxBleRadioOperation.run()
-        })
+    def <T> Observable<T> queue(Operation<T> operation) {
+        return Observable.create(
+                new Action1<Emitter>() {
+
+                    @Override
+                    void call(Emitter tEmitter) {
+                        Subscription s = operation
+                                .run(semaphore)
+                                .subscribe(tEmitter)
+
+                        tEmitter.setCancellation(new Cancellable() {
+
+                            @Override
+                            void cancel() throws Exception {
+                                s.unsubscribe();
+                            }
+                        })
+                    }
+                },
+                Emitter.BackpressureMode.NONE
+        )
     }
 }

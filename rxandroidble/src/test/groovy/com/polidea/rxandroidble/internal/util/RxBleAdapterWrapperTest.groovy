@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.util
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanCallback
 import spock.lang.Specification
 
 class RxBleAdapterWrapperTest extends Specification {
@@ -45,7 +46,7 @@ class RxBleAdapterWrapperTest extends Specification {
         def callback = Mock BluetoothAdapter.LeScanCallback
 
         when:
-        def startLeScan = objectUnderTest.startLeScan(callback)
+        def startLeScan = objectUnderTest.startLegacyLeScan(callback)
 
         then:
         1 * mockAdapter.startLeScan(callback) >> startResult
@@ -64,7 +65,7 @@ class RxBleAdapterWrapperTest extends Specification {
         def callback = Mock BluetoothAdapter.LeScanCallback
 
         when:
-        objectUnderTest.stopLeScan(callback)
+        objectUnderTest.stopLegacyLeScan(callback)
 
         then:
         1 * mockAdapter.stopLeScan(callback)
@@ -84,5 +85,18 @@ class RxBleAdapterWrapperTest extends Specification {
         isEnabledInAdapter | _
         true               | _
         false              | _
+    }
+
+    def "should not throw NullPointerException if BluetoothAdapter.getBluetoothLeScanner() will return null in .stopScan(ScanCallback)"() {
+
+        given:
+        def callback = Mock ScanCallback
+        mockAdapter.getBluetoothLeScanner() >> null
+
+        when:
+        objectUnderTest.stopLeScan(callback)
+
+        then:
+        notThrown(NullPointerException)
     }
 }

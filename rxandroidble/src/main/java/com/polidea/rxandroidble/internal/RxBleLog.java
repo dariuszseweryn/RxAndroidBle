@@ -3,6 +3,8 @@ package com.polidea.rxandroidble.internal;
 import android.support.annotation.IntDef;
 import android.util.Log;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import java.util.regex.Pattern;
 public class RxBleLog {
 
     @IntDef({VERBOSE, DEBUG, INFO, WARN, ERROR, NONE})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface LogLevel {
 
     }
@@ -24,6 +27,7 @@ public class RxBleLog {
     public static final int NONE = Integer.MAX_VALUE;
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
+
     private static int logLevel = Integer.MAX_VALUE;
 
     private RxBleLog() {
@@ -62,63 +66,68 @@ public class RxBleLog {
     }
 
     public static void v(String message, Object... args) {
-        throwShade(Log.VERBOSE, formatString(message, args), null);
+        throwShade(Log.VERBOSE, null, message, args);
     }
 
     public static void v(Throwable t, String message, Object... args) {
-        throwShade(Log.VERBOSE, formatString(message, args), t);
+        throwShade(Log.VERBOSE, t, message, args);
     }
 
     public static void d(String message, Object... args) {
-        throwShade(Log.DEBUG, formatString(message, args), null);
+        throwShade(Log.DEBUG, null, message, args);
     }
 
     public static void d(Throwable t, String message, Object... args) {
-        throwShade(Log.DEBUG, formatString(message, args), t);
+        throwShade(Log.DEBUG, t, message, args);
     }
 
     public static void i(String message, Object... args) {
-        throwShade(Log.INFO, formatString(message, args), null);
+        throwShade(Log.INFO, null, message, args);
     }
 
     public static void i(Throwable t, String message, Object... args) {
-        throwShade(Log.INFO, formatString(message, args), t);
+        throwShade(Log.INFO, t, message, args);
     }
 
     public static void w(String message, Object... args) {
-        throwShade(Log.WARN, formatString(message, args), null);
+        throwShade(Log.WARN, null, message, args);
     }
 
     public static void w(Throwable t, String message, Object... args) {
-        throwShade(Log.WARN, formatString(message, args), t);
+        throwShade(Log.WARN, t, message, args);
     }
 
     public static void e(String message, Object... args) {
-        throwShade(Log.ERROR, formatString(message, args), null);
+        throwShade(Log.ERROR, null, message, args);
     }
 
     public static void e(Throwable t, String message, Object... args) {
-        throwShade(Log.ERROR, formatString(message, args), t);
+        throwShade(Log.ERROR, t, message, args);
     }
 
-    private static void throwShade(int priority, String message, Throwable t) {
+    private static void throwShade(int priority, Throwable t, String message, Object... args) {
         if (priority < logLevel) {
             return;
         }
 
-        if (message == null || message.length() == 0) {
+        final String formattedMessage = formatString(message, args);
+        final String finalMessage;
+
+        if (formattedMessage == null || formattedMessage.length() == 0) {
             if (t != null) {
-                message = Log.getStackTraceString(t);
+                finalMessage = Log.getStackTraceString(t);
             } else {
                 // Swallow message if it's null and there's no throwable.
                 return;
             }
         } else if (t != null) {
-            message += "\n" + Log.getStackTraceString(t);
+            finalMessage = formattedMessage + "\n" + Log.getStackTraceString(t);
+        } else {
+            finalMessage = formattedMessage;
         }
 
         String tag = createTag();
-        println(priority, tag, message);
+        println(priority, tag, finalMessage);
     }
 
     private static void println(int priority, String tag, String message) {
@@ -133,5 +142,9 @@ public class RxBleLog {
                 Log.println(priority, tag, line);
             }
         }
+    }
+
+    public static boolean isAtLeast(int expectedLogLevel) {
+        return logLevel <= expectedLogLevel;
     }
 }

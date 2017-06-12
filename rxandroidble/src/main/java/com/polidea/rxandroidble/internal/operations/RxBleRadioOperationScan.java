@@ -1,87 +1,83 @@
 package com.polidea.rxandroidble.internal.operations;
 
-import android.bluetooth.BluetoothAdapter;
-
+import android.os.DeadObjectException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RxBleInternalScanResult;
+import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble.internal.util.UUIDUtil;
+import rx.Emitter;
+import rx.functions.Cancellable;
 
-import java.util.List;
-import java.util.UUID;
+/**
+ * A class that handles starting and stopping BLE scans.
+ *
+ * @param <SCAN_RESULT_TYPE>   Type of the objects that the RxBleRadioOperation should emit
+ * @param <SCAN_CALLBACK_TYPE> Type of the BLE scan callback used by a particular implementation
+ */
+abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extends RxBleRadioOperation<SCAN_RESULT_TYPE> {
 
-public class RxBleRadioOperationScan extends RxBleRadioOperation<RxBleInternalScanResult> {
-
-    private final UUID[] filterServiceUUIDs;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
-    private final UUIDUtil uuidUtil;
-    private volatile boolean isStarted = false;
-    private volatile boolean isStopped = false;
 
-    private final BluetoothAdapter.LeScanCallback leScanCallback = (device, rssi, scanRecord) -> {
-
-        if (!hasDefinedFilter() || hasDefinedFilter() && containsDesiredServiceIds(scanRecord)) {
-            onNext(new RxBleInternalScanResult(device, rssi, scanRecord));
-        }
-    };
-
-    public RxBleRadioOperationScan(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, UUIDUtil uuidUtil) {
-
-        this.filterServiceUUIDs = filterServiceUUIDs;
+    protected RxBleRadioOperationScan(RxBleAdapterWrapper rxBleAdapterWrapper) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
-        this.uuidUtil = uuidUtil;
     }
 
     @Override
-    protected void protectedRun() {
+    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, RadioReleaseInterface radioReleaseInterface) {
+
+        final SCAN_CALLBACK_TYPE scanCallback = createScanCallback(emitter);
 
         try {
-            boolean startLeScanStatus = rxBleAdapterWrapper.startLeScan(leScanCallback);
+            emitter.setCancellation(new Cancellable() {
+                @Override
+                public void cancel() throws Exception {
+                    stopScan(rxBleAdapterWrapper, scanCallback);
+                }
+            });
+
+            boolean startLeScanStatus = startScan(rxBleAdapterWrapper, scanCallback);
 
             if (!startLeScanStatus) {
-                onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
-            } else {
-                synchronized (this) { // synchronization added for stopping the scan
-                    isStarted = true;
-                    if (isStopped) {
-                        stop();
-                    }
-                }
+                emitter.onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
             }
         } catch (Throwable throwable) {
-            isStarted = true;
-            RxBleLog.e(throwable, "Error while calling BluetoothAdapter.startLeScan()");
-            onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+            RxBleLog.e(throwable, "Error while calling the start scan function");
+            emitter.onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
         } finally {
-            releaseRadio();
+            radioReleaseInterface.release();
         }
     }
 
-    // synchronized keyword added to be sure that operation will be stopped no matter which thread will call it
-    public synchronized void stop() {
-        isStopped = true;
-        if (isStarted) {
-            // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
-            rxBleAdapterWrapper.stopLeScan(leScanCallback);
-        }
+    @Override
+    protected BleException provideException(DeadObjectException deadObjectException) {
+        return new BleScanException(BleScanException.BLUETOOTH_DISABLED, deadObjectException);
     }
 
-    private boolean containsDesiredServiceIds(byte[] scanRecord) {
-        List<UUID> advertisedUUIDs = uuidUtil.extractUUIDs(scanRecord);
+    /**
+     * Function that should return a scan callback of a proper type. The returned scan callback will later be passed
+     * to {@link #startScan(RxBleAdapterWrapper, Object)} and {@link #stopScan(RxBleAdapterWrapper, Object)}
+     *
+     * @param emitter the emitter for notifications
+     * @return the scan callback type to use with {@link #startScan(RxBleAdapterWrapper, Object)}
+     * and {@link #stopScan(RxBleAdapterWrapper, Object)}
+     */
+    abstract SCAN_CALLBACK_TYPE createScanCallback(Emitter<SCAN_RESULT_TYPE> emitter);
 
-        for (UUID desiredUUID : filterServiceUUIDs) {
+    /**
+     * Function that should start the scan using passed {@link RxBleAdapterWrapper} and {@link SCAN_CALLBACK_TYPE} callback
+     * @param rxBleAdapterWrapper the {@link RxBleAdapterWrapper} to use
+     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(Emitter)} to start
+     * @return true if successful
+     */
+    abstract boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, SCAN_CALLBACK_TYPE scanCallback);
 
-            if (!advertisedUUIDs.contains(desiredUUID)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean hasDefinedFilter() {
-        return filterServiceUUIDs != null && filterServiceUUIDs.length > 0;
-    }
+    /**
+     * Method that should stop the scan for a given {@link SCAN_CALLBACK_TYPE} that was previously returned
+     * by {@link #createScanCallback(Emitter)}
+     * @param rxBleAdapterWrapper the {@link RxBleAdapterWrapper} to use
+     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(Emitter)} to stop
+     */
+    abstract void stopScan(RxBleAdapterWrapper rxBleAdapterWrapper, SCAN_CALLBACK_TYPE scanCallback);
 }

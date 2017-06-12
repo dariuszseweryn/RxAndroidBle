@@ -1,17 +1,17 @@
 package com.polidea.rxandroidble.internal.cache;
 
-import com.polidea.rxandroidble.RxBleDevice;
+import com.polidea.rxandroidble.internal.DeviceComponent;
 
 import java.util.Map;
 
-class CacheEntry implements Map.Entry<String, RxBleDevice> {
+class CacheEntry implements Map.Entry<String, DeviceComponent> {
 
     private final String string;
-    private final DeviceWeakReference deviceWeakReference;
+    private final DeviceComponentWeakReference deviceComponentWeakReference;
 
-    CacheEntry(String string, DeviceWeakReference deviceWeakReference) {
+    CacheEntry(String string, DeviceComponentWeakReference deviceComponentWeakReference) {
         this.string = string;
-        this.deviceWeakReference = deviceWeakReference;
+        this.deviceComponentWeakReference = deviceComponentWeakReference;
     }
 
     @Override
@@ -25,7 +25,7 @@ class CacheEntry implements Map.Entry<String, RxBleDevice> {
 
         CacheEntry that = (CacheEntry) o;
 
-        return string.equals(that.getKey()) && deviceWeakReference.equals(that.deviceWeakReference);
+        return string.equals(that.getKey()) && deviceComponentWeakReference.equals(that.deviceComponentWeakReference);
 
     }
 
@@ -35,19 +35,19 @@ class CacheEntry implements Map.Entry<String, RxBleDevice> {
     }
 
     @Override
-    public RxBleDevice getValue() {
-        return deviceWeakReference.get();
+    public DeviceComponent getValue() {
+        return deviceComponentWeakReference.get();
     }
 
     @Override
     public int hashCode() {
         int result = string.hashCode();
-        result = 31 * result + deviceWeakReference.hashCode();
+        result = 31 * result + deviceComponentWeakReference.hashCode();
         return result;
     }
 
     @Override
-    public RxBleDevice setValue(RxBleDevice object) {
+    public DeviceComponent setValue(DeviceComponent object) {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

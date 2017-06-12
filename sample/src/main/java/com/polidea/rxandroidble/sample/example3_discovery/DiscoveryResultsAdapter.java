@@ -17,15 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapter.ViewHolder> {
 
     static class AdapterItem {
 
-        public static final int SERVICE = 1;
-        public static final int CHARACTERISTIC = 2;
+        static final int SERVICE = 1;
+        static final int CHARACTERISTIC = 2;
         final int type;
         final String description;
         final UUID uuid;
@@ -39,18 +39,18 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(android.R.id.text1)
-        public TextView line1;
-        @Bind(android.R.id.text2)
-        public TextView line2;
+        @BindView(android.R.id.text1)
+        TextView line1;
+        @BindView(android.R.id.text2)
+        TextView line2;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public interface OnAdapterItemClickListener {
+    interface OnAdapterItemClickListener {
 
         void onAdapterViewClick(View view);
     }
@@ -99,11 +99,11 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         return new ViewHolder(itemView);
     }
 
-    public void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
+    void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
         this.onAdapterItemClickListener = onAdapterItemClickListener;
     }
 
-    public void swapScanResult(RxBleDeviceServices services) {
+    void swapScanResult(RxBleDeviceServices services) {
         data.clear();
 
         for (BluetoothGattService service : services.getBluetoothGattServices()) {
@@ -127,7 +127,7 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
         return TextUtils.join(" ", properties);
     }
 
-    public AdapterItem getItem(int position) {
+    AdapterItem getItem(int position) {
         return data.get(position);
     }
 

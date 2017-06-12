@@ -2,12 +2,17 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
-import android.support.v4.util.Pair
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import java.util.concurrent.Semaphore
+import com.polidea.rxandroidble.internal.util.ByteAssociation
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+
+import java.util.concurrent.TimeUnit
 import rx.observers.TestSubscriber
+import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -21,24 +26,26 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     BluetoothGattDescriptor differentDescriptor = Mock BluetoothGattDescriptor
 
-    TestSubscriber<Pair<BluetoothGattDescriptor, byte[]>> testSubscriber = new TestSubscriber()
+    TestSubscriber<ByteAssociation<BluetoothGattDescriptor>> testSubscriber = new TestSubscriber()
 
-    PublishSubject<Pair<BluetoothGattDescriptor, byte[]>> onDescriptorReadSubject = PublishSubject.create()
+    TestScheduler testScheduler = new TestScheduler()
 
-    Semaphore mockSemaphore = Mock Semaphore
+    PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
-    RxBleRadioOperationDescriptorRead objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt, mockDescriptor)
+    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+
+    RxBleRadioOperationDescriptorRead objectUnderTest
 
     def setup() {
+        objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt,
+                new MockOperationTimeoutConfiguration(testScheduler), mockDescriptor)
         mockCallback.getOnDescriptorRead() >> onDescriptorReadSubject
-        objectUnderTest.setRadioBlockingSemaphore(mockSemaphore)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
     }
 
     def "should call BluetoothGatt.readDescriptor() only once on single read when run()"() {
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockGatt.readDescriptor(mockDescriptor) >> true
@@ -50,7 +57,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -62,7 +69,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         givenDescriptorReadFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -80,7 +87,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         shouldEmitErrorOnDescriptorRead(testException)
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -90,10 +97,10 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         // XXX [PU] I'm not sure if it is really desired
         given:
         mockGatt.readDescriptor(mockDescriptor) >> true
-        onDescriptorReadSubject.onNext(new Pair(mockDescriptor, []))
+        onDescriptorReadSubject.onNext(ByteAssociation.create(mockDescriptor, new byte[0]))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -109,10 +116,10 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: dataFromDescriptor])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertValue Pair.create(mockDescriptor, dataFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, dataFromDescriptor)
     }
 
     def "asObservable() emit only first descriptor value notified"() {
@@ -125,13 +132,13 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
                 [descriptor: mockDescriptor, value: secondValueFromDescriptor])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
 
         and:
-        testSubscriber.assertValue Pair.create(mockDescriptor, dataFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, dataFromDescriptor)
     }
 
     def "asObservable() not emit descriptor value if BLE notified only with non matching descriptors"() {
@@ -140,7 +147,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
         givenDescriptorWithUUIDContainData([descriptor: differentDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -156,54 +163,72 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
                 [descriptor: mockDescriptor, value: secondValueFromDescriptor])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
 
         and:
-        testSubscriber.assertValue Pair.create(mockDescriptor, secondValueFromDescriptor)
+        testSubscriber.assertValue ByteAssociation.create(mockDescriptor, secondValueFromDescriptor)
     }
 
-    def "should release Semaphore after successful read"() {
+    def "should release RadioReleaseInterface after successful read"() {
 
         given:
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed to start"() {
+    def "should release RadioReleaseInterface when read failed to start"() {
 
         given:
         givenDescriptorReadFailToStart()
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
     }
 
-    def "should release Semaphore when read failed"() {
+    def "should release RadioReleaseInterface when read failed"() {
         given:
         shouldEmitErrorOnDescriptorRead(new Throwable("test"))
 
         when:
-        objectUnderTest.run()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockSemaphore.release()
+        1 * mockRadioReleaseInterface.release()
+    }
+
+    def "should timeout if RxBleGattCallback.onDescriptorRead() won't trigger in 30 seconds"() {
+
+        given:
+        givenDescriptorReadStartsOk()
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)
+
+        then:
+        testSubscriber.assertError(BleGattCallbackTimeoutException)
+
+        and:
+        testSubscriber.assertError {
+            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.DESCRIPTOR_READ
+        }
     }
 
     private givenDescriptorWithUUIDContainData(Map... returnedDataOnRead) {
         mockGatt.readDescriptor(mockDescriptor) >> {
             returnedDataOnRead.each {
-                onDescriptorReadSubject.onNext(new Pair(it['descriptor'], it['value'] as byte[]))
+                onDescriptorReadSubject.onNext(new ByteAssociation(it['descriptor'], it['value'] as byte[]))
             }
 
             true
@@ -219,5 +244,9 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     private givenDescriptorReadFailToStart() {
         mockGatt.readDescriptor(mockDescriptor) >> false
+    }
+
+    private givenDescriptorReadStartsOk() {
+        mockGatt.readDescriptor(mockDescriptor) >> true
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -13,22 +14,26 @@ import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
-import static com.trello.rxlifecycle.ActivityEvent.DESTROY;
-import static com.trello.rxlifecycle.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
+import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
 
 public class ConnectionExampleActivity extends RxAppCompatActivity {
 
-    @Bind(R.id.connection_state)
+    @BindView(R.id.connection_state)
     TextView connectionStateView;
-    @Bind(R.id.connect_toggle)
+    @BindView(R.id.connect_toggle)
     Button connectButton;
-    @Bind(R.id.autoconnect)
+    @BindView(R.id.newMtu)
+    EditText textMtu;
+    @BindView(R.id.set_mtu)
+    Button setMtuButton;
+    @BindView(R.id.autoconnect)
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
     private Subscription connectionSubscription;
@@ -39,12 +44,23 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionSubscription = bleDevice.establishConnection(this, autoConnectToggleSwitch.isChecked())
+            connectionSubscription = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
+    }
+
+    @OnClick(R.id.set_mtu)
+    public void onSetMtu() {
+        bleDevice.establishConnection(false)
+                .flatMap(rxBleConnection -> rxBleConnection.requestMtu(72))
+                .first() // Disconnect automatically after discovery
+                .compose(bindUntilEvent(PAUSE))
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnUnsubscribe(this::updateUI)
+                .subscribe(this::onMtuReceived, this::onConnectionFailure);
     }
 
     @Override
@@ -80,6 +96,11 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
         connectionStateView.setText(newState.toString());
         updateUI();
+    }
+
+    private void onMtuReceived(Integer mtu) {
+        //noinspection ConstantConditions
+        Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT).show();
     }
 
     private void clearSubscription() {

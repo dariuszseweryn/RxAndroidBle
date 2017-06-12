@@ -7,40 +7,40 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleScanResult;
 
+import com.polidea.rxandroidble.scan.ScanResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import java.util.Locale;
 
 class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(android.R.id.text1)
-        public TextView line1;
-        @Bind(android.R.id.text2)
-        public TextView line2;
+        @BindView(android.R.id.text1)
+        TextView line1;
+        @BindView(android.R.id.text2)
+        TextView line2;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public interface OnAdapterItemClickListener {
+    interface OnAdapterItemClickListener {
 
         void onAdapterViewClick(View view);
     }
 
-    private static final Comparator<RxBleScanResult> SORTING_COMPARATOR = (lhs, rhs) -> {
-        return lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
-    };
-    private final List<RxBleScanResult> data = new ArrayList<>();
+    private static final Comparator<ScanResult> SORTING_COMPARATOR = (lhs, rhs) ->
+            lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
+    private final List<ScanResult> data = new ArrayList<>();
     private OnAdapterItemClickListener onAdapterItemClickListener;
     private final View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -52,7 +52,7 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         }
     };
 
-    public void addScanResult(RxBleScanResult bleScanResult) {
+    void addScanResult(ScanResult bleScanResult) {
         // Not the best way to ensure distinct devices, just for sake on the demo.
 
         for (int i = 0; i < data.size(); i++) {
@@ -69,12 +69,12 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         notifyDataSetChanged();
     }
 
-    public void clearScanResults() {
+    void clearScanResults() {
         data.clear();
         notifyDataSetChanged();
     }
 
-    public RxBleScanResult getItemAtPosition(int childAdapterPosition) {
+    ScanResult getItemAtPosition(int childAdapterPosition) {
         return data.get(childAdapterPosition);
     }
 
@@ -85,10 +85,10 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final RxBleScanResult rxBleScanResult = data.get(position);
+        final ScanResult rxBleScanResult = data.get(position);
         final RxBleDevice bleDevice = rxBleScanResult.getBleDevice();
-        holder.line1.setText(String.format("%s (%s)", bleDevice.getMacAddress(), bleDevice.getName()));
-        holder.line2.setText(String.format("RSSI: %d", rxBleScanResult.getRssi()));
+        holder.line1.setText(String.format(Locale.getDefault(), "%s (%s)", bleDevice.getMacAddress(), bleDevice.getName()));
+        holder.line2.setText(String.format(Locale.getDefault(), "RSSI: %d", rxBleScanResult.getRssi()));
     }
 
     @Override
@@ -98,7 +98,7 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
         return new ViewHolder(itemView);
     }
 
-    public void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
+    void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
         this.onAdapterItemClickListener = onAdapterItemClickListener;
     }
 }

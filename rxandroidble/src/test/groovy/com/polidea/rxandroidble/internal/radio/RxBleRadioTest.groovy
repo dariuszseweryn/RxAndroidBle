@@ -1,12 +1,10 @@
 package com.polidea.rxandroidble.internal.radio
 
 import com.polidea.rxandroidble.MockOperation
+import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import rx.Emitter
 import rx.Observable
 import rx.Scheduler
-import rx.android.plugins.RxAndroidPlugins
-import rx.android.plugins.RxAndroidSchedulersHook
-import rx.android.schedulers.AndroidSchedulers
-import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import spock.lang.Specification
@@ -16,23 +14,15 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 
-import static com.polidea.rxandroidble.internal.RxBleRadioOperation.Priority.NORMAL
+import static com.polidea.rxandroidble.internal.Priority.NORMAL
 
 class RxBleRadioTest extends Specification {
-    public static final String MAIN_THREAD_NAME = "test-thread"
+    public static final String RADIO_SCHEDULER_THREAD_NAME = "radio-test-thread"
+
     RxBleRadioImpl objectUnderTest
 
-    void setupSpec() {
-        useThreadWithNameAsMainThread(MAIN_THREAD_NAME)
-    }
-
-    void teardownSpec() {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-    }
-
     void setup() {
-        objectUnderTest = new RxBleRadioImpl()
+        objectUnderTest = new RxBleRadioImpl(createSchedulerWithNamedThread(RADIO_SCHEDULER_THREAD_NAME))
     }
 
     def "should run operation instantly if queue is empty and no operation is in progress"() {
@@ -47,7 +37,7 @@ class RxBleRadioTest extends Specification {
         operation.wasRan()
 
         and:
-        operation.lastExecutedOnThread == MAIN_THREAD_NAME
+        operation.lastExecutedOnThread == RADIO_SCHEDULER_THREAD_NAME
 
         and:
         operation.executionCount == 1
@@ -146,7 +136,7 @@ class RxBleRadioTest extends Specification {
 
         def secondOperation = new MockOperation(NORMAL, null) {
             @Override
-            void protectedRun() {
+            void protectedRun(Emitter<Object> emitter, RadioReleaseInterface radioReleaseInterface) {
                 // simulate that a not handled exception was thrown somewhere
                 throw new Exception("Second throwable")
             }
@@ -178,7 +168,7 @@ class RxBleRadioTest extends Specification {
     public operationReleasingRadioAfterSemaphoreIsReleased(semaphore) {
         MockOperation.mockOperation(NORMAL, {
             semaphore.acquire()
-            it.releaseRadio()
+            it.onCompleted()
         })
     }
 
@@ -187,20 +177,13 @@ class RxBleRadioTest extends Specification {
         waitForThreadsToCompleteWork()
     }
 
-    public useThreadWithNameAsMainThread(String threadName) {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-        RxAndroidPlugins.getInstance().registerSchedulersHook(new RxAndroidSchedulersHook() {
+    private static Scheduler createSchedulerWithNamedThread(String threadName) {
+        Schedulers.from(Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
-            Scheduler getMainThreadScheduler() {
-                return Schedulers.from(Executors.newSingleThreadExecutor(new ThreadFactory() {
-                    @Override
-                    Thread newThread(Runnable r) {
-                        return new Thread(r, threadName)
-                    }
-                }))
+            Thread newThread(Runnable r) {
+                return new Thread(r, threadName)
             }
-        })
+        }))
     }
 
     private static void waitForOperationsToFinishRunning(MockOperation... operations) {

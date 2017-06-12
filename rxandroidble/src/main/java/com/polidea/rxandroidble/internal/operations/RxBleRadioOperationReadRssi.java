@@ -2,37 +2,31 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 
-import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
-import rx.Subscription;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-public class RxBleRadioOperationReadRssi extends RxBleRadioOperation<Integer> {
+import rx.Observable;
 
-    private final RxBleGattCallback bleGattCallback;
+public class RxBleRadioOperationReadRssi extends RxBleSingleGattRadioOperation<Integer> {
 
-    private final BluetoothGatt bluetoothGatt;
-
-    public RxBleRadioOperationReadRssi(RxBleGattCallback bleGattCallback, BluetoothGatt bluetoothGatt) {
-        this.bleGattCallback = bleGattCallback;
-        this.bluetoothGatt = bluetoothGatt;
+    @Inject
+    RxBleRadioOperationReadRssi(RxBleGattCallback bleGattCallback, BluetoothGatt bluetoothGatt,
+                                @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration) {
+        super(bluetoothGatt, bleGattCallback, BleGattOperationType.READ_RSSI, timeoutConfiguration);
     }
 
     @Override
-    protected void protectedRun() {
-        //noinspection Convert2MethodRef
-        final Subscription subscription = bleGattCallback
-                .getOnRssiRead()
-                .take(1)
-                .doOnCompleted(() -> releaseRadio())
-                .subscribe(getSubscriber());
+    protected Observable<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback.getOnRssiRead();
+    }
 
-        final boolean success = bluetoothGatt.readRemoteRssi();
-        if (!success) {
-            subscription.unsubscribe();
-            onError(new BleGattCannotStartException(BleGattOperationType.READ_RSSI));
-        }
+    @Override
+    protected boolean startOperation(BluetoothGatt bluetoothGatt) {
+        return bluetoothGatt.readRemoteRssi();
     }
 }
