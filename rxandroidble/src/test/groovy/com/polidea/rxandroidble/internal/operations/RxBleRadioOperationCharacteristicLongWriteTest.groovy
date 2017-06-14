@@ -347,10 +347,10 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         testSubscriber.unsubscribe()
 
         then:
-        0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
+        0 * mockRadioReleaseInterface.release()
 
         when:
-        advanceTimeForWrites(5)
+        advanceTimeForWrites(1)
 
         then:
         0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
