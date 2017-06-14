@@ -323,7 +323,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         maxBatchSize << [0, -1]
     }
 
-    def "should complete after next batch if unsubscribed"() {
+    def "should complete after next batch and release radio if unsubscribed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
