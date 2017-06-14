@@ -61,7 +61,11 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
      * Implementations should call emitter methods to inform the outside world about emissions of `onNext()`/`onError()`/`onCompleted()`.
      * Implementations must call at least one of methods:
      * {@link RadioReleaseInterface#release()}/{@link Emitter#onError(Throwable)}/{@link Emitter#onCompleted()}
-     * at some point to release the radio for any other operations that were queued.
+     * at some point to release the radio for any other operations that were queued if the emitter has not canceled.
+     *
+     * If the emitter has been canceled it is response of the operation to call {@link RadioReleaseInterface#release()} when possible
+     * subsequent operations will be able to start {@link android.bluetooth.BluetoothGatt} functions successfully. Check usage of
+     * {@link com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper} for convenience.
      *
      * @param emitter the emitter to be called in order to inform the caller about the output of a particular run of the operation
      * @param radioReleaseInterface the radio release interface to release the radio when ready

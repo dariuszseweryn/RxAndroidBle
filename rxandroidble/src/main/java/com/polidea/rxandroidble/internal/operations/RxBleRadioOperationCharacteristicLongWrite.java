@@ -20,10 +20,10 @@ import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
+import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Named;
 
 import rx.Emitter;
@@ -32,7 +32,6 @@ import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
-import rx.functions.Cancellable;
 import rx.functions.Func1;
 
 public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperation<byte[]> {
@@ -78,7 +77,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
 
-        final AtomicBoolean isUnsubscribed = new AtomicBoolean(false);
+        final RadioReleasingEmitterWrapper<byte[]> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
         writeBatchAndObserve(batchSize, byteBuffer)
                 .subscribeOn(mainThreadScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
@@ -89,54 +88,24 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                         timeoutConfiguration.timeoutScheduler
                 )
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
-                        writeOperationAckStrategy, byteBuffer, isUnsubscribed
+                        writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
                             @Override
                             public void call() {
-                                final Boolean wasUnsubscribedBeforeOnComplete = isUnsubscribed.get();
-                                emitter.onNext(bytesToWrite);
-                                emitter.onCompleted();
-                                /*
-                                 * Additional call to RadioReleaseInterface.release() for a situation where the Emitter has unsubscribed
-                                 * during the long write operation and the above call to Emitter.onCompleted() will not be passed to it and
-                                 * RadioReleaseInterface will not be released by the superclass RxBleRadioOperation.
-                                 */
-                                if (wasUnsubscribedBeforeOnComplete) {
-                                    radioReleaseInterface.release();
-                                }
+                                emitterWrapper.onNext(bytesToWrite);
+                                emitterWrapper.onCompleted();
                             }
                         },
                         new Action1<Throwable>() {
                             @Override
                             public void call(Throwable throwable) {
-                                final Boolean wasUnsubscribedBeforeOnError = isUnsubscribed.get();
-                                emitter.onError(throwable);
-                                /*
-                                 * Additional call to RadioReleaseInterface.release() for a situation where the Emitter has unsubscribed
-                                 * during the long write operation and the above call to Emitter.onError() will not be passed to it and
-                                 * RadioReleaseInterface will not be released by the superclass RxBleRadioOperation.
-                                 */
-                                if (wasUnsubscribedBeforeOnError) {
-                                    radioReleaseInterface.release();
-                                }
+                                emitterWrapper.onError(throwable);
                             }
                         }
                 );
-
-        emitter.setCancellation(new Cancellable() {
-            @Override
-            public void cancel() throws Exception {
-                /*
-                 * Cancellation of the long write flow should take place after a single batch write will finish and no operations will be
-                 * scheduled on the BluetoothGatt - that is why the above flow is not unsubscribed on sight but rather only flagged
-                 * as finished
-                 */
-                isUnsubscribed.set(true);
-            }
-        });
     }
 
     @Override
@@ -207,13 +176,13 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private static Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
             final WriteOperationAckStrategy writeOperationAckStrategy,
             final ByteBuffer byteBuffer,
-            final AtomicBoolean isUnsubscribed) {
+            final RadioReleasingEmitterWrapper<byte[]> emitterWrapper) {
         return new Func1<Observable<? extends Void>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Void> emittingOnBatchWriteFinished) {
                 return writeOperationAckStrategy.call(
                         emittingOnBatchWriteFinished
-                                .takeWhile(notUnsubscribed(isUnsubscribed))
+                                .takeWhile(notUnsubscribed(emitterWrapper))
                                 .map(bufferIsNotEmpty(byteBuffer))
                 )
                         .takeWhile(bufferIsNotEmpty(byteBuffer));
@@ -230,11 +199,11 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             }
 
             @NonNull
-            private Func1<Object, Boolean> notUnsubscribed(final AtomicBoolean isUnsubscribed) {
+            private Func1<Object, Boolean> notUnsubscribed(final RadioReleasingEmitterWrapper<byte[]> emitterWrapper) {
                 return new Func1<Object, Boolean>() {
                     @Override
                     public Boolean call(Object emission) {
-                        return !isUnsubscribed.get();
+                        return !emitterWrapper.isWrappedEmitterUnsubscribed();
                     }
                 };
             }
