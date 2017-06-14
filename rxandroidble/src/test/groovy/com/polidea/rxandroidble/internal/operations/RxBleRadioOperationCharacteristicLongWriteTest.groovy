@@ -21,6 +21,7 @@ import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -41,7 +42,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
-    Exception testException = new Exception("testException")
+    @Shared Exception testException = new Exception("testException")
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
@@ -323,7 +324,8 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         maxBatchSize << [0, -1]
     }
 
-    def "should complete after next batch and release radio if unsubscribed"() {
+    @Unroll
+    def "should release radio after next batch if unsubscribed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -333,15 +335,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
-            UUID uuid = characteristic.getUuid()
-            byte[] returnBytes = new byte[0]
-            testScheduler.createWorker().schedule({
-                onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(uuid, returnBytes))
-            }, DEFAULT_WRITE_DELAY, TimeUnit.SECONDS)
-
-            return true
-        }
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
 
         when:
         testSubscriber.unsubscribe()
@@ -350,13 +344,23 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
         0 * mockRadioReleaseInterface.release()
 
         when:
-        advanceTimeForWrites(1)
+        batchWriteCallback.call(onCharacteristicWriteSubject, mockCharacteristic)
 
         then:
         0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
 
         and:
         1 * mockRadioReleaseInterface.release()
+
+        where:
+        batchWriteCallback << [
+                { PublishSubject<ByteAssociation<UUID>> onWriteSubject, BluetoothGattCharacteristic characteristic ->
+                    onWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), new byte[0]))
+                },
+                { PublishSubject<ByteAssociation<UUID>> onWriteSubject, BluetoothGattCharacteristic characteristic ->
+                    onWriteSubject.onError(testException)
+                }
+        ]
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {

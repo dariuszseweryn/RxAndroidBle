@@ -112,7 +112,16 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                         new Action1<Throwable>() {
                             @Override
                             public void call(Throwable throwable) {
+                                final Boolean wasUnsubscribedBeforeOnError = isUnsubscribed.get();
                                 emitter.onError(throwable);
+                                /*
+                                 * Additional call to RadioReleaseInterface.release() for a situation where the Emitter has unsubscribed
+                                 * during the long write operation and the above call to Emitter.onError() will not be passed to it and
+                                 * RadioReleaseInterface will not be released by the superclass RxBleRadioOperation.
+                                 */
+                                if (wasUnsubscribedBeforeOnError) {
+                                    radioReleaseInterface.release();
+                                }
                             }
                         }
                 );
