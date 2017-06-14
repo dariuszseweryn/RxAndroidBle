@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal.operations
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.RxBleConnection
@@ -29,6 +30,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     UUID mockCharacteristicUUID = UUID.randomUUID()
     UUID differentCharacteristicUUID = UUID.randomUUID()
     BluetoothGatt mockGatt = Mock BluetoothGatt
+    BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
@@ -44,6 +46,8 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicWrite() >> onCharacteristicWriteSubject
+        mockGatt.getDevice() >> mockDevice
+        mockDevice.getAddress() >> "test"
     }
 
     def "should call BluetoothGattCharacteristic.setValue() before calling BluetoothGatt.writeCharacteristic()"() {
@@ -317,6 +321,42 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
         where:
         maxBatchSize << [0, -1]
+    }
+
+    def "should complete after next batch if unsubscribed"() {
+
+        given:
+        givenWillWriteNextBatchImmediatelyAfterPrevious()
+        prepareObjectUnderTest(1, byteArray(20))
+
+        when:
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            UUID uuid = characteristic.getUuid()
+            byte[] returnBytes = new byte[0]
+            testScheduler.createWorker().schedule({
+                onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(uuid, returnBytes))
+            }, DEFAULT_WRITE_DELAY, TimeUnit.SECONDS)
+
+            return true
+        }
+
+        when:
+        testSubscriber.unsubscribe()
+
+        then:
+        0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
+
+        when:
+        advanceTimeForWrites(5)
+
+        then:
+        0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
+
+        and:
+        1 * mockRadioReleaseInterface.release()
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {

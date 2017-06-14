@@ -23,6 +23,7 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Named;
 
 import rx.Emitter;
@@ -66,7 +67,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     }
 
     @Override
-    protected void protectedRun(final Emitter<byte[]> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
+    protected void protectedRun(final Emitter<byte[]> emitter, final RadioReleaseInterface radioReleaseInterface) throws Throwable {
         int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
@@ -77,23 +78,35 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
 
+        final AtomicBoolean isUnsubscribed = new AtomicBoolean(false);
         writeBatchAndObserve(batchSize, byteBuffer)
                 .subscribeOn(mainThreadScheduler)
-                .takeFirst(writeResponseForMatchingCharacteristic())
+                .takeFirst(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
                 .timeout(
                         timeoutConfiguration.timeout,
                         timeoutConfiguration.timeoutTimeUnit,
                         timeoutObservable,
                         timeoutConfiguration.timeoutScheduler
                 )
-                .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledged(byteBuffer))
+                .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
+                        writeOperationAckStrategy, byteBuffer, isUnsubscribed
+                ))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
                             @Override
                             public void call() {
+                                final Boolean wasUnsubscribedBeforeOnComplete = isUnsubscribed.get();
                                 emitter.onNext(bytesToWrite);
                                 emitter.onCompleted();
+                                /*
+                                 * Additional call to RadioReleaseInterface.release() for a situation where the Emitter has unsubscribed
+                                 * during the long write operation and the above call to Emitter.onCompleted() will not be passed to it and
+                                 * RadioReleaseInterface will not be released by the superclass RxBleRadioOperation.
+                                 */
+                                if (wasUnsubscribedBeforeOnComplete) {
+                                    radioReleaseInterface.release();
+                                }
                             }
                         },
                         new Action1<Throwable>() {
@@ -103,6 +116,18 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                             }
                         }
                 );
+
+        emitter.setCancellation(new Cancellable() {
+            @Override
+            public void cancel() throws Exception {
+                /*
+                 * Cancellation of the long write flow should take place after a single batch write will finish and no operations will be
+                 * scheduled on the BluetoothGatt - that is why the above flow is not unsubscribed on sight but rather only flagged
+                 * as finished
+                 */
+                isUnsubscribed.set(true);
+            }
+        });
     }
 
     @Override
@@ -118,12 +143,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                     @Override
                     public void call(Emitter<ByteAssociation<UUID>> emitter) {
                         final Subscription s = onCharacteristicWrite.subscribe(emitter);
-                        emitter.setCancellation(new Cancellable() {
-                            @Override
-                            public void cancel() throws Exception {
-                                s.unsubscribe();
-                            }
-                        });
+                        emitter.setSubscription(s);
 
                         /*
                          * Since Android OS calls {@link android.bluetooth.BluetoothGattCallback} callbacks on arbitrary background
@@ -164,7 +184,9 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         }
     }
 
-    private Func1<ByteAssociation<UUID>, Boolean> writeResponseForMatchingCharacteristic() {
+    private static Func1<ByteAssociation<UUID>, Boolean> writeResponseForMatchingCharacteristic(
+            final BluetoothGattCharacteristic bluetoothGattCharacteristic
+    ) {
         return new Func1<ByteAssociation<UUID>, Boolean>() {
             @Override
             public Boolean call(ByteAssociation<UUID> uuidByteAssociation) {
@@ -173,11 +195,18 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         };
     }
 
-    private Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledged(final ByteBuffer byteBuffer) {
+    private static Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
+            final WriteOperationAckStrategy writeOperationAckStrategy,
+            final ByteBuffer byteBuffer,
+            final AtomicBoolean isUnsubscribed) {
         return new Func1<Observable<? extends Void>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Void> emittingOnBatchWriteFinished) {
-                return writeOperationAckStrategy.call(emittingOnBatchWriteFinished.map(bufferIsNotEmpty(byteBuffer)))
+                return writeOperationAckStrategy.call(
+                        emittingOnBatchWriteFinished
+                                .takeWhile(notUnsubscribed(isUnsubscribed))
+                                .map(bufferIsNotEmpty(byteBuffer))
+                )
                         .takeWhile(bufferIsNotEmpty(byteBuffer));
             }
 
@@ -187,6 +216,16 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
                     @Override
                     public Boolean call(Object emittedFromActStrategy) {
                         return byteBuffer.hasRemaining();
+                    }
+                };
+            }
+
+            @NonNull
+            private Func1<Object, Boolean> notUnsubscribed(final AtomicBoolean isUnsubscribed) {
+                return new Func1<Object, Boolean>() {
+                    @Override
+                    public Boolean call(Object emission) {
+                        return !isUnsubscribed.get();
                     }
                 };
             }
