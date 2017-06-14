@@ -23,8 +23,6 @@ import rx.Emitter;
 public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan<RxBleInternalScanResult, ScanCallback> {
 
     @NonNull
-    private final RxBleAdapterWrapper rxBleAdapterWrapper;
-    @NonNull
     private final InternalScanResultCreator internalScanResultCreator;
     @NonNull
     private final AndroidScanObjectsConverter androidScanObjectsConverter;
@@ -49,7 +47,6 @@ public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan<RxBleI
         this.scanSettings = scanSettings;
         this.emulatedScanFilterMatcher = emulatedScanFilterMatcher;
         this.scanFilters = offloadedScanFilters;
-        this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.androidScanObjectsConverter = androidScanObjectsConverter;
     }
 

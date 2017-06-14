@@ -20,7 +20,7 @@ abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TY
 
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
 
-    protected RxBleRadioOperationScan(RxBleAdapterWrapper rxBleAdapterWrapper) {
+    RxBleRadioOperationScan(RxBleAdapterWrapper rxBleAdapterWrapper) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
     }
 
