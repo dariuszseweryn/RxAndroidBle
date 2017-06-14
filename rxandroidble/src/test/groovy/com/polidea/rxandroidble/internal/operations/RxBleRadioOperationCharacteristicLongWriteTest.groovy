@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal.operations
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.RxBleConnection
@@ -20,6 +21,7 @@ import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -29,6 +31,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     UUID mockCharacteristicUUID = UUID.randomUUID()
     UUID differentCharacteristicUUID = UUID.randomUUID()
     BluetoothGatt mockGatt = Mock BluetoothGatt
+    BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
@@ -39,11 +42,13 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
-    Exception testException = new Exception("testException")
+    @Shared Exception testException = new Exception("testException")
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicWrite() >> onCharacteristicWriteSubject
+        mockGatt.getDevice() >> mockDevice
+        mockDevice.getAddress() >> "test"
     }
 
     def "should call BluetoothGattCharacteristic.setValue() before calling BluetoothGatt.writeCharacteristic()"() {
@@ -317,6 +322,45 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
 
         where:
         maxBatchSize << [0, -1]
+    }
+
+    @Unroll
+    def "should release radio after next batch if unsubscribed"() {
+
+        given:
+        givenWillWriteNextBatchImmediatelyAfterPrevious()
+        prepareObjectUnderTest(1, byteArray(20))
+
+        when:
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
+
+        when:
+        testSubscriber.unsubscribe()
+
+        then:
+        0 * mockRadioReleaseInterface.release()
+
+        when:
+        batchWriteCallback.call(onCharacteristicWriteSubject, mockCharacteristic)
+
+        then:
+        0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
+
+        and:
+        1 * mockRadioReleaseInterface.release()
+
+        where:
+        batchWriteCallback << [
+                { PublishSubject<ByteAssociation<UUID>> onWriteSubject, BluetoothGattCharacteristic characteristic ->
+                    onWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), new byte[0]))
+                },
+                { PublishSubject<ByteAssociation<UUID>> onWriteSubject, BluetoothGattCharacteristic characteristic ->
+                    onWriteSubject.onError(testException)
+                }
+        ]
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
