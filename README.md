@@ -262,6 +262,7 @@ The below table contains an overview of used `Observable` patterns
 | Interface | Function | Number of values | Completes |
 | --- | --- | --- | --- |
 | RxBleClient | scanBleDevices()* | Infinite | false |
+| RxBleClient | observeStateChanges() | Infinite** | false** |
 | RxBleDevice | observeConnectionStateChanges() | Infinite | false |
 | RxBleDevice | establishConnection()* | Single | false |
 | RxBleConnection | discoverServices() | Single | true |
@@ -280,6 +281,7 @@ The below table contains an overview of used `Observable` patterns
 | LongWriteOperationBuilder | build() | Single | true |
 
 \* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)
+\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device — in this situation there is no point to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
