@@ -9,13 +9,14 @@ import rx.functions.Cancellable;
 
 /**
  * A convenience class to use in {@link com.polidea.rxandroidble.internal.RxBleRadioOperation} subclasses. It wraps the {@link Emitter}
- * and {@link RadioReleaseInterface} and makes sure that {@link rx.Subscription} it was subscribed to will finish in case of the wrapped
- * emitter was unsubscribed.
+ * and {@link RadioReleaseInterface} and makes sure that the {@link rx.Subscription} it was subscribed to will finish and call
+ * {@link RadioReleaseInterface#release()} in either {@link #onCompleted()} or {@link #onError(Throwable)} in case of the wrapped emitter
+ * being unsubscribed / canceled.
  * @param <T> parameter of the wrapped {@link Emitter}
  */
 public class RadioReleasingEmitterWrapper<T> extends Subscriber<T> implements Cancellable {
 
-    private final AtomicBoolean isUnsubscribed = new AtomicBoolean(false);
+    private final AtomicBoolean isEmitterCanceled = new AtomicBoolean(false);
 
     private final Emitter<T> emitter;
 
@@ -50,15 +51,15 @@ public class RadioReleasingEmitterWrapper<T> extends Subscriber<T> implements Ca
 
     @Override
     synchronized public void cancel() throws Exception {
-        isUnsubscribed.set(true);
+        isEmitterCanceled.set(true);
     }
 
     synchronized public boolean isWrappedEmitterUnsubscribed() {
-        return isUnsubscribed.get();
+        return isEmitterCanceled.get();
     }
 
     synchronized private boolean releaseRadioIfUnsubscribed() {
-        if (isUnsubscribed.get()) {
+        if (isEmitterCanceled.get()) {
             radioReleaseInterface.release();
             return true;
         }
