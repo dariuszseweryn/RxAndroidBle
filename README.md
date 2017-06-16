@@ -280,7 +280,7 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined |
 | LongWriteOperationBuilder | build() | Single | true |
 
-\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)
+\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
 \** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device — in this situation there is no point to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
