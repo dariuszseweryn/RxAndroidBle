@@ -12,6 +12,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 
+import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.util.concurrent.TimeUnit;
 import rx.Emitter;
 import rx.Observable;
@@ -40,7 +41,8 @@ public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperati
     }
 
     @Override
-    final protected void protectedRun(Emitter<T> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
+    final protected void protectedRun(final Emitter<T> emitter, final RadioReleaseInterface radioReleaseInterface) throws Throwable {
+        final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
         Subscription subscription = getCallback(rxBleGattCallback)
                 .first()
                 .timeout(
@@ -49,11 +51,11 @@ public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperati
                         timeoutFallbackProcedure(bluetoothGatt, rxBleGattCallback, timeoutConfiguration.timeoutScheduler),
                         timeoutConfiguration.timeoutScheduler
                 )
-                .subscribe(emitter);
+                .subscribe(emitterWrapper);
 
         if (!startOperation(bluetoothGatt)) {
             subscription.unsubscribe();
-            emitter.onError(new BleGattCannotStartException(bluetoothGatt, operationType));
+            emitterWrapper.onError(new BleGattCannotStartException(bluetoothGatt, operationType));
         }
     }
 

@@ -18,6 +18,8 @@ class FlatRxBleRadio implements RxBleRadio {
 
                     @Override
                     void call(Emitter tEmitter) {
+                        semaphore.awaitRelease()
+
                         Subscription s = operation
                                 .run(semaphore)
                                 .subscribe(tEmitter)

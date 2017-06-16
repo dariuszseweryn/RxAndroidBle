@@ -21,6 +21,7 @@ import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
+import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -308,12 +309,14 @@ public class RxBleConnectionImpl implements RxBleConnection {
             @Override
             @SuppressWarnings("ConstantConditions")
             protected void protectedRun(Emitter<T> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
+                final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
+
                 Observable<T> operationObservable = operation.asObservable(bluetoothGatt, gattCallback, callbackScheduler);
                 if (operationObservable == null) {
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
-                operationObservable.subscribe(emitter);
+                operationObservable.subscribe(emitterWrapper);
             }
 
             @Override

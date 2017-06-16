@@ -348,6 +348,33 @@ class RxBleConnectionTest extends Specification {
         testSubscriber.assertError(IllegalArgumentException.class)
     }
 
+    @Unroll
+    def "should release the radio when observable returned from RxBleRadioOperationCustom.asObservable() will terminate even if was unsubscribed before"() {
+
+        given:
+        def publishSubject = PublishSubject.create()
+        def radioOperationCustom = customRadioOperationWithOutcome { publishSubject }
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        when:
+        testSubscriber.unsubscribe()
+
+        then:
+        !flatRadio.semaphore.isReleased()
+
+        when:
+        callback.call(publishSubject)
+
+        then:
+        flatRadio.semaphore.isReleased()
+
+        where:
+        callback << [
+                { rx.Observer o -> o.onCompleted() },
+                { rx.Observer o -> o.onError(new Throwable()) }
+        ]
+    }
+
     public customRadioOperationWithOutcome(Closure<Observable<Boolean>> outcomeSupplier) {
         new RxBleRadioOperationCustom<Boolean>() {
 

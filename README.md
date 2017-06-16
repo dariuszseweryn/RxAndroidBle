@@ -1,5 +1,7 @@
 # RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble%22%20AND%20a%3A%22rxandroidble%22)
-![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/viking-large.jpeg "Tailored software services including concept, design, development and testing")
+<p align="center">
+  <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
+</p>
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -260,6 +262,7 @@ The below table contains an overview of used `Observable` patterns
 | Interface | Function | Number of values | Completes |
 | --- | --- | --- | --- |
 | RxBleClient | scanBleDevices()* | Infinite | false |
+| RxBleClient | observeStateChanges() | Infinite** | false** |
 | RxBleDevice | observeConnectionStateChanges() | Infinite | false |
 | RxBleDevice | establishConnection()* | Single | false |
 | RxBleConnection | discoverServices() | Single | true |
@@ -277,7 +280,8 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined |
 | LongWriteOperationBuilder | build() | Single | true |
 
-\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)
+\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
+\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device — in this situation there is no point to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
@@ -292,7 +296,7 @@ If you would like to observe `BluetoothAdapter` state changes you can use `RxBle
 ### Permissions
 RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
 
-```
+```xml
 <uses-permission
   android:name="android.permission.ACCESS_COARSE_LOCATION"
   android:maxSdkVersion="22"/>
@@ -305,7 +309,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.3.0"
+compile "com.polidea.rxandroidble:rxandroidble:1.3.1"
 ```
 ### Maven
 
@@ -313,7 +317,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.3.0"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1</version>
   <type>aar</type>
 </dependency>
 ```
