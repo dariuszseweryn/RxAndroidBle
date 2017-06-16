@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 1.3.1-SNAPSHOT
+Version 1.3.1
 * Fixed unsubscribing from operations before `onComplete()`/`onError()` causing the library to hang. (https://github.com/Polidea/RxAndroidBle/issues/218)
 
 Version 1.3.0
