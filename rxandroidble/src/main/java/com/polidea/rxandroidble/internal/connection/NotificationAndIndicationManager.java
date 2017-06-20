@@ -87,6 +87,7 @@ class NotificationAndIndicationManager {
                                     synchronized (activeNotificationObservableMap) {
                                         activeNotificationObservableMap.remove(id);
                                     }
+                                    // teardown the notification
                                     setCharacteristicNotification(bluetoothGatt, characteristic, false)
                                             .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
                                             .subscribe(
