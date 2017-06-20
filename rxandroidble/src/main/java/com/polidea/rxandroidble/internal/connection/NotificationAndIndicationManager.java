@@ -62,7 +62,7 @@ class NotificationAndIndicationManager {
         return Observable.defer(new Func0<Observable<Observable<byte[]>>>() {
             @Override
             public Observable<Observable<byte[]>> call() {
-                synchronized (NotificationAndIndicationManager.this) {
+                synchronized (activeNotificationObservableMap) {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
 
@@ -78,18 +78,21 @@ class NotificationAndIndicationManager {
 
                     final byte[] enableNotificationTypeValue = withAck ? configEnableIndication : configEnableNotification;
 
-                    final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(
-                            characteristic,
-                            enableNotificationTypeValue,
-                            setupMode
-                    )
-                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(id)))
+                    final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
+                            .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
+                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
-                                    dismissTriggeredRead(
-                                            characteristic, setupMode, id, activeNotificationObservableMap, enableNotificationTypeValue
-                                    );
+                                    synchronized (activeNotificationObservableMap) {
+                                        activeNotificationObservableMap.remove(id);
+                                    }
+                                    setCharacteristicNotification(bluetoothGatt, characteristic, false)
+                                            .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
+                                            .subscribe(
+                                                    Actions.empty(),
+                                                    Actions.<Throwable>toAction1(Actions.empty())
+                                            );
                                 }
                             })
                             .replay(1)
@@ -101,15 +104,10 @@ class NotificationAndIndicationManager {
         });
     }
 
-    private Completable createTriggeredReadObservable(final BluetoothGattCharacteristic characteristic, final byte[] enableValue,
-                                                      final NotificationSetupMode setupMode) {
-        return setCharacteristicNotification(characteristic, true)
-                .andThen(setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, true, enableValue));
-    }
-
     @NonNull
-    private Completable setCharacteristicNotification(final BluetoothGattCharacteristic characteristic,
-                                                      final boolean isNotificationEnabled) {
+    private static Completable setCharacteristicNotification(final BluetoothGatt bluetoothGatt,
+                                                             final BluetoothGattCharacteristic characteristic,
+                                                             final boolean isNotificationEnabled) {
         return Completable.fromAction(new Action0() {
             @Override
             public void call() {
@@ -122,27 +120,26 @@ class NotificationAndIndicationManager {
         });
     }
 
-    private void dismissTriggeredRead(
-            final BluetoothGattCharacteristic characteristic,
-            final NotificationSetupMode setupMode,
-            final CharacteristicNotificationId characteristicNotificationId,
-            Map<CharacteristicNotificationId, ?> notificationTypeMap,
-            final byte[] enableValue
-    ) {
-        synchronized (this) {
-            notificationTypeMap.remove(characteristicNotificationId);
-        }
-
-        setCharacteristicNotification(characteristic, false)
-                .andThen(setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, false, enableValue))
-                .subscribe(
-                        Actions.empty(),
-                        Actions.<Throwable>toAction1(Actions.empty())
-                );
+    @NonNull
+    private static Completable.Transformer setupModeTransformer(final DescriptorWriter descriptorWriter,
+                                                                final BluetoothGattCharacteristic characteristic,
+                                                                final byte[] value,
+                                                                final NotificationSetupMode mode) {
+        return new Completable.Transformer() {
+            @Override
+            public Completable call(Completable completable) {
+                if (mode == NotificationSetupMode.DEFAULT) {
+                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
+                } else { // NotificationSetupMode.COMPAT
+                    return completable;
+                }
+            }
+        };
     }
 
     @NonNull
-    private Observable<byte[]> observeOnCharacteristicChangeCallbacks(final CharacteristicNotificationId characteristicId) {
+    private static Observable<byte[]> observeOnCharacteristicChangeCallbacks(RxBleGattCallback gattCallback,
+                                                                             final CharacteristicNotificationId characteristicId) {
         return gattCallback.getOnCharacteristicChanged()
                 .filter(new Func1<CharacteristicChangedEvent, Boolean>() {
                     @Override
@@ -159,17 +156,6 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private Completable setupCharacteristicDescriptorTriggeredRead(
-            final BluetoothGattCharacteristic bluetoothGattCharacteristic, NotificationSetupMode setupMode,
-            final boolean enabled, final byte[] enableValue
-    ) {
-        if (setupMode == NotificationSetupMode.DEFAULT) {
-            return writeClientCharacteristicConfig(bluetoothGattCharacteristic, descriptorWriter, enabled ? enableValue : configDisable);
-        } else {
-            return Completable.complete();
-        }
-    }
-
     private static Completable writeClientCharacteristicConfig(
             final BluetoothGattCharacteristic bluetoothGattCharacteristic,
             final DescriptorWriter descriptorWriter,
