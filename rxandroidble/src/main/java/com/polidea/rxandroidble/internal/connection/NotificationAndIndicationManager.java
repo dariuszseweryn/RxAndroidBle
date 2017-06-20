@@ -1,8 +1,6 @@
 package com.polidea.rxandroidble.internal.connection;
 
 
-import static rx.Observable.just;
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -11,17 +9,18 @@ import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble.internal.util.ActiveCharacteristicNotification;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import javax.inject.Inject;
 import javax.inject.Named;
+import rx.Completable;
 import rx.Observable;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Actions;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -38,8 +37,7 @@ class NotificationAndIndicationManager {
     private final RxBleGattCallback gattCallback;
     private final DescriptorWriter descriptorWriter;
 
-    private final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> notificationObservableMap = new HashMap<>();
-    private final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> indicationObservableMap = new HashMap<>();
+    private final Map<CharacteristicNotificationId, ActiveCharacteristicNotification> activeNotificationObservableMap = new HashMap<>();
 
     @Inject
     NotificationAndIndicationManager(
@@ -68,22 +66,14 @@ class NotificationAndIndicationManager {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
 
-                    final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> conflictingServerInitiatedReadingMap
-                            = withAck ? notificationObservableMap : indicationObservableMap;
-                    final boolean conflictingNotificationIsAlreadySet
-                            = conflictingServerInitiatedReadingMap.containsKey(id);
+                    final ActiveCharacteristicNotification activeCharacteristicNotification = activeNotificationObservableMap.get(id);
 
-                    if (conflictingNotificationIsAlreadySet) {
-                        return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
-                    }
-
-                    final HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> sameNotificationTypeMap
-                            = withAck ? indicationObservableMap : notificationObservableMap;
-
-                    final Observable<Observable<byte[]>> availableObservable = sameNotificationTypeMap.get(id);
-
-                    if (availableObservable != null) {
-                        return availableObservable;
+                    if (activeCharacteristicNotification != null) {
+                        if (activeCharacteristicNotification.isIndication == withAck) {
+                            return activeCharacteristicNotification.notificationObservable;
+                        } else {
+                            return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
+                        }
                     }
 
                     final byte[] enableNotificationTypeValue = withAck ? configEnableIndication : configEnableNotification;
@@ -93,63 +83,41 @@ class NotificationAndIndicationManager {
                             enableNotificationTypeValue,
                             setupMode
                     )
+                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(id)))
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
                                     dismissTriggeredRead(
-                                            characteristic, setupMode, id, sameNotificationTypeMap, enableNotificationTypeValue
+                                            characteristic, setupMode, id, activeNotificationObservableMap, enableNotificationTypeValue
                                     );
-                                }
-                            })
-                            .map(new Func1<Boolean, Observable<byte[]>>() {
-                                @Override
-                                public Observable<byte[]> call(Boolean notificationDescriptorData) {
-                                    return observeOnCharacteristicChangeCallbacks(id);
                                 }
                             })
                             .replay(1)
                             .refCount();
-                    sameNotificationTypeMap.put(id, newObservable);
+                    activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, withAck));
                     return newObservable;
                 }
             }
         });
     }
 
-    private Observable<Boolean> createTriggeredReadObservable(final BluetoothGattCharacteristic characteristic, final byte[] enableValue,
-                                                              final NotificationSetupMode setupMode) {
+    private Completable createTriggeredReadObservable(final BluetoothGattCharacteristic characteristic, final byte[] enableValue,
+                                                      final NotificationSetupMode setupMode) {
         return setCharacteristicNotification(characteristic, true)
-                .doOnNext(new Action1<Boolean>() {
-                    @Override
-                    public void call(Boolean enabledWithSuccess) {
-                        if (!enabledWithSuccess) {
-                            throw new BleCannotSetCharacteristicNotificationException(
-                                    characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION
-                            );
-                        }
-                    }
-                })
-                .flatMap(new Func1<Boolean, Observable<Boolean>>() {
-                    @Override
-                    public Observable<Boolean> call(Boolean enabledWithSuccess) {
-                        return setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, true, enableValue);
-                    }
-                })
-                .flatMap(new Func1<Boolean, Observable<? extends Boolean>>() {
-                    @Override
-                    public Observable<? extends Boolean> call(Boolean onNext) {
-                        return ObservableUtil.justOnNext(onNext);
-                    }
-                });
+                .andThen(setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, true, enableValue));
     }
 
     @NonNull
-    private Observable<Boolean> setCharacteristicNotification(final BluetoothGattCharacteristic characteristic,
-                                                              final boolean isNotificationEnabled) {
-        return Observable.fromCallable(new Callable<Boolean>() {
+    private Completable setCharacteristicNotification(final BluetoothGattCharacteristic characteristic,
+                                                      final boolean isNotificationEnabled) {
+        return Completable.fromAction(new Action0() {
             @Override
-            public Boolean call() throws Exception {
-                return bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled);
+            public void call() {
+                if (!bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled)) {
+                    throw new BleCannotSetCharacteristicNotificationException(
+                            characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION
+                    );
+                }
             }
         });
     }
@@ -158,7 +126,7 @@ class NotificationAndIndicationManager {
             final BluetoothGattCharacteristic characteristic,
             final NotificationSetupMode setupMode,
             final CharacteristicNotificationId characteristicNotificationId,
-            HashMap<CharacteristicNotificationId, Observable<Observable<byte[]>>> notificationTypeMap,
+            Map<CharacteristicNotificationId, ?> notificationTypeMap,
             final byte[] enableValue
     ) {
         synchronized (this) {
@@ -166,12 +134,7 @@ class NotificationAndIndicationManager {
         }
 
         setCharacteristicNotification(characteristic, false)
-                .flatMap(new Func1<Boolean, Observable<Boolean>>() {
-                    @Override
-                    public Observable<Boolean> call(Boolean descriptor) {
-                        return setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, false, enableValue);
-                    }
-                })
+                .andThen(setupCharacteristicDescriptorTriggeredRead(characteristic, setupMode, false, enableValue))
                 .subscribe(
                         Actions.empty(),
                         Actions.<Throwable>toAction1(Actions.empty())
@@ -196,58 +159,39 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private Observable<Boolean> setupCharacteristicDescriptorTriggeredRead(
+    private Completable setupCharacteristicDescriptorTriggeredRead(
             final BluetoothGattCharacteristic bluetoothGattCharacteristic, NotificationSetupMode setupMode,
             final boolean enabled, final byte[] enableValue
     ) {
         if (setupMode == NotificationSetupMode.DEFAULT) {
-            return getClientCharacteristicConfig(bluetoothGattCharacteristic)
-                    .flatMap(new Func1<BluetoothGattDescriptor, Observable<byte[]>>() {
-                        @Override
-                        public Observable<byte[]> call(BluetoothGattDescriptor bluetoothGattDescriptor) {
-                            return descriptorWriter
-                                    .writeDescriptor(bluetoothGattDescriptor, enabled ? enableValue : configDisable);
-                        }
-                    })
-                    .onErrorResumeNext(new Func1<Throwable, Observable<byte[]>>() {
-                        @Override
-                        public Observable<byte[]> call(Throwable throwable) {
-                            return Observable.error(new BleCannotSetCharacteristicNotificationException(
-                                    bluetoothGattCharacteristic,
-                                    BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
-                            ));
-                        }
-                    })
-                    .switchIfEmpty(
-                            Observable.<byte[]>error(new BleCannotSetCharacteristicNotificationException(
-                                    bluetoothGattCharacteristic,
-                                    BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
-                            ))
-                    )
-                    .map(new Func1<byte[], Boolean>() {
-                        @Override
-                        public Boolean call(byte[] ignored) {
-                            return true;
-                        }
-                    });
+            return writeClientCharacteristicConfig(bluetoothGattCharacteristic, descriptorWriter, enabled ? enableValue : configDisable);
         } else {
-            return just(true);
+            return Completable.complete();
         }
-
     }
 
-    private Observable<BluetoothGattDescriptor> getClientCharacteristicConfig(final BluetoothGattCharacteristic characteristic) {
-        return Observable
-                .fromCallable(new Callable<BluetoothGattDescriptor>() {
+    private static Completable writeClientCharacteristicConfig(
+            final BluetoothGattCharacteristic bluetoothGattCharacteristic,
+            final DescriptorWriter descriptorWriter,
+            final byte[] value
+    ) {
+        final BluetoothGattDescriptor descriptor = bluetoothGattCharacteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
+        if (descriptor == null) {
+            return Completable.error(new BleCannotSetCharacteristicNotificationException(
+                    bluetoothGattCharacteristic,
+                    BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+            ));
+        }
+
+        return descriptorWriter.writeDescriptor(descriptor, value)
+                .toCompletable()
+                .onErrorResumeNext(new Func1<Throwable, Completable>() {
                     @Override
-                    public BluetoothGattDescriptor call() throws Exception {
-                        return characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
-                    }
-                })
-                .filter(new Func1<BluetoothGattDescriptor, Boolean>() {
-                    @Override
-                    public Boolean call(BluetoothGattDescriptor bluetoothGattDescriptor) {
-                        return bluetoothGattDescriptor != null;
+                    public Completable call(Throwable throwable) {
+                        return Completable.error(new BleCannotSetCharacteristicNotificationException(
+                                bluetoothGattCharacteristic,
+                                BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+                        ));
                     }
                 });
     }
