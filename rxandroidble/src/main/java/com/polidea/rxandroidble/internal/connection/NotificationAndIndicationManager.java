@@ -25,6 +25,7 @@ import rx.functions.Action1;
 import rx.functions.Actions;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.subjects.PublishSubject;
 
 @ConnectionScope
 class NotificationAndIndicationManager {
@@ -87,6 +88,7 @@ class NotificationAndIndicationManager {
                     }
 
                     final byte[] enableNotificationTypeValue = withAck ? configEnableIndication : configEnableNotification;
+                    final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = createTriggeredReadObservable(
                             characteristic,
@@ -96,6 +98,7 @@ class NotificationAndIndicationManager {
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
+                                    notificationCompletedSubject.onCompleted();
                                     dismissTriggeredRead(
                                             characteristic, setupMode, id, sameNotificationTypeMap, enableNotificationTypeValue
                                     );
@@ -104,7 +107,9 @@ class NotificationAndIndicationManager {
                             .map(new Func1<Boolean, Observable<byte[]>>() {
                                 @Override
                                 public Observable<byte[]> call(Boolean notificationDescriptorData) {
-                                    return observeOnCharacteristicChangeCallbacks(id);
+                                    return observeOnCharacteristicChangeCallbacks(id)
+                                            .mergeWith(gattCallback.<byte[]>observeDisconnect())
+                                            .takeUntil(notificationCompletedSubject);
                                 }
                             })
                             .replay(1)
