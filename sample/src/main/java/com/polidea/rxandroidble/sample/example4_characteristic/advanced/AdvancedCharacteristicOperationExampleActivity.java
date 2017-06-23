@@ -100,7 +100,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
                         .retryWhen(errorNotificationHandler -> errorNotificationHandler),
                 sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.setup_notification)),
                 sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.setting_notification)),
-                sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.teardown_indication)),
+                sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.teardown_notification)),
                 sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.setup_indication)),
                 sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.setting_indication)),
                 sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.teardown_indication))

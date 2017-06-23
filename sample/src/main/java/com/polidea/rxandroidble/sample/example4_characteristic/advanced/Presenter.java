@@ -93,17 +93,13 @@ final class Presenter {
                                                 if (isIndication) { // if indication was clicked
                                                     return connection
                                                             .setupIndication(characteristicUuid, notificationSetupMode) // we setup indications
-                                                            .flatMap(observable -> observable
-                                                                    .compose(transformToPresenterEvent(Type.INDICATE)) // and wrap the emissions with a convenience function
-                                                                    .startWith(new InfoEvent("Indication is ready!"))) // start with informing that indications are ready
-                                                            .compose(takeUntil(enablingIndicateClicks, disableIndicateClicks)); // use a convenience transformer for tearing down the notifications
-                                                } else {
+                                                            .compose(takeUntil(enablingIndicateClicks, disableIndicateClicks)) // use a convenience transformer for tearing down the notifications
+                                                            .compose(transformToNotificationPresenterEvent(Type.INDICATE)); // and wrap the emissions with a convenience function
+                                                } else { // if notification was clicked
                                                     return connection
                                                             .setupNotification(characteristicUuid, notificationSetupMode)
-                                                            .flatMap(observable -> observable
-                                                                    .compose(transformToPresenterEvent(Type.NOTIFY))
-                                                                    .startWith(new InfoEvent("Notification is ready!")))
-                                                            .compose(takeUntil(enablingNotifyClicks, disableNotifyClicks));
+                                                            .compose(takeUntil(enablingNotifyClicks, disableNotifyClicks))
+                                                            .compose(transformToNotificationPresenterEvent(Type.NOTIFY));
                                                 }
                                             })
                                             .compose(repeatAfterCompleted()) // whenever the notification or indication is finished (by the user or an error) repeat it
@@ -171,6 +167,30 @@ final class Presenter {
     static Observable.Transformer<byte[], PresenterEvent> transformToPresenterEvent(Type type) {
         return observable -> observable.map(writtenBytes -> ((PresenterEvent) new ResultEvent(writtenBytes, type)))
                 .onErrorReturn(throwable -> new ErrorEvent(throwable, type));
+    }
+
+    /**
+     * A convenience function creating a transformer that will wrap the emissions in either {@link ResultEvent} or {@link ErrorEvent}
+     * with a given {@link Type} for notification type {@link Observable} (Observable<Observable<byte[]>>)
+     *
+     * @param type the type to wrap with
+     * @return the transformer
+     */
+    @SuppressWarnings("WeakerAccess")
+    @NonNull
+    static Observable.Transformer<Observable<byte[]>, PresenterEvent> transformToNotificationPresenterEvent(Type type) {
+        return observableObservable -> observableObservable
+                .flatMap(observable -> observable
+                        .map(bytes -> ((PresenterEvent) new ResultEvent(bytes, type)))
+                )
+                .onErrorReturn(throwable -> new ErrorEvent(throwable, type))
+                /*
+                 * since there is a flatMap above the returned Observable will not finish until the last observable returned from it will
+                 * not finish. Thing is that when the original observableObservable finishes the emitted observable should finish as well
+                 * as it will not emit any more values.
+                 * TODO: [DS] 23.06.2017 this should be done by the library itself
+                 */
+                .takeUntil(observableObservable.ignoreElements());
     }
 
     /**
