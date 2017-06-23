@@ -170,10 +170,10 @@ final class Presenter {
                         publishedObservable,
                         ((Observable<T>) beforeEmission.take(1).ignoreElements())
                 )
-                        .takeUntil(publishedObservable
+                        .takeUntil(((Observable<?>) publishedObservable
                                 .take(1)
                                 .toCompletable()
-                                .andThen(afterEmission)
+                                .andThen(afterEmission))
                         )
         );
     }
