@@ -20,9 +20,11 @@ import rx.Observable;
 final class Presenter {
 
     @SuppressWarnings("WeakerAccess")
-    static UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    static UUID clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private Presenter() {} // not instantiable
+    private Presenter() {
+        // not instantiable
+    }
 
     static Observable<PresenterEvent> prepareActivityLogic(
             final RxBleDevice rxBleDevice,
@@ -33,10 +35,12 @@ final class Presenter {
             final Observable<Boolean> readClicks,
             final Observable<byte[]> writeClicks,
             final Observable<Boolean> enableNotifyClicks,
-            final Observable<Boolean> enablingNotifyClicks, // used to disable notifications before they were enabled (but after enable click)
+            // used to disable notifications before they were enabled (but after enable click)
+            final Observable<Boolean> enablingNotifyClicks,
             final Observable<Boolean> disableNotifyClicks,
             final Observable<Boolean> enableIndicateClicks,
-            final Observable<Boolean> enablingIndicateClicks, // used to disable indications before they were enabled (but after enable click)
+            // used to disable indications before they were enabled (but after enable click)
+            final Observable<Boolean> enablingIndicateClicks,
             final Observable<Boolean> disableIndicateClicks
     ) {
 
@@ -50,11 +54,14 @@ final class Presenter {
 
                                     final Observable<PresenterEvent> readObservable =
                                             !hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_READ)
-                                                    ? Observable.empty() // if the characteristic is not readable return an empty (dummy) observable
+                                                    // if the characteristic is not readable return an empty (dummy) observable
+                                                    ? Observable.empty()
                                                     : readClicks // else use the readClicks observable from the activity
-                                                    .flatMap(ignoredClick -> connection.readCharacteristic(characteristic)) // every click is requesting a read operation from the peripheral
+                                                    // every click is requesting a read operation from the peripheral
+                                                    .flatMap(ignoredClick -> connection.readCharacteristic(characteristic))
                                                     .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
-                                                    .compose(repeatAfterCompleted()); // if this observable will complete (i.e. error happens) then repeat it
+                                                    // if this observable will complete (i.e. error happens) then repeat from the click
+                                                    .compose(repeatAfterCompleted());
 
                                     final Observable<PresenterEvent> writeObservable = // basically the same logic as in the reads
                                             !hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)
@@ -63,13 +70,15 @@ final class Presenter {
                                                     .flatMap(bytes -> connection.writeCharacteristic(characteristic, bytes))
                                                     .compose(transformToPresenterEvent(Type.WRITE));
 
-                                    final NotificationSetupMode notificationSetupMode = // checking if characteristic will potentially need a compatibility mode notifications
-                                            characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID) == null
+                                    // checking if characteristic will potentially need a compatibility mode notifications
+                                    final NotificationSetupMode notificationSetupMode =
+                                            characteristic.getDescriptor(clientCharacteristicConfigDescriptorUuid) == null
                                                     ? NotificationSetupMode.COMPAT
                                                     : NotificationSetupMode.DEFAULT;
                                     /*
                                      * wrapping observables for notifications and indications so they will emit FALSE and TRUE respectively.
-                                     * this is needed because only one of them may be active at the same time and we need to differentiate the clicks
+                                     * this is needed because only one of them may be active at the same time and we need to differentiate
+                                     * the clicks
                                      */
                                     final Observable<Boolean> enableNotifyClicksObservable = !hasProperty(characteristic, PROPERTY_NOTIFY)
                                             /*
@@ -79,8 +88,10 @@ final class Presenter {
                                              * notifyClicks and indicateClicks
                                              */
                                             ? Observable.never()
-                                            : enableNotifyClicks.take(1).map(aBoolean -> Boolean.FALSE); // only the first click to enableNotifyClicks is taken to account
-                                    final Observable<Boolean> enableIndicateClicksObservable = !hasProperty(characteristic, PROPERTY_INDICATE)
+                                            // only the first click to enableNotifyClicks is taken to account
+                                            : enableNotifyClicks.take(1).map(aBoolean -> Boolean.FALSE);
+                                    final Observable<Boolean> enableIndicateClicksObservable =
+                                            !hasProperty(characteristic, PROPERTY_INDICATE)
                                             ? Observable.never()
                                             : enableIndicateClicks.take(1).map(aBoolean -> Boolean.TRUE);
 
@@ -92,9 +103,12 @@ final class Presenter {
                                             .flatMap(isIndication -> {
                                                 if (isIndication) { // if indication was clicked
                                                     return connection
-                                                            .setupIndication(characteristicUuid, notificationSetupMode) // we setup indications
-                                                            .compose(takeUntil(enablingIndicateClicks, disableIndicateClicks)) // use a convenience transformer for tearing down the notifications
-                                                            .compose(transformToNotificationPresenterEvent(Type.INDICATE)); // and wrap the emissions with a convenience function
+                                                            // we setup indications
+                                                            .setupIndication(characteristicUuid, notificationSetupMode)
+                                                            // use a convenience transformer for tearing down the notifications
+                                                            .compose(takeUntil(enablingIndicateClicks, disableIndicateClicks))
+                                                            // and wrap the emissions with a convenience function
+                                                            .compose(transformToNotificationPresenterEvent(Type.INDICATE));
                                                 } else { // if notification was clicked
                                                     return connection
                                                             .setupNotification(characteristicUuid, notificationSetupMode)
@@ -102,23 +116,32 @@ final class Presenter {
                                                             .compose(transformToNotificationPresenterEvent(Type.NOTIFY));
                                                 }
                                             })
-                                            .compose(repeatAfterCompleted()) // whenever the notification or indication is finished (by the user or an error) repeat it
-                                            .startWith(new CompatibilityModeEvent( // at the beginning inform the activity about whether compat mode is being used
+                                            /*
+                                             * whenever the notification or indication is finished (by the user or an error) repeat from
+                                             * the clicks on notify / indicate
+                                             */
+                                            .compose(repeatAfterCompleted())
+                                            // at the beginning inform the activity about whether compat mode is being used
+                                            .startWith(new CompatibilityModeEvent(
                                                     hasProperty(characteristic, PROPERTY_NOTIFY | PROPERTY_INDICATE)
                                                             && notificationSetupMode == NotificationSetupMode.COMPAT
                                             ));
 
-                                    return Observable.merge( // merge all events from reads, writes, notifications and indications
+                                    // merge all events from reads, writes, notifications and indications
+                                    return Observable.merge(
                                             readObservable,
                                             writeObservable,
                                             notifyAndIndicateObservable
                                     )
-                                            .startWith(new InfoEvent("Hey, connection has been established!")); // start by informing the Activity that connection is established
+                                            // start by informing the Activity that connection is established
+                                            .startWith(new InfoEvent("Hey, connection has been established!"));
                                 }
                         )
-                        .flatMap(presenterEventObservable -> presenterEventObservable) // flatMap the observable to itself to get the PresenterEvents
+                        // flatMap the observable to itself to get the PresenterEvents
+                        .flatMap(presenterEventObservable -> presenterEventObservable)
                         .compose(takeUntil(connectingClicks, disconnectClicks)) // convenience transformer to close the connection
-                        .onErrorReturn(throwable -> new InfoEvent("Connection error: " + throwable)) // in case of a connection error inform the activity
+                        // in case of a connection error inform the activity
+                        .onErrorReturn(throwable -> new InfoEvent("Connection error: " + throwable))
                 )
                 .compose(repeatAfterCompleted()); // if the the above will complete - start from the beginning
     }

@@ -40,6 +40,7 @@ import rx.android.schedulers.AndroidSchedulers;
  */
 public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatActivity {
 
+    private static final String TAG = AdvancedCharacteristicOperationExampleActivity.class.getSimpleName();
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";
     @BindView(R.id.connect)
     Button connectButton;
@@ -61,7 +62,6 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
     Button indicateButton;
     private Subscription activityFlowSubscription;
     private Observable<PresenterEvent> presenterEventObservable;
-    private final String TAG = getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -209,6 +209,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
                     showNotification("Notification: " + HexString.bytesToHex(resultEvent.result));
                     break;
                 case INDICATE:
+                default: // added because Checkstyle is complaining
                     showNotification("Indication: " + HexString.bytesToHex(resultEvent.result));
                     break;
             }
@@ -229,6 +230,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
                     notificationText = "Notifications error: " + throwable;
                     break;
                 case INDICATE:
+                default: // added because Checkstyle is complaining
                     notificationText = "Indications error: " + throwable;
                     break;
             }

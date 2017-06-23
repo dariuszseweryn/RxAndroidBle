@@ -22,9 +22,9 @@ class InfoEvent implements PresenterEvent {
 
     @Override
     public String toString() {
-        return "InfoEvent{" +
-                "infoText='" + infoText + '\'' +
-                '}';
+        return "InfoEvent{"
+                + "infoText='" + infoText + '\''
+                + '}';
     }
 }
 
@@ -41,10 +41,10 @@ class ResultEvent implements PresenterEvent {
 
     @Override
     public String toString() {
-        return "ResultEvent{" +
-                "type=" + type +
-                ", result=" + Arrays.toString(result) +
-                '}';
+        return "ResultEvent{"
+                + "type=" + type
+                + ", result=" + Arrays.toString(result)
+                + '}';
     }
 }
 
@@ -61,10 +61,10 @@ class ErrorEvent implements PresenterEvent {
 
     @Override
     public String toString() {
-        return "ErrorEvent{" +
-                "type=" + type +
-                ", error=" + error +
-                '}';
+        return "ErrorEvent{"
+                + "type=" + type
+                + ", error=" + error
+                + '}';
     }
 }
 
@@ -78,9 +78,9 @@ class CompatibilityModeEvent implements PresenterEvent {
 
     @Override
     public String toString() {
-        return "CompatibilityModeEvent{" +
-                "show=" + show +
-                '}';
+        return "CompatibilityModeEvent{"
+                + "show=" + show
+                + '}';
     }
 }
 

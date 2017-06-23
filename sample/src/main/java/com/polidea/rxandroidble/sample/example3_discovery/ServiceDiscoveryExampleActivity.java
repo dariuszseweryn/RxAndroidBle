@@ -13,7 +13,6 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.example4_characteristic.CharacteristicOperationExampleActivity;
-import com.polidea.rxandroidble.sample.example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
