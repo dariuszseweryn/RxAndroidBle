@@ -13,6 +13,7 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.example4_characteristic.CharacteristicOperationExampleActivity;
+import com.polidea.rxandroidble.sample.example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
@@ -74,6 +75,8 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
             final Intent intent = new Intent(this, CharacteristicOperationExampleActivity.class);
+            // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
+            // final Intent intent = new Intent(this, AdvancedCharacteristicOperationExampleActivity.class);
             intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
             intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
             startActivity(intent);
