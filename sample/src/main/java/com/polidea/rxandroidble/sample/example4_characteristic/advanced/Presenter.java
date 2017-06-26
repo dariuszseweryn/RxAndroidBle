@@ -206,14 +206,7 @@ final class Presenter {
                 .flatMap(observable -> observable
                         .map(bytes -> ((PresenterEvent) new ResultEvent(bytes, type)))
                 )
-                .onErrorReturn(throwable -> new ErrorEvent(throwable, type))
-                /*
-                 * since there is a flatMap above the returned Observable will not finish until the last observable returned from it will
-                 * not finish. Thing is that when the original observableObservable finishes the emitted observable should finish as well
-                 * as it will not emit any more values.
-                 * TODO: [DS] 23.06.2017 this should be done by the library itself
-                 */
-                .takeUntil(observableObservable.ignoreElements());
+                .onErrorReturn(throwable -> new ErrorEvent(throwable, type));
     }
 
     /**
