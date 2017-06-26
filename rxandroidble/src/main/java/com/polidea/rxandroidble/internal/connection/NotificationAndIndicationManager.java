@@ -107,9 +107,7 @@ class NotificationAndIndicationManager {
                             .map(new Func1<Boolean, Observable<byte[]>>() {
                                 @Override
                                 public Observable<byte[]> call(Boolean notificationDescriptorData) {
-                                    return observeOnCharacteristicChangeCallbacks(id)
-                                            .mergeWith(gattCallback.<byte[]>observeDisconnect())
-                                            .takeUntil(notificationCompletedSubject);
+                                    return observeOnCharacteristicChangeCallbacks(id).takeUntil(notificationCompletedSubject);
                                 }
                             })
                             .replay(1)

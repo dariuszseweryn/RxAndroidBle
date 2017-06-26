@@ -374,11 +374,11 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should error the emitted Observable<byte> when disconnected"() {
+    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted Observable<byte>"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
-        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
         def testException = new RuntimeException("test")
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.error(testException)
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
                 .doOnNext { it.subscribe(testSubscriber) }
                 .subscribe()
