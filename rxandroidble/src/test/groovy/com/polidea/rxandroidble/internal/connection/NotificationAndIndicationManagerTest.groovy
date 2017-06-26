@@ -354,7 +354,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should complete the emitted Observable<byte> when un-subscribed"() {
+    def "should complete the emitted Observable<byte> when unsubscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
