@@ -14,6 +14,7 @@ import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
 import rx.Observable
 import rx.observers.TestSubscriber
+import rx.subjects.BehaviorSubject
 import rx.subjects.PublishSubject
 import spock.lang.Unroll
 
@@ -54,7 +55,10 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
 
     def testSubscriber = new TestSubscriber()
 
+    def disconnectedErrorBehaviourSubject = BehaviorSubject.create()
+
     def setup() {
+        rxBleGattCallbackMock.observeDisconnect() >> disconnectedErrorBehaviourSubject
         objectUnderTest = new NotificationAndIndicationManager(
                 ENABLE_NOTIFICATION_VALUE,
                 ENABLE_INDICATION_VALUE,
@@ -347,6 +351,46 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
                 MODES,
                 [[true, false], [false, true]]
         ].combinations()
+    }
+
+    @Unroll
+    def "should complete the emitted Observable<byte> when unsubscribed"() {
+        given:
+        def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        def emittedObservableSubscriber = new TestSubscriber()
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
+                .doOnNext { it.subscribe(emittedObservableSubscriber) }
+                .subscribe(testSubscriber)
+
+        when:
+        testSubscriber.unsubscribe()
+
+        then:
+        emittedObservableSubscriber.assertCompleted()
+
+        where:
+        [mode, ack] << [MODES, ACK_VALUES].combinations()
+    }
+
+    @Unroll
+    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted Observable<byte>"() {
+        given:
+        def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
+        def testException = new RuntimeException("test")
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.error(testException)
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
+                .doOnNext { it.subscribe(testSubscriber) }
+                .subscribe()
+
+        when:
+        disconnectedErrorBehaviourSubject.onError(testException)
+
+        then:
+        testSubscriber.assertError(testException)
+
+        where:
+        [mode, ack] << [MODES, ACK_VALUES].combinations()
     }
 
     public mockCharacteristicWithValue(Map characteristicData) {
