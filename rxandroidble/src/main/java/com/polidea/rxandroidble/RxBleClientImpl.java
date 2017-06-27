@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.operations.Operation;
+import com.polidea.rxandroidble.internal.scan.ExcessiveScanChecker;
 import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
@@ -25,6 +26,7 @@ import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,6 +50,7 @@ class RxBleClientImpl extends RxBleClient {
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final ScanSetupBuilder scanSetupBuilder;
+    private final ExcessiveScanChecker excessiveScanChecker;
     private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ExecutorService executorService;
     private final Scheduler mainThreadScheduler;
@@ -66,6 +69,7 @@ class RxBleClientImpl extends RxBleClient {
                     Lazy<ClientStateObservable> lazyClientStateObservable,
                     RxBleDeviceProvider rxBleDeviceProvider,
                     ScanSetupBuilder scanSetupBuilder,
+                    ExcessiveScanChecker excessiveScanChecker,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) ExecutorService executorService,
                     @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler) {
@@ -77,6 +81,7 @@ class RxBleClientImpl extends RxBleClient {
         this.lazyClientStateObservable = lazyClientStateObservable;
         this.rxBleDeviceProvider = rxBleDeviceProvider;
         this.scanSetupBuilder = scanSetupBuilder;
+        this.excessiveScanChecker = excessiveScanChecker;
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
         this.executorService = executorService;
         this.mainThreadScheduler = mainThreadScheduler;
@@ -144,6 +149,11 @@ class RxBleClientImpl extends RxBleClient {
                     throw new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING);
                 } else if (!locationServicesStatus.isLocationProviderOk()) {
                     throw new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED);
+                } else {
+                    final Date suggestedDateToRetry = excessiveScanChecker.suggestDateToRetry();
+                    if (suggestedDateToRetry != null) {
+                        throw new BleScanException(BleScanException.UNDOCUMENTED_SCAN_THROTTLE, suggestedDateToRetry);
+                    }
                 }
             }
         });

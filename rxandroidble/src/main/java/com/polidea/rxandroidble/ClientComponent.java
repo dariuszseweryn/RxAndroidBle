@@ -19,6 +19,9 @@ import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
+import com.polidea.rxandroidble.internal.scan.ExcessiveScanChecker;
+import com.polidea.rxandroidble.internal.scan.ExcessiveScanCheckerApi18;
+import com.polidea.rxandroidble.internal.scan.ExcessiveScanCheckerApi24;
 import com.polidea.rxandroidble.scan.ScanResult;
 import dagger.Binds;
 import dagger.Component;
@@ -190,6 +193,15 @@ public interface ClientComponent {
         @Named(BluetoothConstants.DISABLE_NOTIFICATION_VALUE)
         static byte[] provideDisableNotificationValue() {
             return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+        }
+
+        @Provides
+        static ExcessiveScanChecker provideScanThrottle(@Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
+            if (deviceSdk < Build.VERSION_CODES.N) {
+                return new ExcessiveScanCheckerApi18();
+            } else {
+                return new ExcessiveScanCheckerApi24();
+            }
         }
     }
 

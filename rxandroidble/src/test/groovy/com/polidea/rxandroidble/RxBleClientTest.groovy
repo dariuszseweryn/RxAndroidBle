@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble
 
 import com.polidea.rxandroidble.internal.operations.Operation
+import com.polidea.rxandroidble.internal.scan.ExcessiveScanChecker
 import com.polidea.rxandroidble.internal.util.ClientStateObservable
 import dagger.Lazy
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
@@ -8,7 +9,6 @@ import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConver
 import com.polidea.rxandroidble.internal.scan.ScanSetup
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder
 import com.polidea.rxandroidble.scan.ScanSettings
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScan
 import java.util.concurrent.Executors
 
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_CANNOT_START
@@ -16,6 +16,7 @@ import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_DIS
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_NOT_AVAILABLE
 import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_PERMISSION_MISSING
 import static com.polidea.rxandroidble.exceptions.BleScanException.LOCATION_SERVICES_DISABLED
+import static com.polidea.rxandroidble.exceptions.BleScanException.UNDOCUMENTED_SCAN_THROTTLE
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
@@ -50,9 +51,17 @@ class RxBleClientTest extends Specification {
                 }
             }
     ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
+    ExcessiveScanChecker mockExcessiveScanChecker = Mock ExcessiveScanChecker
     InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
+
+    private static Date suggestedDateToRetry = new Date()
+
+    private static scanStarters = [
+            { RxBleClient client -> client.scanBleDevices() },
+            { RxBleClient client -> client.scanBleDevices(new ScanSettings.Builder().build()) },
+    ]
 
     def setup() {
         setupWithRadio(rxBleRadio)
@@ -76,6 +85,7 @@ class RxBleClientTest extends Specification {
                 mockLazyClientStateObservable,
                 mockDeviceProvider,
                 mockScanSetupBuilder,
+                mockExcessiveScanChecker,
                 mockMapper,
                 Executors.newSingleThreadExecutor(),
                 ImmediateScheduler.INSTANCE
@@ -107,6 +117,7 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
     }
 
+    @Unroll
     def "should check if all the conditions are met at the time of each subscription to scan (Legacy)"() {
         given:
         def firstSubscriber = new TestSubscriber<>()
@@ -115,6 +126,7 @@ class RxBleClientTest extends Specification {
         bleAdapterWrapperSpy.isBluetoothEnabled() >> bluetoothEnabled >> true
         locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionsOk >> true
         locationServicesStatusMock.isLocationProviderOk() >> locationProviderOk >> true
+        mockExcessiveScanChecker.suggestDateToRetry() >> dateToRetry >> null
         def scanObservable = objectUnderTest.scanBleDevices(null)
 
         when:
@@ -122,7 +134,7 @@ class RxBleClientTest extends Specification {
 
         then:
         firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == reason
+            BleScanException exception -> exception.reason == reason && (exception.reason != UNDOCUMENTED_SCAN_THROTTLE || exception.retryDateSuggestion == dateToRetry)
         }
 
         when:
@@ -133,11 +145,12 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.startLegacyLeScan(_) >> true
 
         where:
-        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
-        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
-        true               | false            | true                  | true               | BLUETOOTH_DISABLED
-        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
-        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | dateToRetry          | reason
+        false              | true             | true                  | true               | null                 | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | null                 | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | null                 | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | null                 | LOCATION_SERVICES_DISABLED
+        true               | true             | true                  | true               | suggestedDateToRetry | UNDOCUMENTED_SCAN_THROTTLE
     }
 
 
@@ -149,6 +162,7 @@ class RxBleClientTest extends Specification {
         bleAdapterWrapperSpy.isBluetoothEnabled() >> true >> bluetoothEnabled
         locationServicesStatusMock.isLocationPermissionOk() >> true >> locationPermissionsOk
         locationServicesStatusMock.isLocationProviderOk() >> true >> locationProviderOk
+        mockExcessiveScanChecker.suggestDateToRetry() >> null >> dateToRetry
         def scanObservable = objectUnderTest.scanBleDevices(null)
 
         when:
@@ -167,11 +181,12 @@ class RxBleClientTest extends Specification {
         }
 
         where:
-        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
-        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
-        true               | false            | true                  | true               | BLUETOOTH_DISABLED
-        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
-        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | dateToRetry          | reason
+        false              | true             | true                  | true               | null                 | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | null                 | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | null                 | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | null                 | LOCATION_SERVICES_DISABLED
+        true               | true             | true                  | true               | suggestedDateToRetry | UNDOCUMENTED_SCAN_THROTTLE
     }
 
     def "should queue scan operation on subscribe (New API)"() {
@@ -196,6 +211,7 @@ class RxBleClientTest extends Specification {
         bleAdapterWrapperSpy.isBluetoothEnabled() >> bluetoothEnabled >> true
         locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionsOk >> true
         locationServicesStatusMock.isLocationProviderOk() >> locationProviderOk >> true
+        mockExcessiveScanChecker.suggestDateToRetry() >> dateToRetry >> null
         def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
 
         when:
@@ -203,7 +219,7 @@ class RxBleClientTest extends Specification {
 
         then:
         firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == reason
+            BleScanException exception -> exception.reason == reason && (exception.reason != UNDOCUMENTED_SCAN_THROTTLE || exception.retryDateSuggestion == dateToRetry)
         }
 
         when:
@@ -213,11 +229,12 @@ class RxBleClientTest extends Specification {
         secondSubscriber.assertNoErrors()
 
         where:
-        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
-        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
-        true               | false            | true                  | true               | BLUETOOTH_DISABLED
-        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
-        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | dateToRetry          | reason
+        false              | true             | true                  | true               | null                 | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | null                 | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | null                 | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | null                 | LOCATION_SERVICES_DISABLED
+        true               | true             | true                  | true               | suggestedDateToRetry | UNDOCUMENTED_SCAN_THROTTLE
     }
 
 
@@ -229,6 +246,7 @@ class RxBleClientTest extends Specification {
         bleAdapterWrapperSpy.isBluetoothEnabled() >> true >> bluetoothEnabled
         locationServicesStatusMock.isLocationPermissionOk() >> true >> locationPermissionsOk
         locationServicesStatusMock.isLocationProviderOk() >> true >> locationProviderOk
+        mockExcessiveScanChecker.suggestDateToRetry() >> null >> dateToRetry
         def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
 
         when:
@@ -246,11 +264,12 @@ class RxBleClientTest extends Specification {
         }
 
         where:
-        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | reason
-        false              | true             | true                  | true               | BLUETOOTH_NOT_AVAILABLE
-        true               | false            | true                  | true               | BLUETOOTH_DISABLED
-        true               | true             | false                 | true               | LOCATION_PERMISSION_MISSING
-        true               | true             | true                  | false              | LOCATION_SERVICES_DISABLED
+        bluetoothAvailable | bluetoothEnabled | locationPermissionsOk | locationProviderOk | dateToRetry          | reason
+        false              | true             | true                  | true               | null                 | BLUETOOTH_NOT_AVAILABLE
+        true               | false            | true                  | true               | null                 | BLUETOOTH_DISABLED
+        true               | true             | false                 | true               | null                 | LOCATION_PERMISSION_MISSING
+        true               | true             | true                  | false              | null                 | LOCATION_SERVICES_DISABLED
+        true               | true             | true                  | true               | suggestedDateToRetry | UNDOCUMENTED_SCAN_THROTTLE
     }
 
     def "should not start scan until observable is subscribed"() {
@@ -361,61 +380,82 @@ class RxBleClientTest extends Specification {
         }
     }
 
+    @Unroll
     def "should emit BleScanException if bluetooth was disabled during scan"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
 
         when:
-        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+        scanStarter.call(objectUnderTest).subscribe(firstSubscriber)
         adapterStateObservable.disableBluetooth()
 
         then:
         firstSubscriber.assertError {
             BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
         }
+
+        where:
+        scanStarter << scanStarters
     }
 
+    @Unroll
     def "should emit BleScanException if bluetooth has been disabled scan"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
         bleAdapterWrapperSpy.hasBluetoothAdapter() >> true
-        bleAdapterWrapperSpy.isBluetoothEnabled() >> false
+        bleAdapterWrapperSpy.isBluetoothEnabled() >> isBluetoothEnabled
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == BLUETOOTH_DISABLED
+        if (isBluetoothEnabled) {
+            firstSubscriber.assertNoErrors()
+        } else {
+            firstSubscriber.assertError { BleScanException exception -> exception.reason == BLUETOOTH_DISABLED }
         }
+
+        where:
+        [scanStarter, isBluetoothEnabled] << [scanStarters, [true, false]].combinations()
     }
 
     def "should emit error if bluetooth is not available"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
-        bleAdapterWrapperSpy.hasBluetoothAdapter() >> false
+        bleAdapterWrapperSpy.hasBluetoothAdapter() >> hasBt
 
         when:
         objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == BLUETOOTH_NOT_AVAILABLE
+        if (!hasBt) {
+            firstSubscriber.assertError { BleScanException exception -> exception.reason == BLUETOOTH_NOT_AVAILABLE }
+        } else {
+            firstSubscriber.assertNoErrors()
         }
+
+        where:
+        [scanStarter, hasBt] << [scanStarters, [true, false]].combinations()
     }
 
+    @Unroll
     def "should emit BleScanException if location permission was not granted"() {
         given:
         TestSubscriber firstSubscriber = new TestSubscriber<>()
-        locationServicesStatusMock.isLocationPermissionOk = false
+        locationServicesStatusMock.isLocationPermissionOk = permissionOk
 
         when:
-        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+        scanStarter.call(objectUnderTest).subscribe(firstSubscriber)
 
         then:
-        firstSubscriber.assertError {
-            BleScanException exception -> exception.reason == LOCATION_PERMISSION_MISSING
+        if (permissionOk) {
+            firstSubscriber.assertNoErrors()
+        } else {
+            firstSubscriber.assertError { BleScanException exception -> exception.reason == LOCATION_PERMISSION_MISSING }
         }
+
+        where:
+        [scanStarter, permissionOk] << [scanStarters, [true, false]].combinations()
     }
 
     @Unroll
@@ -425,7 +465,7 @@ class RxBleClientTest extends Specification {
         locationServicesStatusMock.isLocationProviderOk = providerOk
 
         when:
-        objectUnderTest.scanBleDevices(null).subscribe(firstSubscriber)
+        scanStarter.call(objectUnderTest).subscribe(firstSubscriber)
 
         then:
 
@@ -436,7 +476,27 @@ class RxBleClientTest extends Specification {
         }
 
         where:
-        providerOk << [true, false]
+        [scanStarter, providerOk] << [scanStarters, [true, false]].combinations()
+    }
+
+    @Unroll
+    def "should emit BleScanException if ExcessiveScanChecker will suggest a date to start a scan"() {
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber()
+        mockExcessiveScanChecker.suggestDateToRetry() >> dateToRetry
+
+        when:
+        scanStarter.call(objectUnderTest).subscribe(testSubscriber)
+
+        then:
+        if (dateToRetry != null) {
+            testSubscriber.assertError { BleScanException e -> e.reason == UNDOCUMENTED_SCAN_THROTTLE && e.retryDateSuggestion == dateToRetry }
+        } else {
+            testSubscriber.assertNoErrors()
+        }
+
+        where:
+        [scanStarter, dateToRetry] << [scanStarters, [suggestedDateToRetry, null]].combinations()
     }
 
     def "should emit BleScanException if BluetoothAdapter will be turned off during a scan"() {
@@ -444,9 +504,7 @@ class RxBleClientTest extends Specification {
         given:
         TestSubscriber testSubscriber = new TestSubscriber()
         mockMapper.call(_) >> {
-            RxBleInternalScanResult _ ->
-                System.out.println("XXX")
-                return null
+            RxBleInternalScanResult _ -> return null
         } // does not matter as it will never be called
         objectUnderTest.scanBleDevices(Mock(ScanSettings)).subscribe(testSubscriber)
 
