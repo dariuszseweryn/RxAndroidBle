@@ -1,9 +1,6 @@
 Change Log
 ==========
 
-Version 1.4.0-SNAPSHOT
-* Added pre-scan verification for excessive scan (https://github.com/Polidea/RxAndroidBle/issues/227)
-
 Version 1.3.1
 * Fixed unsubscribing from operations before `onComplete()`/`onError()` causing the library to hang. (https://github.com/Polidea/RxAndroidBle/issues/218)
 
