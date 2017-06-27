@@ -19,6 +19,7 @@ public class ExcessiveScanCheckerApi24 implements ExcessiveScanChecker {
     @Nullable
     @Override
     public Date suggestDateToRetry() {
+        // TODO: [DS] 27.06.2017 Think if persisting this information through Application close is needed
         final int oldestCheckTimestampIndex = getOldestCheckTimestampIndex();
         final long oldestCheckTimestamp = previousChecks[oldestCheckTimestampIndex];
         final long currentCheckTimestamp = System.currentTimeMillis();
