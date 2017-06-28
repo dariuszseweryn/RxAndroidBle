@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.sample.example4_characteristic;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -66,7 +67,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                 .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
                 .compose(bindUntilEvent(PAUSE))
-                .doOnUnsubscribe(this::clearSubscription)
                 .compose(new ConnectionSharingAdapter());
     }
 
@@ -76,10 +76,19 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionObservable.subscribe(rxBleConnection -> {
-                Log.d(getClass().getSimpleName(), "Hey, connection has been established!");
-                runOnUiThread(this::updateUI);
-            }, this::onConnectionFailure);
+            connectionObservable
+                    .flatMap(RxBleConnection::discoverServices)
+                    .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe(() -> connectButton.setText(R.string.connecting))
+                    .subscribe(
+                            characteristic -> {
+                                updateUI(characteristic);
+                                Log.i(getClass().getSimpleName(), "Hey, connection has been established!");
+                            },
+                            this::onConnectionFailure,
+                            this::onConnectionFinished
+                    );
         }
     }
 
@@ -105,9 +114,10 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
             connectionObservable
                     .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, getInputBytes()))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(bytes -> {
-                        onWriteSuccess();
-                    }, this::onWriteFailure);
+                    .subscribe(
+                            bytes -> onWriteSuccess(),
+                            this::onWriteFailure
+                    );
         }
     }
 
@@ -131,6 +141,11 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
         Snackbar.make(findViewById(R.id.main), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        updateUI(null);
+    }
+
+    private void onConnectionFinished() {
+        updateUI(null);
     }
 
     private void onReadFailure(Throwable throwable) {
@@ -163,19 +178,23 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         Snackbar.make(findViewById(R.id.main), "Notifications has been set up", Snackbar.LENGTH_SHORT).show();
     }
 
-    private void clearSubscription() {
-        updateUI();
-    }
-
     private void triggerDisconnect() {
         disconnectTriggerSubject.onNext(null);
     }
 
-    private void updateUI() {
-        connectButton.setText(isConnected() ? getString(R.string.disconnect) : getString(R.string.connect));
-        readButton.setEnabled(isConnected());
-        writeButton.setEnabled(isConnected());
-        notifyButton.setEnabled(isConnected());
+    /**
+     * This method updates the UI to a proper state.
+     * @param characteristic a nullable {@link BluetoothGattCharacteristic}. If it is null then UI is assuming a disconnected state.
+     */
+    private void updateUI(BluetoothGattCharacteristic characteristic) {
+        connectButton.setText(characteristic != null ? R.string.disconnect : R.string.connect);
+        readButton.setEnabled(hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_READ));
+        writeButton.setEnabled(hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE));
+        notifyButton.setEnabled(hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_NOTIFY));
+    }
+
+    private boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
+        return characteristic != null && (characteristic.getProperties() & property) > 0;
     }
 
     private byte[] getInputBytes() {
