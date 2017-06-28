@@ -57,7 +57,7 @@ class NotificationAndIndicationManager {
     }
 
     Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
-            @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean withAck
+            @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean isIndication
     ) {
         return Observable.defer(new Func0<Observable<Observable<byte[]>>>() {
             @Override
@@ -69,14 +69,14 @@ class NotificationAndIndicationManager {
                     final ActiveCharacteristicNotification activeCharacteristicNotification = activeNotificationObservableMap.get(id);
 
                     if (activeCharacteristicNotification != null) {
-                        if (activeCharacteristicNotification.isIndication == withAck) {
+                        if (activeCharacteristicNotification.isIndication == isIndication) {
                             return activeCharacteristicNotification.notificationObservable;
                         } else {
-                            return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !withAck));
+                            return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !isIndication));
                         }
                     }
 
-                    final byte[] enableNotificationTypeValue = withAck ? configEnableIndication : configEnableNotification;
+                    final byte[] enableNotificationTypeValue = isIndication ? configEnableIndication : configEnableNotification;
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
@@ -98,7 +98,7 @@ class NotificationAndIndicationManager {
                             })
                             .replay(1)
                             .refCount();
-                    activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, withAck));
+                    activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, isIndication));
                     return newObservable;
                 }
             }
