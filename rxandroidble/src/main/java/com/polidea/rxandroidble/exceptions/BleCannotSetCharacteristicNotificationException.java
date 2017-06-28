@@ -10,10 +10,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class BleCannotSetCharacteristicNotificationException extends BleException {
 
-    @SuppressWarnings("WeakerAccess")
     @IntDef({UNKNOWN, CANNOT_SET_LOCAL_NOTIFICATION, CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
             CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR})
     @Retention(RetentionPolicy.SOURCE)
@@ -24,7 +23,6 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     /**
      * The unknown reason (probably because someone is externally instantiating {@link BleCannotSetCharacteristicNotificationException}
      */
-    @SuppressWarnings("WeakerAccess")
     @Deprecated
     public static final int UNKNOWN = -1;
 
@@ -70,7 +68,9 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason) {
+    public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
+                                                           Throwable cause) {
+        super(cause);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = reason;
     }
@@ -96,6 +96,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
                 + "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid()
                 + ", reason=" + reasonDescription()
                 + " (see Javadoc for more comment)"
+                + toStringCauseIfExists()
                 + '}';
     }
 
