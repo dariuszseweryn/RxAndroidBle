@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.operations
 
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.ConnectionComponent
+import com.polidea.rxandroidble.internal.connection.ConnectionModule
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 
 public class MockConnectionComponentBuilder implements ConnectionComponent.Builder {
@@ -18,6 +19,11 @@ public class MockConnectionComponentBuilder implements ConnectionComponent.Build
         this.rxBleConnection = rxBleConnection
         this.rxBleGattCallback = rxBleGattCallback
         this.rxBleRadioOperationDisconnect = rxBleRadioOperationDisconnect
+    }
+
+    @Override
+    ConnectionComponent.Builder connectionModule(ConnectionModule connectionModule) {
+        return this
     }
 
     @Override

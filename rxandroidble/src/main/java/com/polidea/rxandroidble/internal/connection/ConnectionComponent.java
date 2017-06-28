@@ -7,11 +7,13 @@ import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnec
 import dagger.Subcomponent;
 
 @ConnectionScope
-@Subcomponent(modules = ConnectionModule.class)
+@Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
 public interface ConnectionComponent {
 
     @Subcomponent.Builder
     interface Builder {
+
+        Builder connectionModule(ConnectionModule connectionModule);
 
         ConnectionComponent build();
     }

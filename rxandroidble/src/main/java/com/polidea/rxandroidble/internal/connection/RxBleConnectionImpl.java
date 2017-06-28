@@ -21,6 +21,7 @@ import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
+import com.polidea.rxandroidble.internal.util.IllegalOperationChecker;
 import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,12 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE;
+
 @ConnectionScope
 public class RxBleConnectionImpl implements RxBleConnection {
 
@@ -49,6 +56,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     private final ServiceDiscoveryManager serviceDiscoveryManager;
     private final NotificationAndIndicationManager notificationIndicationManager;
     private final DescriptorWriter descriptorWriter;
+    private final IllegalOperationChecker illegalOperationChecker;
 
     private int currentMtu = GATT_MTU_MINIMUM; // Default value at the beginning
 
@@ -62,8 +70,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
             DescriptorWriter descriptorWriter,
             OperationsProvider operationProvider,
             Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider,
-            @Named(ClientComponent.NamedSchedulers.RADIO_OPERATIONS) Scheduler callbackScheduler
-    ) {
+            @Named(ClientComponent.NamedSchedulers.RADIO_OPERATIONS) Scheduler callbackScheduler,
+            IllegalOperationChecker illegalOperationChecker) {
         this.rxBleRadio = rxBleRadio;
         this.gattCallback = gattCallback;
         this.bluetoothGatt = bluetoothGatt;
@@ -73,6 +81,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.operationsProvider = operationProvider;
         this.longWriteOperationBuilderProvider = longWriteOperationBuilderProvider;
         this.callbackScheduler = callbackScheduler;
+        this.illegalOperationChecker = illegalOperationChecker;
     }
 
     @Override
@@ -195,6 +204,10 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public Observable<Observable<byte[]>> setupIndication(@NonNull BluetoothGattCharacteristic characteristic,
                                                           @NonNull NotificationSetupMode setupMode) {
+        illegalOperationChecker.checkAnyPropertyMatches(
+                characteristic,
+                PROPERTY_NOTIFY
+        );
         return notificationIndicationManager.setupServerInitiatedCharacteristicRead(characteristic, setupMode, true);
     }
 
@@ -211,6 +224,10 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
+        illegalOperationChecker.checkAnyPropertyMatches(
+                characteristic,
+                PROPERTY_READ
+        );
         return rxBleRadio.queue(operationsProvider.provideReadCharacteristic(characteristic));
     }
 
@@ -241,6 +258,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+        illegalOperationChecker.checkAnyPropertyMatches(
+                characteristic,
+                PROPERTY_WRITE
+                        | PROPERTY_WRITE_NO_RESPONSE
+                        | PROPERTY_SIGNED_WRITE
+        );
         return rxBleRadio.queue(operationsProvider.provideWriteCharacteristic(characteristic, data));
     }
 

@@ -1,41 +1,42 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.operations.OperationsProvider;
-import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
-
-import dagger.Binds;
-import javax.inject.Named;
+import com.polidea.rxandroidble.internal.util.IllegalOperationChecker;
+import com.polidea.rxandroidble.internal.util.LoggingIllegalOperationChecker;
+import com.polidea.rxandroidble.internal.util.ThrowingIllegalOperationChecker;
 
 import dagger.Module;
 import dagger.Provides;
 
 @Module
-abstract public class ConnectionModule {
+public class ConnectionModule {
 
-    static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
+    private boolean suppressPropertiesCheck;
 
-    @Provides
-    @Named(GATT_WRITE_MTU_OVERHEAD)
-    static int gattWriteMtuOverhead() {
-        return RxBleConnection.GATT_WRITE_MTU_OVERHEAD;
+    public ConnectionModule(boolean suppressPropertiesCheck) {
+        this.suppressPropertiesCheck = suppressPropertiesCheck;
     }
 
     @Provides
     @ConnectionScope
-    static BluetoothGatt provideBluetoothGatt(BluetoothGattProvider bluetoothGattProvider) {
-        return bluetoothGattProvider.getBluetoothGatt();
+    IllegalOperationChecker provideIllegalOperationChecker() {
+        if (suppressPropertiesCheck) {
+            return new LoggingIllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
+                    BluetoothGattCharacteristic.PROPERTY_READ,
+                    BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+                    BluetoothGattCharacteristic.PROPERTY_WRITE,
+                    BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                    BluetoothGattCharacteristic.PROPERTY_INDICATE,
+                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
+        } else {
+            return new ThrowingIllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
+                    BluetoothGattCharacteristic.PROPERTY_READ,
+                    BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+                    BluetoothGattCharacteristic.PROPERTY_WRITE,
+                    BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                    BluetoothGattCharacteristic.PROPERTY_INDICATE,
+                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
+        }
     }
-
-    @Binds
-    abstract RxBleConnection.LongWriteOperationBuilder bindLongWriteOperationBuilder(LongWriteOperationBuilderImpl operationBuilder);
-
-    @Binds
-    abstract OperationsProvider bindOperationsProvider(OperationsProviderImpl operationsProvider);
-
-    @Binds
-    @ConnectionScope
-    abstract RxBleConnection bindRxBleConnection(RxBleConnectionImpl rxBleConnection);
 }

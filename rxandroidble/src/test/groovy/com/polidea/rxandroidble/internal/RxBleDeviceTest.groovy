@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException
@@ -74,10 +75,21 @@ public class RxBleDeviceTest extends Specification {
         rxBleDevice.establishConnection(theAutoConnectValue).subscribe()
 
         then:
-        1 * mockConnector.prepareConnection(theAutoConnectValue) >> connectionStatePublishSubject
+        1 * mockConnector.prepareConnection(_) >> connectionStatePublishSubject
 
         where:
         theAutoConnectValue << [true, false]
+    }
+
+    def "establishConnection(ConnectionSetup) should call RxBleConnection.Connector.prepareConnection() #id"() {
+        given:
+        ConnectionSetup connectionSetup = Mock ConnectionSetup
+
+        when:
+        rxBleDevice.establishConnection(connectionSetup).subscribe()
+
+        then:
+        1 * mockConnector.prepareConnection(connectionSetup) >> connectionStatePublishSubject
     }
 
     def "should emit DISCONNECTED when subscribed and RxBleDevice was not connected yet"() {

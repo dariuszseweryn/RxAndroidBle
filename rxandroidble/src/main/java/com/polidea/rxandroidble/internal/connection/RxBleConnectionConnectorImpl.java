@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
@@ -46,7 +47,13 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
     }
 
     @Override
+    @Deprecated
     public Observable<RxBleConnection> prepareConnection(final boolean autoConnect) {
+        return prepareConnection(new ConnectionSetup.Builder().setAutoConnect(autoConnect).build());
+    }
+
+    @Override
+    public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
@@ -55,9 +62,11 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
                     return Observable.error(new BleDisconnectedException(bluetoothDevice.getAddress()));
                 }
 
-                final ConnectionComponent connectionComponent = connectionComponentBuilder.build();
+                final ConnectionComponent connectionComponent = connectionComponentBuilder
+                        .connectionModule(new ConnectionModule(options.suppressOperationCheck))
+                        .build();
                 RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperationBuilder()
-                        .setAutoConnect(autoConnect)
+                        .setAutoConnect(options.autoConnect)
                         .build();
 
                 return enqueueConnectOperation(operationConnect)
@@ -100,6 +109,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             }
         });
     }
+
     private Observable<BleAdapterState> adapterNotUsableObservable() {
         return adapterStateObservable
                 .filter(new Func1<BleAdapterState, Boolean>() {
