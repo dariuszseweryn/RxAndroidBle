@@ -13,6 +13,9 @@ will be closed.
 
 ### Summary
 
+### Library version
+`X.X.X`
+
 #### Preconditions
 
 #### Steps to reproduce actual result

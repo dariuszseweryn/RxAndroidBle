@@ -24,6 +24,7 @@ import rx.functions.Action0;
 import rx.functions.Actions;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.subjects.PublishSubject;
 
 @ConnectionScope
 class NotificationAndIndicationManager {
@@ -79,13 +80,17 @@ class NotificationAndIndicationManager {
                     }
 
                     final byte[] enableNotificationTypeValue = isIndication ? configEnableIndication : configEnableNotification;
+                    final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
-                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
+                            .andThen(ObservableUtil.justOnNext(
+                                    observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
+                            ))
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
+                                    notificationCompletedSubject.onCompleted();
                                     synchronized (activeNotificationObservableMap) {
                                         activeNotificationObservableMap.remove(id);
                                     }

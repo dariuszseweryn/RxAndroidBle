@@ -2,6 +2,7 @@
 <LinearLayout
     android:id="@+id/main"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -66,7 +67,6 @@
             android:inputType="numberDecimal"/>
     </LinearLayout>
 
-
     <Button
         android:id="@+id/write"
         android:layout_width="match_parent"
@@ -74,10 +74,36 @@
         android:enabled="false"
         android:text="@string/write"/>
 
-    <Button
-        android:id="@+id/notify"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="@string/setup_notification"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <Button
+                android:id="@+id/notify"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="@string/setup_notification"/>
+
+        <Button
+                android:id="@+id/indicate"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="@string/setup_indication"/>
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/compat_only_warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:text="@string/notify_indicate_compat_warning"/>
+
 </LinearLayout>

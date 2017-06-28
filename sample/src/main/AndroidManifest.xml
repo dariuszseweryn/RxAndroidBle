@@ -27,6 +27,9 @@
         <activity
             android:name=".example4_characteristic.CharacteristicOperationExampleActivity"
             android:label="@string/title_example4"/>
+        <activity
+            android:name=".example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity"
+            android:label="@string/title_example4"/>
         <activity android:name=".DeviceActivity"/>
     </application>
 </manifest>
