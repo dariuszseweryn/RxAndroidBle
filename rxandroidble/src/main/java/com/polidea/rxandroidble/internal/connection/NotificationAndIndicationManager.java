@@ -72,7 +72,9 @@ class NotificationAndIndicationManager {
                         if (activeCharacteristicNotification.isIndication == isIndication) {
                             return activeCharacteristicNotification.notificationObservable;
                         } else {
-                            return Observable.error(new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !isIndication));
+                            return Observable.error(
+                                    new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !isIndication)
+                            );
                         }
                     }
 
