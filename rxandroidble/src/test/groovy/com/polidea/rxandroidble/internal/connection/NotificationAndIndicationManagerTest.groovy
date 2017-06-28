@@ -110,6 +110,8 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_SET_LOCAL_NOTIFICATION reason if failed to set characteristic notification"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        descriptorWriterMock.writeDescriptor(_, _) >> Observable.empty()
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> false
 
@@ -130,6 +132,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         descriptorWriterMock.writeDescriptor(descriptor, _) >> Observable.error(new RuntimeException())
 
