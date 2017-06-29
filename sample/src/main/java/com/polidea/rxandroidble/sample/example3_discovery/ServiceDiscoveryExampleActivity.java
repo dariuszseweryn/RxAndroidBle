@@ -74,6 +74,8 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
             final Intent intent = new Intent(this, CharacteristicOperationExampleActivity.class);
+            // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
+            // final Intent intent = new Intent(this, AdvancedCharacteristicOperationExampleActivity.class);
             intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
             intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
             startActivity(intent);
