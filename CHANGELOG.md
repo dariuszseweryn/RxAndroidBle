@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+Version 1.4.0-SNAPSHOT
+* Added native callback usage support in custom operations. You may consider this API if your implementation is performance critical. (https://github.com/Polidea/RxAndroidBle/issues/165)
+
 Version 1.3.2
 * Fixed completing the `Observable<byte[]>` emitted by `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` when unsubscribed (https://github.com/Polidea/RxAndroidBle/issues/231)
 

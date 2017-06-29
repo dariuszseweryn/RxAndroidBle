@@ -33,6 +33,7 @@ import rx.Completable;
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
@@ -316,7 +317,22 @@ public class RxBleConnectionImpl implements RxBleConnection {
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
-                operationObservable.subscribe(emitterWrapper);
+                operationObservable
+                        .doOnTerminate(clearNativeCallbackReferenceAction())
+                        .subscribe(emitterWrapper);
+            }
+
+            /**
+             * The Native Callback abstractions is intended to be used only in a custom operation, therefore, to make sure
+             * that we won't leak any references it's a good idea to clean it.
+             */
+            private Action0 clearNativeCallbackReferenceAction() {
+                return new Action0() {
+                    @Override
+                    public void call() {
+                        gattCallback.setNativeCallback(null);
+                    }
+                };
             }
 
             @Override
