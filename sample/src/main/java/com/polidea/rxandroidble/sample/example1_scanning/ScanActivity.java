@@ -70,7 +70,6 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void handleBleScanException(BleScanException bleScanException) {
-        
         final String text;
 
         switch (bleScanException.getReason()) {
