@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -20,6 +21,9 @@ import com.polidea.rxandroidble.scan.ScanSettings;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -66,42 +70,55 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void handleBleScanException(BleScanException bleScanException) {
+        final String text;
 
         switch (bleScanException.getReason()) {
             case BleScanException.BLUETOOTH_NOT_AVAILABLE:
-                Toast.makeText(ScanActivity.this, "Bluetooth is not available", Toast.LENGTH_SHORT).show();
+                text = "Bluetooth is not available";
                 break;
             case BleScanException.BLUETOOTH_DISABLED:
-                Toast.makeText(ScanActivity.this, "Enable bluetooth and try again", Toast.LENGTH_SHORT).show();
+                text = "Enable bluetooth and try again";
                 break;
             case BleScanException.LOCATION_PERMISSION_MISSING:
-                Toast.makeText(ScanActivity.this,
-                        "On Android 6.0 location permission is required. Implement Runtime Permissions", Toast.LENGTH_SHORT).show();
+                text = "On Android 6.0 location permission is required. Implement Runtime Permissions";
                 break;
             case BleScanException.LOCATION_SERVICES_DISABLED:
-                Toast.makeText(ScanActivity.this, "Location services needs to be enabled on Android 6.0", Toast.LENGTH_SHORT).show();
+                text = "Location services needs to be enabled on Android 6.0";
                 break;
             case BleScanException.SCAN_FAILED_ALREADY_STARTED:
-                Toast.makeText(ScanActivity.this, "Scan with the same filters is already started", Toast.LENGTH_SHORT).show();
+                text = "Scan with the same filters is already started";
                 break;
             case BleScanException.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
-                Toast.makeText(ScanActivity.this, "Failed to register application for bluetooth scan", Toast.LENGTH_SHORT).show();
+                text = "Failed to register application for bluetooth scan";
                 break;
             case BleScanException.SCAN_FAILED_FEATURE_UNSUPPORTED:
-                Toast.makeText(ScanActivity.this, "Scan with specified parameters is not supported", Toast.LENGTH_SHORT).show();
+                text = "Scan with specified parameters is not supported";
                 break;
             case BleScanException.SCAN_FAILED_INTERNAL_ERROR:
-                Toast.makeText(ScanActivity.this, "Scan failed due to internal error", Toast.LENGTH_SHORT).show();
+                text = "Scan failed due to internal error";
                 break;
             case BleScanException.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
-                Toast.makeText(ScanActivity.this, "Scan cannot start due to limited hardware resources", Toast.LENGTH_SHORT).show();
+                text = "Scan cannot start due to limited hardware resources";
+                break;
+            case BleScanException.UNDOCUMENTED_SCAN_THROTTLE:
+                text = String.format(
+                        Locale.getDefault(),
+                        "Android 7+ does not allow more scans. Try in %d seconds",
+                        secondsTill(bleScanException.getRetryDateSuggestion())
+                );
                 break;
             case BleScanException.UNKNOWN_ERROR_CODE:
             case BleScanException.BLUETOOTH_CANNOT_START:
             default:
-                Toast.makeText(ScanActivity.this, "Unable to start scanning", Toast.LENGTH_SHORT).show();
+                text = "Unable to start scanning";
                 break;
         }
+        Log.w("EXCEPTION", text, bleScanException);
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    private long secondsTill(Date retryDateSuggestion) {
+        return TimeUnit.MILLISECONDS.toSeconds(retryDateSuggestion.getTime() - System.currentTimeMillis());
     }
 
     @Override
