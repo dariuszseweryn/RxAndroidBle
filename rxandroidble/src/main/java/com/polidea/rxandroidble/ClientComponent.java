@@ -15,13 +15,13 @@ import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConver
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi18;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi24;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
-import com.polidea.rxandroidble.internal.scan.ExcessiveScanChecker;
-import com.polidea.rxandroidble.internal.scan.ExcessiveScanCheckerApi18;
-import com.polidea.rxandroidble.internal.scan.ExcessiveScanCheckerApi24;
 import com.polidea.rxandroidble.scan.ScanResult;
 import dagger.Binds;
 import dagger.Component;
@@ -196,11 +196,15 @@ public interface ClientComponent {
         }
 
         @Provides
-        static ExcessiveScanChecker provideScanThrottle(@Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
+        static ScanPreconditionsVerifier provideScanPreconditionVerifier(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<ScanPreconditionsVerifierApi18> scanPreconditionVerifierForApi18,
+                Provider<ScanPreconditionsVerifierApi24> scanPreconditionVerifierForApi24
+        ) {
             if (deviceSdk < Build.VERSION_CODES.N) {
-                return new ExcessiveScanCheckerApi18();
+                return scanPreconditionVerifierForApi18.get();
             } else {
-                return new ExcessiveScanCheckerApi24();
+                return scanPreconditionVerifierForApi24.get();
             }
         }
     }

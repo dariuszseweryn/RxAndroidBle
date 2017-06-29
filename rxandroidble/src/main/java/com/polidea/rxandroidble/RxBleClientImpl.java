@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.operations.Operation;
-import com.polidea.rxandroidble.internal.scan.ExcessiveScanChecker;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
@@ -26,7 +26,6 @@ import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action0;
@@ -50,7 +48,7 @@ class RxBleClientImpl extends RxBleClient {
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final ScanSetupBuilder scanSetupBuilder;
-    private final ExcessiveScanChecker excessiveScanChecker;
+    private final ScanPreconditionsVerifier scanPreconditionVerifier;
     private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ExecutorService executorService;
     private final Scheduler mainThreadScheduler;
@@ -69,7 +67,7 @@ class RxBleClientImpl extends RxBleClient {
                     Lazy<ClientStateObservable> lazyClientStateObservable,
                     RxBleDeviceProvider rxBleDeviceProvider,
                     ScanSetupBuilder scanSetupBuilder,
-                    ExcessiveScanChecker excessiveScanChecker,
+                    ScanPreconditionsVerifier scanPreconditionVerifier,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) ExecutorService executorService,
                     @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler) {
@@ -81,7 +79,7 @@ class RxBleClientImpl extends RxBleClient {
         this.lazyClientStateObservable = lazyClientStateObservable;
         this.rxBleDeviceProvider = rxBleDeviceProvider;
         this.scanSetupBuilder = scanSetupBuilder;
-        this.excessiveScanChecker = excessiveScanChecker;
+        this.scanPreconditionVerifier = scanPreconditionVerifier;
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
         this.executorService = executorService;
         this.mainThreadScheduler = mainThreadScheduler;
@@ -113,9 +111,10 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(final ScanSettings scanSettings, final ScanFilter... scanFilters) {
-        return verifyScanPreconditions().andThen(Observable.defer(new Func0<Observable<ScanResult>>() {
+        return Observable.defer(new Func0<Observable<ScanResult>>() {
             @Override
             public Observable<ScanResult> call() {
+                scanPreconditionVerifier.verify();
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
                 final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
                 return rxBleRadio.queue(scanOperation)
@@ -124,37 +123,16 @@ class RxBleClientImpl extends RxBleClient {
                         .map(internalToExternalScanResultMapFunction)
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());
             }
-        }));
+        });
     }
 
 
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
-        return verifyScanPreconditions().andThen(Observable.defer(new Func0<Observable<RxBleScanResult>>() {
+        return Observable.defer(new Func0<Observable<RxBleScanResult>>() {
             @Override
             public Observable<RxBleScanResult> call() {
+                scanPreconditionVerifier.verify();
                 return initializeScan(filterServiceUUIDs);
-            }
-        }));
-    }
-
-    private Completable verifyScanPreconditions() {
-        return Completable.fromAction(new Action0() {
-            @Override
-            public void call() {
-                if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
-                    throw new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE);
-                } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
-                    throw new BleScanException(BleScanException.BLUETOOTH_DISABLED);
-                } else if (!locationServicesStatus.isLocationPermissionOk()) {
-                    throw new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING);
-                } else if (!locationServicesStatus.isLocationProviderOk()) {
-                    throw new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED);
-                } else {
-                    final Date suggestedDateToRetry = excessiveScanChecker.suggestDateToRetry();
-                    if (suggestedDateToRetry != null) {
-                        throw new BleScanException(BleScanException.UNDOCUMENTED_SCAN_THROTTLE, suggestedDateToRetry);
-                    }
-                }
             }
         });
     }

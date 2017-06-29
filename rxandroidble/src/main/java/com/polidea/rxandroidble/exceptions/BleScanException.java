@@ -173,7 +173,7 @@ public class BleScanException extends BleException {
         if (retryDateSuggestion == null) {
             return "";
         } else {
-            return "retryDateSuggestion=" + retryDateSuggestion;
+            return ", retryDateSuggestion=" + retryDateSuggestion;
         }
     }
 }
