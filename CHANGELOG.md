@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+Version 1.4.0-SNAPSHOT
+* Adjusted `BleCannotSetCharacteristicNotificationException` to contain the cause exception if available. `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` will now throw the cause of disconnection if subscribed after connection was disconnected. (https://github.com/Polidea/RxAndroidBle/issues/225) 
+
 Version 1.3.2
 * Fixed completing the `Observable<byte[]>` emitted by `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` when unsubscribed (https://github.com/Polidea/RxAndroidBle/issues/231)
 
