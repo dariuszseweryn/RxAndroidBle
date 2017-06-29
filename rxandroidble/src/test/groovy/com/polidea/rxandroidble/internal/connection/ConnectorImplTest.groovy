@@ -15,13 +15,14 @@ import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
+import rx.functions.Actions
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleConnectionConnectorImplTest extends Specification {
+public class ConnectorImplTest extends Specification {
 
     static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
         public boolean isAutoConnect
@@ -33,7 +34,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
                            RxBleGattCallback rxBleGattCallback,
                            TimeoutConfiguration connectionTimeoutConfiguration,
                            BluetoothGattProvider bluetoothGattProvider) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider)
+            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, Actions.empty())
             this.mockConnection = mockConnection
         }
 
@@ -61,7 +62,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
     ConnectionComponent.Builder mockConnectionComponentBuilder
     MockConnectBuilder mockConnectBuilder
 
-    RxBleConnectionConnectorImpl objectUnderTest
+    ConnectorImpl objectUnderTest
 
     def setup() {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
@@ -75,7 +76,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
                 this.mockConnectBuilder
         )
 
-        objectUnderTest = new RxBleConnectionConnectorImpl(
+        objectUnderTest = new ConnectorImpl(
                 mockDevice,
                 mockRadio,
                 mockAdapterWrapper,

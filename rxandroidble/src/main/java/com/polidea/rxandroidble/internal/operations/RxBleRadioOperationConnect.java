@@ -29,6 +29,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
@@ -40,6 +41,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
         private final RxBleGattCallback rxBleGattCallback;
         private final BluetoothGattProvider bluetoothGattProvider;
         private final TimeoutConfiguration connectTimeout;
+        private final Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction;
         private boolean autoConnect = false;
 
         @Inject
@@ -48,12 +50,14 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                 BleConnectionCompat connectionCompat,
                 RxBleGattCallback rxBleGattCallback,
                 @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectionTimeout,
-                BluetoothGattProvider bluetoothGattProvider) {
+                BluetoothGattProvider bluetoothGattProvider,
+                Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction) {
             this.bluetoothDevice = bluetoothDevice;
             this.connectionCompat = connectionCompat;
             this.rxBleGattCallback = rxBleGattCallback;
             this.bluetoothGattProvider = bluetoothGattProvider;
             this.connectTimeout = connectionTimeout;
+            this.connectionStateChangedAction = connectionStateChangedAction;
         }
 
         public Builder setAutoConnect(boolean autoConnect) {
@@ -63,7 +67,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
         public RxBleRadioOperationConnect build() {
             return new RxBleRadioOperationConnect(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider,
-                    connectTimeout, autoConnect);
+                    connectTimeout, autoConnect, connectionStateChangedAction);
         }
     }
 
@@ -73,6 +77,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final BluetoothGattProvider bluetoothGattProvider;
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
+    private final Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction;
 
     @Inject
     RxBleRadioOperationConnect(
@@ -81,13 +86,15 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             RxBleGattCallback rxBleGattCallback,
             BluetoothGattProvider bluetoothGattProvider,
             @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
-            boolean autoConnect) {
+            boolean autoConnect,
+            Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.connectTimeout = connectTimeout;
         this.autoConnect = autoConnect;
+        this.connectionStateChangedAction = connectionStateChangedAction;
     }
 
     @Override
@@ -153,6 +160,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                         final Subscription connectedBluetoothGattSubscription = Observable.fromCallable(new Func0<BluetoothGatt>() {
                             @Override
                             public BluetoothGatt call() {
+                                connectionStateChangedAction.call(CONNECTED);
                                 return bluetoothGattProvider.getBluetoothGatt();
                             }
                         })
@@ -160,14 +168,12 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                                 .delaySubscription(
                                         rxBleGattCallback
                                                 .getOnConnectionStateChange()
-                                                .takeFirst(
-                                                        new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
-                                                            @Override
-                                                            public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
-                                                                return rxBleConnectionState == CONNECTED;
-                                                            }
-                                                        }
-                                                )
+                                                .takeFirst(new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
+                                                    @Override
+                                                    public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
+                                                        return rxBleConnectionState == CONNECTED;
+                                                    }
+                                                })
                                 )
                                 // disconnect may happen even if the connection was not established yet
                                 .mergeWith(rxBleGattCallback.<BluetoothGatt>observeDisconnect())
@@ -180,6 +186,8 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                                 connectedBluetoothGattSubscription.unsubscribe();
                             }
                         });
+
+                        connectionStateChangedAction.call(CONNECTING);
 
                         /*
                         * Apparently the connection may be established fast enough to introduce a race condition so the subscription
