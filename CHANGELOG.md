@@ -4,6 +4,7 @@ Change Log
 Version 1.4.0-SNAPSHOT
 * Added native callback usage support in custom operations. You may consider this API if your implementation is performance critical. (https://github.com/Polidea/RxAndroidBle/issues/165)
 * Added pre-scan verification for excessive scan (undocumented Android 7.0 "feature") (https://github.com/Polidea/RxAndroidBle/issues/227)
+* Adjusted `BleCannotSetCharacteristicNotificationException` to contain the cause exception if available. `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` will now throw the cause of disconnection if subscribed after connection was disconnected. (https://github.com/Polidea/RxAndroidBle/issues/225) 
 
 Version 1.3.2
 * Fixed completing the `Observable<byte[]>` emitted by `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` when unsubscribed (https://github.com/Polidea/RxAndroidBle/issues/231)
