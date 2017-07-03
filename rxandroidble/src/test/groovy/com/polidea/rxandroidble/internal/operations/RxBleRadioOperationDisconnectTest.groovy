@@ -15,15 +15,14 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
+import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import rx.Observable
 import rx.Scheduler
 import rx.android.plugins.RxAndroidPlugins
 import rx.android.plugins.RxAndroidSchedulersHook
 import rx.android.schedulers.AndroidSchedulers
-import rx.functions.Action1
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
@@ -41,7 +40,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
     PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create()
-    Action1<RxBleConnection.RxBleConnectionState> mockConnectionStateChangedAction = Mock Action1
+    ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     TestSubscriber<Void> testSubscriber = new TestSubscriber()
     BluetoothGattProvider mockBluetoothGattProvider
     RxBleRadioOperationDisconnect objectUnderTest
@@ -153,7 +152,7 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         observable.subscribe()
 
         then:
-        1 * mockConnectionStateChangedAction.call(DISCONNECTING)
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTING)
     }
 
     def "should call connectionStateChangedAction with DISCONNECTED when completed"() {
@@ -167,12 +166,12 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
         connectionStatePublishSubject.onNext(DISCONNECTED)
 
         then:
-        1 * mockConnectionStateChangedAction.call(DISCONNECTED)
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTED)
     }
 
     private prepareObjectUnderTest() {
         objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, mockBluetoothGattProvider, mockMacAddress,
                 mockBluetoothManager, ImmediateScheduler.INSTANCE, new MockOperationTimeoutConfiguration(Schedulers.computation()),
-                mockConnectionStateChangedAction)
+                mockConnectionStateChangeListener)
     }
 }

@@ -13,6 +13,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
+import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
@@ -41,7 +42,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
         private final RxBleGattCallback rxBleGattCallback;
         private final BluetoothGattProvider bluetoothGattProvider;
         private final TimeoutConfiguration connectTimeout;
-        private final Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction;
+        private final ConnectionStateChangeListener connectionStateChangeListener;
         private boolean autoConnect = false;
 
         @Inject
@@ -51,13 +52,13 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                 RxBleGattCallback rxBleGattCallback,
                 @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectionTimeout,
                 BluetoothGattProvider bluetoothGattProvider,
-                Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction) {
+                ConnectionStateChangeListener connectionStateChangeListener) {
             this.bluetoothDevice = bluetoothDevice;
             this.connectionCompat = connectionCompat;
             this.rxBleGattCallback = rxBleGattCallback;
             this.bluetoothGattProvider = bluetoothGattProvider;
             this.connectTimeout = connectionTimeout;
-            this.connectionStateChangedAction = connectionStateChangedAction;
+            this.connectionStateChangeListener = connectionStateChangeListener;
         }
 
         public Builder setAutoConnect(boolean autoConnect) {
@@ -67,7 +68,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
         public RxBleRadioOperationConnect build() {
             return new RxBleRadioOperationConnect(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider,
-                    connectTimeout, autoConnect, connectionStateChangedAction);
+                    connectTimeout, autoConnect, connectionStateChangeListener);
         }
     }
 
@@ -77,7 +78,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final BluetoothGattProvider bluetoothGattProvider;
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
-    private final Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction;
+    private final ConnectionStateChangeListener connectionStateChangedAction;
 
     @Inject
     RxBleRadioOperationConnect(
@@ -87,7 +88,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             BluetoothGattProvider bluetoothGattProvider,
             @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
             boolean autoConnect,
-            Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction) {
+            ConnectionStateChangeListener connectionStateChangedAction) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;
         this.rxBleGattCallback = rxBleGattCallback;
@@ -160,7 +161,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                         final Subscription connectedBluetoothGattSubscription = Observable.fromCallable(new Func0<BluetoothGatt>() {
                             @Override
                             public BluetoothGatt call() {
-                                connectionStateChangedAction.call(CONNECTED);
+                                connectionStateChangedAction.onConnectionStateChange(CONNECTED);
                                 return bluetoothGattProvider.getBluetoothGatt();
                             }
                         })
@@ -187,7 +188,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                             }
                         });
 
-                        connectionStateChangedAction.call(CONNECTING);
+                        connectionStateChangedAction.onConnectionStateChange(CONNECTING);
 
                         /*
                         * Apparently the connection may be established fast enough to introduce a race condition so the subscription

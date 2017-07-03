@@ -15,7 +15,6 @@ import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
-import rx.functions.Actions
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
@@ -33,8 +32,9 @@ public class ConnectorImplTest extends Specification {
                            BleConnectionCompat connectionCompat,
                            RxBleGattCallback rxBleGattCallback,
                            TimeoutConfiguration connectionTimeoutConfiguration,
-                           BluetoothGattProvider bluetoothGattProvider) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, Actions.empty())
+                           BluetoothGattProvider bluetoothGattProvider,
+                           ConnectionStateChangeListener connectionStateChangeListener) {
+            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
             this.mockConnection = mockConnection
         }
 
@@ -68,7 +68,8 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.never()
         mockConnectBuilder = new MockConnectBuilder(mockConnect, mockDevice, Mock(BleConnectionCompat),
-                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()) ,Mock(BluetoothGattProvider))
+                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()), Mock(BluetoothGattProvider),
+                Mock(ConnectionStateChangeListener))
         mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
                 Mock(RxBleConnection),
                 mockCallback,

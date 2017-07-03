@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
+import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import javax.inject.Inject;
@@ -39,7 +40,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     private final BluetoothManager bluetoothManager;
     private final Scheduler mainThreadScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
-    private final Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction;
+    private final ConnectionStateChangeListener connectionStateChangeListener;
 
     @Inject
     RxBleRadioOperationDisconnect(
@@ -49,19 +50,19 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             BluetoothManager bluetoothManager,
             @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
             @Named(DeviceModule.DISCONNECT_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-            Action1<RxBleConnection.RxBleConnectionState> connectionStateChangedAction) {
+            ConnectionStateChangeListener connectionStateChangeListener) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.macAddress = macAddress;
         this.bluetoothManager = bluetoothManager;
         this.mainThreadScheduler = mainThreadScheduler;
         this.timeoutConfiguration = timeoutConfiguration;
-        this.connectionStateChangedAction = connectionStateChangedAction;
+        this.connectionStateChangeListener = connectionStateChangeListener;
     }
 
     @Override
     protected void protectedRun(final Emitter<Void> emitter, RadioReleaseInterface radioReleaseInterface) {
-        connectionStateChangedAction.call(DISCONNECTING);
+        connectionStateChangeListener.onConnectionStateChange(DISCONNECTING);
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
         if (bluetoothGatt == null) {
@@ -86,7 +87,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                             new Action0() {
                                 @Override
                                 public void call() {
-                                    connectionStateChangedAction.call(DISCONNECTED);
+                                    connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
                                     emitter.onCompleted();
                                 }
                             }
