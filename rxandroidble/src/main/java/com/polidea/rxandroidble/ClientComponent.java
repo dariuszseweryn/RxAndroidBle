@@ -15,6 +15,9 @@ import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConver
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi18;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi24;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
@@ -190,6 +193,19 @@ public interface ClientComponent {
         @Named(BluetoothConstants.DISABLE_NOTIFICATION_VALUE)
         static byte[] provideDisableNotificationValue() {
             return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+        }
+
+        @Provides
+        static ScanPreconditionsVerifier provideScanPreconditionVerifier(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<ScanPreconditionsVerifierApi18> scanPreconditionVerifierForApi18,
+                Provider<ScanPreconditionsVerifierApi24> scanPreconditionVerifierForApi24
+        ) {
+            if (deviceSdk < Build.VERSION_CODES.N) {
+                return scanPreconditionVerifierForApi18.get();
+            } else {
+                return scanPreconditionVerifierForApi24.get();
+            }
         }
     }
 

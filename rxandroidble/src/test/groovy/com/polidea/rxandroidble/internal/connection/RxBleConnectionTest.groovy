@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
@@ -21,6 +22,7 @@ import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static rx.Observable.error
 import static rx.Observable.from
 import static rx.Observable.just
 
@@ -310,6 +312,48 @@ class RxBleConnectionTest extends Specification {
         then:
         flatRadio.semaphore.isReleased()
         testSubscriber.assertError(RuntimeException.class)
+    }
+
+    def "should clear native gatt callback after custom operation is finished"() {
+        given:
+        def nativeCallback = Mock BluetoothGattCallback
+        def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
+
+            @Override
+            Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
+                                             RxBleGattCallback rxBleGattCallback,
+                                             Scheduler scheduler) throws Throwable {
+                rxBleGattCallback.setNativeCallback(nativeCallback)
+                return just(true)
+            }
+        }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
+        1 * gattCallback.setNativeCallback(null)
+    }
+
+    def "should clear native gatt callback after custom operation failed"() {
+        given:
+        def nativeCallback = Mock BluetoothGattCallback
+        def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
+
+            @Override
+            Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
+                                             RxBleGattCallback rxBleGattCallback,
+                                             Scheduler scheduler) throws Throwable {
+                rxBleGattCallback.setNativeCallback(nativeCallback)
+                return error(new IllegalArgumentException("Oh no, da error!"))
+            }
+        }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
+        1 * gattCallback.setNativeCallback(null)
     }
 
     def "should pass error and release the radio if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
