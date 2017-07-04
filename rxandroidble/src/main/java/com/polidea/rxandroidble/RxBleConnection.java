@@ -68,11 +68,10 @@ public interface RxBleConnection {
             BluetoothGatt.CONNECTION_PRIORITY_HIGH})
     @interface ConnectionPriority { }
 
+    @Deprecated
     interface Connector {
 
-        @Deprecated
         Observable<RxBleConnection> prepareConnection(boolean autoConnect);
-        Observable<RxBleConnection> prepareConnection(ConnectionSetup options);
     }
 
     enum RxBleConnectionState {
