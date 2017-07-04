@@ -2,8 +2,11 @@ package com.polidea.rxandroidble.exceptions;
 
 import android.support.annotation.IntDef;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Date;
 
 /**
  * Exception emitted as a result of faulty scan operation. The reason describes the situation in details.
@@ -12,7 +15,7 @@ public class BleScanException extends BleException {
 
     @IntDef({BLUETOOTH_CANNOT_START, BLUETOOTH_DISABLED, BLUETOOTH_NOT_AVAILABLE, LOCATION_PERMISSION_MISSING, LOCATION_SERVICES_DISABLED,
             SCAN_FAILED_ALREADY_STARTED, SCAN_FAILED_APPLICATION_REGISTRATION_FAILED, SCAN_FAILED_INTERNAL_ERROR,
-            SCAN_FAILED_FEATURE_UNSUPPORTED, SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES, UNKNOWN_ERROR_CODE})
+            SCAN_FAILED_FEATURE_UNSUPPORTED, SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES, UNDOCUMENTED_SCAN_THROTTLE, UNKNOWN_ERROR_CODE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Reason {
 
@@ -72,6 +75,15 @@ public class BleScanException extends BleException {
     public static final int SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES = 9;
 
     /**
+     * On API >=25 there is an undocumented scan throttling mechanism. If 5 scans were started by the app during a 30 second window
+     * the next scan in that window will be silently skipped with only a log warning. In this situation there should be
+     * a retryDateSuggestion {@link Date} set with a time when the scan should work again.
+     *
+     * @link https://blog.classycode.com/undocumented-android-7-ble-behavior-changes-d1a9bd87d983
+     */
+    public static final int UNDOCUMENTED_SCAN_THROTTLE = Integer.MAX_VALUE - 1;
+
+    /**
      * Unknown error code. Only on API >=21.
      */
     public static final int UNKNOWN_ERROR_CODE = Integer.MAX_VALUE;
@@ -79,13 +91,22 @@ public class BleScanException extends BleException {
     @Reason
     private final int reason;
 
+    private final Date retryDateSuggestion;
+
     public BleScanException(@Reason int reason) {
         this.reason = reason;
+        this.retryDateSuggestion = null;
+    }
+
+    public BleScanException(@Reason int reason, @NonNull Date retryDateSuggestion) {
+        this.reason = reason;
+        this.retryDateSuggestion = retryDateSuggestion;
     }
 
     public BleScanException(@Reason int reason, Throwable causeException) {
         super(causeException);
         this.reason = reason;
+        this.retryDateSuggestion = null;
     }
 
     /**
@@ -98,10 +119,21 @@ public class BleScanException extends BleException {
         return reason;
     }
 
+    /**
+     * Returns a {@link Date} suggestion when a particular {@link Reason} should no longer be valid
+     *
+     * @return the date suggestion or null if no suggestion available
+     */
+    @Nullable
+    public Date getRetryDateSuggestion() {
+        return retryDateSuggestion;
+    }
+
     @Override
     public String toString() {
         return "BleScanException{"
                 + "reason=" + reasonDescription()
+                + retryDateSuggestionIfExists()
                 + toStringCauseIfExists()
                 + '}';
     }
@@ -128,10 +160,20 @@ public class BleScanException extends BleException {
                 return "SCAN_FAILED_FEATURE_UNSUPPORTED";
             case SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
                 return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+            case UNDOCUMENTED_SCAN_THROTTLE:
+                return "UNDOCUMENTED_SCAN_THROTTLE";
             case UNKNOWN_ERROR_CODE:
                 // fallthrough
             default:
                 return "UNKNOWN";
+        }
+    }
+
+    private String retryDateSuggestionIfExists() {
+        if (retryDateSuggestion == null) {
+            return "";
+        } else {
+            return ", retryDateSuggestion=" + retryDateSuggestion;
         }
     }
 }
