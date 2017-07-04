@@ -13,14 +13,19 @@ import rx.Observable;
 public interface RxBleDevice {
 
     /**
-     * Observe changes to connection state of the device. On subscription it returns immediately last known RxBleConnectionState.
+     * Observe changes to connection state of the device's {@link android.bluetooth.BluetoothGatt}.
+     * This Observable will never emit errors.
      *
-     * @return the most current RxBleConnectionState
+     * If you would like to have the initial state as well you can use observeConnectionStateChanges().startWith(getConnectionState())
+     *
+     * @return observable that will emit {@link com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState} changes
      */
     Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges();
 
     /**
-     * Returns current connection state
+     * Returns current connection state of the device's {@link android.bluetooth.BluetoothGatt}
+     *
+     * @return the RxBleConnectionState
      */
     RxBleConnection.RxBleConnectionState getConnectionState();
 

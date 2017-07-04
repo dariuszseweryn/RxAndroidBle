@@ -23,7 +23,7 @@ import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 
-public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
+public class ConnectorImpl implements Connector {
 
     private final BluetoothDevice bluetoothDevice;
     private final RxBleRadio rxBleRadio;
@@ -32,7 +32,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
     private final ConnectionComponent.Builder connectionComponentBuilder;
 
     @Inject
-    public RxBleConnectionConnectorImpl(
+    public ConnectorImpl(
             BluetoothDevice bluetoothDevice,
             RxBleRadio rxBleRadio,
             RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -100,6 +100,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             }
         });
     }
+
     private Observable<BleAdapterState> adapterNotUsableObservable() {
         return adapterStateObservable
                 .filter(new Func1<BleAdapterState, Boolean>() {

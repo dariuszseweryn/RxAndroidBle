@@ -6,6 +6,7 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
 import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
@@ -27,6 +28,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
     PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
     RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     BluetoothGattProvider mockBluetoothGattProvider
     TestScheduler timeoutScheduler
     RxBleRadioOperationConnect objectUnderTest
@@ -51,7 +53,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
 
     def prepareObjectUnderTest(boolean autoConnect) {
         objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockBleConnectionCompat, mockCallback,
-                mockBluetoothGattProvider, timeoutConfiguration, autoConnect)
+                mockBluetoothGattProvider, timeoutConfiguration, autoConnect, mockConnectionStateChangeListener)
     }
 
     def "asObservable() should not emit onNext before connection is established"() {
@@ -153,6 +155,30 @@ public class RxBleRadioOperationConnectTest extends Specification {
         testSubscriber.assertError {
             it instanceof BleGattCallbackTimeoutException && it.getMacAddress() == mockMacAddress
         }
+    }
+
+    def "should call connectionStateChangedAction with CONNECTING when run"() {
+
+        given:
+        def observable = objectUnderTest.run(mockRadioReleaseInterface)
+
+        when:
+        observable.subscribe()
+
+        then:
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(RxBleConnection.RxBleConnectionState.CONNECTING)
+    }
+
+    def "should call connectionStateChangedAction with CONNECTED when connected"() {
+
+        given:
+        objectUnderTest.run(mockRadioReleaseInterface).subscribe()
+
+        when:
+        emitConnectedConnectionState()
+
+        then:
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(RxBleConnection.RxBleConnectionState.CONNECTED)
     }
 
     private emitConnectedConnectionState() {

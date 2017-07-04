@@ -21,7 +21,7 @@ import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleConnectionConnectorImplTest extends Specification {
+public class ConnectorImplTest extends Specification {
 
     static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
         public boolean isAutoConnect
@@ -32,8 +32,9 @@ public class RxBleConnectionConnectorImplTest extends Specification {
                            BleConnectionCompat connectionCompat,
                            RxBleGattCallback rxBleGattCallback,
                            TimeoutConfiguration connectionTimeoutConfiguration,
-                           BluetoothGattProvider bluetoothGattProvider) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider)
+                           BluetoothGattProvider bluetoothGattProvider,
+                           ConnectionStateChangeListener connectionStateChangeListener) {
+            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
             this.mockConnection = mockConnection
         }
 
@@ -61,13 +62,14 @@ public class RxBleConnectionConnectorImplTest extends Specification {
     ConnectionComponent.Builder mockConnectionComponentBuilder
     MockConnectBuilder mockConnectBuilder
 
-    RxBleConnectionConnectorImpl objectUnderTest
+    ConnectorImpl objectUnderTest
 
     def setup() {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.never()
         mockConnectBuilder = new MockConnectBuilder(mockConnect, mockDevice, Mock(BleConnectionCompat),
-                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()) ,Mock(BluetoothGattProvider))
+                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()), Mock(BluetoothGattProvider),
+                Mock(ConnectionStateChangeListener))
         mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
                 Mock(RxBleConnection),
                 mockCallback,
@@ -75,7 +77,7 @@ public class RxBleConnectionConnectorImplTest extends Specification {
                 this.mockConnectBuilder
         )
 
-        objectUnderTest = new RxBleConnectionConnectorImpl(
+        objectUnderTest = new ConnectorImpl(
                 mockDevice,
                 mockRadio,
                 mockAdapterWrapper,
