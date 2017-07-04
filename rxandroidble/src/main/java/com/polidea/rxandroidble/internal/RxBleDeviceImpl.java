@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 
 import rx.Observable;
+import rx.functions.Action0;
 import rx.functions.Func0;
 
 @DeviceScope
@@ -67,7 +68,12 @@ class RxBleDeviceImpl implements RxBleDevice {
             public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(options);
+                    return connector.prepareConnection(options).doOnUnsubscribe(new Action0() {
+                        @Override
+                        public void call() {
+                            isConnected.set(false);
+                        }
+                    });
                 } else {
                     return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
                 }
