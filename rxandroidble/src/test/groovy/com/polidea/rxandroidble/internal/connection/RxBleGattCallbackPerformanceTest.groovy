@@ -4,16 +4,17 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import org.robospock.RoboSpecification
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
-import rx.plugins.RxJavaHooks
+import spock.lang.Ignore
 import spock.lang.Shared
 
 import static android.bluetooth.BluetoothGatt.GATT_FAILURE
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 
-class RxBleGattCallbackPerformanceTest extends RoboSpecification {
+import spock.lang.Specification
+
+class RxBleGattCallbackPerformanceTest extends Specification {
 
     def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), new NativeCallbackDispatcher())
     def testSubscriber = new TestSubscriber()
@@ -28,14 +29,8 @@ class RxBleGattCallbackPerformanceTest extends RoboSpecification {
     def iterationsCount = 1000000
 
     def setupSpec() {
-        RxJavaHooks.reset()
-        RxJavaHooks.setOnComputationScheduler({ ImmediateScheduler.INSTANCE })
         mockBluetoothGatt.getDevice() >> mockBluetoothDevice
         mockBluetoothDevice.getAddress() >> mockBluetoothDeviceMacAddress
-    }
-
-    def teardownSpec() {
-        RxJavaHooks.reset()
     }
 
     def "sanity check"() {
@@ -44,6 +39,7 @@ class RxBleGattCallbackPerformanceTest extends RoboSpecification {
         GATT_SUCCESS != GATT_FAILURE
     }
 
+    @Ignore // not needed to be performed each time
     def "performance test gatt callback using RxJava API"() {
         given:
         def startedTimestamp = System.currentTimeMillis()
@@ -54,9 +50,10 @@ class RxBleGattCallbackPerformanceTest extends RoboSpecification {
 
         then:
         testSubscriber.assertValueCount(iterationsCount)
-        println("Test read callbacks with $iterationsCount took ${System.currentTimeMillis() - startedTimestamp}ms")
+        println("Test read callbacks with $iterationsCount took ${System.currentTimeMillis() - startedTimestamp}ms (Rx API)")
     }
 
+    @Ignore // not needed to be performed each time
     def "performance test gatt callback using native callbacks"() {
         given:
         def startedTimestamp = System.currentTimeMillis()
@@ -68,7 +65,7 @@ class RxBleGattCallbackPerformanceTest extends RoboSpecification {
 
         then:
         testCallback.readCount == iterationsCount
-        println("Test read callbacks with $iterationsCount tool ${System.currentTimeMillis() - startedTimestamp}ms")
+        println("Test read callbacks with $iterationsCount took ${System.currentTimeMillis() - startedTimestamp}ms (Native API)")
     }
 
     private invokeCharacteristicReadCallback(int iterationCount = 1) {
