@@ -55,7 +55,7 @@ On Android it is not always trivial to determine if a particular BLE operation h
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
-Subscription flowSubscription = rxBleClient.observeState()
+Subscription flowSubscription = rxBleClient.observeStateChanges()
     .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
         switch (state) {
 
