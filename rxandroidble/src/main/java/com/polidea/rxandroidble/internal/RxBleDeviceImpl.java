@@ -69,12 +69,13 @@ class RxBleDeviceImpl implements RxBleDevice {
             public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(options).doOnUnsubscribe(new Action0() {
-                        @Override
-                        public void call() {
-                            isConnected.set(false);
-                        }
-                    });
+                    return connector.prepareConnection(options)
+                            .doOnUnsubscribe(new Action0() {
+                                @Override
+                                public void call() {
+                                    isConnected.set(false);
+                                }
+                            });
                 } else {
                     return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
                 }
