@@ -277,8 +277,12 @@ import java.util.UUID;
         }
 
         // Local name match.
-        if (mDeviceName != null && !mDeviceName.equals(scanRecord.getDeviceName())) {
-            return false;
+        if (mDeviceName != null) {
+            final boolean advertisedDeviceNameMatches = mDeviceName.equals(scanRecord.getDeviceName());
+            final boolean bluetoothDeviceNameMatches = mDeviceName.equals(device.getName());
+            if (!(advertisedDeviceNameMatches || bluetoothDeviceNameMatches)) {
+                return false;
+            }
         }
 
         // UUID match.
