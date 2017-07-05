@@ -56,6 +56,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(final boolean autoConnect) {
         ConnectionSetup options = (new ConnectionSetup.Builder())
                 .setAutoConnect(autoConnect)
+                .setSuppressIllegalOperationCheck(true)
                 .build();
         return establishConnection(options);
     }

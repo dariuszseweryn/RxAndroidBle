@@ -9,6 +9,9 @@ import com.polidea.rxandroidble.internal.RxBleLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
+import java.util.concurrent.Callable;
+
+import rx.Completable;
 
 /**
  *  Class for checking whether the requested operation is legal on chosen characteristic.
@@ -56,24 +59,31 @@ abstract public class IllegalOperationChecker {
      * the supplied bitmask.
      * @param characteristic a {@link BluetoothGattCharacteristic} the operation is done on
      * @param neededProperties properties required for the operation to be successfully completed
+     * @return {@link Completable} deferring execution of the check till subscription
      */
-    public void checkAnyPropertyMatches(BluetoothGattCharacteristic characteristic,
-                                        @BluetoothGattCharacteristicProperty int neededProperties) {
-        final int characteristicProperties = characteristic.getProperties();
+    public Completable checkAnyPropertyMatches(final BluetoothGattCharacteristic characteristic,
+                                               final @BluetoothGattCharacteristicProperty int neededProperties) {
+        return Completable.fromCallable(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                final int characteristicProperties = characteristic.getProperties();
 
-        if ((characteristicProperties & neededProperties) == 0) {
-            int[] possibleProperties = getPossibleProperties();
-            String message = String.format(
-                    Locale.getDefault(),
-                    "Characteristic %s supports properties:[%s] (%d) does not have any property matching [%s] (%d)",
-                    characteristic.getUuid(),
-                    propertiesIntToString(characteristicProperties, possibleProperties),
-                    characteristicProperties,
-                    propertiesIntToString(neededProperties, possibleProperties),
-                    neededProperties
-            );
-            handleMessage(message);
-        }
+                if ((characteristicProperties & neededProperties) == 0) {
+                    int[] possibleProperties = getPossibleProperties();
+                    String message = String.format(
+                            Locale.getDefault(),
+                            "Characteristic %s supports properties:[%s] (%d) does not have any property matching [%s] (%d)",
+                            characteristic.getUuid(),
+                            propertiesIntToString(characteristicProperties, possibleProperties),
+                            characteristicProperties,
+                            propertiesIntToString(neededProperties, possibleProperties),
+                            neededProperties
+                    );
+                    handleMessage(message);
+                }
+                return null;
+            }
+        });
     }
 
     /**

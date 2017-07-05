@@ -2,26 +2,38 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.IllegalOperationChecker;
 import com.polidea.rxandroidble.internal.util.LoggingIllegalOperationChecker;
 import com.polidea.rxandroidble.internal.util.ThrowingIllegalOperationChecker;
 
+import javax.inject.Named;
+
 import dagger.Module;
 import dagger.Provides;
+
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
 @Module
 public class ConnectionModule {
 
-    private boolean suppressPropertiesCheck;
+    private boolean autoConnect;
+    private boolean suppressOperationCheck;
 
-    public ConnectionModule(boolean suppressPropertiesCheck) {
-        this.suppressPropertiesCheck = suppressPropertiesCheck;
+    public ConnectionModule(ConnectionSetup connectionSetup) {
+        this.autoConnect = connectionSetup.autoConnect;
+        this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
+    }
+
+    @ConnectionScope
+    @Provides @Named(AUTO_CONNECT) boolean provideAutoConnect() {
+        return autoConnect;
     }
 
     @Provides
     @ConnectionScope
     IllegalOperationChecker provideIllegalOperationChecker() {
-        if (suppressPropertiesCheck) {
+        if (suppressOperationCheck) {
             return new LoggingIllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,

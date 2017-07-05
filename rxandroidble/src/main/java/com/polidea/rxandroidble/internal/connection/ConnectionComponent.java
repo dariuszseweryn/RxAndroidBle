@@ -10,6 +10,12 @@ import dagger.Subcomponent;
 @Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
 public interface ConnectionComponent {
 
+    class NamedBooleans {
+        public static final String AUTO_CONNECT = "autoConnect";
+        public static final String SUPPRESS_OPERATION_CHECKS = "suppressOperationChecks";
+        private NamedBooleans() { }
+    }
+
     @Subcomponent.Builder
     interface Builder {
 
@@ -19,7 +25,7 @@ public interface ConnectionComponent {
     }
 
     @ConnectionScope
-    RxBleRadioOperationConnect.Builder connectOperationBuilder();
+    RxBleRadioOperationConnect connectOperation();
 
     @ConnectionScope
     RxBleRadioOperationDisconnect disconnectOperation();

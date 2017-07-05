@@ -9,13 +9,13 @@ public class MockConnectionComponentBuilder implements ConnectionComponent.Build
     private final RxBleConnection rxBleConnection
     private final RxBleGattCallback rxBleGattCallback
     private final RxBleRadioOperationDisconnect rxBleRadioOperationDisconnect
-    private final RxBleRadioOperationConnect.Builder rxBleRadioOperationConnectBuilder
+    private final RxBleRadioOperationConnect rxBleRadioOperationConnect
 
     MockConnectionComponentBuilder(RxBleConnection rxBleConnection,
                                    RxBleGattCallback rxBleGattCallback,
                                    RxBleRadioOperationDisconnect rxBleRadioOperationDisconnect,
-                                   RxBleRadioOperationConnect.Builder rxBleRadioOperationConnectBuilder) {
-        this.rxBleRadioOperationConnectBuilder = rxBleRadioOperationConnectBuilder
+                                   RxBleRadioOperationConnect rxBleRadioOperationConnect) {
+        this.rxBleRadioOperationConnect = rxBleRadioOperationConnect
         this.rxBleConnection = rxBleConnection
         this.rxBleGattCallback = rxBleGattCallback
         this.rxBleRadioOperationDisconnect = rxBleRadioOperationDisconnect
@@ -31,8 +31,8 @@ public class MockConnectionComponentBuilder implements ConnectionComponent.Build
         return new ConnectionComponent() {
 
             @Override
-            RxBleRadioOperationConnect.Builder connectOperationBuilder() {
-                return rxBleRadioOperationConnectBuilder
+            RxBleRadioOperationConnect connectOperation() {
+                return rxBleRadioOperationConnect
             }
 
             @Override

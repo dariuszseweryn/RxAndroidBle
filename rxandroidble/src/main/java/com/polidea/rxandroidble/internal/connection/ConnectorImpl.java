@@ -57,11 +57,9 @@ public class ConnectorImpl implements Connector {
                 }
 
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
-                        .connectionModule(new ConnectionModule(options.suppressOperationCheck))
+                        .connectionModule(new ConnectionModule(options))
                         .build();
-                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperationBuilder()
-                        .setAutoConnect(options.autoConnect)
-                        .build();
+                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperation();
 
                 return enqueueConnectOperation(operationConnect)
                         .flatMap(new Func1<BluetoothGatt, Observable<RxBleConnection>>() {

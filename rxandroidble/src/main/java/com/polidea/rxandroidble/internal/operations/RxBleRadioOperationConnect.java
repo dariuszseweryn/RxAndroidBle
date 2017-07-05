@@ -32,45 +32,9 @@ import rx.functions.Func1;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
-
-    public static class Builder {
-
-        private final BluetoothDevice bluetoothDevice;
-        private final BleConnectionCompat connectionCompat;
-        private final RxBleGattCallback rxBleGattCallback;
-        private final BluetoothGattProvider bluetoothGattProvider;
-        private final TimeoutConfiguration connectTimeout;
-        private final ConnectionStateChangeListener connectionStateChangeListener;
-        private boolean autoConnect = false;
-
-        @Inject
-        public Builder(
-                BluetoothDevice bluetoothDevice,
-                BleConnectionCompat connectionCompat,
-                RxBleGattCallback rxBleGattCallback,
-                @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectionTimeout,
-                BluetoothGattProvider bluetoothGattProvider,
-                ConnectionStateChangeListener connectionStateChangeListener) {
-            this.bluetoothDevice = bluetoothDevice;
-            this.connectionCompat = connectionCompat;
-            this.rxBleGattCallback = rxBleGattCallback;
-            this.bluetoothGattProvider = bluetoothGattProvider;
-            this.connectTimeout = connectionTimeout;
-            this.connectionStateChangeListener = connectionStateChangeListener;
-        }
-
-        public Builder setAutoConnect(boolean autoConnect) {
-            this.autoConnect = autoConnect;
-            return this;
-        }
-
-        public RxBleRadioOperationConnect build() {
-            return new RxBleRadioOperationConnect(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider,
-                    connectTimeout, autoConnect, connectionStateChangeListener);
-        }
-    }
 
     private final BluetoothDevice bluetoothDevice;
     private final BleConnectionCompat connectionCompat;
@@ -87,7 +51,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             RxBleGattCallback rxBleGattCallback,
             BluetoothGattProvider bluetoothGattProvider,
             @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
-            boolean autoConnect,
+            @Named(AUTO_CONNECT) boolean autoConnect,
             ConnectionStateChangeListener connectionStateChangedAction) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;

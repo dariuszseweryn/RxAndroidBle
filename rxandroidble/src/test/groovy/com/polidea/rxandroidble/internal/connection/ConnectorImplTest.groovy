@@ -24,33 +24,6 @@ import spock.lang.Unroll
 
 public class ConnectorImplTest extends Specification {
 
-    static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
-        public boolean isAutoConnect
-        private final RxBleRadioOperationConnect mockConnection
-
-        MockConnectBuilder(RxBleRadioOperationConnect mockConnection,
-                           BluetoothDevice bluetoothDevice,
-                           BleConnectionCompat connectionCompat,
-                           RxBleGattCallback rxBleGattCallback,
-                           TimeoutConfiguration connectionTimeoutConfiguration,
-                           BluetoothGattProvider bluetoothGattProvider,
-                           ConnectionStateChangeListener connectionStateChangeListener) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
-            this.mockConnection = mockConnection
-        }
-
-        @Override
-        RxBleRadioOperationConnect.Builder setAutoConnect(boolean autoConnect) {
-            this.isAutoConnect = autoConnect
-            return super.setAutoConnect(autoConnect)
-        }
-
-        @Override
-        RxBleRadioOperationConnect build() {
-            return mockConnection
-        }
-    }
-
     RxBleRadio mockRadio = Mock RxBleRadio
     BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
@@ -61,7 +34,6 @@ public class ConnectorImplTest extends Specification {
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
     BluetoothGatt mockGatt = Mock BluetoothGatt
     ConnectionComponent.Builder mockConnectionComponentBuilder
-    MockConnectBuilder mockConnectBuilder
     ConnectionSetup defaultConnectionSetup = new ConnectionSetup.Builder().build()
 
     ConnectorImpl objectUnderTest
@@ -69,9 +41,6 @@ public class ConnectorImplTest extends Specification {
     def setup() {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.never()
-        mockConnectBuilder = new MockConnectBuilder(mockConnect, mockDevice, Mock(BleConnectionCompat),
-                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()), Mock(BluetoothGattProvider),
-                Mock(ConnectionStateChangeListener))
         mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
                 Mock(RxBleConnection),
                 mockCallback,
@@ -87,27 +56,6 @@ public class ConnectorImplTest extends Specification {
                 mockConnectionComponentBuilder
         )
 
-    }
-
-    @Unroll
-    def "prepareConnection() should pass arguments to RxBleConnectionConnectorOperationsProvider #id"() {
-
-        given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
-        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
-
-        when:
-        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
-
-        then:
-        mockConnectBuilder.isAutoConnect == autoConnect
-
-        where:
-        contextObject | autoConnect
-        null          | true
-        null          | false
-        Mock(Context) | true
-        Mock(Context) | false
     }
 
     def "subscribing prepareConnection() should schedule provided RxBleRadioOperationConnect on RxBleRadio"() {
