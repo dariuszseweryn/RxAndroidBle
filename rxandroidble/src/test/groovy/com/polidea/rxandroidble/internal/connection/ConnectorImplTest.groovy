@@ -45,7 +45,7 @@ public class ConnectorImplTest extends Specification {
                 Mock(RxBleConnection),
                 mockCallback,
                 mockDisconnect,
-                this.mockConnectBuilder
+                mockConnect
         )
 
         objectUnderTest = new ConnectorImpl(

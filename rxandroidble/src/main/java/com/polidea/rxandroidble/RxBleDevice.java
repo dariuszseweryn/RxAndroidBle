@@ -93,10 +93,6 @@ public interface RxBleDevice {
      * following BleDisconnectedException or BleGattException emission.
      * <p>
      * During the disconnect process the library automatically handles order and requirement of device disconnect and gatt close operations.
-     * <p>
-     * Autoconnect concept may be misleading at first glance. In cases when the BLE device is available and it is advertising constantly you
-     * won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
-     * the moment of #establishConnection call.
      *
      * @param options Connection configuration container
      * @return Observable emitting the connection.

@@ -4,8 +4,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.IllegalOperationChecker;
-import com.polidea.rxandroidble.internal.util.LoggingIllegalOperationChecker;
-import com.polidea.rxandroidble.internal.util.ThrowingIllegalOperationChecker;
+import com.polidea.rxandroidble.internal.util.LoggingMismatchDataHandler;
+import com.polidea.rxandroidble.internal.util.ThrowingMismatchDataHandler;
 
 import javax.inject.Named;
 
@@ -34,21 +34,23 @@ public class ConnectionModule {
     @ConnectionScope
     IllegalOperationChecker provideIllegalOperationChecker() {
         if (suppressOperationCheck) {
-            return new LoggingIllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
+            return new IllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
                     BluetoothGattCharacteristic.PROPERTY_WRITE,
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                     BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
+                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
+                    new LoggingMismatchDataHandler());
         } else {
-            return new ThrowingIllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
+            return new IllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
                     BluetoothGattCharacteristic.PROPERTY_READ,
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
                     BluetoothGattCharacteristic.PROPERTY_WRITE,
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                     BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
+                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
+                    new ThrowingMismatchDataHandler());
         }
     }
 }

@@ -12,6 +12,7 @@ import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.IllegalOperationChecker
+import rx.Completable
 
 import java.util.concurrent.TimeUnit
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
@@ -58,6 +59,7 @@ class RxBleConnectionTest extends Specification {
     def setup() {
         testSubscriber = new TestSubscriber()
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
+        illegalOperationChecker.checkAnyPropertyMatches(_, _) >> Completable.complete()
     }
 
     def "should proxy all calls to .discoverServices() to ServiceDiscoveryManager with proper timeouts"() {

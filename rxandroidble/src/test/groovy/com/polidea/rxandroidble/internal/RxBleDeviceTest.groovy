@@ -57,7 +57,7 @@ public class RxBleDeviceTest extends Specification {
         ].eachCombination {
             connectionSetups << new ConnectionSetup.Builder()
                     .setAutoConnect(it[0])
-                    .setSupressOperationCheck(it[1])
+                    .setSuppressIllegalOperationCheck(it[1])
                     .build()
         }
 
@@ -119,7 +119,7 @@ public class RxBleDeviceTest extends Specification {
         given:
         ConnectionSetup connectionSetup = new ConnectionSetup.Builder()
             .setAutoConnect(autoConnectValue)
-            .setSupressOperationCheck(suppressIllegalOperationCheckValue)
+            .setSuppressIllegalOperationCheck(suppressIllegalOperationCheckValue)
             .build()
         def connectionObservable = establishConnectionCaller.connectionStartClosure.call(rxBleDevice, connectionSetup)
 

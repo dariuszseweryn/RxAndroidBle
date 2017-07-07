@@ -9,14 +9,15 @@ import com.polidea.rxandroidble.internal.RxBleLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import rx.Completable;
 
 /**
- *  Class for checking whether the requested operation is legal on chosen characteristic.
+ * Class for checking whether the requested operation is legal on chosen characteristic.
  */
-abstract public class IllegalOperationChecker {
+public class IllegalOperationChecker {
 
     private int propertyBroadcast;
     private int propertyRead;
@@ -25,6 +26,7 @@ abstract public class IllegalOperationChecker {
     private int propertyNotify;
     private int propertyIndicate;
     private int propertySignedWrite;
+    private MismatchDataHandler resultHandler;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true,
@@ -37,13 +39,14 @@ abstract public class IllegalOperationChecker {
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY})
     @interface BluetoothGattCharacteristicProperty { }
 
-    protected IllegalOperationChecker(@BluetoothGattCharacteristicProperty int propertyBroadcast,
-                                      @BluetoothGattCharacteristicProperty int propertyRead,
-                                      @BluetoothGattCharacteristicProperty int propertyWriteNoResponse,
-                                      @BluetoothGattCharacteristicProperty int propertyWrite,
-                                      @BluetoothGattCharacteristicProperty int propertyNotify,
-                                      @BluetoothGattCharacteristicProperty int propertyIndicate,
-                                      @BluetoothGattCharacteristicProperty int propertySignedWrite) {
+    public IllegalOperationChecker(@BluetoothGattCharacteristicProperty int propertyBroadcast,
+                                   @BluetoothGattCharacteristicProperty int propertyRead,
+                                   @BluetoothGattCharacteristicProperty int propertyWriteNoResponse,
+                                   @BluetoothGattCharacteristicProperty int propertyWrite,
+                                   @BluetoothGattCharacteristicProperty int propertyNotify,
+                                   @BluetoothGattCharacteristicProperty int propertyIndicate,
+                                   @BluetoothGattCharacteristicProperty int propertySignedWrite,
+                                   MismatchDataHandler resultHandler) {
         this.propertyBroadcast = propertyBroadcast;
         this.propertyRead = propertyRead;
         this.propertyWriteNoResponse = propertyWriteNoResponse;
@@ -51,13 +54,14 @@ abstract public class IllegalOperationChecker {
         this.propertyNotify = propertyNotify;
         this.propertyIndicate = propertyIndicate;
         this.propertySignedWrite = propertySignedWrite;
+        this.resultHandler = resultHandler;
     }
-
 
     /**
      * This method checks whether the supplied characteristic possesses properties supporting the requested kind of operation, specified by
      * the supplied bitmask.
-     * @param characteristic a {@link BluetoothGattCharacteristic} the operation is done on
+     *
+     * @param characteristic   a {@link BluetoothGattCharacteristic} the operation is done on
      * @param neededProperties properties required for the operation to be successfully completed
      * @return {@link Completable} deferring execution of the check till subscription
      */
@@ -79,18 +83,30 @@ abstract public class IllegalOperationChecker {
                             propertiesIntToString(neededProperties, possibleProperties),
                             neededProperties
                     );
-                    handleMessage(message);
+                    MismatchData mismatchData = new MismatchData(message,
+                            characteristic.getUuid(),
+                            characteristicProperties,
+                            neededProperties);
+                    resultHandler.handleMismatchData(mismatchData);
                 }
                 return null;
             }
         });
     }
 
-    /**
-     * Method for handling the potential non-match message
-     * @param message message describing the
-     */
-    protected abstract void handleMessage(String message);
+    static class MismatchData {
+        public String message;
+        public UUID uuid;
+        public int supportedProperties;
+        public int neededProperties;
+
+        private MismatchData(String message, UUID uuid, int supportedProperties, int neededProperties) {
+            this.message = message;
+            this.uuid = uuid;
+            this.supportedProperties = supportedProperties;
+            this.neededProperties = neededProperties;
+        }
+    }
 
     @NonNull
     private String propertiesIntToString(int property, int[] possibleProperties) {
