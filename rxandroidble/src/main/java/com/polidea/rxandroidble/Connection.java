@@ -84,14 +84,16 @@ public interface Connection {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     int getMtu();
 
-//    [DS] 30.06.2017 Preparation for the new BluetoothGattCallback.onConnectionUpdated()
-//    @RequiresApi(api = Build.VERSION_CODES.O)
-//    Single<ConnectionParams> requestConnectionPriority(@Connection.ConnectionPriority int connectionPriority);
-
-//    [DS] 30.06.2017 Evaluate "hacky" way of verifying if request was processed by trying to queue BluetoothGatt.readRssi()
+    /*
+     * [DS] 07.07.2017 It is observed that BluetoothGatt.requestConnectionPriority() does not block other executions the same as other calls
+     * Because of that it is not needed to keep the timeout. This API should be compatible with the incoming Android O.
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    Single<ConnectionParams> requestConnectionPriority(@Connection.ConnectionPriority int connectionPriority,
-                                                       @NonNull TimePeriod completionTimePeriod);
+    Single<ConnectionParams> requestConnectionPriority(@Connection.ConnectionPriority int connectionPriority);
 
-    <T> Observable<T> queue(@NonNull RxBleRadioOperationCustom<T> operation);
+//    [DS] 07.07.2017 Preparation for the new BluetoothGattCallback.onConnectionUpdated()
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    Observable<ConnectionParams> observeConnectionParams();
+
+    <T> Observable<T> queue(@NonNull CustomOperation<T> operation);
 }
