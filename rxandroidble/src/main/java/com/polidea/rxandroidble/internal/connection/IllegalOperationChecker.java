@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal.util;
+package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.IntDef;
@@ -9,7 +9,6 @@ import com.polidea.rxandroidble.internal.RxBleLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import rx.Completable;
@@ -26,7 +25,7 @@ public class IllegalOperationChecker {
     private int propertyNotify;
     private int propertyIndicate;
     private int propertySignedWrite;
-    private MismatchDataHandler resultHandler;
+    private IllegalOperationHandler resultHandler;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true,
@@ -46,7 +45,7 @@ public class IllegalOperationChecker {
                                    @BluetoothGattCharacteristicProperty int propertyNotify,
                                    @BluetoothGattCharacteristicProperty int propertyIndicate,
                                    @BluetoothGattCharacteristicProperty int propertySignedWrite,
-                                   MismatchDataHandler resultHandler) {
+                                   IllegalOperationHandler resultHandler) {
         this.propertyBroadcast = propertyBroadcast;
         this.propertyRead = propertyRead;
         this.propertyWriteNoResponse = propertyWriteNoResponse;
@@ -83,29 +82,11 @@ public class IllegalOperationChecker {
                             propertiesIntToString(neededProperties, possibleProperties),
                             neededProperties
                     );
-                    MismatchData mismatchData = new MismatchData(message,
-                            characteristic.getUuid(),
-                            characteristicProperties,
-                            neededProperties);
-                    resultHandler.handleMismatchData(mismatchData);
+                    resultHandler.handleMismatchData(message, characteristic.getUuid(), characteristicProperties, neededProperties);
                 }
                 return null;
             }
         });
-    }
-
-    static class MismatchData {
-        public String message;
-        public UUID uuid;
-        public int supportedProperties;
-        public int neededProperties;
-
-        private MismatchData(String message, UUID uuid, int supportedProperties, int neededProperties) {
-            this.message = message;
-            this.uuid = uuid;
-            this.supportedProperties = supportedProperties;
-            this.neededProperties = neededProperties;
-        }
     }
 
     @NonNull

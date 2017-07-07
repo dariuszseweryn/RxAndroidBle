@@ -21,7 +21,6 @@ import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
-import com.polidea.rxandroidble.internal.util.IllegalOperationChecker;
 import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

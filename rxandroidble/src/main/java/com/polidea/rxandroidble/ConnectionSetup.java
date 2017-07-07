@@ -36,7 +36,7 @@ public class ConnectionSetup {
         /**
          * Autoconnect concept may be misleading at first glance. In cases when the BLE device is available and it is advertising constantly
          * you won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
-         * the moment of #establishConnection call.
+         * the moment of {@link RxBleDevice#establishConnection(ConnectionSetup)} call.
          *
          * @param autoConnect Marker related with
          *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect

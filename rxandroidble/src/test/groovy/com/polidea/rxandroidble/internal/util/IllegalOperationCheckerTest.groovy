@@ -1,6 +1,8 @@
 package com.polidea.rxandroidble.internal.util
 
 import android.bluetooth.BluetoothGattCharacteristic
+import com.polidea.rxandroidble.internal.connection.IllegalOperationChecker
+import com.polidea.rxandroidble.internal.connection.IllegalOperationHandler
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 
@@ -9,10 +11,10 @@ class IllegalOperationCheckerTest extends Specification {
     IllegalOperationChecker objectUnderTest
     BluetoothGattCharacteristic bluetoothGattCharacteristic
     TestSubscriber subscriber
-    MismatchDataHandler mockHandler
+    IllegalOperationHandler mockHandler
 
     void setup() {
-        mockHandler = Mock MismatchDataHandler
+        mockHandler = Mock IllegalOperationHandler
         subscriber = new  TestSubscriber()
         objectUnderTest = new IllegalOperationChecker(
                 BluetoothGattCharacteristic.PROPERTY_BROADCAST,
@@ -37,7 +39,7 @@ class IllegalOperationCheckerTest extends Specification {
                 .subscribe(subscriber)
 
         then:
-        1 * mockHandler.handleMismatchData(_)
+        1 * mockHandler.handleMismatchData(_, _, _, _)
     }
 
     def "should not handle message if the only needed property matches"() {
@@ -49,7 +51,7 @@ class IllegalOperationCheckerTest extends Specification {
                 .subscribe(subscriber)
 
         then:
-        0 * mockHandler.handleMismatchData(_)
+        0 * mockHandler.handleMismatchData(_, _, _, _)
     }
 
     def "should not handle message if at least one of the needed properties match"() {
@@ -64,6 +66,6 @@ class IllegalOperationCheckerTest extends Specification {
                 .subscribe(subscriber)
 
         then:
-        0 * mockHandler.handleMismatchData(_)
+        0 * mockHandler.handleMismatchData(_, _, _, _)
     }
 }
