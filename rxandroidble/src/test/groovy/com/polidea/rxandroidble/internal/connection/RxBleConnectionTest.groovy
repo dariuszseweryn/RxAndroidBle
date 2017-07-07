@@ -83,8 +83,7 @@ class RxBleConnectionTest extends Specification {
         setupWriteClosure.call(objectUnderTest, characteristic, OTHER_DATA).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleGattCannotStartException
-        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_WRITE }
+        testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_WRITE }
 
         where:
         setupWriteClosure << [
@@ -106,8 +105,7 @@ class RxBleConnectionTest extends Specification {
         setupReadClosure.call(objectUnderTest, characteristic).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleGattCannotStartException
-        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_READ }
+        testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_READ }
 
         where:
         setupReadClosure << [
@@ -124,8 +122,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.readRssi().subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleGattCannotStartException
-        testSubscriber.assertError { it.bleGattOperationType == BleGattOperationType.READ_RSSI }
+        testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.READ_RSSI }
     }
 
     def "should emit BleCharacteristicNotFoundException during read operation if no services were found"() {
@@ -149,8 +146,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleCharacteristicNotFoundException
-        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+        testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
     def "should read first found characteristic with matching UUID"() {
@@ -178,8 +174,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleCharacteristicNotFoundException
-        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+        testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
     def "should emit BleCharacteristicNotFoundException if characteristic was not found during write operation"() {
@@ -190,8 +185,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError BleCharacteristicNotFoundException
-        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+        testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
     }
 
     @Unroll
@@ -247,8 +241,7 @@ class RxBleConnectionTest extends Specification {
         setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertError(BleCharacteristicNotFoundException)
-        testSubscriber.assertError { it.charactersisticUUID == CHARACTERISTIC_UUID }
+        testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
 
         where:
         setupTriggerNotificationClosure << [
@@ -296,11 +289,21 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        testSubscriber.assertCompleted()
         testSubscriber.assertValues(true, false, true)
     }
 
-    def "should pass error and release the radio if custom operation will throw out of RxBleRadioOperationCustom.asObservable()"() {
+    def "should pass error if custom operation will throw out of RxBleRadioOperationCustom.asObservable()"() {
+        given:
+        def radioOperationCustom = customRadioOperationWithOutcome { throw new RuntimeException() }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError(RuntimeException.class)
+    }
+
+    def "should release the radio if custom operation will throw out of RxBleRadioOperationCustom.asObservable()"() {
         given:
         def radioOperationCustom = customRadioOperationWithOutcome { throw new RuntimeException() }
 
@@ -309,10 +312,20 @@ class RxBleConnectionTest extends Specification {
 
         then:
         flatRadio.semaphore.isReleased()
+    }
+
+    def "should pass error if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
+        given:
+        def radioOperationCustom = customRadioOperationWithOutcome { Observable.error(new RuntimeException()) }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
         testSubscriber.assertError(RuntimeException.class)
     }
 
-    def "should pass error and release the radio if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
+    def "should release the radio if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
         given:
         def radioOperationCustom = customRadioOperationWithOutcome { Observable.error(new RuntimeException()) }
 
@@ -321,7 +334,17 @@ class RxBleConnectionTest extends Specification {
 
         then:
         flatRadio.semaphore.isReleased()
-        testSubscriber.assertError(RuntimeException.class)
+    }
+
+    def "should pass completion to subscriber when observable returned from RxBleRadioOperationCustom.asObservable() will complete"() {
+        given:
+        def radioOperationCustom = customRadioOperationWithOutcome { Observable.empty() }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertCompleted()
     }
 
     def "should release the radio when observable returned from RxBleRadioOperationCustom.asObservable() will complete"() {
@@ -333,7 +356,6 @@ class RxBleConnectionTest extends Specification {
 
         then:
         flatRadio.semaphore.isReleased()
-        testSubscriber.assertCompleted()
     }
 
     def "should throw illegal argument exception if RxBleRadioOperationCustom.asObservable() return null"() {
@@ -344,8 +366,18 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        flatRadio.semaphore.isReleased()
         testSubscriber.assertError(IllegalArgumentException.class)
+    }
+
+    def "should release radio if RxBleRadioOperationCustom.asObservable() return null"() {
+        given:
+        def radioOperationCustom = customRadioOperationWithOutcome { null }
+
+        when:
+        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+
+        then:
+        flatRadio.semaphore.isReleased()
     }
 
     @Unroll
