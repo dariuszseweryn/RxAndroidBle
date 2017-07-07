@@ -3,6 +3,7 @@ Change Log
 
 Version 1.3.3-SNAPSHOT
 * Fixed scan filtering by name on API <21 (https://github.com/Polidea/RxAndroidBle/pull/243)
+* Fixed race condition (which would cause the library to hang) when using `.first()` on calls to `RxBleConnection` that emit a single result. (https://github.com/Polidea/RxAndroidBle/issues/244) 
 
 Version 1.3.2
 * Fixed completing the `Observable<byte[]>` emitted by `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` when unsubscribed (https://github.com/Polidea/RxAndroidBle/issues/231)

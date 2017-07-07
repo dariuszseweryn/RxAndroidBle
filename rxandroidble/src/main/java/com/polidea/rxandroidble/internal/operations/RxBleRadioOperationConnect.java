@@ -92,15 +92,17 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
     @Override
     protected void protectedRun(final Emitter<BluetoothGatt> emitter, final RadioReleaseInterface radioReleaseInterface) {
+        final Action0 releaseRadioAction = new Action0() {
+            @Override
+            public void call() {
+                radioReleaseInterface.release();
+            }
+        };
         final Subscription subscription = getConnectedBluetoothGatt()
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
-                .doOnUnsubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        radioReleaseInterface.release();
-                    }
-                })
+                .doOnUnsubscribe(releaseRadioAction)
+                .doOnTerminate(releaseRadioAction)
                 .subscribe(emitter);
 
         emitter.setSubscription(subscription);
