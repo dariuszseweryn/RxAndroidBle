@@ -59,9 +59,7 @@ final class Presenter {
                                                     : readClicks // else use the readClicks observable from the activity
                                                     // every click is requesting a read operation from the peripheral
                                                     .flatMap(ignoredClick -> connection.readCharacteristic(characteristic))
-                                                    .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
-                                                    // if this observable will complete (i.e. error happens) then repeat from the click
-                                                    .compose(repeatAfterCompleted());
+                                                    .compose(transformToPresenterEvent(Type.READ)); // convenience method to wrap reads
 
                                     final Observable<PresenterEvent> writeObservable = // basically the same logic as in the reads
                                             !hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)

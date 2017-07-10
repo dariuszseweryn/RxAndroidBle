@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -176,7 +177,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
         if (presenterEvent instanceof CompatibilityModeEvent) {
             final CompatibilityModeEvent compatibilityModeEvent = (CompatibilityModeEvent) presenterEvent;
             final boolean isCompatibility = compatibilityModeEvent.show;
-            compatOnlyWarningTextView.setEnabled(isCompatibility);
+            compatOnlyWarningTextView.setVisibility(isCompatibility ? View.VISIBLE : View.INVISIBLE);
             if (isCompatibility) {
                 /*
                 All characteristics that have PROPERTY_NOTIFY or PROPERTY_INDICATE should contain
@@ -217,7 +218,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
         if (presenterEvent instanceof ErrorEvent) {
             final ErrorEvent errorEvent = (ErrorEvent) presenterEvent;
             final Throwable throwable = errorEvent.error;
-            String notificationText = "";
+            final String notificationText;
             switch (errorEvent.type) {
 
                 case READ:
