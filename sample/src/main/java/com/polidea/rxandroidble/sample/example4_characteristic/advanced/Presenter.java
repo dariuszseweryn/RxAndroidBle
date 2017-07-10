@@ -19,8 +19,7 @@ import rx.Observable;
  */
 final class Presenter {
 
-    @SuppressWarnings("WeakerAccess")
-    static UUID clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private static UUID clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private Presenter() {
         // not instantiable
@@ -144,8 +143,7 @@ final class Presenter {
                 .compose(repeatAfterCompleted()); // if the the above will complete - start from the beginning
     }
 
-    @SuppressWarnings("WeakerAccess")
-    static boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
+    private static boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
         return (characteristic.getProperties() & property) > 0;
     }
 
@@ -159,19 +157,17 @@ final class Presenter {
      * @param <T> the type of the passed observable
      * @return the observable
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
-        //noinspection unchecked -> this would be not needed in case of inline reified kotlin function
+    private static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
         return observable -> observable.publish(publishedObservable ->
                 Observable.amb(
                         publishedObservable,
-                        ((Observable<T>) beforeEmission.take(1).ignoreElements())
+                        publishedObservable.ignoreElements().takeUntil(beforeEmission)
                 )
-                        .takeUntil(((Observable<?>) publishedObservable
+                        .takeUntil(publishedObservable
                                 .take(1)
                                 .toCompletable()
-                                .andThen(afterEmission))
+                                .andThen(afterEmission)
                         )
         );
     }
@@ -183,9 +179,8 @@ final class Presenter {
      * @param type the type to wrap with
      * @return transformer that will emit an observable that will be emitting ResultEvent or ErrorEvent with a given type
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static Observable.Transformer<byte[], PresenterEvent> transformToPresenterEvent(Type type) {
+    private static Observable.Transformer<byte[], PresenterEvent> transformToPresenterEvent(Type type) {
         return observable -> observable.map(writtenBytes -> ((PresenterEvent) new ResultEvent(writtenBytes, type)))
                 .onErrorReturn(throwable -> new ErrorEvent(throwable, type));
     }
@@ -197,9 +192,8 @@ final class Presenter {
      * @param type the type to wrap with
      * @return the transformer
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static Observable.Transformer<Observable<byte[]>, PresenterEvent> transformToNotificationPresenterEvent(Type type) {
+    private static Observable.Transformer<Observable<byte[]>, PresenterEvent> transformToNotificationPresenterEvent(Type type) {
         return observableObservable -> observableObservable
                 .flatMap(observable -> observable
                         .map(bytes -> ((PresenterEvent) new ResultEvent(bytes, type)))
@@ -213,9 +207,8 @@ final class Presenter {
      * @param <T> the type of the transformed observable
      * @return transformer that will emit observable that will never complete (source will be subscribed again)
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static <T> Observable.Transformer<T, T> repeatAfterCompleted() {
+    private static <T> Observable.Transformer<T, T> repeatAfterCompleted() {
         return observable -> observable.repeatWhen(completedNotification -> completedNotification);
     }
 }
