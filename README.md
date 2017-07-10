@@ -55,7 +55,7 @@ On Android it is not always trivial to determine if a particular BLE operation h
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
-Subscription flowSubscription = rxBleClient.observeState()
+Subscription flowSubscription = rxBleClient.observeStateChanges()
     .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
         switch (state) {
 
@@ -309,7 +309,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.3.2"
+compile "com.polidea.rxandroidble:rxandroidble:1.3.3"
 ```
 ### Maven
 
@@ -317,7 +317,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.3.2"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.3</version>
   <type>aar</type>
 </dependency>
 ```

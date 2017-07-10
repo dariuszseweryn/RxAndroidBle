@@ -309,14 +309,22 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return rxBleRadio.queue(new RxBleRadioOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
-            protected void protectedRun(Emitter<T> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable {
-                final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
+            protected void protectedRun(final Emitter<T> emitter, final RadioReleaseInterface radioReleaseInterface) throws Throwable {
+                final Observable<T> operationObservable;
 
-                Observable<T> operationObservable = operation.asObservable(bluetoothGatt, gattCallback, callbackScheduler);
+                try {
+                    operationObservable = operation.asObservable(bluetoothGatt, gattCallback, callbackScheduler);
+                } catch (Throwable throwable) {
+                    radioReleaseInterface.release();
+                    throw throwable;
+                }
+
                 if (operationObservable == null) {
+                    radioReleaseInterface.release();
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
+                final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
                 operationObservable
                         .doOnTerminate(clearNativeCallbackReferenceAction())
                         .subscribe(emitterWrapper);

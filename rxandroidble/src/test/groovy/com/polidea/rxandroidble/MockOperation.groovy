@@ -36,6 +36,7 @@ public class MockOperation extends RxBleRadioOperation<Object> {
         executionCount++
         lastExecutedOnThread = Thread.currentThread().getName()
         closure?.call(emitter)
+        radioReleaseInterface.release()
         behaviorSubject.onNext(this)
     }
 
