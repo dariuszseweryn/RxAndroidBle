@@ -89,8 +89,8 @@ final class Presenter {
                                             : enableNotifyClicks.take(1).map(aBoolean -> Boolean.FALSE);
                                     final Observable<Boolean> enableIndicateClicksObservable =
                                             !hasProperty(characteristic, PROPERTY_INDICATE)
-                                            ? Observable.never()
-                                            : enableIndicateClicks.take(1).map(aBoolean -> Boolean.TRUE);
+                                                    ? Observable.never()
+                                                    : enableIndicateClicks.take(1).map(aBoolean -> Boolean.TRUE);
 
                                     // checking which notify or indicate will be clicked first the other is unsubscribed on click
                                     final Observable<PresenterEvent> notifyAndIndicateObservable = Observable.amb(
@@ -153,22 +153,25 @@ final class Presenter {
      * emission and afterEmission will be used to do the same after the first emission
      *
      * @param beforeEmission the observable that will control completing the returned observable before it's first emission
-     * @param afterEmission the observable that will control completing the returned observable after it's first emission
-     * @param <T> the type of the passed observable
+     * @param afterEmission  the observable that will control completing the returned observable after it's first emission
+     * @param <T>            the type of the passed observable
      * @return the observable
      */
     @NonNull
     private static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
-        return observable -> observable.publish(publishedObservable ->
-                Observable.amb(
-                        publishedObservable,
-                        publishedObservable.ignoreElements().takeUntil(beforeEmission)
-                )
-                        .takeUntil(publishedObservable
-                                .take(1)
-                                .toCompletable()
-                                .andThen(afterEmission)
-                        )
+        return observable -> observable.publish(publishedObservable -> {
+                    final Observable<T> publishedObservableCompletingBeforeEmission
+                            = publishedObservable.ignoreElements().takeUntil(beforeEmission);
+                    return Observable.amb(
+                            publishedObservable,
+                            publishedObservableCompletingBeforeEmission
+                    )
+                            .takeUntil(publishedObservable
+                                    .take(1)
+                                    .toCompletable()
+                                    .andThen(afterEmission)
+                            );
+                }
         );
     }
 
