@@ -160,17 +160,15 @@ final class Presenter {
     @NonNull
     private static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
         return observable -> observable.publish(publishedObservable -> {
-                    final Observable<T> publishedObservableCompletingBeforeEmission
-                            = publishedObservable.ignoreElements().takeUntil(beforeEmission);
+                    final Observable<?> afterEmissionTakeUntil = publishedObservable
+                            .take(1)
+                            .toCompletable()
+                            .andThen(afterEmission);
                     return Observable.amb(
                             publishedObservable,
-                            publishedObservableCompletingBeforeEmission
+                            publishedObservable.ignoreElements().takeUntil(beforeEmission)
                     )
-                            .takeUntil(publishedObservable
-                                    .take(1)
-                                    .toCompletable()
-                                    .andThen(afterEmission)
-                            );
+                            .takeUntil(afterEmissionTakeUntil);
                 }
         );
     }
