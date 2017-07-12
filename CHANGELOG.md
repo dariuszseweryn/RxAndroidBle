@@ -7,6 +7,10 @@ Version 1.4.0-SNAPSHOT
 * Adjusted `BleCannotSetCharacteristicNotificationException` to contain the cause exception if available. `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` will now throw the cause of disconnection if subscribed after connection was disconnected. (https://github.com/Polidea/RxAndroidBle/issues/225) 
 * _Changed Behaviour_ of `RxBleDevice.observeConnectionStateChanges()` - does not emit initial state and reflects best `BluetoothGatt` state. (https://github.com/Polidea/RxAndroidBle/issues/50)
 
+Version 1.3.3
+* Fixed scan filtering by name on API <21 (https://github.com/Polidea/RxAndroidBle/pull/243)
+* Fixed race condition (which would cause the library to hang) when using `.first()` on calls to `RxBleConnection` that emit a single result. (https://github.com/Polidea/RxAndroidBle/issues/244) 
+
 Version 1.3.2
 * Fixed completing the `Observable<byte[]>` emitted by `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` when unsubscribed (https://github.com/Polidea/RxAndroidBle/issues/231)
 

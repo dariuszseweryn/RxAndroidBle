@@ -61,12 +61,13 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    protected void protectedRun(final Emitter<Void> emitter, RadioReleaseInterface radioReleaseInterface) {
+    protected void protectedRun(final Emitter<Void> emitter, final RadioReleaseInterface radioReleaseInterface) {
         connectionStateChangeListener.onConnectionStateChange(DISCONNECTING);
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
         if (bluetoothGatt == null) {
             RxBleLog.w("Disconnect operation has been executed but GATT instance was null.");
+            radioReleaseInterface.release();
             emitter.onCompleted();
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
@@ -81,6 +82,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                             new Action1<Throwable>() {
                                 @Override
                                 public void call(Throwable throwable) {
+                                    radioReleaseInterface.release();
                                     emitter.onError(throwable);
                                 }
                             },
@@ -88,6 +90,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                                 @Override
                                 public void call() {
                                     connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
+                                    radioReleaseInterface.release();
                                     emitter.onCompleted();
                                 }
                             }

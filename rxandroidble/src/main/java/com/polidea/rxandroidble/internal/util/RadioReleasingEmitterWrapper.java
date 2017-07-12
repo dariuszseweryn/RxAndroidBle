@@ -4,7 +4,7 @@ package com.polidea.rxandroidble.internal.util;
 import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import java.util.concurrent.atomic.AtomicBoolean;
 import rx.Emitter;
-import rx.Subscriber;
+import rx.Observer;
 import rx.functions.Cancellable;
 
 /**
@@ -14,7 +14,7 @@ import rx.functions.Cancellable;
  * being unsubscribed / canceled.
  * @param <T> parameter of the wrapped {@link Emitter}
  */
-public class RadioReleasingEmitterWrapper<T> extends Subscriber<T> implements Cancellable {
+public class RadioReleasingEmitterWrapper<T> implements Observer<T>, Cancellable {
 
     private final AtomicBoolean isEmitterCanceled = new AtomicBoolean(false);
 
@@ -30,17 +30,13 @@ public class RadioReleasingEmitterWrapper<T> extends Subscriber<T> implements Ca
 
     @Override
     public void onCompleted() {
-        if (releaseRadioIfUnsubscribed()) {
-            return;
-        }
+        radioReleaseInterface.release();
         emitter.onCompleted();
     }
 
     @Override
     public void onError(Throwable e) {
-        if (releaseRadioIfUnsubscribed()) {
-            return;
-        }
+        radioReleaseInterface.release();
         emitter.onError(e);
     }
 
@@ -56,13 +52,5 @@ public class RadioReleasingEmitterWrapper<T> extends Subscriber<T> implements Ca
 
     synchronized public boolean isWrappedEmitterUnsubscribed() {
         return isEmitterCanceled.get();
-    }
-
-    synchronized private boolean releaseRadioIfUnsubscribed() {
-        if (isEmitterCanceled.get()) {
-            radioReleaseInterface.release();
-            return true;
-        }
-        return false;
     }
 }
