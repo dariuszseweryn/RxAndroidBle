@@ -16,6 +16,11 @@ public interface ConnectionComponent {
         private NamedBooleans() { }
     }
 
+    class NamedInts {
+        static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
+        private NamedInts() { }
+    }
+
     @Subcomponent.Builder
     interface Builder {
 

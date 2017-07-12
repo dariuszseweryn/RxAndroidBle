@@ -3,8 +3,10 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble.ConnectionSetup;
+import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import dagger.Module;
 import dagger.Provides;
@@ -28,21 +30,25 @@ public class ConnectionModule {
     }
 
     @Provides
-    @ConnectionScope
-    IllegalOperationChecker provideIllegalOperationChecker() {
-        IllegalOperationHandler dataHandler;
+    IllegalOperationHandler provideIllegalOperationHandler(
+            Provider<LoggingIllegalOperationHandler> loggingIllegalOperationHandlerProvider,
+            Provider<ThrowingIllegalOperationHandler> throwingIllegalOperationHandlerProvider
+            ) {
         if (suppressOperationCheck) {
-            dataHandler = new LoggingIllegalOperationHandler();
+            return loggingIllegalOperationHandlerProvider.get();
         } else {
-            dataHandler = new ThrowingIllegalOperationHandler();
+            return throwingIllegalOperationHandlerProvider.get();
         }
-        return new IllegalOperationChecker(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
+    }
+
+    @Provides
+    CharacteristicPropertiesParser provideCharacteristicPropertiesParser() {
+        return new CharacteristicPropertiesParser(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
                 BluetoothGattCharacteristic.PROPERTY_READ,
                 BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
                 BluetoothGattCharacteristic.PROPERTY_WRITE,
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                 BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
-                dataHandler);
+                BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
     }
 }

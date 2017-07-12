@@ -12,10 +12,10 @@ import javax.inject.Named;
 import dagger.Module;
 import dagger.Provides;
 
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
+
 @Module
 abstract public class ConnectionModuleBinder {
-
-    static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
 
     @Provides
     @Named(GATT_WRITE_MTU_OVERHEAD)

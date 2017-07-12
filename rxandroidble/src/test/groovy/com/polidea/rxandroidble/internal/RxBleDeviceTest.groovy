@@ -371,7 +371,6 @@ public class RxBleDeviceTest extends Specification {
             return establishConnectionCaller.connectionStartClosure.call(d, connectionSetup)
         }
 
-
         @Override
         public String toString() {
             return "{" +

@@ -3,43 +3,32 @@ package com.polidea.rxandroidble.internal.util
 import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.internal.connection.IllegalOperationChecker
 import com.polidea.rxandroidble.internal.connection.IllegalOperationHandler
-import rx.observers.TestSubscriber
 import spock.lang.Specification
 
 class IllegalOperationCheckerTest extends Specification {
 
     IllegalOperationChecker objectUnderTest
     BluetoothGattCharacteristic bluetoothGattCharacteristic
-    TestSubscriber subscriber
     IllegalOperationHandler mockHandler
+    final int NO_PROPERTIES = 0
 
     void setup() {
         mockHandler = Mock IllegalOperationHandler
-        subscriber = new  TestSubscriber()
-        objectUnderTest = new IllegalOperationChecker(
-                BluetoothGattCharacteristic.PROPERTY_BROADCAST,
-                BluetoothGattCharacteristic.PROPERTY_READ,
-                BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
-                BluetoothGattCharacteristic.PROPERTY_WRITE,
-                BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
-                mockHandler
-        )
+        objectUnderTest = new IllegalOperationChecker(mockHandler)
 
         bluetoothGattCharacteristic = Mock BluetoothGattCharacteristic
     }
 
     def "should handle message if no property matches"() {
         given:
-        bluetoothGattCharacteristic.getProperties() >> 0
+        bluetoothGattCharacteristic.getProperties() >> NO_PROPERTIES
 
         when:
         objectUnderTest.checkAnyPropertyMatches(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_READ)
-                .subscribe(subscriber)
+                .subscribe()
 
         then:
-        1 * mockHandler.handleMismatchData(_, _, _, _)
+        1 * mockHandler.handleMismatchData(_, _)
     }
 
     def "should not handle message if the only needed property matches"() {
@@ -48,10 +37,10 @@ class IllegalOperationCheckerTest extends Specification {
 
         when:
         objectUnderTest.checkAnyPropertyMatches(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_READ)
-                .subscribe(subscriber)
+                .subscribe()
 
         then:
-        0 * mockHandler.handleMismatchData(_, _, _, _)
+        0 * mockHandler.handleMismatchData(_, _)
     }
 
     def "should not handle message if at least one of the needed properties match"() {
@@ -63,9 +52,9 @@ class IllegalOperationCheckerTest extends Specification {
                 BluetoothGattCharacteristic.PROPERTY_WRITE
                         | BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE
                         | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)
-                .subscribe(subscriber)
+                .subscribe()
 
         then:
-        0 * mockHandler.handleMismatchData(_, _, _, _)
+        0 * mockHandler.handleMismatchData(_, _)
     }
 }

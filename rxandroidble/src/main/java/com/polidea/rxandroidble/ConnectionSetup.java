@@ -38,11 +38,12 @@ public class ConnectionSetup {
          * you won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
          * the moment of {@link RxBleDevice#establishConnection(ConnectionSetup)} call.
          *
-         * @param autoConnect Marker related with
+         * @param autoConnect Flag related to
          *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect
          *                    flag. In case of auto connect is enabled the observable will wait with the emission of RxBleConnection.
          *                    Without auto connect flag set to true the connection will fail
-         *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range.
+         *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range after a
+         *                    30 seconds timeout.
          * @return this builder instance
          */
         public Builder setAutoConnect(boolean autoConnect) {
@@ -53,7 +54,7 @@ public class ConnectionSetup {
         /**
          * @param suppressOperationCheck Flag describing the method of operation viability checking. If set to false,
          *                               a {@link com.polidea.rxandroidble.exceptions.BleIllegalOperationException} will be
-         *                               thrown everytime properties of the characteristic don't match those required by the operation.
+         *                               emitted every time properties of the characteristic don't match those required by the operation.
          *                               If set to true, an event will be logged without interrupting the execution.
          * @return this builder instance
          */

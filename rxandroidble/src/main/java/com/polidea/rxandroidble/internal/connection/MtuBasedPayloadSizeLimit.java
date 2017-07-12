@@ -17,7 +17,7 @@ class MtuBasedPayloadSizeLimit implements PayloadSizeLimitProvider {
 
     @Inject
     MtuBasedPayloadSizeLimit(RxBleConnection rxBleConnection,
-                             @Named(ConnectionModuleBinder.GATT_WRITE_MTU_OVERHEAD) int gattWriteMtuOverhead) {
+                             @Named(ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD) int gattWriteMtuOverhead) {
         this.rxBleConnection = rxBleConnection;
         this.gattWriteMtuOverhead = gattWriteMtuOverhead;
     }
