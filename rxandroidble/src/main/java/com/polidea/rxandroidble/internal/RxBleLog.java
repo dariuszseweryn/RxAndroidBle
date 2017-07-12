@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.lang.annotation.Retention;
@@ -28,10 +29,59 @@ public class RxBleLog {
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
 
+    private static Logger logcatLogger = new Logger() {
+        @Override
+        public void log(final int level, final String tag, final String msg) {
+            Log.println(level, tag, msg);
+        }
+    };
+
     private static int logLevel = Integer.MAX_VALUE;
+
+    private static Logger logger = logcatLogger;
 
     private RxBleLog() {
 
+    }
+
+    /**
+     * Simple logging interface for log messages from RxAndroidBle
+     *
+     * @see #setLogger(Logger)
+     */
+    public interface Logger {
+
+        /**
+         * @param level one of {@link Log#VERBOSE}, {@link Log#DEBUG},{@link Log#INFO},
+         *              {@link Log#WARN},{@link Log#ERROR}
+         * @param tag   log tag, caller
+         * @param msg   message to log
+         */
+        void log(int level, String tag, String msg);
+    }
+
+    /**
+     * set a custom logger, {@code null} to use default logcat logging
+     *
+     * Combine it with Timber:<br>
+     *
+     * <code>
+     * <pre>
+     * RxBleLog.setLogger(new RxBleLog.Logger() {
+     *    &#64;Override
+     *    public void log(final int level, final String tag, final String msg) {
+     *        Timber.tag(tag).log(level, msg);
+     *    }
+     * });
+     * </pre>
+     * </code>
+     */
+    public static void setLogger(@Nullable final Logger logger) {
+        if (logger == null) {
+            RxBleLog.logger = logcatLogger;
+        } else {
+            RxBleLog.logger = logger;
+        }
     }
 
     public static void setLogLevel(@LogLevel int logLevel) {
@@ -132,14 +182,14 @@ public class RxBleLog {
 
     private static void println(int priority, String tag, String message) {
         if (message.length() < 4000) {
-            Log.println(priority, tag, message);
+            logger.log(priority, tag, message);
         } else {
             // It's rare that the message will be this large, so we're ok with the perf hit of splitting
             // and calling Log.println N times.  It's possible but unlikely that a single line will be
             // longer than 4000 characters: we're explicitly ignoring this case here.
             String[] lines = message.split("\n");
             for (String line : lines) {
-                Log.println(priority, tag, line);
+                logger.log(priority, tag, line);
             }
         }
     }
