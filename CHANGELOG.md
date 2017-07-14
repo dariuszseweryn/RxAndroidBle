@@ -6,6 +6,7 @@ Version 1.4.0-SNAPSHOT
 * Added pre-scan verification for excessive scan (undocumented Android 7.0 "feature") (https://github.com/Polidea/RxAndroidBle/issues/227)
 * Adjusted `BleCannotSetCharacteristicNotificationException` to contain the cause exception if available. `RxBleConnection.setupNotification()`/`RxBleConnection.setupIndication()` will now throw the cause of disconnection if subscribed after connection was disconnected. (https://github.com/Polidea/RxAndroidBle/issues/225) 
 * _Changed Behaviour_ of `RxBleDevice.observeConnectionStateChanges()` - does not emit initial state and reflects best `BluetoothGatt` state. (https://github.com/Polidea/RxAndroidBle/issues/50)
+* Added support for a custom Logger `RxBleLog.setLogger(Logger)` as alternative to Logcat (https://github.com/Polidea/RxAndroidBle/pull/248)
 
 Version 1.3.3
 * Fixed scan filtering by name on API <21 (https://github.com/Polidea/RxAndroidBle/pull/243)
