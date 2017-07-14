@@ -243,6 +243,11 @@ For connection debugging you can use extended logging
 RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ```
 
+By default `RxBleLog` uses logcat to print the messages. You can provide your own logger implementation to forward it to other logging libraries such as Timber.
+```java
+RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
+```
+
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 

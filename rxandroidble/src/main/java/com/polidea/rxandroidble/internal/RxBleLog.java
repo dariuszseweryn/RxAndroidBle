@@ -61,9 +61,9 @@ public class RxBleLog {
     }
 
     /**
-     * set a custom logger, {@code null} to use default logcat logging
+     * Set a custom logger implementation, set it to {@code null} to use default logcat logging
      *
-     * Combine it with Timber:<br>
+     * Example how to forward logs to Timber:<br>
      *
      * <code>
      * <pre>
