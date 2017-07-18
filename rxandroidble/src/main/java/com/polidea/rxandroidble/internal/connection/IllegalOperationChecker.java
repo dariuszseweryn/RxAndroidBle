@@ -3,13 +3,15 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.IntDef;
 
+import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 import rx.Completable;
+import rx.functions.Action0;
 
 /**
  * Class for checking whether the requested operation is legal on chosen characteristic.
@@ -41,18 +43,21 @@ public class IllegalOperationChecker {
      * @param characteristic   a {@link BluetoothGattCharacteristic} the operation is done on
      * @param neededProperties properties required for the operation to be successfully completed
      * @return {@link Completable} deferring execution of the check till subscription
+     * @throws BleIllegalOperationException if there was no match between supported and necessary properties of characteristic and check has
+     * not been suppressed
      */
     public Completable checkAnyPropertyMatches(final BluetoothGattCharacteristic characteristic,
                                                final @BluetoothGattCharacteristicProperty int neededProperties) {
-        return Completable.fromCallable(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
+        return Completable.fromAction(new Action0() {
+            public void call() {
                 final int characteristicProperties = characteristic.getProperties();
 
                 if ((characteristicProperties & neededProperties) == 0) {
-                    resultHandler.handleMismatchData(characteristic, neededProperties);
+                    BleIllegalOperationException exception = resultHandler.handleMismatchData(characteristic, neededProperties);
+                    if (exception != null) {
+                        throw exception;
+                    }
                 }
-                return null;
             }
         });
     }

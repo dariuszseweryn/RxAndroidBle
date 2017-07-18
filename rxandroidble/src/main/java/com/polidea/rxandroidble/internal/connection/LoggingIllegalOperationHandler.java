@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
 import com.polidea.rxandroidble.internal.RxBleLog;
 
 import javax.inject.Inject;
@@ -23,7 +24,8 @@ public class LoggingIllegalOperationHandler extends IllegalOperationHandler {
      * @param neededProperties bitmask of properties needed by the operation
      */
     @Override
-    public void handleMismatchData(BluetoothGattCharacteristic characteristic, int neededProperties) {
+    public BleIllegalOperationException handleMismatchData(BluetoothGattCharacteristic characteristic, int neededProperties) {
         RxBleLog.w(messageCreator.createMismatchMessage(characteristic, neededProperties));
+        return null;
     }
 }
