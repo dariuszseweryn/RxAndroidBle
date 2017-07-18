@@ -352,6 +352,7 @@ When submitting code, please make every effort to follow existing conventions an
 * Fracturedpsyche (https://github.com/fracturedpsyche)
 * Andrea Pregnolato (https://github.com/pregno)
 * Matthieu Vachon (https://github.com/maoueh) - custom operations, yay!
+* Pascal Welsch (https://github.com/passsy)
 
 ## License
 
