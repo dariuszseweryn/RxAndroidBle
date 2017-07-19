@@ -328,7 +328,7 @@ NOTE: It is built from the top of the `master` branch and a subject to more freq
 
 To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
 ```groovy
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 ```
 
 ## Unit testing
