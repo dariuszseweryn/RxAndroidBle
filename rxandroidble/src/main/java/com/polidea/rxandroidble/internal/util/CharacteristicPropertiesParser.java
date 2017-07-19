@@ -1,37 +1,21 @@
 package com.polidea.rxandroidble.internal.util;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
-import android.support.annotation.RestrictTo;
 
+import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.internal.RxBleLog;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class CharacteristicPropertiesParser {
 
-    private final int propertyBroadcast;
-    private final int propertyRead;
-    private final int propertyWriteNoResponse;
-    private final int propertyWrite;
-    private final int propertyNotify;
-    private final int propertyIndicate;
-    private final int propertySignedWrite;
+    private final @BluetoothGattCharacteristicProperty int propertyBroadcast;
+    private final @BluetoothGattCharacteristicProperty int propertyRead;
+    private final @BluetoothGattCharacteristicProperty int propertyWriteNoResponse;
+    private final @BluetoothGattCharacteristicProperty int propertyWrite;
+    private final @BluetoothGattCharacteristicProperty int propertyNotify;
+    private final @BluetoothGattCharacteristicProperty int propertyIndicate;
+    private final @BluetoothGattCharacteristicProperty int propertySignedWrite;
     private final int[] possibleProperties;
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(flag = true,
-            value = {BluetoothGattCharacteristic.PROPERTY_READ,
-                    BluetoothGattCharacteristic.PROPERTY_BROADCAST,
-                    BluetoothGattCharacteristic.PROPERTY_WRITE,
-                    BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
-                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
-                    BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                    BluetoothGattCharacteristic.PROPERTY_NOTIFY})
-    @interface BluetoothGattCharacteristicProperty { }
 
     public CharacteristicPropertiesParser(@BluetoothGattCharacteristicProperty int propertyBroadcast,
                                    @BluetoothGattCharacteristicProperty int propertyRead,
@@ -51,7 +35,7 @@ public class CharacteristicPropertiesParser {
     }
 
     @NonNull
-    public String propertiesIntToString(int property) {
+    public String propertiesIntToString(@BluetoothGattCharacteristicProperty int property) {
         StringBuilder builder = new StringBuilder();
         builder.append("[ ");
         for (int possibleProperty : possibleProperties) {
@@ -64,7 +48,7 @@ public class CharacteristicPropertiesParser {
         return builder.toString();
     }
 
-    private int[] getPossibleProperties() {
+    private @NonNull int[] getPossibleProperties() {
         int[] propertyDictionary = new int[7];
         propertyDictionary[0] = propertyBroadcast;
         propertyDictionary[1] = propertyRead;
@@ -76,12 +60,13 @@ public class CharacteristicPropertiesParser {
         return propertyDictionary;
     }
 
-    private static boolean propertiesIntContains(int properties, int property) {
+    private static boolean propertiesIntContains(@BluetoothGattCharacteristicProperty int properties,
+                                                 @BluetoothGattCharacteristicProperty int property) {
         return (properties & property) != 0;
     }
 
     @NonNull
-    private String propertyToString(int property) {
+    private String propertyToString(@BluetoothGattCharacteristicProperty int property) {
         if (property == propertyRead) {
             return "READ";
         } else if (property == propertyWrite) {

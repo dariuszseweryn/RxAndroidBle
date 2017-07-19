@@ -19,8 +19,8 @@ public class BleIllegalOperationException extends RuntimeException {
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public BleIllegalOperationException(String message,
                                         UUID characteristicUUID,
-                                        int supportedProperties,
-                                        int neededProperties) {
+                                        @BluetoothGattCharacteristicProperty int supportedProperties,
+                                        @BluetoothGattCharacteristicProperty int neededProperties) {
         super(message);
         this.characteristicUUID = characteristicUUID;
         this.supportedProperties = supportedProperties;

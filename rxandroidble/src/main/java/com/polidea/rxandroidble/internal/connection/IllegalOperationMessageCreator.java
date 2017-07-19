@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
 import java.util.Locale;
@@ -17,7 +18,8 @@ public class IllegalOperationMessageCreator {
         this.propertiesParser = propertiesParser;
     }
 
-    public String createMismatchMessage(BluetoothGattCharacteristic characteristic, int neededProperties) {
+    @SuppressWarnings("WrongConstant")
+    public String createMismatchMessage(BluetoothGattCharacteristic characteristic, @BluetoothGattCharacteristicProperty int neededProperties) {
         return String.format(
                 Locale.getDefault(),
                 "Characteristic %s supports properties: %s (%d) does not have any property matching %s (%d)",

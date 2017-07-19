@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
 
@@ -16,5 +17,5 @@ public abstract class IllegalOperationHandler {
         this.messageCreator = messageCreator;
     }
 
-    public abstract BleIllegalOperationException handleMismatchData(BluetoothGattCharacteristic characteristic, int neededProperties);
+    public abstract @Nullable BleIllegalOperationException handleMismatchData(BluetoothGattCharacteristic characteristic, int neededProperties);
 }

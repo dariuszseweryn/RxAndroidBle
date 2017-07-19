@@ -1,12 +1,9 @@
 package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.support.annotation.IntDef;
 
+import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
@@ -19,17 +16,6 @@ import rx.functions.Action0;
 public class IllegalOperationChecker {
 
     private IllegalOperationHandler resultHandler;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(flag = true,
-            value = {BluetoothGattCharacteristic.PROPERTY_READ,
-                    BluetoothGattCharacteristic.PROPERTY_BROADCAST,
-                    BluetoothGattCharacteristic.PROPERTY_WRITE,
-                    BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
-                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE,
-                    BluetoothGattCharacteristic.PROPERTY_INDICATE,
-                    BluetoothGattCharacteristic.PROPERTY_NOTIFY})
-    @interface BluetoothGattCharacteristicProperty { }
 
     @Inject
     public IllegalOperationChecker(IllegalOperationHandler resultHandler) {
