@@ -25,6 +25,17 @@ It's your job to maintain single instance of the client. You can use singleton, 
 RxBleClient rxBleClient = RxBleClient.create(context);
 ```
 
+### Turning the bluetooth on / off
+The library does _not_ handle managing the state of the Bluetooth Adapter.
+<br>Direct managing of the state is not recommended as it violates the application user's right to manage the state of their phone. See `Javadoc` of [BluetoothAdapter.enable()](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#enable()) method.
+<br>It is the user's responsibility to inform why the application needs Bluetooth to be turned on and for ask the application's user consent.
+<br>It is possible to show a native activity for turning the Bluetooth on by calling:
+```java
+Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+int REQUEST_ENABLE_BT = 1;
+context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+```
+
 ### Device discovery
 Scanning devices in the area is simple as that:
 
