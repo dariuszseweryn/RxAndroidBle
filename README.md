@@ -66,11 +66,7 @@ Subscription flowSubscription = rxBleClient.observeStateChanges()
                 // basically no functionality will work here
             case LOCATION_PERMISSION_NOT_GRANTED:
                 // scanning and connecting will not work
-            case BLUETOOTH_OFF:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_ON:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_OFF:
+            case BLUETOOTH_NOT_ENABLED:
                 // scanning and connecting will not work
             case LOCATION_SERVICES_NOT_ENABLED:
                 // scanning will not work
