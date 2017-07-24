@@ -19,7 +19,8 @@ public class IllegalOperationMessageCreator {
     }
 
     @SuppressWarnings("WrongConstant")
-    public String createMismatchMessage(BluetoothGattCharacteristic characteristic, @BluetoothGattCharacteristicProperty int neededProperties) {
+    public String createMismatchMessage(BluetoothGattCharacteristic characteristic,
+                                        @BluetoothGattCharacteristicProperty int neededProperties) {
         return String.format(
                 Locale.getDefault(),
                 "Characteristic %s supports properties: %s (%d) does not have any property matching %s (%d)",

@@ -6,6 +6,10 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Annotation denoting that annotated int is either one or combination of flags describing characteristic properties
+ * from {@link BluetoothGattCharacteristic}.
+ */
 @Retention(RetentionPolicy.SOURCE)
 @IntDef(flag = true,
         value = {BluetoothGattCharacteristic.PROPERTY_READ,
