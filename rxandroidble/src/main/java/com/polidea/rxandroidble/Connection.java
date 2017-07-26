@@ -7,6 +7,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import com.polidea.rxandroidble.custom_operation.CustomOperation;
 import com.polidea.rxandroidble.setup.NotificationSetup;
 import com.polidea.rxandroidble.setup.DiscoverySetup;
 import com.polidea.rxandroidble.setup.WriteSetup;
@@ -93,7 +94,7 @@ public interface Connection {
 
 //    [DS] 07.07.2017 Preparation for the new BluetoothGattCallback.onConnectionUpdated()
 //    @RequiresApi(api = Build.VERSION_CODES.O)
-//    Observable<ConnectionParams> observeConnectionParams();
+//    Observable<ConnectionParams> observeConnectionParamsChanges();
 
-    <T> Observable<T> queue(@NonNull CustomOperation<T> operation);
+    <T> T queue(@NonNull CustomOperation<T> operation);
 }

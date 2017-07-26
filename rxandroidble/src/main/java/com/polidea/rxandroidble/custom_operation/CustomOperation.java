@@ -1,7 +1,9 @@
-package com.polidea.rxandroidble;
+package com.polidea.rxandroidble.custom_operation;
 
 
 import android.bluetooth.BluetoothGatt;
+import android.support.annotation.RestrictTo;
+import com.polidea.rxandroidble.Connection;
 import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -13,7 +15,8 @@ import rx.android.schedulers.AndroidSchedulers;
 /**
  * Represents a custom operation that will be enqueued for future execution within the client instance.
  */
-interface CustomOperation<T> {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public interface CustomOperation<T> {
 
     /**
      * Return an observable that implement a custom radio operation using low-level Android BLE API.
@@ -53,8 +56,8 @@ interface CustomOperation<T> {
      * @param radioReleaseInterface The interface to call when normal operation of the library should be restored
      * @throws Throwable Any exception that your custom operation might throw
      */
-    Observable<T> asObservable(BluetoothGatt bluetoothGatt,
-                               RxBleGattCallback rxBleGattCallback,
-                               Scheduler scheduler,
-                               RadioReleaseInterface radioReleaseInterface) throws Throwable;
+    T create(BluetoothGatt bluetoothGatt,
+             RxBleGattCallback rxBleGattCallback,
+             Scheduler scheduler,
+             RadioReleaseInterface radioReleaseInterface) throws Throwable;
 }
