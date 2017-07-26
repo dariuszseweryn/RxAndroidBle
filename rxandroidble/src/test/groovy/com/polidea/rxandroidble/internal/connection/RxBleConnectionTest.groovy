@@ -332,6 +332,7 @@ class RxBleConnectionTest extends Specification {
         def nativeCallback = Mock BluetoothGattCallback
         def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
 
+            @NonNull
             @Override
             Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
                                              RxBleGattCallback rxBleGattCallback,
@@ -353,6 +354,7 @@ class RxBleConnectionTest extends Specification {
         def nativeCallback = Mock BluetoothGattCallback
         def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
 
+            @NonNull
             @Override
             Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
                                              RxBleGattCallback rxBleGattCallback,

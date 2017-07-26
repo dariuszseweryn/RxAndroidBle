@@ -69,7 +69,7 @@ public class RxBleGattCallback {
             .autoConnect(0);
 
     @Inject
-    public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) Scheduler callbackScheduler,
+    public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler,
                              BluetoothGattProvider bluetoothGattProvider,
                              NativeCallbackDispatcher nativeCallbackDispatcher) {
         this.callbackScheduler = callbackScheduler;

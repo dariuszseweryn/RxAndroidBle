@@ -38,7 +38,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
     private final BluetoothGatt bluetoothGatt;
     private final RxBleGattCallback rxBleGattCallback;
-    private final Scheduler mainThreadScheduler;
+    private final Scheduler bluetoothInteractionScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
     private final PayloadSizeLimitProvider batchSizeProvider;
@@ -49,7 +49,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     RxBleRadioOperationCharacteristicLongWrite(
             BluetoothGatt bluetoothGatt,
             RxBleGattCallback rxBleGattCallback,
-            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             PayloadSizeLimitProvider batchSizeProvider,
@@ -57,7 +57,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutConfiguration = timeoutConfiguration;
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.batchSizeProvider = batchSizeProvider;
@@ -79,7 +79,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
 
         final RadioReleasingEmitterWrapper<byte[]> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
         writeBatchAndObserve(batchSize, byteBuffer)
-                .subscribeOn(mainThreadScheduler)
+                .subscribeOn(bluetoothInteractionScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
                 .timeout(
                         timeoutConfiguration.timeout,

@@ -9,7 +9,6 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Represents a custom operation that will be enqueued for future execution within the client instance.
@@ -41,7 +40,6 @@ public interface RxBleRadioOperationCustom<T> {
      * @param bluetoothGatt     The Android API GATT instance
      * @param rxBleGattCallback The internal Rx ready bluetooth gatt callback to be notified of GATT operations
      * @param scheduler         The RxBleRadio scheduler used to asObservable operation
-     *                          (currently {@link AndroidSchedulers#mainThread()}
      * @throws Throwable Any exception that your custom operation might throw
      */
     @NonNull

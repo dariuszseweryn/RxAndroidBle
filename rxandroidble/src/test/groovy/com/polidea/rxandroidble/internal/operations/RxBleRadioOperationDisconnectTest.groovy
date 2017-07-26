@@ -19,10 +19,6 @@ import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListene
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import rx.Scheduler
-import rx.android.plugins.RxAndroidPlugins
-import rx.android.plugins.RxAndroidSchedulersHook
-import rx.android.schedulers.AndroidSchedulers
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import rx.schedulers.Schedulers
@@ -44,25 +40,6 @@ public class RxBleRadioOperationDisconnectTest extends Specification {
     TestSubscriber<Void> testSubscriber = new TestSubscriber()
     BluetoothGattProvider mockBluetoothGattProvider
     RxBleRadioOperationDisconnect objectUnderTest
-
-    def setupSpec() {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-        RxAndroidPlugins.getInstance().registerSchedulersHook(
-                new RxAndroidSchedulersHook() {
-
-                    @Override
-                    Scheduler getMainThreadScheduler() {
-                        return Schedulers.immediate()
-                    }
-                }
-        )
-    }
-
-    def teardownSpec() {
-        AndroidSchedulers.reset()
-        RxAndroidPlugins.getInstance().reset()
-    }
 
     private def testWithGattProviderReturning(BluetoothGatt providedBluetoothGatt) {
         mockBluetoothGattProvider = Mock(BluetoothGattProvider)

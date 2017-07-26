@@ -62,7 +62,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
             DescriptorWriter descriptorWriter,
             OperationsProvider operationProvider,
             Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider,
-            @Named(ClientComponent.NamedSchedulers.RADIO_OPERATIONS) Scheduler callbackScheduler
+            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler callbackScheduler
     ) {
         this.rxBleRadio = rxBleRadio;
         this.gattCallback = gattCallback;

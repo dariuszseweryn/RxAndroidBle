@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
@@ -33,7 +34,6 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import rx.Observable;
 import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -43,11 +43,10 @@ public interface ClientComponent {
 
     class NamedSchedulers {
 
-        public static final String MAIN_THREAD = "main-thread";
         public static final String COMPUTATION = "computation";
-        public static final String RADIO_OPERATIONS = "callback-emitter";
         public static final String TIMEOUT = "timeout";
-        public static final String GATT_CALLBACK = "callback";
+        public static final String BLUETOOTH_INTERACTION = "bluetooth_interaction";
+        public static final String BLUETOOTH_CALLBACKS = "bluetooth_callbacks";
         private NamedSchedulers() {
 
         }
@@ -119,28 +118,50 @@ public interface ClientComponent {
         }
 
         @Provides
-        @Named(NamedSchedulers.GATT_CALLBACK)
+        @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
         @ClientScope
-        static ExecutorService provideGattCallbackExecutorService() {
+        static ExecutorService provideBluetoothInteractionExecutorService() {
             return Executors.newSingleThreadExecutor();
         }
 
         @Provides
-        @Named(NamedSchedulers.GATT_CALLBACK)
+        @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
         @ClientScope
-        static Scheduler provideGattCallbackScheduler(@Named(NamedSchedulers.GATT_CALLBACK) ExecutorService executorService) {
-            return Schedulers.from(executorService);
+        static ExecutorService provideBluetoothCallbacksExecutorService() {
+            return Executors.newSingleThreadExecutor();
+        }
+
+        @Provides
+        @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
+        @ClientScope
+        static Scheduler provideBluetoothInteractionScheduler(@Named(NamedSchedulers.BLUETOOTH_INTERACTION) ExecutorService service) {
+            return Schedulers.from(service);
+        }
+
+        @Provides
+        @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
+        @ClientScope
+        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedSchedulers.BLUETOOTH_CALLBACKS) ExecutorService service) {
+            return Schedulers.from(service);
+        }
+
+        @Provides
+        static ClientComponentFinalizer provideFinalizationCloseable(
+                @Named(NamedSchedulers.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
+                @Named(NamedSchedulers.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService
+        ) {
+            return new ClientComponentFinalizer() {
+                @Override
+                public void onFinalize() {
+                    interactionExecutorService.shutdown();
+                    callbacksExecutorService.shutdown();
+                }
+            };
         }
 
         @Provides
         LocationManager provideLocationManager() {
             return (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        }
-
-        @Provides
-        @Named(NamedSchedulers.MAIN_THREAD)
-        static Scheduler provideMainThreadScheduler() {
-            return AndroidSchedulers.mainThread();
         }
 
         @Provides
@@ -228,10 +249,6 @@ public interface ClientComponent {
         abstract RxBleRadio bindRxBleRadio(RxBleRadioImpl rxBleRadio);
 
         @Binds
-        @Named(NamedSchedulers.RADIO_OPERATIONS)
-        abstract Scheduler bindCallbackScheduler(@Named(NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler);
-
-        @Binds
         @Named(NamedSchedulers.TIMEOUT)
         abstract Scheduler bindTimeoutScheduler(@Named(NamedSchedulers.COMPUTATION) Scheduler computationScheduler);
 
@@ -242,4 +259,10 @@ public interface ClientComponent {
     LocationServicesOkObservable locationServicesOkObservable();
 
     RxBleClient rxBleClient();
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    interface ClientComponentFinalizer {
+
+        void onFinalize();
+    }
 }

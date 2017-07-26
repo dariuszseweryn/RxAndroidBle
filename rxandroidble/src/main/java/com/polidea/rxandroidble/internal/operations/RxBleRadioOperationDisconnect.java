@@ -22,10 +22,10 @@ import javax.inject.Named;
 
 import rx.Emitter;
 import rx.Observable;
+import rx.Observer;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
@@ -38,7 +38,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     private final BluetoothGattProvider bluetoothGattProvider;
     private final String macAddress;
     private final BluetoothManager bluetoothManager;
-    private final Scheduler mainThreadScheduler;
+    private final Scheduler bluetoothInteractionScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
     private final ConnectionStateChangeListener connectionStateChangeListener;
 
@@ -48,14 +48,14 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             BluetoothGattProvider bluetoothGattProvider,
             @Named(DeviceModule.MAC_ADDRESS) String macAddress,
             BluetoothManager bluetoothManager,
-            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(DeviceModule.DISCONNECT_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             ConnectionStateChangeListener connectionStateChangeListener) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.macAddress = macAddress;
         this.bluetoothManager = bluetoothManager;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutConfiguration = timeoutConfiguration;
         this.connectionStateChangeListener = connectionStateChangeListener;
     }
@@ -71,30 +71,26 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
             emitter.onCompleted();
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
-                    .observeOn(mainThreadScheduler)
-                    .subscribe(
-                            new Action1<BluetoothGatt>() {
-                                @Override
-                                public void call(BluetoothGatt bluetoothGatt) {
-                                    bluetoothGatt.close();
-                                }
-                            },
-                            new Action1<Throwable>() {
-                                @Override
-                                public void call(Throwable throwable) {
-                                    radioReleaseInterface.release();
-                                    emitter.onError(throwable);
-                                }
-                            },
-                            new Action0() {
-                                @Override
-                                public void call() {
-                                    connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
-                                    radioReleaseInterface.release();
-                                    emitter.onCompleted();
-                                }
-                            }
-                    );
+                    .observeOn(bluetoothInteractionScheduler)
+                    .subscribe(new Observer<BluetoothGatt>() {
+                        @Override
+                        public void onNext(BluetoothGatt bluetoothGatt) {
+                            bluetoothGatt.close();
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            radioReleaseInterface.release();
+                            emitter.onError(throwable);
+                        }
+
+                        @Override
+                        public void onCompleted() {
+                            connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
+                            radioReleaseInterface.release();
+                            emitter.onCompleted();
+                        }
+                    });
         }
     }
 
@@ -109,7 +105,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
      * 2. The same BluetoothGatt - in this situation we should probably cancel the pending BluetoothGatt.close() call
      */
     private Observable<BluetoothGatt> disconnect(BluetoothGatt bluetoothGatt) {
-        return new DisconnectGattObservable(bluetoothGatt, rxBleGattCallback, mainThreadScheduler)
+        return new DisconnectGattObservable(bluetoothGatt, rxBleGattCallback, bluetoothInteractionScheduler)
                 .timeout(timeoutConfiguration.timeout, timeoutConfiguration.timeoutTimeUnit, just(bluetoothGatt),
                         timeoutConfiguration.timeoutScheduler);
     }
@@ -126,13 +122,12 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
                 public void call(Subscriber<? super BluetoothGatt> subscriber) {
                     rxBleGattCallback
                             .getOnConnectionStateChange()
-                            .filter(new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
+                            .takeFirst(new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
                                 @Override
                                 public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
                                     return rxBleConnectionState == DISCONNECTED;
                                 }
                             })
-                            .take(1)
                             .map(new Func1<RxBleConnection.RxBleConnectionState, BluetoothGatt>() {
                                 @Override
                                 public BluetoothGatt call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
