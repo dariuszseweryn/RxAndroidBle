@@ -1,12 +1,10 @@
-package com.polidea.rxandroidble.internal.radio;
+package com.polidea.rxandroidble.internal.serialization;
 
 
-import com.polidea.rxandroidble.internal.RadioAwaitReleaseInterface;
-import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class RadioSemaphore implements RadioReleaseInterface, RadioAwaitReleaseInterface {
+class QueueSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface {
 
     private final AtomicBoolean isReleased = new AtomicBoolean(false);
 

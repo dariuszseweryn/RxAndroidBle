@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal.operations
 
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.observers.TestSubscriber
@@ -10,14 +10,14 @@ import rx.schedulers.TestScheduler
 import spock.lang.Specification
 import java.util.concurrent.TimeUnit
 
-class RxBleRadioOperationConnectionPriorityRequestTest extends Specification {
+class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specification {
 
     static long timeout = 10
     int completedDelay = 500L
     TimeUnit delayUnit = TimeUnit.MILLISECONDS
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     TimeoutConfiguration mockTimeoutConfiguration = new MockOperationTimeoutConfiguration(

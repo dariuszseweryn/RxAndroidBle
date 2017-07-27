@@ -4,7 +4,7 @@ import android.os.DeadObjectException
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.Priority
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.RxBleRadioOperation
 import rx.Emitter
 import rx.Observable
@@ -32,7 +32,7 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     }
 
     @Override
-    void protectedRun(Emitter<Object> emitter, RadioReleaseInterface radioReleaseInterface) {
+    void protectedRun(Emitter<Object> emitter, QueueReleaseInterface radioReleaseInterface) {
         executionCount++
         lastExecutedOnThread = Thread.currentThread().getName()
         closure?.call(emitter)

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal.radio
+package com.polidea.rxandroidble.internal.serialization
 
 import com.polidea.rxandroidble.MockOperation
 import com.polidea.rxandroidble.internal.Priority

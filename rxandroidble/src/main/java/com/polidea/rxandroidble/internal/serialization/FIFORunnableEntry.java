@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal.radio;
+package com.polidea.rxandroidble.internal.serialization;
 
 
 import android.support.annotation.NonNull;
@@ -32,7 +32,7 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
         return res;
     }
 
-    public Subscription run(RadioSemaphore semaphore, Scheduler subscribeScheduler) {
+    public Subscription run(QueueSemaphore semaphore, Scheduler subscribeScheduler) {
         /*
          * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
          * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls

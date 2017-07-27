@@ -6,7 +6,7 @@ import com.polidea.rxandroidble.internal.ConnectionSetup
 import com.polidea.rxandroidble.RxBleAdapterStateObservable
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
-import com.polidea.rxandroidble.internal.RxBleRadio
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.operations.MockConnectionComponentBuilder
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
@@ -19,7 +19,34 @@ import spock.lang.Unroll
 
 public class ConnectorImplTest extends Specification {
 
-    RxBleRadio mockRadio = Mock RxBleRadio
+    static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
+        public boolean isAutoConnect
+        private final RxBleRadioOperationConnect mockConnection
+
+        MockConnectBuilder(RxBleRadioOperationConnect mockConnection,
+                           BluetoothDevice bluetoothDevice,
+                           BleConnectionCompat connectionCompat,
+                           RxBleGattCallback rxBleGattCallback,
+                           TimeoutConfiguration connectionTimeoutConfiguration,
+                           BluetoothGattProvider bluetoothGattProvider,
+                           ConnectionStateChangeListener connectionStateChangeListener) {
+            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
+            this.mockConnection = mockConnection
+        }
+
+        @Override
+        RxBleRadioOperationConnect.Builder setAutoConnect(boolean autoConnect) {
+            this.isAutoConnect = autoConnect
+            return super.setAutoConnect(autoConnect)
+        }
+
+        @Override
+        RxBleRadioOperationConnect build() {
+            return mockConnection
+        }
+    }
+
+    ClientOperationQueue mockRadio = Mock ClientOperationQueue
     BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     RxBleRadioOperationConnect mockConnect = Mock RxBleRadioOperationConnect

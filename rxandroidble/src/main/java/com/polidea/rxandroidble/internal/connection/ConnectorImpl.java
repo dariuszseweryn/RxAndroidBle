@@ -8,9 +8,10 @@ import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble.internal.RxBleRadio;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
 import javax.inject.Inject;
@@ -27,7 +28,7 @@ import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 public class ConnectorImpl implements Connector {
 
     private final BluetoothDevice bluetoothDevice;
-    private final RxBleRadio rxBleRadio;
+    private final ClientOperationQueue operationQueue;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> adapterStateObservable;
     private final ConnectionComponent.Builder connectionComponentBuilder;
@@ -35,12 +36,12 @@ public class ConnectorImpl implements Connector {
     @Inject
     public ConnectorImpl(
             BluetoothDevice bluetoothDevice,
-            RxBleRadio rxBleRadio,
+            ClientOperationQueue operationQueue,
             RxBleAdapterWrapper rxBleAdapterWrapper,
             Observable<BleAdapterState> adapterStateObservable,
             ConnectionComponent.Builder connectionComponentBuilder) {
         this.bluetoothDevice = bluetoothDevice;
-        this.rxBleRadio = rxBleRadio;
+        this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.adapterStateObservable = adapterStateObservable;
         this.connectionComponentBuilder = connectionComponentBuilder;
@@ -71,14 +72,19 @@ public class ConnectorImpl implements Connector {
                                 );
                             }
                         })
-                        .doOnUnsubscribe(disconnect(connectionComponent.disconnectOperation()));
+                        .doOnUnsubscribe(disconnect(
+                                connectionComponent.disconnectOperation(),
+                                connectionComponent.connectionOperationQueue()
+                        ));
             }
 
             @NonNull
-            private Action0 disconnect(final RxBleRadioOperationDisconnect operationDisconnect) {
+            private Action0 disconnect(final RxBleRadioOperationDisconnect operationDisconnect,
+                                       final ConnectionOperationQueue connectionOperationQueue) {
                 return new Action0() {
                     @Override
                     public void call() {
+                        connectionOperationQueue.terminate(new BleDisconnectedException(bluetoothDevice.getAddress()));
                         enqueueDisconnectOperation(operationDisconnect);
                     }
                 };
@@ -88,7 +94,7 @@ public class ConnectorImpl implements Connector {
             private Observable<BluetoothGatt> enqueueConnectOperation(RxBleRadioOperationConnect operationConnect) {
                 return Observable
                         .merge(
-                                rxBleRadio.queue(operationConnect),
+                                operationQueue.queue(operationConnect),
                                 adapterNotUsableObservable()
                                         .flatMap(new Func1<BleAdapterState, Observable<BluetoothGatt>>() {
                                             @Override
@@ -113,7 +119,7 @@ public class ConnectorImpl implements Connector {
     }
 
     private Subscription enqueueDisconnectOperation(RxBleRadioOperationDisconnect operationDisconnect) {
-        return rxBleRadio
+        return operationQueue
                 .queue(operationDisconnect)
                 .subscribe(
                         Actions.empty(),

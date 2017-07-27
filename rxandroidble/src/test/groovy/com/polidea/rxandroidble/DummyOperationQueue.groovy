@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble
 
-import com.polidea.rxandroidble.internal.RxBleRadio
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.operations.Operation
 import rx.Emitter
 import rx.Observable
@@ -8,7 +8,7 @@ import rx.Subscription
 import rx.functions.Action1
 import rx.functions.Cancellable
 
-class FlatRxBleRadio implements RxBleRadio {
+class DummyOperationQueue implements ClientOperationQueue {
     public final MockSemaphore semaphore = new MockSemaphore()
 
     @Override

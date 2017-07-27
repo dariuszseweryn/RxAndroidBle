@@ -1,9 +1,12 @@
 package com.polidea.rxandroidble.internal.operations
 
 import com.polidea.rxandroidble.RxBleConnection
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.internal.connection.ConnectionComponent
 import com.polidea.rxandroidble.internal.connection.ConnectionModule
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
+import rx.Observable
 
 public class MockConnectionComponentBuilder implements ConnectionComponent.Builder {
     private final RxBleConnection rxBleConnection
@@ -48,6 +51,22 @@ public class MockConnectionComponentBuilder implements ConnectionComponent.Build
             @Override
             RxBleGattCallback gattCallback() {
                 return rxBleGattCallback
+            }
+
+            @Override
+            ConnectionOperationQueue connectionOperationQueue() {
+                return new ConnectionOperationQueue() {
+
+                    @Override
+                    void terminate(BleDisconnectedException disconnectedException) {
+
+                    }
+
+                    @Override
+                    def <T> Observable<T> queue(Operation<T> operation) {
+                        return null
+                    }
+                }
             }
         }
     }

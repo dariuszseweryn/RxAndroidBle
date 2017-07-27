@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal.radio;
+package com.polidea.rxandroidble.internal.serialization;
 
 
 import java.util.concurrent.PriorityBlockingQueue;
@@ -13,6 +13,10 @@ class OperationPriorityFifoBlockingQueue {
 
     public FIFORunnableEntry<?> take() throws InterruptedException {
         return q.take();
+    }
+
+    public FIFORunnableEntry<?> takeNow() {
+        return q.poll();
     }
 
     public boolean isEmpty() {

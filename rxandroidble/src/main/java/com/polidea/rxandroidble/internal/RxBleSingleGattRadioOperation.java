@@ -12,6 +12,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
 import java.util.concurrent.TimeUnit;
 import rx.Emitter;
@@ -41,7 +42,7 @@ public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperati
     }
 
     @Override
-    final protected void protectedRun(final Emitter<T> emitter, final RadioReleaseInterface radioReleaseInterface) throws Throwable {
+    final protected void protectedRun(final Emitter<T> emitter, final QueueReleaseInterface radioReleaseInterface) throws Throwable {
         final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
         Subscription subscription = getCallback(rxBleGattCallback)
                 .first()

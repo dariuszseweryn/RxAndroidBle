@@ -6,6 +6,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,7 +20,7 @@ import spock.lang.Unroll
 
 public class RxBleSingleGattRadioOperationTest extends Specification {
 
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 

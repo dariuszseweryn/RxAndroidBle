@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble
 
-import com.polidea.rxandroidble.internal.RadioAwaitReleaseInterface
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueAwaitReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 
-class MockSemaphore implements RadioReleaseInterface, RadioAwaitReleaseInterface {
+class MockSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface {
     int permits = 0;
 
     MockSemaphore() {

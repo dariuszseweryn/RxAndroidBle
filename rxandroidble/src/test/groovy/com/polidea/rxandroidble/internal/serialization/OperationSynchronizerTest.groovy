@@ -1,7 +1,6 @@
-package com.polidea.rxandroidble.internal.radio
+package com.polidea.rxandroidble.internal.serialization
 
 import com.polidea.rxandroidble.MockOperation
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
 import rx.Emitter
 import rx.Observable
 import rx.Scheduler
@@ -16,13 +15,13 @@ import java.util.concurrent.TimeUnit
 
 import static com.polidea.rxandroidble.internal.Priority.NORMAL
 
-class RxBleRadioTest extends Specification {
+class OperationSynchronizerTest extends Specification {
     public static final String RADIO_SCHEDULER_THREAD_NAME = "radio-test-thread"
 
-    RxBleRadioImpl objectUnderTest
+    ClientOperationQueueImpl objectUnderTest
 
     void setup() {
-        objectUnderTest = new RxBleRadioImpl(createSchedulerWithNamedThread(RADIO_SCHEDULER_THREAD_NAME))
+        objectUnderTest = new ClientOperationQueueImpl(createSchedulerWithNamedThread(RADIO_SCHEDULER_THREAD_NAME))
     }
 
     def "should run operation instantly if queue is empty and no operation is in progress"() {
@@ -136,7 +135,7 @@ class RxBleRadioTest extends Specification {
 
         def secondOperation = new MockOperation(NORMAL, null) {
             @Override
-            void protectedRun(Emitter<Object> emitter, RadioReleaseInterface radioReleaseInterface) {
+            void protectedRun(Emitter<Object> emitter, QueueReleaseInterface radioReleaseInterface) {
                 // simulate that a not handled exception was thrown somewhere
                 throw new Exception("Second throwable")
             }

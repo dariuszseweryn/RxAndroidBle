@@ -12,10 +12,10 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
-import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueueImpl;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi18;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi24;
@@ -40,6 +40,16 @@ import rx.schedulers.Schedulers;
 @ClientScope
 @Component(modules = {ClientComponent.ClientModule.class, ClientComponent.ClientModuleBinder.class})
 public interface ClientComponent {
+
+    class NamedExecutors {
+
+        public static final String BLUETOOTH_INTERACTION = "executor_bluetooth_interaction";
+        public static final String BLUETOOTH_CALLBACKS = "executor_bluetooth_callbacks";
+        public static final String CONNECTION_QUEUE = "executor_connection_queue";
+        private NamedExecutors() {
+
+        }
+    }
 
     class NamedSchedulers {
 
@@ -118,14 +128,21 @@ public interface ClientComponent {
         }
 
         @Provides
-        @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
+        @Named(NamedExecutors.CONNECTION_QUEUE)
+        @ClientScope
+        static ExecutorService provideConnectionQueueExecutorService() {
+            return Executors.newCachedThreadPool();
+        }
+
+        @Provides
+        @Named(NamedExecutors.BLUETOOTH_INTERACTION)
         @ClientScope
         static ExecutorService provideBluetoothInteractionExecutorService() {
             return Executors.newSingleThreadExecutor();
         }
 
         @Provides
-        @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
+        @Named(NamedExecutors.BLUETOOTH_CALLBACKS)
         @ClientScope
         static ExecutorService provideBluetoothCallbacksExecutorService() {
             return Executors.newSingleThreadExecutor();
@@ -134,27 +151,29 @@ public interface ClientComponent {
         @Provides
         @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
         @ClientScope
-        static Scheduler provideBluetoothInteractionScheduler(@Named(NamedSchedulers.BLUETOOTH_INTERACTION) ExecutorService service) {
+        static Scheduler provideBluetoothInteractionScheduler(@Named(NamedExecutors.BLUETOOTH_INTERACTION) ExecutorService service) {
             return Schedulers.from(service);
         }
 
         @Provides
         @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
         @ClientScope
-        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedSchedulers.BLUETOOTH_CALLBACKS) ExecutorService service) {
+        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedExecutors.BLUETOOTH_CALLBACKS) ExecutorService service) {
             return Schedulers.from(service);
         }
 
         @Provides
         static ClientComponentFinalizer provideFinalizationCloseable(
-                @Named(NamedSchedulers.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
-                @Named(NamedSchedulers.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService
+                @Named(NamedExecutors.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
+                @Named(NamedExecutors.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService,
+                @Named(NamedExecutors.CONNECTION_QUEUE) final ExecutorService connectionQueueExecutorService
         ) {
             return new ClientComponentFinalizer() {
                 @Override
                 public void onFinalize() {
                     interactionExecutorService.shutdown();
                     callbacksExecutorService.shutdown();
+                    connectionQueueExecutorService.shutdown();
                 }
             };
         }
@@ -246,7 +265,7 @@ public interface ClientComponent {
 
         @Binds
         @ClientScope
-        abstract RxBleRadio bindRxBleRadio(RxBleRadioImpl rxBleRadio);
+        abstract ClientOperationQueue bindClientOperationQueue(ClientOperationQueueImpl rxBleRadio);
 
         @Binds
         @Named(NamedSchedulers.TIMEOUT)

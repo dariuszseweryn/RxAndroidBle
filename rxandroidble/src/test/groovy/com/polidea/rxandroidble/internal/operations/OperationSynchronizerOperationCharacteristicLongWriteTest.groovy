@@ -7,7 +7,7 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
@@ -25,7 +25,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleRadioOperationCharacteristicLongWriteTest extends Specification {
+public class OperationSynchronizerOperationCharacteristicLongWriteTest extends Specification {
 
     private static long DEFAULT_WRITE_DELAY = 1
     UUID mockCharacteristicUUID = UUID.randomUUID()
@@ -40,7 +40,7 @@ public class RxBleRadioOperationCharacteristicLongWriteTest extends Specificatio
     TestScheduler timeoutScheduler = new TestScheduler()
     ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
     @Shared Exception testException = new Exception("testException")
 

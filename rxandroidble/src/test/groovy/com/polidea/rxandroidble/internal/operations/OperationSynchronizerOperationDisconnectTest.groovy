@@ -17,7 +17,7 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
@@ -27,11 +27,11 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 
-public class RxBleRadioOperationDisconnectTest extends Specification {
+public class OperationSynchronizerOperationDisconnectTest extends Specification {
 
     BluetoothDevice mockDevice = Mock BluetoothDevice
     String mockMacAddress = "mockMackAddress"
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
     BluetoothManager mockBluetoothManager = Mock BluetoothManager
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback

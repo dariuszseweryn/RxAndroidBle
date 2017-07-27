@@ -21,7 +21,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider
-import com.polidea.rxandroidble.internal.RxBleRadio
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.Observable
 import rx.internal.schedulers.ImmediateScheduler
@@ -33,7 +33,7 @@ class RxBleClientTest extends Specification {
 
     TestSubscriber testSubscriber = new TestSubscriber<>()
 
-    FlatRxBleRadio rxBleRadio = new FlatRxBleRadio()
+    DummyOperationQueue rxBleRadio = new DummyOperationQueue()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     UUIDUtil uuidParserSpy = Spy UUIDUtil
@@ -68,7 +68,7 @@ class RxBleClientTest extends Specification {
         setupWithRadio(rxBleRadio)
     }
 
-    private void setupWithRadio(RxBleRadio radio) {
+    private void setupWithRadio(ClientOperationQueue radio) {
         contextMock.getApplicationContext() >> contextMock
         mockDeviceProvider.getBleDevice(_ as String) >> { String macAddress ->
             def device = Mock(RxBleDevice)
@@ -125,7 +125,7 @@ class RxBleClientTest extends Specification {
     @Unroll
     def "should proxy an error from ScanPreconditionVerifier.verify() when starting a scan"() {
         given:
-        RxBleRadio mockRadio = Mock RxBleRadio
+        ClientOperationQueue mockRadio = Mock ClientOperationQueue
         Throwable testThrowable = new BleScanException(BleScanException.UNKNOWN_ERROR_CODE, new Date())
         mockScanPreconditionVerifier.verify() >> { throw testThrowable }
         def scanObservable = scanStarter.call(objectUnderTest)
@@ -153,7 +153,7 @@ class RxBleClientTest extends Specification {
 
     def "should queue scan operation on subscribe (New API)"() {
         given:
-        def radio = Mock(RxBleRadio)
+        def radio = Mock(ClientOperationQueue)
         setupWithRadio(radio)
         def testSubscriber = new TestSubscriber<>()
         def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))

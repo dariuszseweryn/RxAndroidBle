@@ -37,7 +37,7 @@ class RxBleConnectionTest extends Specification {
     public static final byte[] NOT_EMPTY_DATA = [1, 2, 3] as byte[]
     public static final byte[] OTHER_DATA = [2, 2, 3] as byte[]
     public static final int EXPECTED_RSSI_VALUE = 5
-    def flatRadio = new FlatRxBleRadio()
+    def flatRadio = new DummyOperationQueue()
     def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
     def mockServiceDiscoveryManager = Mock ServiceDiscoveryManager

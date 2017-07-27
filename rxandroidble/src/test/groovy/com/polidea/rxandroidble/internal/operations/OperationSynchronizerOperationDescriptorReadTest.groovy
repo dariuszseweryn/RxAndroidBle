@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
@@ -16,7 +16,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class RxBleRadioOperationDescriptorReadTest extends Specification {
+public class OperationSynchronizerOperationDescriptorReadTest extends Specification {
 
     BluetoothGatt mockGatt = Mock BluetoothGatt
 
@@ -32,7 +32,7 @@ public class RxBleRadioOperationDescriptorReadTest extends Specification {
 
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
 
     RxBleRadioOperationDescriptorRead objectUnderTest
 

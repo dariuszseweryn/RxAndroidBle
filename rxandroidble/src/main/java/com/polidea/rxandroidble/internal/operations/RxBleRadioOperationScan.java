@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.operations;
 import android.os.DeadObjectException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.RadioReleaseInterface;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
@@ -25,7 +25,7 @@ abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TY
     }
 
     @Override
-    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, RadioReleaseInterface radioReleaseInterface) {
+    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, QueueReleaseInterface radioReleaseInterface) {
 
         final SCAN_CALLBACK_TYPE scanCallback = createScanCallback(emitter);
 

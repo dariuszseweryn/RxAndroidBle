@@ -6,7 +6,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
 import com.polidea.rxandroidble.internal.scan.AndroidScanObjectsConverter
@@ -20,11 +20,11 @@ import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleRadioOperationScanApi21Test extends Specification {
+public class OperationSynchronizerOperationScanApi21Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
 
     TestSubscriber testSubscriber = new TestSubscriber()
 

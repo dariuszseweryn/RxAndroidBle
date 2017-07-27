@@ -10,7 +10,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.RadioReleaseInterface;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
@@ -61,7 +61,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    protected void protectedRun(final Emitter<Void> emitter, final RadioReleaseInterface radioReleaseInterface) {
+    protected void protectedRun(final Emitter<Void> emitter, final QueueReleaseInterface radioReleaseInterface) {
         connectionStateChangeListener.onConnectionStateChange(DISCONNECTING);
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 

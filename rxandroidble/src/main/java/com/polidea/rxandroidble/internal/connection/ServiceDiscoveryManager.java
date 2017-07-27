@@ -5,10 +5,10 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
@@ -24,7 +24,7 @@ import rx.subjects.SerializedSubject;
 @ConnectionScope
 class ServiceDiscoveryManager {
 
-    private final RxBleRadio rxBleRadio;
+    private final ConnectionOperationQueue operationQueue;
     private final BluetoothGatt bluetoothGatt;
     private final OperationsProvider operationProvider;
     private Observable<RxBleDeviceServices> deviceServicesObservable;
@@ -33,8 +33,8 @@ class ServiceDiscoveryManager {
     private boolean hasCachedResults = false;
 
     @Inject
-    ServiceDiscoveryManager(RxBleRadio rxBleRadio, BluetoothGatt bluetoothGatt, OperationsProvider operationProvider) {
-        this.rxBleRadio = rxBleRadio;
+    ServiceDiscoveryManager(ConnectionOperationQueue operationQueue, BluetoothGatt bluetoothGatt, OperationsProvider operationProvider) {
+        this.operationQueue = operationQueue;
         this.bluetoothGatt = bluetoothGatt;
         this.operationProvider = operationProvider;
         reset();
@@ -102,7 +102,7 @@ class ServiceDiscoveryManager {
             public Observable<RxBleDeviceServices> call(TimeoutConfiguration timeoutConf) {
                 final RxBleRadioOperationServicesDiscover operation = operationProvider
                         .provideServiceDiscoveryOperation(timeoutConf.timeout, timeoutConf.timeoutTimeUnit);
-                return rxBleRadio.queue(operation);
+                return operationQueue.queue(operation);
             }
         };
     }

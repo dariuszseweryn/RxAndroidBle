@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import java.util.concurrent.Semaphore
@@ -13,11 +13,11 @@ import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleRadioOperationScanLegacyTest extends Specification {
+public class OperationSynchronizerOperationScanLegacyTest extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
     UUIDUtil mockUUIDUtil = Mock UUIDUtil
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
     TestSubscriber testSubscriber = new TestSubscriber()
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
 

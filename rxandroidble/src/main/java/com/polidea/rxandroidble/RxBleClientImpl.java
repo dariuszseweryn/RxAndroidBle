@@ -6,13 +6,13 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.operations.Operation;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResultLegacy;
-import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanLegacy;
 import com.polidea.rxandroidble.internal.scan.ScanSetup;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
@@ -43,7 +43,7 @@ import rx.functions.Func1;
 
 class RxBleClientImpl extends RxBleClient {
 
-    private final RxBleRadio rxBleRadio;
+    private final ClientOperationQueue operationQueue;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final ScanSetupBuilder scanSetupBuilder;
@@ -59,7 +59,7 @@ class RxBleClientImpl extends RxBleClient {
 
     @Inject
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
-                    RxBleRadio rxBleRadio,
+                    ClientOperationQueue operationQueue,
                     Observable<BleAdapterState> adapterStateObservable,
                     UUIDUtil uuidUtil,
                     LocationServicesStatus locationServicesStatus,
@@ -71,7 +71,7 @@ class RxBleClientImpl extends RxBleClient {
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer) {
         this.uuidUtil = uuidUtil;
-        this.rxBleRadio = rxBleRadio;
+        this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleAdapterStateObservable = adapterStateObservable;
         this.locationServicesStatus = locationServicesStatus;
@@ -116,7 +116,7 @@ class RxBleClientImpl extends RxBleClient {
                 scanPreconditionVerifier.verify();
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
                 final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
-                return rxBleRadio.queue(scanOperation)
+                return operationQueue.queue(scanOperation)
                         .unsubscribeOn(bluetoothInteractionScheduler)
                         .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
                         .map(internalToExternalScanResultMapFunction)
@@ -178,7 +178,7 @@ class RxBleClientImpl extends RxBleClient {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
         final RxBleRadioOperationScanLegacy
                 scanOperation = new RxBleRadioOperationScanLegacy(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
-        return rxBleRadio.queue(scanOperation)
+        return operationQueue.queue(scanOperation)
                 .doOnUnsubscribe(new Action0() {
                     @Override
                     public void call() {

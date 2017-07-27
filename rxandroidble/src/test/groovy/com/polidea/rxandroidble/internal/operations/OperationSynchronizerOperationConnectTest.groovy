@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
-import com.polidea.rxandroidble.internal.RadioReleaseInterface
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat
@@ -16,7 +16,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class RxBleRadioOperationConnectTest extends Specification {
+public class OperationSynchronizerOperationConnectTest extends Specification {
 
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     BluetoothGatt mockGatt = Mock BluetoothGatt
@@ -27,7 +27,7 @@ public class RxBleRadioOperationConnectTest extends Specification {
     MockOperationTimeoutConfiguration timeoutConfiguration
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
     PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
-    RadioReleaseInterface mockRadioReleaseInterface = Mock RadioReleaseInterface
+    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
     ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     BluetoothGattProvider mockBluetoothGattProvider
     TestScheduler timeoutScheduler
