@@ -26,11 +26,12 @@ public class IllegalOperationChecker {
      * This method checks whether the supplied characteristic possesses properties supporting the requested kind of operation, specified by
      * the supplied bitmask.
      *
+     * Emits {@link BleIllegalOperationException} if there was no match between supported and necessary properties of characteristic and check has
+     * not been suppressed
+     *
      * @param characteristic   a {@link BluetoothGattCharacteristic} the operation is done on
      * @param neededProperties properties required for the operation to be successfully completed
      * @return {@link Completable} deferring execution of the check till subscription
-     * @throws BleIllegalOperationException if there was no match between supported and necessary properties of characteristic and check has
-     * not been suppressed
      */
     public Completable checkAnyPropertyMatches(final BluetoothGattCharacteristic characteristic,
                                                final @BluetoothGattCharacteristicProperty int neededProperties) {

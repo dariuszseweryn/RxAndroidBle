@@ -8,7 +8,7 @@ import android.content.Context;
  */
 public class ConnectionSetup {
     /**
-     * Marker related with
+     * Flag related with
      * {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
      * In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
      * auto connect flag set to true the connection will fail
