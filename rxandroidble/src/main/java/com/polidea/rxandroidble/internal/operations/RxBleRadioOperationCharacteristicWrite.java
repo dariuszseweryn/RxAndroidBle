@@ -28,7 +28,6 @@ public class RxBleRadioOperationCharacteristicWrite extends RxBleSingleGattRadio
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_WRITE, timeoutConfiguration);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.data = data;
-        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
     }
 
     @Override
