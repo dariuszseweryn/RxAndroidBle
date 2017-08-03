@@ -1,7 +1,8 @@
-package com.polidea.rxandroidble;
+package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
+import com.polidea.rxandroidble.RxBleDevice;
 
 /**
  * Container for various connection parameters.

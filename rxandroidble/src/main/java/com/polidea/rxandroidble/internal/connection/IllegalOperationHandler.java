@@ -4,7 +4,7 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.Nullable;
 
-import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
 
 /**

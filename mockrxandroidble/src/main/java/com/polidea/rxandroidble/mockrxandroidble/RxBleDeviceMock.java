@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
@@ -62,39 +61,6 @@ public class RxBleDeviceMock implements RxBleDevice {
     @Deprecated
     public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
         return establishConnection(autoConnect);
-    }
-
-    @Override
-    public Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
-        return Observable.defer(new Func0<Observable<RxBleConnection>>() {
-            @Override
-            public Observable<RxBleConnection> call() {
-                if (isConnected.compareAndSet(false, true)) {
-                    return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
-                            .doOnSubscribe(new Action0() {
-                                @Override
-                                public void call() {
-                                    connectionStateBehaviorSubject.onNext(CONNECTING);
-                                }
-                            })
-                            .doOnNext(new Action1<RxBleConnection>() {
-                                @Override
-                                public void call(RxBleConnection rxBleConnection) {
-                                    connectionStateBehaviorSubject.onNext(CONNECTED);
-                                }
-                            })
-                            .doOnUnsubscribe(new Action0() {
-                                @Override
-                                public void call() {
-                                    connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                                    isConnected.set(false);
-                                }
-                            });
-                } else {
-                    return Observable.error(new BleAlreadyConnectedException(macAddress));
-                }
-            }
-        });
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble.ConnectionSetup;
+import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
 import javax.inject.Named;

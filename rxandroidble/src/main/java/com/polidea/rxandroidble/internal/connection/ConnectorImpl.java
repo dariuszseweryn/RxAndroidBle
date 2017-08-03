@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.ConnectionSetup;
+import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;

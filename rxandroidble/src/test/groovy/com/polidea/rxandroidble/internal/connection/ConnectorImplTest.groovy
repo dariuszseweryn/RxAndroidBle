@@ -2,8 +2,7 @@ package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import android.content.Context
-import com.polidea.rxandroidble.ConnectionSetup
+import com.polidea.rxandroidble.internal.ConnectionSetup
 import com.polidea.rxandroidble.RxBleAdapterStateObservable
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
@@ -11,13 +10,9 @@ import com.polidea.rxandroidble.internal.RxBleRadio
 import com.polidea.rxandroidble.internal.operations.MockConnectionComponentBuilder
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
-import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration
-import com.polidea.rxandroidble.internal.util.BleConnectionCompat
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
 import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll

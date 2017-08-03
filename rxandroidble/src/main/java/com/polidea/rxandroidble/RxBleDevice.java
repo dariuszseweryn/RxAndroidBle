@@ -83,32 +83,7 @@ public interface RxBleDevice {
      * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
      *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
      */
-    @Deprecated
     Observable<RxBleConnection> establishConnection(boolean autoConnect);
-
-    /**
-     * Establishes connection with a given BLE device. {@link RxBleConnection} is a handle, used to process BLE operations with a connected
-     * device.
-     * <p>
-     * The connection is automatically disconnected (and released) when resulting Observable is unsubscribed.
-     * On the other hand when the connections is interrupted by the device or the system, the Observable will be unsubscribed as well
-     * following BleDisconnectedException or BleGattException emission.
-     * <p>
-     * During the disconnect process the library automatically handles order and requirement of device disconnect and gatt close operations.
-     *
-     * @param options Connection configuration container
-     * @return Observable emitting the connection.
-     * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
-     *                                         was already established or was in pending connection state. This occurs when the
-     *                                         connection was released as a part of expected behavior
-     *                                         (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
-     * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
-     *                                         The exception contains detailed explanation of the error source (type of operation) and
-     *                                         the code proxied from the Android system.
-     * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
-     *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
-     */
-    Observable<RxBleConnection> establishConnection(ConnectionSetup options);
 
     /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.

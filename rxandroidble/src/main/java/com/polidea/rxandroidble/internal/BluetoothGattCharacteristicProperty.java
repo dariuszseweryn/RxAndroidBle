@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble;
+package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.IntDef;

@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.exceptions;
 
 import android.support.annotation.RestrictTo;
 
-import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 
 import java.util.UUID;
 

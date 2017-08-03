@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
 
 import javax.inject.Inject;
