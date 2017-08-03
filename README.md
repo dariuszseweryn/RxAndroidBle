@@ -2,6 +2,7 @@
 <p align="center">
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
+
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
