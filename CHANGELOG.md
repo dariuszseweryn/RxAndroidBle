@@ -9,6 +9,7 @@ Version 1.4.0-SNAPSHOT
 * Added support for a custom Logger `RxBleLog.setLogger(Logger)` as alternative to Logcat (https://github.com/Polidea/RxAndroidBle/pull/248)
 * Added a warning log if user tries to use a characteristic against it's properties (https://github.com/Polidea/RxAndroidBle/issues/224)
 * _Changed Behaviour_ — `BluetoothGatt` is now called on a single background thread instead of the main thread (https://github.com/Polidea/RxAndroidBle/pull/255)
+* Decoupled command queues for different connections (https://github.com/Polidea/RxAndroidBle/issues/250)
 
 Version 1.3.3
 * Fixed scan filtering by name on API <21 (https://github.com/Polidea/RxAndroidBle/pull/243)
