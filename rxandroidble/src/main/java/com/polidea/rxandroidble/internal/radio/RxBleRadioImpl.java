@@ -19,7 +19,7 @@ public class RxBleRadioImpl implements RxBleRadio {
     private OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
 
     @Inject
-    public RxBleRadioImpl(@Named(ClientComponent.NamedSchedulers.RADIO_OPERATIONS) final Scheduler callbackScheduler) {
+    public RxBleRadioImpl(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) final Scheduler callbackScheduler) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -73,6 +73,7 @@ public class RxBleRadioImpl implements RxBleRadio {
         }, Emitter.BackpressureMode.NONE);
     }
 
+    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
     void log(String prefix, Operation rxBleRadioOperation) {
 
         if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {

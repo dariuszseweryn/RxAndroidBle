@@ -25,7 +25,7 @@ public class OperationsProviderImpl implements OperationsProvider {
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGatt bluetoothGatt;
     private final TimeoutConfiguration timeoutConfiguration;
-    private final Scheduler mainThreadScheduler;
+    private final Scheduler bluetoothInteractionScheduler;
     private final Scheduler timeoutScheduler;
     private final Provider<RxBleRadioOperationReadRssi> rssiReadOperationProvider;
 
@@ -34,13 +34,13 @@ public class OperationsProviderImpl implements OperationsProvider {
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
             Provider<RxBleRadioOperationReadRssi> rssiReadOperationProvider) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.timeoutConfiguration = timeoutConfiguration;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutScheduler = timeoutScheduler;
         this.rssiReadOperationProvider = rssiReadOperationProvider;
     }
@@ -54,7 +54,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
         return new RxBleRadioOperationCharacteristicLongWrite(bluetoothGatt,
                 rxBleGattCallback,
-                mainThreadScheduler,
+                bluetoothInteractionScheduler,
                 timeoutConfiguration,
                 bluetoothGattCharacteristic,
                 maxBatchSizeProvider,

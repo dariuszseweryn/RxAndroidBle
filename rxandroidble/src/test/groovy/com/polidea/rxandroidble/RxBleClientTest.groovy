@@ -9,7 +9,6 @@ import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConver
 import com.polidea.rxandroidble.internal.scan.ScanSetup
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder
 import com.polidea.rxandroidble.scan.ScanSettings
-import java.util.concurrent.Executors
 
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_CANNOT_START
 import static com.polidea.rxandroidble.exceptions.BleScanException.BLUETOOTH_DISABLED
@@ -89,8 +88,8 @@ class RxBleClientTest extends Specification {
                 mockScanSetupBuilder,
                 mockScanPreconditionVerifier,
                 mockMapper,
-                Executors.newSingleThreadExecutor(),
-                ImmediateScheduler.INSTANCE
+                ImmediateScheduler.INSTANCE,
+                Mock(ClientComponent.ClientComponentFinalizer)
         )
     }
 
