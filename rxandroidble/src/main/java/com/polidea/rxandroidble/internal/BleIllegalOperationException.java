@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.exceptions;
+package com.polidea.rxandroidble.internal;
 
 import android.support.annotation.RestrictTo;
 

@@ -1,9 +1,7 @@
 package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothGattCharacteristic
-import com.polidea.rxandroidble.exceptions.BleIllegalOperationException
-import com.polidea.rxandroidble.internal.connection.IllegalOperationChecker
-import com.polidea.rxandroidble.internal.connection.IllegalOperationHandler
+import com.polidea.rxandroidble.internal.BleIllegalOperationException
 import rx.observers.TestSubscriber
 import spock.lang.Specification
 

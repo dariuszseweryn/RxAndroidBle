@@ -18,7 +18,7 @@ public class ConnectionSetup {
     public final boolean autoConnect;
     /**
      * Flag describing the method of operation viability checking. If set to false,
-     * a {@link com.polidea.rxandroidble.exceptions.BleIllegalOperationException} will be thrown everytime properties of the characteristic
+     * a {@link BleIllegalOperationException} will be thrown everytime properties of the characteristic
      * don't match those required by the operation. If set to true, an event will be logged without interrupting the execution.
      */
     public final boolean suppressOperationCheck;
@@ -54,7 +54,7 @@ public class ConnectionSetup {
 
         /**
          * @param suppressOperationCheck Flag describing the method of operation viability checking. If set to false,
-         *                               a {@link com.polidea.rxandroidble.exceptions.BleIllegalOperationException} will be
+         *                               a {@link BleIllegalOperationException} will be
          *                               emitted every time properties of the characteristic don't match those required by the operation.
          *                               If set to true, an event will be logged without interrupting the execution.
          * @return this builder instance

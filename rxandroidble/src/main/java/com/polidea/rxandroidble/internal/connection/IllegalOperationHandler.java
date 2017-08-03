@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
-import com.polidea.rxandroidble.exceptions.BleIllegalOperationException;
+import com.polidea.rxandroidble.internal.BleIllegalOperationException;
 
 /**
  * Handler for {@link IllegalOperationChecker#checkAnyPropertyMatches(BluetoothGattCharacteristic, int)} response.
