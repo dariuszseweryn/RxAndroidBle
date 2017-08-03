@@ -11,6 +11,8 @@ import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi
 import com.polidea.rxandroidble.internal.util.ByteAssociation
+import rx.Completable
+
 import java.util.concurrent.TimeUnit
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.Observable
@@ -40,6 +42,7 @@ class RxBleConnectionTest extends Specification {
     def bluetoothGattMock = Mock BluetoothGatt
     def mockServiceDiscoveryManager = Mock ServiceDiscoveryManager
     def testScheduler = new TestScheduler()
+    def illegalOperationChecker = Mock IllegalOperationChecker
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
     def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
             testScheduler, { new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattMock, timeoutConfig) })
@@ -47,7 +50,7 @@ class RxBleConnectionTest extends Specification {
     def descriptorWriterMock = Mock DescriptorWriter
     def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
             notificationAndIndicationManagerMock, descriptorWriterMock, operationsProviderMock,
-            { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler
+            { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
     )
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
@@ -55,6 +58,7 @@ class RxBleConnectionTest extends Specification {
     def setup() {
         testSubscriber = new TestSubscriber()
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
+        illegalOperationChecker.checkAnyPropertyMatches(_, _) >> Completable.complete()
     }
 
     def "should proxy all calls to .discoverServices() to ServiceDiscoveryManager with proper timeouts"() {

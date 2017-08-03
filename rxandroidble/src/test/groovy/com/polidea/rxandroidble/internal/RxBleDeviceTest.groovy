@@ -28,6 +28,49 @@ public class RxBleDeviceTest extends Specification {
     @Shared BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay)
     TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
+    static List<EstablishConnectionCaller> establishConnectionCallers = []
+    static List<EstablishConnectionTestSetup> establishConnectionTestSetups = []
+
+    def setupSpec() {
+        // generating all possible calls to RxBleDevice.establishConnection()
+        establishConnectionCallers = [
+                new EstablishConnectionCaller(
+                        "0",
+                        { RxBleDevice d, ConnectionSetup cs -> d.establishConnection(null, cs.autoConnect) }
+                ),
+                new EstablishConnectionCaller(
+                        "1",
+                        { RxBleDevice d, ConnectionSetup cs -> d.establishConnection(cs.autoConnect) }
+                ),
+                new EstablishConnectionCaller(
+                        "2",
+                        { RxBleDevice d, ConnectionSetup cs -> d.establishConnection(cs) }
+                ),
+        ]
+
+        // generating all possible ConnectionSetups which will be used by the above
+        List<ConnectionSetup> connectionSetups = []
+        [
+                [true, false], // autoConnect
+                [true, false]  // suppressIllegalOperationException
+        ].eachCombination {
+            connectionSetups << new ConnectionSetup.Builder()
+                    .setAutoConnect(it[0])
+                    .setSuppressIllegalOperationCheck(it[1])
+                    .build()
+        }
+
+        // generating all possible calls to RxBleDevice.establishConnection using all possible ConnectionSetups
+        [
+                establishConnectionCallers,
+                connectionSetups
+        ].eachCombination {
+            establishConnectionTestSetups << new EstablishConnectionTestSetup(
+                    it[0],
+                    it[1]
+            )
+        }
+    }
 
     def setup() {
         mockConnector.prepareConnection(_) >> mockConnectorEstablishConnectionPublishSubject
@@ -70,16 +113,27 @@ public class RxBleDeviceTest extends Specification {
     }
 
     @Unroll
-    def "establishConnection() should call RxBleConnection.Connector.prepareConnection() #id"() {
+    def "establishConnection() should call RxBleConnection.Connector.prepareConnection() => autoConnect:#autoConnectValue #establishConnectionCaller"() {
+
+        given:
+        ConnectionSetup connectionSetup = new ConnectionSetup.Builder()
+            .setAutoConnect(autoConnectValue)
+            .setSuppressIllegalOperationCheck(suppressIllegalOperationCheckValue)
+            .build()
+        def connectionObservable = establishConnectionCaller.connectionStartClosure.call(rxBleDevice, connectionSetup)
 
         when:
-        rxBleDevice.establishConnection(theAutoConnectValue).subscribe()
+        connectionObservable.subscribe()
 
         then:
-        1 * mockConnector.prepareConnection(theAutoConnectValue) >> Observable.empty()
+        1 * mockConnector.prepareConnection({ ConnectionSetup cs -> cs.autoConnect == autoConnectValue }) >> Observable.empty()
 
         where:
-        theAutoConnectValue << [true, false]
+        [ autoConnectValue, suppressIllegalOperationCheckValue, establishConnectionCaller] << [
+                [true, false],
+                [true, false],
+                establishConnectionCallers
+        ].combinations()
     }
 
     @Unroll
@@ -117,56 +171,124 @@ public class RxBleDeviceTest extends Specification {
         DISCONNECTING | CONNECTED
     }
 
-    def "should emit connection and stay subscribed after it was established"() {
+    @Unroll
+    def "should emit connection and stay subscribed after it was established => call:#establishConnectionSetup"() {
 
         given:
         def testSubscriber = new TestSubscriber()
+        def connectionObservable = establishConnectionSetup.establishConnection(rxBleDevice)
 
         when:
-        rxStartConnecting().subscribe(testSubscriber)
+        connectionObservable.subscribe(testSubscriber)
         notifyConnectionWasEstablished()
 
         then:
         testSubscriber.assertSubscribed()
         testSubscriber.assertValueCount 1
+
+        where:
+        establishConnectionSetup << establishConnectionTestSetups
     }
 
-    def "should emit error if already connected"() {
+    @Unroll
+    def "should emit BleAlreadyConnectedException if already connected => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1\""() {
 
         given:
         def testSubscriber = new TestSubscriber()
-        rxStartConnecting().subscribe()
+        def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
+        def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
+        connectionObs0.subscribe()
         notifyConnectionWasEstablished()
 
         when:
-        rxStartConnecting().subscribe(testSubscriber)
+        connectionObs1.subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleAlreadyConnectedException
+
+        where:
+        [establishConnectionSetup0, establishConnectionSetup1] << [
+                establishConnectionTestSetups,
+                establishConnectionTestSetups
+        ].combinations()
     }
 
-    def "should create new connection if previous connection was established and released before second subscriber has subscribed"() {
+    @Unroll
+    def "should emit BleAlreadyConnectedException if there is already one subscriber to .establishConnection() => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
+
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber()
+        def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
+        def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
+        connectionObs0.subscribe()
+
+        when:
+        connectionObs1.subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError(BleAlreadyConnectedException)
+
+        where:
+        [establishConnectionSetup0, establishConnectionSetup1] << [
+                establishConnectionTestSetups,
+                establishConnectionTestSetups
+        ].combinations()
+    }
+
+    @Unroll
+    def "should create new connection if previous connection was established and released before second subscriber has subscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
         def firstSubscriber = new TestSubscriber()
         def secondSubscriber = new TestSubscriber()
-        def subscription = rxStartConnecting().subscribe(firstSubscriber)
+        def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
+        def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
+        def subscription = connectionObs0.subscribe(firstSubscriber)
         notifyConnectionWasEstablished()
         subscription.unsubscribe()
 
         when:
-        rxBleDevice.establishConnection(false).subscribe(secondSubscriber)
+        connectionObs1.subscribe(secondSubscriber)
 
         then:
         firstSubscriber.assertValueCount 1
         firstSubscriber.assertReceivedOnNextNot(secondSubscriber.onNextEvents)
+
+        where:
+        [establishConnectionSetup0, establishConnectionSetup1] << [
+                establishConnectionTestSetups,
+                establishConnectionTestSetups
+        ].combinations()
     }
 
-    def "should unsubscribe from connection if it was dropped"() {
+    @Unroll
+    def "should not emit BleAlreadyConnectedException if there is already was subscriber to .establishConnection() but it unsubscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
+
+        given:
+        TestSubscriber testSubscriber = new TestSubscriber()
+        def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
+        def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
+        connectionObs0.subscribe().unsubscribe()
+
+        when:
+        connectionObs1.subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertNoErrors()
+
+        where:
+        [establishConnectionSetup0, establishConnectionSetup1] << [
+                establishConnectionTestSetups,
+                establishConnectionTestSetups
+        ].combinations()
+    }
+
+    @Unroll
+    def "should unsubscribe from connection if it was dropped => call:#establishConnectionSetup"() {
 
         given:
         def connectionTestSubscriber = new TestSubscriber()
-        rxStartConnecting().subscribe(connectionTestSubscriber)
+        establishConnectionSetup.establishConnection(rxBleDevice).subscribe(connectionTestSubscriber)
         notifyConnectionWasEstablished()
 
         when:
@@ -174,6 +296,9 @@ public class RxBleDeviceTest extends Specification {
 
         then:
         connectionTestSubscriber.isUnsubscribed()
+
+        where:
+        establishConnectionSetup << establishConnectionTestSetups
     }
 
     @Unroll
@@ -209,5 +334,49 @@ public class RxBleDeviceTest extends Specification {
 
     public void dropConnection() {
         mockConnectorEstablishConnectionPublishSubject.onError(new BleGattException(mockBluetoothGatt, BleGattOperationType.CONNECTION_STATE))
+    }
+
+    private class EstablishConnectionCaller {
+
+        final String description
+
+        public final connectionStartClosure
+
+        EstablishConnectionCaller(String description, Closure connectionStartClosure) {
+            this.description = description
+            this.connectionStartClosure = connectionStartClosure
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "method='" + description + '\'' +
+                    '}';
+        }
+    }
+
+    private class EstablishConnectionTestSetup {
+
+        final EstablishConnectionCaller establishConnectionCaller;
+
+        final ConnectionSetup connectionSetup;
+
+        EstablishConnectionTestSetup(EstablishConnectionCaller establishConnectionCaller, ConnectionSetup connectionSetup) {
+            this.establishConnectionCaller = establishConnectionCaller
+            this.connectionSetup = connectionSetup
+        }
+
+        Observable<RxBleConnection> establishConnection(RxBleDevice d) {
+            return establishConnectionCaller.connectionStartClosure.call(d, connectionSetup)
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "method=" + establishConnectionCaller.description +
+                    ", autoConnect=" + connectionSetup.autoConnect +
+                    ", suppressIllegalOperationCheck=" + connectionSetup.suppressOperationCheck +
+                    '}';
+        }
     }
 }
