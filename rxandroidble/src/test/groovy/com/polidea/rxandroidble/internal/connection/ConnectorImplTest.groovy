@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.internal.connection
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleAdapterStateObservable
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
@@ -23,33 +24,6 @@ import spock.lang.Unroll
 
 public class ConnectorImplTest extends Specification {
 
-    static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
-        public boolean isAutoConnect
-        private final RxBleRadioOperationConnect mockConnection
-
-        MockConnectBuilder(RxBleRadioOperationConnect mockConnection,
-                           BluetoothDevice bluetoothDevice,
-                           BleConnectionCompat connectionCompat,
-                           RxBleGattCallback rxBleGattCallback,
-                           TimeoutConfiguration connectionTimeoutConfiguration,
-                           BluetoothGattProvider bluetoothGattProvider,
-                           ConnectionStateChangeListener connectionStateChangeListener) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
-            this.mockConnection = mockConnection
-        }
-
-        @Override
-        RxBleRadioOperationConnect.Builder setAutoConnect(boolean autoConnect) {
-            this.isAutoConnect = autoConnect
-            return super.setAutoConnect(autoConnect)
-        }
-
-        @Override
-        RxBleRadioOperationConnect build() {
-            return mockConnection
-        }
-    }
-
     RxBleRadio mockRadio = Mock RxBleRadio
     BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
@@ -60,21 +34,18 @@ public class ConnectorImplTest extends Specification {
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
     BluetoothGatt mockGatt = Mock BluetoothGatt
     ConnectionComponent.Builder mockConnectionComponentBuilder
-    MockConnectBuilder mockConnectBuilder
+    ConnectionSetup defaultConnectionSetup = new ConnectionSetup.Builder().build()
 
     ConnectorImpl objectUnderTest
 
     def setup() {
         mockRadio.queue(mockDisconnect) >> Observable.just(mockGatt)
         mockCallback.observeDisconnect() >> Observable.never()
-        mockConnectBuilder = new MockConnectBuilder(mockConnect, mockDevice, Mock(BleConnectionCompat),
-                mockCallback, new MockOperationTimeoutConfiguration(Schedulers.immediate()), Mock(BluetoothGattProvider),
-                Mock(ConnectionStateChangeListener))
         mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
                 Mock(RxBleConnection),
                 mockCallback,
                 mockDisconnect,
-                this.mockConnectBuilder
+                mockConnect
         )
 
         objectUnderTest = new ConnectorImpl(
@@ -87,33 +58,13 @@ public class ConnectorImplTest extends Specification {
 
     }
 
-    @Unroll
-    def "prepareConnection() should pass arguments to RxBleConnectionConnectorOperationsProvider #id"() {
-
-        given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
-
-        when:
-        objectUnderTest.prepareConnection(autoConnectValue).subscribe(testSubscriber)
-
-        then:
-        mockConnectBuilder.isAutoConnect == autoConnectValue
-
-        where:
-        contextObject | autoConnectValue
-        null          | true
-        null          | false
-        Mock(Context) | true
-        Mock(Context) | false
-    }
-
     def "subscribing prepareConnection() should schedule provided RxBleRadioOperationConnect on RxBleRadio"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
         1 * mockRadio.queue(mockConnect)
@@ -126,7 +77,7 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
         1 * mockRadio.queue(mockDisconnect) >> Observable.just(null)
@@ -139,7 +90,7 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
         1 * mockRadio.queue(mockDisconnect) >> Observable.just(null)
@@ -152,7 +103,7 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(mockConnect) >> Observable.empty()
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
         testSubscriber.unsubscribe()
 
         then:
@@ -166,7 +117,7 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(mockConnect) >> Observable.just(mockGatt)
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount(1)
@@ -181,7 +132,7 @@ public class ConnectorImplTest extends Specification {
         mockRadio.queue(_) >> Observable.just(mockGatt)
 
         when:
-        objectUnderTest.prepareConnection(true).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(testError)
@@ -193,9 +144,10 @@ public class ConnectorImplTest extends Specification {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> false
+        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
 
         when:
-        objectUnderTest.prepareConnection(autoConnect).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleDisconnectedException)
@@ -213,7 +165,8 @@ public class ConnectorImplTest extends Specification {
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
         mockRadio.queue(_) >> Observable.never()
-        objectUnderTest.prepareConnection(autoConnect).subscribe(testSubscriber)
+        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
+        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
 
         when:
         adapterStatePublishSubject.onNext(state)
@@ -237,7 +190,8 @@ public class ConnectorImplTest extends Specification {
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
         mockRadio.queue(_) >> Observable.never()
-        objectUnderTest.prepareConnection(autoConnect).subscribe(testSubscriber)
+        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
+        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
 
         when:
         adapterStatePublishSubject.onNext(RxBleAdapterStateObservable.BleAdapterState.STATE_ON)

@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
@@ -38,6 +39,11 @@ class RxBleDeviceProviderTest extends Specification {
 
         @Override
         Observable<RxBleConnection> establishConnection(boolean autoConnect) {
+            throw UnsupportedOperationException()
+        }
+
+        @Override
+        Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
             throw UnsupportedOperationException()
         }
 

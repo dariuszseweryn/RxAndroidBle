@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.jakewharton.rxrelay.BehaviorRelay;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble.internal.connection.Connector;
@@ -54,12 +55,21 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(final boolean autoConnect) {
+        ConnectionSetup options = new ConnectionSetup.Builder()
+                .setAutoConnect(autoConnect)
+                .setSuppressIllegalOperationCheck(true)
+                .build();
+        return establishConnection(options);
+    }
+
+    @Override
+    public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(autoConnect)
+                    return connector.prepareConnection(options)
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {

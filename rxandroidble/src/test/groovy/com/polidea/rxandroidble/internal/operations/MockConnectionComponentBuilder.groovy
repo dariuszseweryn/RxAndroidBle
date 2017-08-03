@@ -2,22 +2,28 @@ package com.polidea.rxandroidble.internal.operations
 
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.ConnectionComponent
+import com.polidea.rxandroidble.internal.connection.ConnectionModule
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 
 public class MockConnectionComponentBuilder implements ConnectionComponent.Builder {
     private final RxBleConnection rxBleConnection
     private final RxBleGattCallback rxBleGattCallback
     private final RxBleRadioOperationDisconnect rxBleRadioOperationDisconnect
-    private final RxBleRadioOperationConnect.Builder rxBleRadioOperationConnectBuilder
+    private final RxBleRadioOperationConnect rxBleRadioOperationConnect
 
     MockConnectionComponentBuilder(RxBleConnection rxBleConnection,
                                    RxBleGattCallback rxBleGattCallback,
                                    RxBleRadioOperationDisconnect rxBleRadioOperationDisconnect,
-                                   RxBleRadioOperationConnect.Builder rxBleRadioOperationConnectBuilder) {
-        this.rxBleRadioOperationConnectBuilder = rxBleRadioOperationConnectBuilder
+                                   RxBleRadioOperationConnect rxBleRadioOperationConnect) {
+        this.rxBleRadioOperationConnect = rxBleRadioOperationConnect
         this.rxBleConnection = rxBleConnection
         this.rxBleGattCallback = rxBleGattCallback
         this.rxBleRadioOperationDisconnect = rxBleRadioOperationDisconnect
+    }
+
+    @Override
+    ConnectionComponent.Builder connectionModule(ConnectionModule connectionModule) {
+        return this
     }
 
     @Override
@@ -25,8 +31,8 @@ public class MockConnectionComponentBuilder implements ConnectionComponent.Build
         return new ConnectionComponent() {
 
             @Override
-            RxBleRadioOperationConnect.Builder connectOperationBuilder() {
-                return rxBleRadioOperationConnectBuilder
+            RxBleRadioOperationConnect connectOperation() {
+                return rxBleRadioOperationConnect
             }
 
             @Override
