@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.connection
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
 import com.polidea.rxandroidble.internal.operations.OperationsProvider
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover
 import java.util.concurrent.TimeUnit
@@ -13,7 +13,7 @@ import rx.subjects.PublishSubject
 import spock.lang.Specification
 
 class ServiceDiscoveryManagerTest extends Specification {
-    def mockRadio = Mock ClientOperationQueue
+    def mockRadio = Mock ConnectionOperationQueue
     def mockBluetoothGatt = Mock BluetoothGatt
     def mockServiceDiscoveryOperationProvider = Mock OperationsProvider
     def TestSubscriber testSubscriber = new TestSubscriber()

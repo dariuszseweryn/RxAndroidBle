@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble
 
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
 import com.polidea.rxandroidble.internal.operations.Operation
 import rx.Emitter
 import rx.Observable
@@ -8,7 +9,7 @@ import rx.Subscription
 import rx.functions.Action1
 import rx.functions.Cancellable
 
-class DummyOperationQueue implements ClientOperationQueue {
+class DummyOperationQueue implements ConnectionOperationQueue {
     public final MockSemaphore semaphore = new MockSemaphore()
 
     @Override
@@ -35,5 +36,10 @@ class DummyOperationQueue implements ClientOperationQueue {
                 },
                 Emitter.BackpressureMode.NONE
         )
+    }
+
+    @Override
+    void terminate(BleDisconnectedException disconnectedException) {
+        // do nothing
     }
 }

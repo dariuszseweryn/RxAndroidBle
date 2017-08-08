@@ -19,33 +19,6 @@ import spock.lang.Unroll
 
 public class ConnectorImplTest extends Specification {
 
-    static class MockConnectBuilder extends RxBleRadioOperationConnect.Builder {
-        public boolean isAutoConnect
-        private final RxBleRadioOperationConnect mockConnection
-
-        MockConnectBuilder(RxBleRadioOperationConnect mockConnection,
-                           BluetoothDevice bluetoothDevice,
-                           BleConnectionCompat connectionCompat,
-                           RxBleGattCallback rxBleGattCallback,
-                           TimeoutConfiguration connectionTimeoutConfiguration,
-                           BluetoothGattProvider bluetoothGattProvider,
-                           ConnectionStateChangeListener connectionStateChangeListener) {
-            super(bluetoothDevice, connectionCompat, rxBleGattCallback, connectionTimeoutConfiguration, bluetoothGattProvider, connectionStateChangeListener)
-            this.mockConnection = mockConnection
-        }
-
-        @Override
-        RxBleRadioOperationConnect.Builder setAutoConnect(boolean autoConnect) {
-            this.isAutoConnect = autoConnect
-            return super.setAutoConnect(autoConnect)
-        }
-
-        @Override
-        RxBleRadioOperationConnect build() {
-            return mockConnection
-        }
-    }
-
     ClientOperationQueue mockRadio = Mock ClientOperationQueue
     BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
