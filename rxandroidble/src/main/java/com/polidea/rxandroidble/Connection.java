@@ -2,17 +2,20 @@ package com.polidea.rxandroidble;
 
 
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import com.polidea.rxandroidble.custom_operation.CustomOperation;
+import com.polidea.rxandroidble.custom_operation.CustomOperationCompletable;
+import com.polidea.rxandroidble.custom_operation.CustomOperationObservable;
+import com.polidea.rxandroidble.custom_operation.CustomOperationSingle;
 import com.polidea.rxandroidble.setup.NotificationSetup;
-import com.polidea.rxandroidble.setup.DiscoverySetup;
 import com.polidea.rxandroidble.setup.WriteSetup;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -56,9 +59,7 @@ public interface Connection {
 
     }
 
-    Single<RxBleDeviceServices> discoverServices();
-
-    Single<RxBleDeviceServices> discoverServices(@NonNull DiscoverySetup discoverySetup);
+    Single<List<BluetoothGattService>> discoverServices();
 
     Single<byte[]> readCharacteristic(@NonNull Characteristic characteristic);
 
@@ -96,5 +97,9 @@ public interface Connection {
 //    @RequiresApi(api = Build.VERSION_CODES.O)
 //    Observable<ConnectionParams> observeConnectionParamsChanges();
 
-    <T> T queue(@NonNull CustomOperation<T> operation);
+    <T> Observable<T> queue(@NonNull CustomOperationObservable<T> operation);
+
+    <T> Single<T> queue(@NonNull CustomOperationSingle<T> operation);
+
+    Completable queue(@NonNull CustomOperationCompletable operation);
 }
