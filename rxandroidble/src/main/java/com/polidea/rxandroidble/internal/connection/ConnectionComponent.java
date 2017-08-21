@@ -2,9 +2,7 @@ package com.polidea.rxandroidble.internal.connection;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 
-import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import dagger.Subcomponent;
 
 @ConnectionScope
@@ -34,14 +32,11 @@ public interface ConnectionComponent {
     RxBleRadioOperationConnect connectOperation();
 
     @ConnectionScope
-    RxBleRadioOperationDisconnect disconnectOperation();
+    DisconnectAction disconnectAction();
 
     @ConnectionScope
     RxBleConnection rxBleConnection();
 
     @ConnectionScope
     RxBleGattCallback gattCallback();
-
-    @ConnectionScope
-    ConnectionOperationQueue connectionOperationQueue();
 }

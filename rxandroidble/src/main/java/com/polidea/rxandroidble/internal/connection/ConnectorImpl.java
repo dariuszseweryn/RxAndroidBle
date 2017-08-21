@@ -6,20 +6,15 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
-import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
 import javax.inject.Inject;
 
 import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.functions.Actions;
 import rx.functions.Func0;
 import rx.functions.Func1;
 
@@ -28,7 +23,7 @@ import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 public class ConnectorImpl implements Connector {
 
     private final BluetoothDevice bluetoothDevice;
-    private final ClientOperationQueue operationQueue;
+    private final ClientOperationQueue clientOperationQueue;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> adapterStateObservable;
     private final ConnectionComponent.Builder connectionComponentBuilder;
@@ -36,12 +31,12 @@ public class ConnectorImpl implements Connector {
     @Inject
     public ConnectorImpl(
             BluetoothDevice bluetoothDevice,
-            ClientOperationQueue operationQueue,
+            ClientOperationQueue clientOperationQueue,
             RxBleAdapterWrapper rxBleAdapterWrapper,
             Observable<BleAdapterState> adapterStateObservable,
             ConnectionComponent.Builder connectionComponentBuilder) {
         this.bluetoothDevice = bluetoothDevice;
-        this.operationQueue = operationQueue;
+        this.clientOperationQueue = clientOperationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.adapterStateObservable = adapterStateObservable;
         this.connectionComponentBuilder = connectionComponentBuilder;
@@ -72,29 +67,14 @@ public class ConnectorImpl implements Connector {
                                 );
                             }
                         })
-                        .doOnUnsubscribe(disconnect(
-                                connectionComponent.disconnectOperation(),
-                                connectionComponent.connectionOperationQueue()
-                        ));
-            }
-
-            @NonNull
-            private Action0 disconnect(final RxBleRadioOperationDisconnect operationDisconnect,
-                                       final ConnectionOperationQueue connectionOperationQueue) {
-                return new Action0() {
-                    @Override
-                    public void call() {
-                        connectionOperationQueue.terminate(new BleDisconnectedException(bluetoothDevice.getAddress()));
-                        enqueueDisconnectOperation(operationDisconnect);
-                    }
-                };
+                        .doOnUnsubscribe(connectionComponent.disconnectAction());
             }
 
             @NonNull
             private Observable<BluetoothGatt> enqueueConnectOperation(RxBleRadioOperationConnect operationConnect) {
                 return Observable
                         .merge(
-                                operationQueue.queue(operationConnect),
+                                clientOperationQueue.queue(operationConnect),
                                 adapterNotUsableObservable()
                                         .flatMap(new Func1<BleAdapterState, Observable<BluetoothGatt>>() {
                                             @Override
@@ -116,14 +96,5 @@ public class ConnectorImpl implements Connector {
                         return !bleAdapterState.isUsable();
                     }
                 });
-    }
-
-    private Subscription enqueueDisconnectOperation(RxBleRadioOperationDisconnect operationDisconnect) {
-        return operationQueue
-                .queue(operationDisconnect)
-                .subscribe(
-                        Actions.empty(),
-                        Actions.<Throwable>toAction1(Actions.empty())
-                );
     }
 }
