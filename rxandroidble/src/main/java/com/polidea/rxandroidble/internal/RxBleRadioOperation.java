@@ -24,8 +24,8 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
 
     /**
      * A function that returns this operation as an Observable.
-     * When the returned observable will be subscribed this operation will be scheduled
-     * to be run on the main thread in future. When appropriate the call to run() will be executed.
+     * When the returned observable is subscribed, this operation will be scheduled
+     * to be run on the main thread. When appropriate the call to run() will be executed.
      * This operation is expected to call releaseRadio() at appropriate point after the run() was called.
      */
     @Override
@@ -49,14 +49,15 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
     }
 
     /**
-     * This method will be overridden in a concrete operation implementations and will contain specific operation logic.
+     * This method must be overridden in a concrete operation implementations and should contain specific operation logic.
      *
      * Implementations should call emitter methods to inform the outside world about emissions of `onNext()`/`onError()`/`onCompleted()`.
      * Implementations must call {@link RadioReleaseInterface#release()} at appropriate point to release the radio for any other operations
      * that are queued.
      *
-     * If the emitter has been canceled it is response of the operation to call {@link RadioReleaseInterface#release()} when possible
-     * subsequent operations will be able to start {@link android.bluetooth.BluetoothGatt} functions successfully. Check usage of
+     * If the emitter is cancelled, a responsibility of the operation is to call {@link RadioReleaseInterface#release()}. The radio
+     * should be released as soon as the operation decides it won't interact with the {@link android.bluetooth.BluetoothGatt} anymore and
+     * subsequent operations will be able to start. Check usage of
      * {@link com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper} for convenience.
      *
      * @param emitter the emitter to be called in order to inform the caller about the output of a particular run of the operation
@@ -65,7 +66,7 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
     protected abstract void protectedRun(Emitter<T> emitter, RadioReleaseInterface radioReleaseInterface) throws Throwable;
 
     /**
-     * This function will be overriden in concrete operation implementations to provide an exception with needed context
+     * This function will be overridden in concrete operation implementations to provide an exception with needed context
      *
      * @param deadObjectException the cause for the exception
      */

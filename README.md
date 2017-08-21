@@ -27,7 +27,7 @@ RxBleClient rxBleClient = RxBleClient.create(context);
 ```
 
 ### Turning the bluetooth on / off
-The library does _not_ handle managing the state of the Bluetooth Adapter.
+The library does _not_ handle managing the state of the BluetoothAdapter.
 <br>Direct managing of the state is not recommended as it violates the application user's right to manage the state of their phone. See `Javadoc` of [BluetoothAdapter.enable()](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#enable()) method.
 <br>It is the user's responsibility to inform why the application needs Bluetooth to be turned on and for ask the application's user consent.
 <br>It is possible to show a native activity for turning the Bluetooth on by calling:
@@ -288,8 +288,8 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined |
 | LongWriteOperationBuilder | build() | Single | true |
 
-\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
-\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device — in this situation there is no point to monitor other states as the adapter does not appear during runtime.
+\* this `Observable` when unsubscribed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
+\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
@@ -350,11 +350,7 @@ When submitting code, please make every effort to follow existing conventions an
 * Dariusz Seweryn (dariusz.seweryn@polidea.com)
 * Paweł Urban (pawel.urban@polidea.com)
 
-## Contributors, thank you!
-* Michał Zieliński (michal.zielinski@polidea.com)
-* Fracturedpsyche (https://github.com/fracturedpsyche)
-* Andrea Pregnolato (https://github.com/pregno)
-* Matthieu Vachon (https://github.com/maoueh) - custom operations, yay!
+## [Contributors](https://github.com/Polidea/RxAndroidBle/graphs/contributors), thank you!
 
 ## License
 
