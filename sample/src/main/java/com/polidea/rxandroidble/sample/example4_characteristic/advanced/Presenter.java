@@ -19,8 +19,7 @@ import rx.Observable;
  */
 final class Presenter {
 
-    @SuppressWarnings("WeakerAccess")
-    static UUID clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private static UUID clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private Presenter() {
         // not instantiable
@@ -59,9 +58,7 @@ final class Presenter {
                                                     : readClicks // else use the readClicks observable from the activity
                                                     // every click is requesting a read operation from the peripheral
                                                     .flatMap(ignoredClick -> connection.readCharacteristic(characteristic))
-                                                    .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
-                                                    // if this observable will complete (i.e. error happens) then repeat from the click
-                                                    .compose(repeatAfterCompleted());
+                                                    .compose(transformToPresenterEvent(Type.READ)); // convenience method to wrap reads
 
                                     final Observable<PresenterEvent> writeObservable = // basically the same logic as in the reads
                                             !hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)
@@ -92,8 +89,8 @@ final class Presenter {
                                             : enableNotifyClicks.take(1).map(aBoolean -> Boolean.FALSE);
                                     final Observable<Boolean> enableIndicateClicksObservable =
                                             !hasProperty(characteristic, PROPERTY_INDICATE)
-                                            ? Observable.never()
-                                            : enableIndicateClicks.take(1).map(aBoolean -> Boolean.TRUE);
+                                                    ? Observable.never()
+                                                    : enableIndicateClicks.take(1).map(aBoolean -> Boolean.TRUE);
 
                                     // checking which notify or indicate will be clicked first the other is unsubscribed on click
                                     final Observable<PresenterEvent> notifyAndIndicateObservable = Observable.amb(
@@ -146,8 +143,7 @@ final class Presenter {
                 .compose(repeatAfterCompleted()); // if the the above will complete - start from the beginning
     }
 
-    @SuppressWarnings("WeakerAccess")
-    static boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
+    private static boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
         return (characteristic.getProperties() & property) > 0;
     }
 
@@ -157,24 +153,23 @@ final class Presenter {
      * emission and afterEmission will be used to do the same after the first emission
      *
      * @param beforeEmission the observable that will control completing the returned observable before it's first emission
-     * @param afterEmission the observable that will control completing the returned observable after it's first emission
-     * @param <T> the type of the passed observable
+     * @param afterEmission  the observable that will control completing the returned observable after it's first emission
+     * @param <T>            the type of the passed observable
      * @return the observable
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
-        //noinspection unchecked -> this would be not needed in case of inline reified kotlin function
-        return observable -> observable.publish(publishedObservable ->
-                Observable.amb(
-                        publishedObservable,
-                        ((Observable<T>) beforeEmission.take(1).ignoreElements())
-                )
-                        .takeUntil(((Observable<?>) publishedObservable
-                                .take(1)
-                                .toCompletable()
-                                .andThen(afterEmission))
-                        )
+    private static <T> Observable.Transformer<T, T> takeUntil(Observable<?> beforeEmission, Observable<?> afterEmission) {
+        return observable -> observable.publish(publishedObservable -> {
+                    final Observable<?> afterEmissionTakeUntil = publishedObservable
+                            .take(1)
+                            .toCompletable()
+                            .andThen(afterEmission);
+                    return Observable.amb(
+                            publishedObservable,
+                            publishedObservable.ignoreElements().takeUntil(beforeEmission)
+                    )
+                            .takeUntil(afterEmissionTakeUntil);
+                }
         );
     }
 
@@ -185,9 +180,8 @@ final class Presenter {
      * @param type the type to wrap with
      * @return transformer that will emit an observable that will be emitting ResultEvent or ErrorEvent with a given type
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static Observable.Transformer<byte[], PresenterEvent> transformToPresenterEvent(Type type) {
+    private static Observable.Transformer<byte[], PresenterEvent> transformToPresenterEvent(Type type) {
         return observable -> observable.map(writtenBytes -> ((PresenterEvent) new ResultEvent(writtenBytes, type)))
                 .onErrorReturn(throwable -> new ErrorEvent(throwable, type));
     }
@@ -199,9 +193,8 @@ final class Presenter {
      * @param type the type to wrap with
      * @return the transformer
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static Observable.Transformer<Observable<byte[]>, PresenterEvent> transformToNotificationPresenterEvent(Type type) {
+    private static Observable.Transformer<Observable<byte[]>, PresenterEvent> transformToNotificationPresenterEvent(Type type) {
         return observableObservable -> observableObservable
                 .flatMap(observable -> observable
                         .map(bytes -> ((PresenterEvent) new ResultEvent(bytes, type)))
@@ -215,9 +208,8 @@ final class Presenter {
      * @param <T> the type of the transformed observable
      * @return transformer that will emit observable that will never complete (source will be subscribed again)
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
-    static <T> Observable.Transformer<T, T> repeatAfterCompleted() {
+    private static <T> Observable.Transformer<T, T> repeatAfterCompleted() {
         return observable -> observable.repeatWhen(completedNotification -> completedNotification);
     }
 }
