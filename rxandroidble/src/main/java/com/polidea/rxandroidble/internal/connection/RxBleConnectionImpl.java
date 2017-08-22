@@ -21,7 +21,7 @@ import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
-import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
+import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -325,22 +325,22 @@ public class RxBleConnectionImpl implements RxBleConnection {
         return operationQueue.queue(new RxBleRadioOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
-            protected void protectedRun(final Emitter<T> emitter, final QueueReleaseInterface radioReleaseInterface) throws Throwable {
+            protected void protectedRun(final Emitter<T> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {
                 final Observable<T> operationObservable;
 
                 try {
                     operationObservable = operation.asObservable(bluetoothGatt, gattCallback, callbackScheduler);
                 } catch (Throwable throwable) {
-                    radioReleaseInterface.release();
+                    queueReleaseInterface.release();
                     throw throwable;
                 }
 
                 if (operationObservable == null) {
-                    radioReleaseInterface.release();
+                    queueReleaseInterface.release();
                     throw new IllegalArgumentException("The custom operation asObservable method must return a non-null observable");
                 }
 
-                final RadioReleasingEmitterWrapper<T> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
+                final QueueReleasingEmitterWrapper<T> emitterWrapper = new QueueReleasingEmitterWrapper<>(emitter, queueReleaseInterface);
                 operationObservable
                         .doOnTerminate(clearNativeCallbackReferenceAction())
                         .subscribe(emitterWrapper);

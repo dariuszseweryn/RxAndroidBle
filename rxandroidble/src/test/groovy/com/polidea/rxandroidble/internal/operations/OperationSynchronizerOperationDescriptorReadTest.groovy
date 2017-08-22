@@ -32,7 +32,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
 
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorReadSubject = PublishSubject.create()
 
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
     RxBleRadioOperationDescriptorRead objectUnderTest
 
@@ -45,7 +45,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
     def "should call BluetoothGatt.readDescriptor() only once on single read when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockGatt.readDescriptor(mockDescriptor) >> true
@@ -57,7 +57,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -69,7 +69,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         givenDescriptorReadFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -87,7 +87,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         shouldEmitErrorOnDescriptorRead(testException)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -100,7 +100,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         onDescriptorReadSubject.onNext(ByteAssociation.create(mockDescriptor, new byte[0]))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -116,7 +116,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: dataFromDescriptor])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue ByteAssociation.create(mockDescriptor, dataFromDescriptor)
@@ -132,7 +132,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
                 [descriptor: mockDescriptor, value: secondValueFromDescriptor])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -147,7 +147,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         givenDescriptorWithUUIDContainData([descriptor: differentDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -163,7 +163,7 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
                 [descriptor: mockDescriptor, value: secondValueFromDescriptor])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -172,46 +172,46 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
         testSubscriber.assertValue ByteAssociation.create(mockDescriptor, secondValueFromDescriptor)
     }
 
-    def "should release RadioReleaseInterface after successful read"() {
+    def "should release QueueReleaseInterface after successful read"() {
 
         given:
         givenDescriptorWithUUIDContainData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when read failed to start"() {
+    def "should release QueueReleaseInterface when read failed to start"() {
 
         given:
         givenDescriptorReadFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when read failed"() {
+    def "should release QueueReleaseInterface when read failed"() {
         given:
         shouldEmitErrorOnDescriptorRead(new Throwable("test"))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     def "should timeout if RxBleGattCallback.onDescriptorRead() won't trigger in 30 seconds"() {
 
         given:
         givenDescriptorReadStartsOk()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

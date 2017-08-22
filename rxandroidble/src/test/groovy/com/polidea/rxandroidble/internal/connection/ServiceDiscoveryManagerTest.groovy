@@ -13,12 +13,12 @@ import rx.subjects.PublishSubject
 import spock.lang.Specification
 
 class ServiceDiscoveryManagerTest extends Specification {
-    def mockRadio = Mock ConnectionOperationQueue
+    def mockQueue = Mock ConnectionOperationQueue
     def mockBluetoothGatt = Mock BluetoothGatt
     def mockServiceDiscoveryOperationProvider = Mock OperationsProvider
     def TestSubscriber testSubscriber = new TestSubscriber()
     def TestSubscriber testSubscriber1 = new TestSubscriber()
-    ServiceDiscoveryManager objectUnderTest = new ServiceDiscoveryManager(mockRadio, mockBluetoothGatt, mockServiceDiscoveryOperationProvider)
+    ServiceDiscoveryManager objectUnderTest = new ServiceDiscoveryManager(mockQueue, mockBluetoothGatt, mockServiceDiscoveryOperationProvider)
 
     def "should return services instantly if they were already discovered and are in BluetoothGatt cache"() {
 
@@ -32,7 +32,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         testSubscriber.assertAnyOnNext { RxBleDeviceServices services -> services.getBluetoothGattServices() == servicesList }
         testSubscriber.assertCompleted()
         0 * mockServiceDiscoveryOperationProvider.provideServiceDiscoveryOperation(_, _)
-        0 * mockRadio.queue(_)
+        0 * mockQueue.queue(_)
     }
 
     def "should try to discover services if there are no services cached within BluetoothGatt"() {
@@ -48,7 +48,7 @@ class ServiceDiscoveryManagerTest extends Specification {
 
         then:
         1 * mockServiceDiscoveryOperationProvider.provideServiceDiscoveryOperation(timeout, timeoutTimeUnit) >> mockedOperation
-        1 * mockRadio.queue(mockedOperation) >> Observable.empty()
+        1 * mockQueue.queue(mockedOperation) >> Observable.empty()
     }
 
     def "should proxy services from RxBleRadio.queue()"() {
@@ -57,7 +57,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         bluetoothGattContainsNoServices()
         operationProviderProvidesOperation()
         def mockedDiscoveredServices = Mock(RxBleDeviceServices)
-        mockRadio.queue(_) >> Observable.just(mockedDiscoveredServices)
+        mockQueue.queue(_) >> Observable.just(mockedDiscoveredServices)
 
         when:
         objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).subscribe(testSubscriber)
@@ -72,7 +72,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         bluetoothGattContainsNoServices()
         operationProviderProvidesOperation()
         Throwable testThrowable = new Throwable("test")
-        mockRadio.queue(_) >> Observable.error(testThrowable)
+        mockQueue.queue(_) >> Observable.error(testThrowable)
 
         when:
         objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).subscribe(testSubscriber)
@@ -86,7 +86,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         given:
         bluetoothGattContainsNoServices()
         operationProviderProvidesOperation()
-        mockRadio.queue(_) >>> [Observable.error(new Throwable()), Observable.just(Mock(RxBleDeviceServices))]
+        mockQueue.queue(_) >>> [Observable.error(new Throwable()), Observable.just(Mock(RxBleDeviceServices))]
 
         when:
         objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).subscribe(testSubscriber)
@@ -115,7 +115,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         objectUnderTest.getDiscoverServicesObservable(10, TimeUnit.MINUTES).subscribe(testSubscriber1)
 
         then:
-        1 * mockRadio.queue(_) >> resultSubject
+        1 * mockQueue.queue(_) >> resultSubject
         testSubscriber.assertNotCompleted()
         testSubscriber1.assertNotCompleted()
 
@@ -138,14 +138,14 @@ class ServiceDiscoveryManagerTest extends Specification {
         objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).subscribe(testSubscriber)
 
         then:
-        1 * mockRadio.queue(_) >> Observable.just(result)
+        1 * mockQueue.queue(_) >> Observable.just(result)
         testSubscriber.assertValue(result)
 
         when:
         objectUnderTest.getDiscoverServicesObservable(10, TimeUnit.MINUTES).subscribe(testSubscriber1)
 
         then:
-        0 * mockRadio.queue(_)
+        0 * mockQueue.queue(_)
         testSubscriber1.assertValue(result)
     }
 

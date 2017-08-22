@@ -32,11 +32,11 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     }
 
     @Override
-    void protectedRun(Emitter<Object> emitter, QueueReleaseInterface radioReleaseInterface) {
+    void protectedRun(Emitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
         executionCount++
         lastExecutedOnThread = Thread.currentThread().getName()
         closure?.call(emitter)
-        radioReleaseInterface.release()
+        queueReleaseInterface.release()
         behaviorSubject.onNext(this)
     }
 

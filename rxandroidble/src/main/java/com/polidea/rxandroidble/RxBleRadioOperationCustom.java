@@ -16,7 +16,7 @@ import rx.Scheduler;
 public interface RxBleRadioOperationCustom<T> {
 
     /**
-     * Return an observable that implement a custom radio operation using low-level Android BLE API.
+     * Return an observable that implement a custom operation using low-level Android BLE API.
      * <p>
      * The {@link Observable} returned by this method will be subscribed to by the {@link ConnectionOperationQueue}
      * when it determines that the custom operation should be the next to be run.
@@ -39,7 +39,7 @@ public interface RxBleRadioOperationCustom<T> {
      *
      * @param bluetoothGatt     The Android API GATT instance
      * @param rxBleGattCallback The internal Rx ready bluetooth gatt callback to be notified of GATT operations
-     * @param scheduler         The RxBleRadio scheduler used to asObservable operation
+     * @param scheduler         The ClientOperationQueue scheduler used to asObservable operation
      * @throws Throwable Any exception that your custom operation might throw
      */
     @NonNull

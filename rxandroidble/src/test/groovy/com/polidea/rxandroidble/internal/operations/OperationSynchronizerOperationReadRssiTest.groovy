@@ -16,7 +16,7 @@ import spock.lang.Specification
 
 public class OperationSynchronizerOperationReadRssiTest extends Specification {
 
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -38,7 +38,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
     def "should call BluetoothGatt.readRemoteRssi() exactly once when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.readRemoteRssi() >> true
@@ -50,7 +50,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
         mockBluetoothGatt.readRemoteRssi() >> false
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -61,14 +61,14 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
         }
 
         and:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should emit and error if RxBleGattCallback will emit error on getOnRssiRead() and release radio"() {
+    def "should emit and error if RxBleGattCallback will emit error on getOnRssiRead() and release queue"() {
 
         given:
         mockBluetoothGatt.readRemoteRssi() >> true
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def testException = new Exception("test")
 
         when:
@@ -78,7 +78,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
         testSubscriber.assertError(testException)
 
         and:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     def "should emit exactly one value when RxBleGattCallback.getOnRssiRead() emits value"() {
@@ -96,7 +96,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
         testSubscriber.assertNoValues()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -108,7 +108,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
         testSubscriber.assertValue(rssi2)
 
         and:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
 
         when:
         onReadRemoteRssiPublishSubject.onNext(rssi3)
@@ -121,7 +121,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
 
         given:
         mockBluetoothGatt.readRemoteRssi() >> true
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

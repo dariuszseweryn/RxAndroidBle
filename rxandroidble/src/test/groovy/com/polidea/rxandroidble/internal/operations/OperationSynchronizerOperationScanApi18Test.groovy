@@ -19,7 +19,7 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
     TestSubscriber testSubscriber = new TestSubscriber()
 
@@ -43,7 +43,7 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
         mockAdapterWrapper.startLegacyLeScan(_) >> true
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -53,7 +53,7 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> false
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         objectUnderTest.run()
@@ -66,7 +66,7 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
 
         given:
         AtomicReference<BluetoothAdapter.LeScanCallback> capturedLeScanCallbackRef = captureScanCallback()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def scannedDevice = Mock(BluetoothDevice)
         def scannedBytes = new byte[5]
         def scannedRssi = 5
@@ -89,7 +89,7 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
         def capturedLeScanCallbackRef = captureScanCallback()
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_, _, _) >> mockInternalScanResult
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onLeScan(Mock(BluetoothDevice), 0, new byte[0])
@@ -105,16 +105,16 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
     }
 
     @Unroll
-    def "should release radio after run()"() {
+    def "should release queue after run()"() {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> startScanResult
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        (1.._) * mockRadioReleaseInterface.release()
+        (1.._) * mockQueueReleaseInterface.release()
 
         where:
         startScanResult << [true, false]

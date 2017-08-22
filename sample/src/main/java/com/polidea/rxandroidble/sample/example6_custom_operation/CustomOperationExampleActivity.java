@@ -143,7 +143,7 @@ public class CustomOperationExampleActivity extends RxAppCompatActivity {
 
         /**
          * Reads a characteristic 5 times with a 250ms delay between each. This is easily achieve without
-         * a custom operation. The gain here is that only one operation goes into the RxBleRadio queue
+         * a custom operation. The gain here is that only one operation goes into the operation queue
          * eliminating the overhead of going on & out of the operation queue.
          */
         @NonNull

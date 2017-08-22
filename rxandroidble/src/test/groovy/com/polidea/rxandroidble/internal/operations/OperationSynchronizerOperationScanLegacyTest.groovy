@@ -17,7 +17,7 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
     UUIDUtil mockUUIDUtil = Mock UUIDUtil
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     TestSubscriber testSubscriber = new TestSubscriber()
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
 
@@ -34,7 +34,7 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
     def "should call RxBleAdapterWrapper.startScan() when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockAdapterWrapper.startLegacyLeScan(_) >> true
@@ -46,7 +46,7 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
         mockAdapterWrapper.startLegacyLeScan(_) >> true
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -58,7 +58,7 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
         mockAdapterWrapper.startLegacyLeScan(_) >> false
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleScanException)
@@ -73,7 +73,7 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
             true
         }) >> true
 
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def scannedDevice = mockBluetoothDevice
         def scannedBytes = new byte[5]
         def scannedRssi = 5
@@ -90,16 +90,16 @@ public class OperationSynchronizerOperationScanLegacyTest extends Specification 
     }
 
     @Unroll
-    def "should release radio after run()"() {
+    def "should release queue after run()"() {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> startScanResult
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        (1.._) * mockRadioReleaseInterface.release()
+        (1.._) * mockQueueReleaseInterface.release()
 
         where:
         startScanResult << [true, false]

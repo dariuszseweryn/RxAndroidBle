@@ -27,7 +27,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     MockOperationTimeoutConfiguration timeoutConfiguration
     PublishSubject<RxBleConnection.RxBleConnectionState> onConnectionStateSubject = PublishSubject.create()
     PublishSubject observeDisconnectPublishSubject = PublishSubject.create()
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     BluetoothGattProvider mockBluetoothGattProvider
     TestScheduler timeoutScheduler
@@ -59,7 +59,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "asObservable() should not emit onNext before connection is established"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectingConnectionState()
@@ -71,7 +71,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "asObservable() should emit onNext after connection is established"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
@@ -83,7 +83,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "asObservable() should emit onNext with BluetoothGatt after connection is established"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
@@ -97,7 +97,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "should complete after successful connection"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
@@ -106,46 +106,46 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
         testSubscriber.assertCompleted()
     }
 
-    def "should release RadioReleaseInterface after successful connection"() {
+    def "should release QueueReleaseInterface after successful connection"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectedConnectionState()
 
         then:
-        (1.._) * mockRadioReleaseInterface.release()
+        (1.._) * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when connection failed"() {
+    def "should release QueueReleaseInterface when connection failed"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         emitConnectionError(new Throwable("test"))
 
         then:
-        (1.._) * mockRadioReleaseInterface.release()
+        (1.._) * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when unsubscribed before connection is established"() {
+    def "should release QueueReleaseInterface when unsubscribed before connection is established"() {
 
         given:
-        def asObservableSubscription = objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        def asObservableSubscription = objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         asObservableSubscription.unsubscribe()
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     def "should emit BluetoothGattCallbackTimeoutException with a valid mac address on CallbackTimeout"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         mockBluetoothGattProvider.getBluetoothGatt() >> mockGatt
 
         when:
@@ -160,7 +160,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "should call connectionStateChangedAction with CONNECTING when run"() {
 
         given:
-        def observable = objectUnderTest.run(mockRadioReleaseInterface)
+        def observable = objectUnderTest.run(mockQueueReleaseInterface)
 
         when:
         observable.subscribe()
@@ -172,7 +172,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     def "should call connectionStateChangedAction with CONNECTED when connected"() {
 
         given:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe()
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe()
 
         when:
         emitConnectedConnectionState()

@@ -108,10 +108,10 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue {
     }
 
     @RestrictTo(RestrictTo.Scope.SUBCLASSES)
-    void log(String prefix, Operation rxBleRadioOperation) {
+    void log(String prefix, Operation operation) {
 
         if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
-            RxBleLog.d("%8s %s(%d)", prefix, rxBleRadioOperation.getClass().getSimpleName(), System.identityHashCode(rxBleRadioOperation));
+            RxBleLog.d("%8s %s(%d)", prefix, operation.getClass().getSimpleName(), System.identityHashCode(operation));
         }
     }
 }

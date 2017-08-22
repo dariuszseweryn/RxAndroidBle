@@ -31,7 +31,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
 
     BluetoothDevice mockDevice = Mock BluetoothDevice
     String mockMacAddress = "mockMackAddress"
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     BluetoothManager mockBluetoothManager = Mock BluetoothManager
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
@@ -49,47 +49,47 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
         prepareObjectUnderTest()
     }
 
-    def "should complete if AtomicReference<BluetoothGatt> contains null and then release the radio"() {
+    def "should complete if AtomicReference<BluetoothGatt> contains null and then release the queue"() {
 
         given:
         testWithGattProviderReturning(null)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertCompleted()
 
         then:
         mockBluetoothGattProvider.getBluetoothGatt() >> null
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should call BluetoothGatt.close() if BluetoothGatt is disconnected at the time of running and then release the radio"() {
+    def "should call BluetoothGatt.close() if BluetoothGatt is disconnected at the time of running and then release the queue"() {
 
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_DISCONNECTED
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.close()
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     @Unroll
-    def "should call BluetoothGatt.disconnect() if BluetoothGatt is not disconnected at the time of running and then BluetoothGatt.close() when RxBleGattCallback.getOnConnectionStateChange() will emit RxBleConnection.RxBleConnectionState.DISCONNECTED and then release the radio"() {
+    def "should call BluetoothGatt.disconnect() if BluetoothGatt is not disconnected at the time of running and then BluetoothGatt.close() when RxBleGattCallback.getOnConnectionStateChange() will emit RxBleConnection.RxBleConnectionState.DISCONNECTED and then release the queue"() {
 
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> initialState
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.disconnect()
@@ -101,7 +101,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
         closeCalled * mockBluetoothGatt.close()
 
         then:
-        closeCalled * mockRadioReleaseInterface.release()
+        closeCalled * mockQueueReleaseInterface.release()
 
         where:
         initialState        | nextState     | closeCalled
@@ -123,7 +123,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
 
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
-        def observable = objectUnderTest.run(mockRadioReleaseInterface)
+        def observable = objectUnderTest.run(mockQueueReleaseInterface)
 
         when:
         observable.subscribe()
@@ -137,7 +137,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_CONNECTED
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         connectionStatePublishSubject.onNext(DISCONNECTED)

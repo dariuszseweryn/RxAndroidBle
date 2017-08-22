@@ -28,7 +28,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
     def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     RxBleRadioOperationDescriptorWrite objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
     int bluetoothGattCharacteristicDefaultWriteType = 99
@@ -44,7 +44,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
     def "should call only once BluetoothGattDescriptor.setValue() before calling BluetoothGatt.writeDescriptor() on single write when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockDescriptor.setValue(testData) >> true
@@ -59,7 +59,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -71,7 +71,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -89,7 +89,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         shouldEmitErrorOnDescriptorWrite(testException)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -102,7 +102,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         onDescriptorWriteSubject.onNext(new ByteAssociation<BluetoothGattDescriptor>(mockDescriptor, new byte[0]))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -119,7 +119,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -136,7 +136,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -151,7 +151,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         givenDescriptorWithUUIDWritesData([descriptor: differentDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -168,7 +168,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -177,39 +177,39 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release RadioReleaseInterface after successful write"() {
+    def "should release QueueReleaseInterface after successful write"() {
 
         given:
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when write failed to start"() {
+    def "should release QueueReleaseInterface when write failed to start"() {
 
         given:
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when write failed"() {
+    def "should release QueueReleaseInterface when write failed"() {
         given:
         shouldEmitErrorOnDescriptorWrite(new Throwable("test"))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     @Unroll
@@ -219,7 +219,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
         mockGatt.writeDescriptor(mockDescriptor) >> writeStartSuccess
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockParentCharacteristic.setWriteType(bluetoothGattCharacteristicDefaultWriteType)
@@ -235,7 +235,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
 
         given:
         givenDescriptorWriteStartsOk()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

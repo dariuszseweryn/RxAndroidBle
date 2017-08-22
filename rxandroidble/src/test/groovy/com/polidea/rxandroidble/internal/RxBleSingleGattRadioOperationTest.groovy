@@ -20,7 +20,7 @@ import spock.lang.Unroll
 
 public class RxBleSingleGattRadioOperationTest extends Specification {
 
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -139,13 +139,13 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
         testSubscriber.unsubscribe()
 
         then:
-        0 * mockRadioReleaseInterface.release()
+        0 * mockQueueReleaseInterface.release()
 
         when:
         callbackResult.call(callbackPublishSubject)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
 
         where:
         callbackResult << [
@@ -168,7 +168,7 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
     }
 
     private subscribed() {
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
     }
 
     private static class TestSingleGattRadioOperation extends RxBleSingleGattRadioOperation<Object> {

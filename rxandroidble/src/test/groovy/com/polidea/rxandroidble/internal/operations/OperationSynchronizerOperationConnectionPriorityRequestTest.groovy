@@ -17,7 +17,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
     TimeUnit delayUnit = TimeUnit.MILLISECONDS
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     TimeoutConfiguration mockTimeoutConfiguration = new MockOperationTimeoutConfiguration(
@@ -32,7 +32,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
 
     def "should call BluetoothGatt.requestConnectionPriority(int) exactly once when run()"() {
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.requestConnectionPriority(_) >> true
@@ -41,7 +41,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
     def "should complete after specified time if BluetoothGatt.requestConnectionPriority() will return true"() {
         given:
         mockBluetoothGatt.requestConnectionPriority(_) >> true
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(completedDelay + 500, delayUnit)
@@ -55,7 +55,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
         mockBluetoothGatt.requestConnectionPriority(_) >> false
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException

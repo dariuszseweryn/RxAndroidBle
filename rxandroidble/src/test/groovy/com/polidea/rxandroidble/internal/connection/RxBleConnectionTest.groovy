@@ -37,7 +37,7 @@ class RxBleConnectionTest extends Specification {
     public static final byte[] NOT_EMPTY_DATA = [1, 2, 3] as byte[]
     public static final byte[] OTHER_DATA = [2, 2, 3] as byte[]
     public static final int EXPECTED_RSSI_VALUE = 5
-    def flatRadio = new DummyOperationQueue()
+    def dummyQueue = new DummyOperationQueue()
     def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
     def mockServiceDiscoveryManager = Mock ServiceDiscoveryManager
@@ -48,9 +48,9 @@ class RxBleConnectionTest extends Specification {
             testScheduler, { new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
-    def objectUnderTest = new RxBleConnectionImpl(flatRadio, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
+    def objectUnderTest = new RxBleConnectionImpl(dummyQueue, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
             notificationAndIndicationManagerMock, descriptorWriterMock, operationsProviderMock,
-            { new LongWriteOperationBuilderImpl(flatRadio, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
+            { new LongWriteOperationBuilderImpl(dummyQueue, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
     )
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
@@ -317,7 +317,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        flatRadio.semaphore.isReleased()
+        dummyQueue.semaphore.isReleased()
     }
 
     def "should pass error if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
@@ -383,7 +383,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        flatRadio.semaphore.isReleased()
+        dummyQueue.semaphore.isReleased()
     }
 
     def "should pass completion to subscriber when observable returned from RxBleRadioOperationCustom.asObservable() will complete"() {
@@ -405,7 +405,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        flatRadio.semaphore.isReleased()
+        dummyQueue.semaphore.isReleased()
     }
 
     def "should throw illegal argument exception if RxBleRadioOperationCustom.asObservable() return null"() {
@@ -427,7 +427,7 @@ class RxBleConnectionTest extends Specification {
         objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
 
         then:
-        flatRadio.semaphore.isReleased()
+        dummyQueue.semaphore.isReleased()
     }
 
     @Unroll
@@ -442,13 +442,13 @@ class RxBleConnectionTest extends Specification {
         testSubscriber.unsubscribe()
 
         then:
-        !flatRadio.semaphore.isReleased()
+        !dummyQueue.semaphore.isReleased()
 
         when:
         callback.call(publishSubject)
 
         then:
-        flatRadio.semaphore.isReleased()
+        dummyQueue.semaphore.isReleased()
 
         where:
         callback << [

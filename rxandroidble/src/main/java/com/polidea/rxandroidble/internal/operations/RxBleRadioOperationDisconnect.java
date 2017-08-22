@@ -61,13 +61,13 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     @Override
-    protected void protectedRun(final Emitter<Void> emitter, final QueueReleaseInterface radioReleaseInterface) {
+    protected void protectedRun(final Emitter<Void> emitter, final QueueReleaseInterface queueReleaseInterface) {
         connectionStateChangeListener.onConnectionStateChange(DISCONNECTING);
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
         if (bluetoothGatt == null) {
             RxBleLog.w("Disconnect operation has been executed but GATT instance was null.");
-            radioReleaseInterface.release();
+            queueReleaseInterface.release();
             emitter.onCompleted();
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
@@ -80,14 +80,14 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
 
                         @Override
                         public void onError(Throwable throwable) {
-                            radioReleaseInterface.release();
+                            queueReleaseInterface.release();
                             emitter.onError(throwable);
                         }
 
                         @Override
                         public void onCompleted() {
                             connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
-                            radioReleaseInterface.release();
+                            queueReleaseInterface.release();
                             emitter.onCompleted();
                         }
                     });
@@ -99,7 +99,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     }
 
     /**
-     * TODO: [DS] 09.02.2016 This operation makes the radio to block until disconnection - maybe it would be better if it would not?
+     * TODO: [DS] 09.02.2016 This operation makes the queue to block until disconnection - maybe it would be better if it would not?
      * What would happen then if a consecutive call to BluetoothDevice.connectGatt() would be made? What BluetoothGatt would be returned?
      * 1. A completely fresh BluetoothGatt - would work with the current flow
      * 2. The same BluetoothGatt - in this situation we should probably cancel the pending BluetoothGatt.close() call

@@ -55,7 +55,7 @@ public class ConnectorImplTest extends Specification {
 
     }
 
-    def "subscribing prepareConnection() should schedule provided RxBleRadioOperationConnect on RxBleRadio"() {
+    def "subscribing prepareConnection() should schedule provided RxBleRadioOperationConnect on ClientOperationQueue"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -67,7 +67,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockConnect)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on RxBleRadio if RxBleRadio.queue(RxBleRadioOperation) emits error"() {
+    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on ClientOperationQueue if ClientOperationQueue.queue(RxBleRadioOperation) emits error"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -80,7 +80,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on RxBleRadio only once if RxBleRadio.queue(RxBleRadioOperation) emits error and subscriber will unsubscribe"() {
+    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on ClientOperationQueue only once if ClientOperationQueue.queue(RxBleRadioOperation) emits error and subscriber will unsubscribe"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -93,7 +93,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on RxBleRadio when subscriber will unsubscribe"() {
+    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on operation queue when subscriber will unsubscribe"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true

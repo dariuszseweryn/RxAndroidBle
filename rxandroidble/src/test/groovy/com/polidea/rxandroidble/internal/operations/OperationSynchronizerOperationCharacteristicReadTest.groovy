@@ -24,7 +24,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     TestSubscriber<byte[]> testSubscriber = new TestSubscriber()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicReadSubject = PublishSubject.create()
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     TestScheduler testScheduler = new TestScheduler()
     RxBleRadioOperationCharacteristicRead objectUnderTest
 
@@ -38,7 +38,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
     def "should call BluetoothGatt.readCharacteristic() only once on single read when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockGatt.readCharacteristic(mockCharacteristic) >> true
@@ -50,7 +50,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -62,7 +62,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         givenCharacteristicReadFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -80,7 +80,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         shouldEmitErrorOnCharacteristicRead(testException)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -93,7 +93,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         onCharacteristicReadSubject.onNext(new ByteAssociation(mockCharacteristicUUID, new byte[0]))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -109,7 +109,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: dataFromCharacteristic])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -125,7 +125,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
                 [uuid: mockCharacteristicUUID, value: secondValueFromCharacteristic])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -140,7 +140,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         givenCharacteristicWithUUIDContainData([uuid: differentCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -156,7 +156,7 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
                 [uuid: mockCharacteristicUUID, value: secondValueFromCharacteristic])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -165,46 +165,46 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release RadioReleaseInterface after successful read"() {
+    def "should release QueueReleaseInterface after successful read"() {
 
         given:
         givenCharacteristicWithUUIDContainData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when read failed to start"() {
+    def "should release QueueReleaseInterface when read failed to start"() {
 
         given:
         givenCharacteristicReadFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when read failed"() {
+    def "should release QueueReleaseInterface when read failed"() {
         given:
         shouldEmitErrorOnCharacteristicRead(new Throwable("test"))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     def "should timeout if RxBleGattCallback.onCharacteristicRead() won't trigger in 30 seconds"() {
 
         given:
         givenCharacteristicReadStartsOk()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

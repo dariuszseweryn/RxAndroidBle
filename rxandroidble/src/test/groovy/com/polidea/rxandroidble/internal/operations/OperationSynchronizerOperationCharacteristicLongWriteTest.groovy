@@ -40,7 +40,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
     TestScheduler timeoutScheduler = new TestScheduler()
     ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     RxBleRadioOperationCharacteristicLongWrite objectUnderTest
     @Shared Exception testException = new Exception("testException")
 
@@ -59,7 +59,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, writtenBytes)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockCharacteristic.setValue(writtenBytes) >> true
@@ -80,7 +80,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(maxBatchSize, writtenBytes)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(expectedBatchesCount)
 
         then:
@@ -107,7 +107,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(3)
 
         then:
@@ -123,7 +123,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(failingWriteIndex)
 
         then:
@@ -147,7 +147,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
@@ -170,7 +170,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         0 * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         (1.._) * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
@@ -184,7 +184,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(1)
 
         then:
@@ -204,7 +204,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(1)
 
         then:
@@ -223,7 +223,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         1 * mockCharacteristic.setValue(_) >> true
     }
 
-    def "should release RadioReleaseInterface after successful write"() {
+    def "should release QueueReleaseInterface after successful write"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -231,15 +231,15 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(3)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     @Unroll
-    def "should release RadioReleaseInterface when write failed to start"() {
+    def "should release QueueReleaseInterface when write failed to start"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -247,18 +247,18 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWrites(failingWriteIndex)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
     }
 
     @Unroll
-    def "should release RadioReleaseInterface when write failed"() {
+    def "should release QueueReleaseInterface when write failed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
@@ -266,11 +266,11 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
 
         where:
         failingWriteIndex << [0, 1, 2]
@@ -283,7 +283,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         givenWillWriteNextBatchImmediatelyAfterPrevious()
         givenCharacteristicWriteOkButEventuallyStalls(failingWriteIndex)
         prepareObjectUnderTest(20, byteArray(60))
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         advanceTimeForWritesToComplete(failingWriteIndex)
@@ -315,7 +315,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         prepareObjectUnderTest(maxBatchSize, byteArray(20))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(IllegalArgumentException)
@@ -325,14 +325,14 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
     }
 
     @Unroll
-    def "should release radio after next batch if unsubscribed"() {
+    def "should release queue after next batch if unsubscribed"() {
 
         given:
         givenWillWriteNextBatchImmediatelyAfterPrevious()
         prepareObjectUnderTest(1, byteArray(20))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
@@ -341,7 +341,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         testSubscriber.unsubscribe()
 
         then:
-        0 * mockRadioReleaseInterface.release()
+        0 * mockQueueReleaseInterface.release()
 
         when:
         batchWriteCallback.call(onCharacteristicWriteSubject, mockCharacteristic)
@@ -350,7 +350,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
         0 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
 
         and:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
 
         where:
         batchWriteCallback << [

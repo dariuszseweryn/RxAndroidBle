@@ -34,12 +34,12 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                          * status. Below RadioSynchronizationInterface is passed to the RxBleRadioOperation and is meant to be released
                          * at appropriate time when the next operation should be able to start successfully.
                          */
-                        final QueueSemaphore radioSemaphore = new QueueSemaphore();
+                        final QueueSemaphore clientOperationSemaphore = new QueueSemaphore();
 
-                        Subscription subscription = entry.run(radioSemaphore, callbackScheduler);
+                        Subscription subscription = entry.run(clientOperationSemaphore, callbackScheduler);
                         entry.emitter.setSubscription(subscription);
 
-                        radioSemaphore.awaitRelease();
+                        clientOperationSemaphore.awaitRelease();
                         log("FINISHED", operation);
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing client operation queue");
@@ -73,10 +73,10 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
     }
 
     @RestrictTo(RestrictTo.Scope.SUBCLASSES)
-    void log(String prefix, Operation rxBleRadioOperation) {
+    void log(String prefix, Operation operation) {
 
         if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
-            RxBleLog.d("%8s %s(%d)", prefix, rxBleRadioOperation.getClass().getSimpleName(), System.identityHashCode(rxBleRadioOperation));
+            RxBleLog.d("%8s %s(%d)", prefix, operation.getClass().getSimpleName(), System.identityHashCode(operation));
         }
     }
 }

@@ -25,7 +25,7 @@ abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TY
     }
 
     @Override
-    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, QueueReleaseInterface radioReleaseInterface) {
+    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, QueueReleaseInterface queueReleaseInterface) {
 
         final SCAN_CALLBACK_TYPE scanCallback = createScanCallback(emitter);
 
@@ -46,7 +46,7 @@ abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TY
             RxBleLog.e(throwable, "Error while calling the start scan function");
             emitter.onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
         } finally {
-            radioReleaseInterface.release();
+            queueReleaseInterface.release();
         }
     }
 

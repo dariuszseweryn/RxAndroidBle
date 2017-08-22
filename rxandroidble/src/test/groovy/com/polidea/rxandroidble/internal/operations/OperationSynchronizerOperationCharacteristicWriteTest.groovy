@@ -26,7 +26,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
     def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     RxBleRadioOperationCharacteristicWrite objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
 
@@ -39,7 +39,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
     def "should call only once BluetoothGattCharacteristic.setValue() before calling BluetoothGatt.writeCharacteristic() on single write when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockCharacteristic.setValue(testData) >> true
@@ -54,7 +54,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         givenCharacteristicWithUUIDWritesData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -66,7 +66,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         givenCharacteristicWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -84,7 +84,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         shouldEmitErrorOnCharacteristicWrite(testException)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError testException
@@ -97,7 +97,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         onCharacteristicWriteSubject.onNext(new ByteAssociation(mockCharacteristicUUID, new byte[0]))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoValues()
@@ -114,7 +114,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -131,7 +131,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -146,7 +146,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         givenCharacteristicWithUUIDWritesData([uuid: differentCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 0
@@ -163,7 +163,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValueCount 1
@@ -172,46 +172,46 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
         testSubscriber.assertValue secondValueFromCharacteristic
     }
 
-    def "should release RadioReleaseInterface after successful write"() {
+    def "should release QueueReleaseInterface after successful write"() {
 
         given:
         givenCharacteristicWithUUIDWritesData([uuid: mockCharacteristicUUID, value: []])
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when write failed to start"() {
+    def "should release QueueReleaseInterface when write failed to start"() {
 
         given:
         givenCharacteristicWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should release RadioReleaseInterface when write failed"() {
+    def "should release QueueReleaseInterface when write failed"() {
         given:
         shouldEmitErrorOnCharacteristicWrite(new Throwable("test"))
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
     def "should timeout if RxBleGattCallback.onCharacteristicWrite() won't trigger in 30 seconds"() {
 
         given:
         givenCharacteristicWriteStartsOk()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

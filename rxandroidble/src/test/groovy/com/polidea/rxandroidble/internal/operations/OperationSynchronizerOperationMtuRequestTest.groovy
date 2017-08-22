@@ -18,7 +18,7 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
 
     static long timeout = 10
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
@@ -35,7 +35,7 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
     def "should call BluetoothGatt.requestMtu(int) exactly once when run()"() {
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockBluetoothGatt.requestMtu(mtu) >> true
@@ -47,7 +47,7 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
         mockBluetoothGatt.requestMtu(72) >> false
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -58,14 +58,14 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
         }
 
         and:
-        1 * mockRadioReleaseInterface.release()
+        1 * mockQueueReleaseInterface.release()
     }
 
-    def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnMtuChanged() and release radio"() {
+    def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnMtuChanged() and release queue"() {
 
         given:
         mockBluetoothGatt.requestMtu(72) >> true
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def testException = new Exception("test")
 
         when:
@@ -75,14 +75,14 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
         testSubscriber.assertError(testException)
 
         and:
-        (1.._) * mockRadioReleaseInterface.release() // technically it's not an error to call it more than once
+        (1.._) * mockQueueReleaseInterface.release() // technically it's not an error to call it more than once
     }
 
     def "should timeout if will not response after 10 seconds "() {
 
         given:
         mockBluetoothGatt.requestMtu(72) >> true
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)

@@ -16,12 +16,12 @@ import java.util.concurrent.TimeUnit
 import static com.polidea.rxandroidble.internal.Priority.NORMAL
 
 class OperationSynchronizerTest extends Specification {
-    public static final String RADIO_SCHEDULER_THREAD_NAME = "radio-test-thread"
+    public static final String THREAD_NAME = "radio-test-thread"
 
     ClientOperationQueueImpl objectUnderTest
 
     void setup() {
-        objectUnderTest = new ClientOperationQueueImpl(createSchedulerWithNamedThread(RADIO_SCHEDULER_THREAD_NAME))
+        objectUnderTest = new ClientOperationQueueImpl(createSchedulerWithNamedThread(THREAD_NAME))
     }
 
     def "should run operation instantly if queue is empty and no operation is in progress"() {
@@ -36,16 +36,16 @@ class OperationSynchronizerTest extends Specification {
         operation.wasRan()
 
         and:
-        operation.lastExecutedOnThread == RADIO_SCHEDULER_THREAD_NAME
+        operation.lastExecutedOnThread == THREAD_NAME
 
         and:
         operation.executionCount == 1
     }
 
-    def "should not run second operation until first release radio"() {
+    def "should not run second operation until first release queue"() {
         given:
         Semaphore semaphore = new Semaphore(0)
-        MockOperation firstOperation = operationReleasingRadioAfterSemaphoreIsReleased(semaphore)
+        MockOperation firstOperation = operationReleasingQueueAfterSemaphoreIsReleased(semaphore)
         def secondOperation = MockOperation.mockOperation(NORMAL)
 
         when:
@@ -68,7 +68,7 @@ class OperationSynchronizerTest extends Specification {
     def "should not run operation if it was unsubscribed before was taken from the queue"() {
         given:
         Semaphore semaphore = new Semaphore(0)
-        MockOperation firstOperation = operationReleasingRadioAfterSemaphoreIsReleased(semaphore)
+        MockOperation firstOperation = operationReleasingQueueAfterSemaphoreIsReleased(semaphore)
         MockOperation secondOperation = MockOperation.mockOperation(NORMAL)
 
         when:
@@ -105,7 +105,7 @@ class OperationSynchronizerTest extends Specification {
         testSubscriber.assertNotCompleted()
     }
 
-    def "should emit onNext and release radio if completed"() {
+    def "should emit onNext and release queue if completed"() {
         given:
         def expectedData = "some string"
         def testSubscriber = new TestSubscriber()
@@ -125,7 +125,7 @@ class OperationSynchronizerTest extends Specification {
         testSubscriber.assertCompleted()
     }
 
-    def "should emit onError and release radio if error occured"() {
+    def "should emit onError and release queue if error occured"() {
         given:
         def firstTestSubscriber = new TestSubscriber()
         def secondTestSubscriber = new TestSubscriber()
@@ -135,7 +135,7 @@ class OperationSynchronizerTest extends Specification {
 
         def secondOperation = new MockOperation(NORMAL, null) {
             @Override
-            void protectedRun(Emitter<Object> emitter, QueueReleaseInterface radioReleaseInterface) {
+            void protectedRun(Emitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
                 // simulate that a not handled exception was thrown somewhere
                 throw new Exception("Second throwable")
             }
@@ -164,7 +164,7 @@ class OperationSynchronizerTest extends Specification {
         true
     }
 
-    public operationReleasingRadioAfterSemaphoreIsReleased(semaphore) {
+    public operationReleasingQueueAfterSemaphoreIsReleased(semaphore) {
         MockOperation.mockOperation(NORMAL, {
             semaphore.acquire()
             it.onCompleted()

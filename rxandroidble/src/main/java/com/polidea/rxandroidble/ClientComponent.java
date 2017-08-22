@@ -10,12 +10,11 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueueImpl;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi18;
 import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi24;
@@ -23,15 +22,20 @@ import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueueImpl;
 import com.polidea.rxandroidble.scan.ScanResult;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.inject.Named;
+import javax.inject.Provider;
+
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.inject.Named;
-import javax.inject.Provider;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
@@ -265,7 +269,7 @@ public interface ClientComponent {
 
         @Binds
         @ClientScope
-        abstract ClientOperationQueue bindClientOperationQueue(ClientOperationQueueImpl rxBleRadio);
+        abstract ClientOperationQueue bindClientOperationQueue(ClientOperationQueueImpl clientOperationQueue);
 
         @Binds
         @Named(NamedSchedulers.TIMEOUT)

@@ -63,11 +63,11 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     }
 
     @Override
-    protected void protectedRun(final Emitter<BluetoothGatt> emitter, final QueueReleaseInterface radioReleaseInterface) {
+    protected void protectedRun(final Emitter<BluetoothGatt> emitter, final QueueReleaseInterface queueReleaseInterface) {
         final Action0 releaseRadioAction = new Action0() {
             @Override
             public void call() {
-                radioReleaseInterface.release();
+                queueReleaseInterface.release();
             }
         };
         final Subscription subscription = getConnectedBluetoothGatt()
@@ -81,7 +81,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
         if (autoConnect) {
             // with autoConnect the connection may be established after a really long time
-            radioReleaseInterface.release();
+            queueReleaseInterface.release();
         }
     }
 

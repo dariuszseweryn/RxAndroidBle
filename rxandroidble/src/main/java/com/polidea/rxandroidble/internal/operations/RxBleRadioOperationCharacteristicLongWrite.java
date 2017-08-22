@@ -20,7 +20,7 @@ import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
-import com.polidea.rxandroidble.internal.util.RadioReleasingEmitterWrapper;
+import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
@@ -66,7 +66,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     }
 
     @Override
-    protected void protectedRun(final Emitter<byte[]> emitter, final QueueReleaseInterface radioReleaseInterface) throws Throwable {
+    protected void protectedRun(final Emitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {
         int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
@@ -77,7 +77,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
 
-        final RadioReleasingEmitterWrapper<byte[]> emitterWrapper = new RadioReleasingEmitterWrapper<>(emitter, radioReleaseInterface);
+        final QueueReleasingEmitterWrapper<byte[]> emitterWrapper = new QueueReleasingEmitterWrapper<>(emitter, queueReleaseInterface);
         writeBatchAndObserve(batchSize, byteBuffer)
                 .subscribeOn(bluetoothInteractionScheduler)
                 .takeFirst(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
@@ -176,7 +176,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private static Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
             final WriteOperationAckStrategy writeOperationAckStrategy,
             final ByteBuffer byteBuffer,
-            final RadioReleasingEmitterWrapper<byte[]> emitterWrapper) {
+            final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
         return new Func1<Observable<? extends Void>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Void> emittingOnBatchWriteFinished) {
@@ -199,7 +199,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
             }
 
             @NonNull
-            private Func1<Object, Boolean> notUnsubscribed(final RadioReleasingEmitterWrapper<byte[]> emitterWrapper) {
+            private Func1<Object, Boolean> notUnsubscribed(final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
                 return new Func1<Object, Boolean>() {
                     @Override
                     public Boolean call(Object emission) {

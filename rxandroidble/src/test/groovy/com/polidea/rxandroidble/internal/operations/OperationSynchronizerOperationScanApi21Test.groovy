@@ -24,7 +24,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 
-    QueueReleaseInterface mockRadioReleaseInterface = Mock QueueReleaseInterface
+    QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
     TestSubscriber testSubscriber = new TestSubscriber()
 
@@ -44,7 +44,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         objectUnderTest = new RxBleRadioOperationScanApi21(rxBleAdapterWrapper, mockInternalScanResultCreator, mockAndroidScanObjectsCreator, scanSettings, mockEmulatedScanFilterMatecher, offloadedScanFilters)
     }
 
-    def "should call AndroidScanObjectsCreator and RxBleAdapterWrapper.startLeScan() when run() and release radio"() {
+    def "should call AndroidScanObjectsCreator and RxBleAdapterWrapper.startLeScan() when run() and release queue"() {
 
         given:
         ScanSettings scanSettings = Mock(ScanSettings)
@@ -54,7 +54,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         prepareObjectUnderTest(scanSettings, scanFilters)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         1 * mockAndroidScanObjectsCreator.toNativeFilters(scanFilters) >> mockAndroidScanFilters
@@ -64,7 +64,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         1 * mockAdapterWrapper.startLeScan(mockAndroidScanFilters, mockAndroidScanSettings, _)
 
         and:
-        (1.._) * mockRadioReleaseInterface.release()
+        (1.._) * mockQueueReleaseInterface.release()
     }
 
     def "asObservable() should not emit error when BluetoothLeScannerCompat.startScan() will not throw"() {
@@ -73,7 +73,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertNoErrors()
@@ -86,7 +86,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         mockAdapterWrapper.startLeScan(_, _, _) >> { _, _1, _2 -> throw new Throwable("test") }
 
         when:
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(BleScanException)
@@ -98,7 +98,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         AtomicReference<ScanCallback> scanCallbackAtomicReference = captureScanCallback()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def mockAndroidScanResult = Mock(ScanResult)
         def mockInternalScanResult = Mock(RxBleInternalScanResult)
         mockEmulatedScanFilterMatecher.matches(_) >> true
@@ -126,7 +126,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         given:
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         AtomicReference<ScanCallback> scanCallbackAtomicReference = captureScanCallback()
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
         def mockAndroidScanResult = Mock(ScanResult)
         def mockInternalScanResult = Mock(RxBleInternalScanResult)
         def mockAndroidScanResult1 = Mock(ScanResult)
@@ -152,7 +152,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_, _) >> mockInternalScanResult
         prepareObjectUnderTest(Mock(ScanSettings), null)
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onScanResult(0, Mock(ScanResult))
@@ -174,7 +174,7 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_) >> mockInternalScanResult
         prepareObjectUnderTest(Mock(ScanSettings), null)
-        objectUnderTest.run(mockRadioReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
 
         when:
         capturedLeScanCallbackRef.get().onBatchScanResults(Arrays.asList(Mock(ScanResult), Mock(ScanResult)))

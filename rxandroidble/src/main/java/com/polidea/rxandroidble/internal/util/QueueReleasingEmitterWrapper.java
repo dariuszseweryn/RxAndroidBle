@@ -14,29 +14,29 @@ import rx.functions.Cancellable;
  * being unsubscribed / canceled.
  * @param <T> parameter of the wrapped {@link Emitter}
  */
-public class RadioReleasingEmitterWrapper<T> implements Observer<T>, Cancellable {
+public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable {
 
     private final AtomicBoolean isEmitterCanceled = new AtomicBoolean(false);
 
     private final Emitter<T> emitter;
 
-    private final QueueReleaseInterface radioReleaseInterface;
+    private final QueueReleaseInterface queueReleaseInterface;
 
-    public RadioReleasingEmitterWrapper(Emitter<T> emitter, QueueReleaseInterface radioReleaseInterface) {
+    public QueueReleasingEmitterWrapper(Emitter<T> emitter, QueueReleaseInterface queueReleaseInterface) {
         this.emitter = emitter;
-        this.radioReleaseInterface = radioReleaseInterface;
+        this.queueReleaseInterface = queueReleaseInterface;
         emitter.setCancellation(this);
     }
 
     @Override
     public void onCompleted() {
-        radioReleaseInterface.release();
+        queueReleaseInterface.release();
         emitter.onCompleted();
     }
 
     @Override
     public void onError(Throwable e) {
-        radioReleaseInterface.release();
+        queueReleaseInterface.release();
         emitter.onError(e);
     }
 
