@@ -8,7 +8,6 @@ import com.polidea.rxandroidble.internal.operations.Operation;
 
 import rx.Emitter;
 import rx.Observable;
-import rx.functions.Action0;
 import rx.functions.Action1;
 
 /**
@@ -46,22 +45,15 @@ public abstract class RxBleRadioOperation<T> implements Operation<T> {
                     }
                 },
                 Emitter.BackpressureMode.NONE
-        )
-                .doOnTerminate(new Action0() {
-                    @Override
-                    public void call() {
-                        radioReleaseInterface.release();
-                    }
-                });
+        );
     }
 
     /**
      * This method will be overridden in a concrete operation implementations and will contain specific operation logic.
      *
      * Implementations should call emitter methods to inform the outside world about emissions of `onNext()`/`onError()`/`onCompleted()`.
-     * Implementations must call at least one of methods:
-     * {@link RadioReleaseInterface#release()}/{@link Emitter#onError(Throwable)}/{@link Emitter#onCompleted()}
-     * at some point to release the radio for any other operations that were queued if the emitter has not canceled.
+     * Implementations must call {@link RadioReleaseInterface#release()} at appropriate point to release the radio for any other operations
+     * that are queued.
      *
      * If the emitter has been canceled it is response of the operation to call {@link RadioReleaseInterface#release()} when possible
      * subsequent operations will be able to start {@link android.bluetooth.BluetoothGatt} functions successfully. Check usage of

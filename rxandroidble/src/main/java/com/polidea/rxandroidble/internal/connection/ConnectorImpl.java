@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
@@ -23,7 +24,7 @@ import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 
-public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
+public class ConnectorImpl implements Connector {
 
     private final BluetoothDevice bluetoothDevice;
     private final RxBleRadio rxBleRadio;
@@ -32,7 +33,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
     private final ConnectionComponent.Builder connectionComponentBuilder;
 
     @Inject
-    public RxBleConnectionConnectorImpl(
+    public ConnectorImpl(
             BluetoothDevice bluetoothDevice,
             RxBleRadio rxBleRadio,
             RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -46,7 +47,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
     }
 
     @Override
-    public Observable<RxBleConnection> prepareConnection(final boolean autoConnect) {
+    public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
@@ -55,10 +56,10 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
                     return Observable.error(new BleDisconnectedException(bluetoothDevice.getAddress()));
                 }
 
-                final ConnectionComponent connectionComponent = connectionComponentBuilder.build();
-                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperationBuilder()
-                        .setAutoConnect(autoConnect)
+                final ConnectionComponent connectionComponent = connectionComponentBuilder
+                        .connectionModule(new ConnectionModule(options))
                         .build();
+                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperation();
 
                 return enqueueConnectOperation(operationConnect)
                         .flatMap(new Func1<BluetoothGatt, Observable<RxBleConnection>>() {
@@ -100,6 +101,7 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             }
         });
     }
+
     private Observable<BleAdapterState> adapterNotUsableObservable() {
         return adapterStateObservable
                 .filter(new Func1<BleAdapterState, Boolean>() {

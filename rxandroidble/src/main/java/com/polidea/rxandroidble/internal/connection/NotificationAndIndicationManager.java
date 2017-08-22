@@ -103,6 +103,7 @@ class NotificationAndIndicationManager {
                                             );
                                 }
                             })
+                            .mergeWith(gattCallback.<Observable<byte[]>>observeDisconnect())
                             .replay(1)
                             .refCount();
                     activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, isIndication));
@@ -121,7 +122,7 @@ class NotificationAndIndicationManager {
             public void call() {
                 if (!bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled)) {
                     throw new BleCannotSetCharacteristicNotificationException(
-                            characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION
+                            characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION, null
                     );
                 }
             }
@@ -173,7 +174,8 @@ class NotificationAndIndicationManager {
         if (descriptor == null) {
             return Completable.error(new BleCannotSetCharacteristicNotificationException(
                     bluetoothGattCharacteristic,
-                    BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+                    BleCannotSetCharacteristicNotificationException.CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
+                    null
             ));
         }
 
@@ -184,7 +186,8 @@ class NotificationAndIndicationManager {
                     public Completable call(Throwable throwable) {
                         return Completable.error(new BleCannotSetCharacteristicNotificationException(
                                 bluetoothGattCharacteristic,
-                                BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+                                BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
+                                throwable
                         ));
                     }
                 });

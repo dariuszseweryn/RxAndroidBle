@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -50,8 +49,8 @@ class RxBleClientImpl extends RxBleClient {
     private final ScanSetupBuilder scanSetupBuilder;
     private final ScanPreconditionsVerifier scanPreconditionVerifier;
     private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
-    private final ExecutorService executorService;
-    private final Scheduler mainThreadScheduler;
+    private final ClientComponent.ClientComponentFinalizer clientComponentFinalizer;
+    private final Scheduler bluetoothInteractionScheduler;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
@@ -69,8 +68,8 @@ class RxBleClientImpl extends RxBleClient {
                     ScanSetupBuilder scanSetupBuilder,
                     ScanPreconditionsVerifier scanPreconditionVerifier,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
-                    @Named(ClientComponent.NamedSchedulers.GATT_CALLBACK) ExecutorService executorService,
-                    @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler) {
+                    @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
+                    ClientComponent.ClientComponentFinalizer clientComponentFinalizer) {
         this.uuidUtil = uuidUtil;
         this.rxBleRadio = rxBleRadio;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -81,14 +80,14 @@ class RxBleClientImpl extends RxBleClient {
         this.scanSetupBuilder = scanSetupBuilder;
         this.scanPreconditionVerifier = scanPreconditionVerifier;
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
-        this.executorService = executorService;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
+        this.clientComponentFinalizer = clientComponentFinalizer;
     }
 
     @Override
     protected void finalize() throws Throwable {
+        clientComponentFinalizer.onFinalize();
         super.finalize();
-        executorService.shutdown();
     }
 
     @Override
@@ -118,7 +117,7 @@ class RxBleClientImpl extends RxBleClient {
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
                 final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
                 return rxBleRadio.queue(scanOperation)
-                        .unsubscribeOn(mainThreadScheduler)
+                        .unsubscribeOn(bluetoothInteractionScheduler)
                         .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
                         .map(internalToExternalScanResultMapFunction)
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());

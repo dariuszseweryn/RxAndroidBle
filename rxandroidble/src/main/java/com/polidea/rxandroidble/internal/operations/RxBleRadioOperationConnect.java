@@ -13,6 +13,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.RadioReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleRadioOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
+import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
@@ -29,43 +30,11 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
 public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
-
-    public static class Builder {
-
-        private final BluetoothDevice bluetoothDevice;
-        private final BleConnectionCompat connectionCompat;
-        private final RxBleGattCallback rxBleGattCallback;
-        private final BluetoothGattProvider bluetoothGattProvider;
-        private final TimeoutConfiguration connectTimeout;
-        private boolean autoConnect = false;
-
-        @Inject
-        public Builder(
-                BluetoothDevice bluetoothDevice,
-                BleConnectionCompat connectionCompat,
-                RxBleGattCallback rxBleGattCallback,
-                @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectionTimeout,
-                BluetoothGattProvider bluetoothGattProvider) {
-            this.bluetoothDevice = bluetoothDevice;
-            this.connectionCompat = connectionCompat;
-            this.rxBleGattCallback = rxBleGattCallback;
-            this.bluetoothGattProvider = bluetoothGattProvider;
-            this.connectTimeout = connectionTimeout;
-        }
-
-        public Builder setAutoConnect(boolean autoConnect) {
-            this.autoConnect = autoConnect;
-            return this;
-        }
-
-        public RxBleRadioOperationConnect build() {
-            return new RxBleRadioOperationConnect(bluetoothDevice, connectionCompat, rxBleGattCallback, bluetoothGattProvider,
-                    connectTimeout, autoConnect);
-        }
-    }
 
     private final BluetoothDevice bluetoothDevice;
     private final BleConnectionCompat connectionCompat;
@@ -73,6 +42,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final BluetoothGattProvider bluetoothGattProvider;
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
+    private final ConnectionStateChangeListener connectionStateChangedAction;
 
     @Inject
     RxBleRadioOperationConnect(
@@ -81,26 +51,30 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
             RxBleGattCallback rxBleGattCallback,
             BluetoothGattProvider bluetoothGattProvider,
             @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
-            boolean autoConnect) {
+            @Named(AUTO_CONNECT) boolean autoConnect,
+            ConnectionStateChangeListener connectionStateChangedAction) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.connectTimeout = connectTimeout;
         this.autoConnect = autoConnect;
+        this.connectionStateChangedAction = connectionStateChangedAction;
     }
 
     @Override
     protected void protectedRun(final Emitter<BluetoothGatt> emitter, final RadioReleaseInterface radioReleaseInterface) {
+        final Action0 releaseRadioAction = new Action0() {
+            @Override
+            public void call() {
+                radioReleaseInterface.release();
+            }
+        };
         final Subscription subscription = getConnectedBluetoothGatt()
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
-                .doOnUnsubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        radioReleaseInterface.release();
-                    }
-                })
+                .doOnUnsubscribe(releaseRadioAction)
+                .doOnTerminate(releaseRadioAction)
                 .subscribe(emitter);
 
         emitter.setSubscription(subscription);
@@ -153,6 +127,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                         final Subscription connectedBluetoothGattSubscription = Observable.fromCallable(new Func0<BluetoothGatt>() {
                             @Override
                             public BluetoothGatt call() {
+                                connectionStateChangedAction.onConnectionStateChange(CONNECTED);
                                 return bluetoothGattProvider.getBluetoothGatt();
                             }
                         })
@@ -160,14 +135,12 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                                 .delaySubscription(
                                         rxBleGattCallback
                                                 .getOnConnectionStateChange()
-                                                .takeFirst(
-                                                        new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
-                                                            @Override
-                                                            public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
-                                                                return rxBleConnectionState == CONNECTED;
-                                                            }
-                                                        }
-                                                )
+                                                .takeFirst(new Func1<RxBleConnection.RxBleConnectionState, Boolean>() {
+                                                    @Override
+                                                    public Boolean call(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
+                                                        return rxBleConnectionState == CONNECTED;
+                                                    }
+                                                })
                                 )
                                 // disconnect may happen even if the connection was not established yet
                                 .mergeWith(rxBleGattCallback.<BluetoothGatt>observeDisconnect())
@@ -180,6 +153,8 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
                                 connectedBluetoothGattSubscription.unsubscribe();
                             }
                         });
+
+                        connectionStateChangedAction.onConnectionStateChange(CONNECTING);
 
                         /*
                         * Apparently the connection may be established fast enough to introduce a race condition so the subscription

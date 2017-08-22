@@ -41,6 +41,11 @@ class RxBleDeviceProviderTest extends Specification {
             throw UnsupportedOperationException()
         }
 
+//        @Override
+        Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
+            throw UnsupportedOperationException()
+        }
+
         @Override
         String getName() {
             throw UnsupportedOperationException()

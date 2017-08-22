@@ -3,9 +3,11 @@ package com.polidea.rxandroidble.internal;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
+import com.jakewharton.rxrelay.BehaviorRelay;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble.internal.connection.Connector;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -13,37 +15,35 @@ import javax.inject.Inject;
 
 import rx.Observable;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func0;
-import rx.subjects.BehaviorSubject;
-
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
 @DeviceScope
 class RxBleDeviceImpl implements RxBleDevice {
 
     private final BluetoothDevice bluetoothDevice;
-    private final RxBleConnection.Connector connector;
-    // TODO: [DS] 06.06.2017 make it PublishRelay in 2.0.0
-    private final BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateSubject = BehaviorSubject.create(DISCONNECTED);
+    private final Connector connector;
+    private final BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
-    RxBleDeviceImpl(BluetoothDevice bluetoothDevice, RxBleConnection.Connector connector) {
+    RxBleDeviceImpl(
+            BluetoothDevice bluetoothDevice,
+            Connector connector,
+            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay
+    ) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
+        this.connectionStateRelay = connectionStateRelay;
     }
 
     @Override
     public Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
-        return connectionStateSubject.distinctUntilChanged();
+        return connectionStateRelay.distinctUntilChanged().skip(1);
     }
 
     @Override
     public RxBleConnection.RxBleConnectionState getConnectionState() {
-        return observeConnectionStateChanges().toBlocking().first();
+        return connectionStateRelay.getValue();
     }
 
     @Override
@@ -54,28 +54,24 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(final boolean autoConnect) {
+        ConnectionSetup options = new ConnectionSetup.Builder()
+                .setAutoConnect(autoConnect)
+                .setSuppressIllegalOperationCheck(true)
+                .build();
+        return establishConnection(options);
+    }
+
+//    @Override
+    public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
 
                 if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(autoConnect)
-                            .doOnSubscribe(new Action0() {
-                                @Override
-                                public void call() {
-                                    connectionStateSubject.onNext(CONNECTING);
-                                }
-                            })
-                            .doOnNext(new Action1<RxBleConnection>() {
-                                @Override
-                                public void call(RxBleConnection rxBleConnection) {
-                                    connectionStateSubject.onNext(CONNECTED);
-                                }
-                            })
+                    return connector.prepareConnection(options)
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
-                                    connectionStateSubject.onNext(DISCONNECTED);
                                     isConnected.set(false);
                                 }
                             });

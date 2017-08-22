@@ -2,6 +2,7 @@
 <p align="center">
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
+
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -23,6 +24,17 @@ It's your job to maintain single instance of the client. You can use singleton, 
 
 ```java
 RxBleClient rxBleClient = RxBleClient.create(context);
+```
+
+### Turning the bluetooth on / off
+The library does _not_ handle managing the state of the Bluetooth Adapter.
+<br>Direct managing of the state is not recommended as it violates the application user's right to manage the state of their phone. See `Javadoc` of [BluetoothAdapter.enable()](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#enable()) method.
+<br>It is the user's responsibility to inform why the application needs Bluetooth to be turned on and for ask the application's user consent.
+<br>It is possible to show a native activity for turning the Bluetooth on by calling:
+```java
+Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+int REQUEST_ENABLE_BT = 1;
+context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 ```
 
 ### Device discovery
@@ -55,7 +67,7 @@ On Android it is not always trivial to determine if a particular BLE operation h
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
-Subscription flowSubscription = rxBleClient.observeState()
+Subscription flowSubscription = rxBleClient.observeStateChanges()
     .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
         switch (state) {
 
@@ -66,11 +78,7 @@ Subscription flowSubscription = rxBleClient.observeState()
                 // basically no functionality will work here
             case LOCATION_PERMISSION_NOT_GRANTED:
                 // scanning and connecting will not work
-            case BLUETOOTH_OFF:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_ON:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_OFF:
+            case BLUETOOTH_NOT_ENABLED:
                 // scanning and connecting will not work
             case LOCATION_SERVICES_NOT_ENABLED:
                 // scanning will not work
@@ -243,6 +251,11 @@ For connection debugging you can use extended logging
 RxBleClient.setLogLevel(RxBleLog.DEBUG);
 ```
 
+By default `RxBleLog` uses logcat to print the messages. You can provide your own logger implementation to forward it to other logging libraries such as Timber.
+```java
+RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
+```
+
 ### Error handling
 Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
 
@@ -309,7 +322,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.3.2"
+compile "com.polidea.rxandroidble:rxandroidble:1.3.3"
 ```
 ### Maven
 
@@ -317,7 +330,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.3.2"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.3</version>
   <type>aar</type>
 </dependency>
 ```
@@ -328,7 +341,7 @@ NOTE: It is built from the top of the `master` branch and a subject to more freq
 
 To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
 ```groovy
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 ```
 
 ## Unit testing
@@ -347,6 +360,7 @@ When submitting code, please make every effort to follow existing conventions an
 * Fracturedpsyche (https://github.com/fracturedpsyche)
 * Andrea Pregnolato (https://github.com/pregno)
 * Matthieu Vachon (https://github.com/maoueh) - custom operations, yay!
+* Pascal Welsch (https://github.com/passsy)
 
 ## License
 
