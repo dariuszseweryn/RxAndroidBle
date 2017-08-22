@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover;
+import com.polidea.rxandroidble.internal.operations.ServiceDiscoveryOperation;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import java.util.List;
@@ -100,7 +100,7 @@ class ServiceDiscoveryManager {
         return new Func1<TimeoutConfiguration, Observable<RxBleDeviceServices>>() {
             @Override
             public Observable<RxBleDeviceServices> call(TimeoutConfiguration timeoutConf) {
-                final RxBleRadioOperationServicesDiscover operation = operationProvider
+                final ServiceDiscoveryOperation operation = operationProvider
                         .provideServiceDiscoveryOperation(timeoutConf.timeout, timeoutConf.timeoutTimeUnit);
                 return operationQueue.queue(operation);
             }

@@ -27,7 +27,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
-    RxBleRadioOperationCharacteristicWrite objectUnderTest
+    CharacteristicWriteOperation objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
 
     def setup() {
@@ -251,7 +251,7 @@ public class OperationSynchronizerOperationCharacteristicWriteTest extends Speci
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationCharacteristicWrite(mockCallback, mockGatt,
+        objectUnderTest = new CharacteristicWriteOperation(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic, testData)
     }
 }

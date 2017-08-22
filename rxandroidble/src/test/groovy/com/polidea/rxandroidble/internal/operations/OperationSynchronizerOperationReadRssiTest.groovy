@@ -28,7 +28,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
 
     PublishSubject<Integer> onReadRemoteRssiPublishSubject = PublishSubject.create()
 
-    RxBleRadioOperationReadRssi objectUnderTest
+    ReadRssiOperation objectUnderTest
 
     def setup() {
         mockGattCallback.getOnRssiRead() >> onReadRemoteRssiPublishSubject
@@ -136,7 +136,7 @@ public class OperationSynchronizerOperationReadRssiTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationReadRssi(mockGattCallback, mockBluetoothGatt,
+        objectUnderTest = new ReadRssiOperation(mockGattCallback, mockBluetoothGatt,
                 new MockOperationTimeoutConfiguration(testScheduler))
     }
 }

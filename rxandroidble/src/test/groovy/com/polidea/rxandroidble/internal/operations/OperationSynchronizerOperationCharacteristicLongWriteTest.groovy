@@ -41,7 +41,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
     ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
-    RxBleRadioOperationCharacteristicLongWrite objectUnderTest
+    CharacteristicLongWriteOperation objectUnderTest
     @Shared Exception testException = new Exception("testException")
 
     def setup() {
@@ -517,7 +517,7 @@ public class OperationSynchronizerOperationCharacteristicLongWriteTest extends S
     }
 
     private prepareObjectUnderTest(int maxBatchSize, byte[] testData) {
-        objectUnderTest = new RxBleRadioOperationCharacteristicLongWrite(
+        objectUnderTest = new CharacteristicLongWriteOperation(
                 mockGatt,
                 mockCallback,
                 immediateScheduler,

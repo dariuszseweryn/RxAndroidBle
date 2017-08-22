@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
+import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
@@ -15,18 +15,18 @@ import javax.inject.Named;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationDescriptorWrite extends RxBleSingleGattRadioOperation<byte[]> {
+public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
 
     private BluetoothGattDescriptor bluetoothGattDescriptor;
     private byte[] data;
     private final int bluetoothGattCharacteristicDefaultWriteType;
 
-    RxBleRadioOperationDescriptorWrite(RxBleGattCallback rxBleGattCallback,
-                                       BluetoothGatt bluetoothGatt,
-                                       @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-                                       int bluetoothGattCharacteristicDefaultWriteType,
-                                       BluetoothGattDescriptor bluetoothGattDescriptor,
-                                       byte[] data) {
+    DescriptorWriteOperation(RxBleGattCallback rxBleGattCallback,
+                             BluetoothGatt bluetoothGatt,
+                             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+                             int bluetoothGattCharacteristicDefaultWriteType,
+                             BluetoothGattDescriptor bluetoothGattDescriptor,
+                             byte[] data) {
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_WRITE, timeoutConfiguration);
         this.bluetoothGattCharacteristicDefaultWriteType = bluetoothGattCharacteristicDefaultWriteType;
         this.bluetoothGattDescriptor = bluetoothGattDescriptor;

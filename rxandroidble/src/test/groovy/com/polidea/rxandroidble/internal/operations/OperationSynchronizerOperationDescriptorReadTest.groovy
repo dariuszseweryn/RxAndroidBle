@@ -34,10 +34,10 @@ public class OperationSynchronizerOperationDescriptorReadTest extends Specificat
 
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
-    RxBleRadioOperationDescriptorRead objectUnderTest
+    DescriptorReadOperation objectUnderTest
 
     def setup() {
-        objectUnderTest = new RxBleRadioOperationDescriptorRead(mockCallback, mockGatt,
+        objectUnderTest = new DescriptorReadOperation(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), mockDescriptor)
         mockCallback.getOnDescriptorRead() >> onDescriptorReadSubject
     }

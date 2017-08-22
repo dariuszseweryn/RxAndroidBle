@@ -20,7 +20,7 @@ import java.util.List;
 import rx.Emitter;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan<RxBleInternalScanResult, ScanCallback> {
+public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {
 
     @NonNull
     private final InternalScanResultCreator internalScanResultCreator;
@@ -34,7 +34,7 @@ public class RxBleRadioOperationScanApi21 extends RxBleRadioOperationScan<RxBleI
     private final ScanFilter[] scanFilters;
 
 
-    public RxBleRadioOperationScanApi21(
+    public ScanOperationApi21(
             @NonNull RxBleAdapterWrapper rxBleAdapterWrapper,
             @NonNull final InternalScanResultCreator internalScanResultCreator,
             @NonNull final AndroidScanObjectsConverter androidScanObjectsConverter,

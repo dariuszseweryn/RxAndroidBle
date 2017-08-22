@@ -11,17 +11,17 @@ import android.support.annotation.RequiresApi;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.RxBleCustomOperation;
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.RxBleRadioOperationCustom;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
-
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
+
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -321,8 +321,8 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public <T> Observable<T> queue(@NonNull final RxBleRadioOperationCustom<T> operation) {
-        return operationQueue.queue(new RxBleRadioOperation<T>() {
+    public <T> Observable<T> queue(@NonNull final RxBleCustomOperation<T> operation) {
+        return operationQueue.queue(new QueueOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
             protected void protectedRun(final Emitter<T> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {

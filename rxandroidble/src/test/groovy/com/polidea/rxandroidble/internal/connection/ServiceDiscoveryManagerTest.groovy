@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
 import com.polidea.rxandroidble.internal.operations.OperationsProvider
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationServicesDiscover
+import com.polidea.rxandroidble.internal.operations.ServiceDiscoveryOperation
 import java.util.concurrent.TimeUnit
 import rx.Observable
 import rx.observers.TestSubscriber
@@ -41,7 +41,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         bluetoothGattContainsNoServices()
         def timeout = 5
         def timeoutTimeUnit = TimeUnit.MILLISECONDS
-        def mockedOperation = Mock(RxBleRadioOperationServicesDiscover)
+        def mockedOperation = Mock(ServiceDiscoveryOperation)
 
         when:
         objectUnderTest.getDiscoverServicesObservable(timeout, timeoutTimeUnit).subscribe()
@@ -51,7 +51,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         1 * mockQueue.queue(mockedOperation) >> Observable.empty()
     }
 
-    def "should proxy services from RxBleRadio.queue()"() {
+    def "should proxy services from ClientOperationQueue.queue()"() {
 
         given:
         bluetoothGattContainsNoServices()
@@ -66,7 +66,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         testSubscriber.assertValue(mockedDiscoveredServices)
     }
 
-    def "should proxy exceptions from RxBleRadio.queue()"() {
+    def "should proxy exceptions from ClientOperationQueue.queue()"() {
 
         given:
         bluetoothGattContainsNoServices()
@@ -160,6 +160,6 @@ class ServiceDiscoveryManagerTest extends Specification {
     }
 
     private void operationProviderProvidesOperation() {
-        mockServiceDiscoveryOperationProvider.provideServiceDiscoveryOperation(_, _) >> Mock(RxBleRadioOperationServicesDiscover)
+        mockServiceDiscoveryOperationProvider.provideServiceDiscoveryOperation(_, _) >> Mock(ServiceDiscoveryOperation)
     }
 }

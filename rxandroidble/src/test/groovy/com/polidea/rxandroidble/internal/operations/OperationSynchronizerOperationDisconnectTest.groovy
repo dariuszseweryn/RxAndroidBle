@@ -39,7 +39,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
     ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     TestSubscriber<Void> testSubscriber = new TestSubscriber()
     BluetoothGattProvider mockBluetoothGattProvider
-    RxBleRadioOperationDisconnect objectUnderTest
+    DisconnectOperation objectUnderTest
 
     private def testWithGattProviderReturning(BluetoothGatt providedBluetoothGatt) {
         mockBluetoothGattProvider = Mock(BluetoothGattProvider)
@@ -147,7 +147,7 @@ public class OperationSynchronizerOperationDisconnectTest extends Specification 
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDisconnect(mockGattCallback, mockBluetoothGattProvider, mockMacAddress,
+        objectUnderTest = new DisconnectOperation(mockGattCallback, mockBluetoothGattProvider, mockMacAddress,
                 mockBluetoothManager, ImmediateScheduler.INSTANCE, new MockOperationTimeoutConfiguration(Schedulers.computation()),
                 mockConnectionStateChangeListener)
     }

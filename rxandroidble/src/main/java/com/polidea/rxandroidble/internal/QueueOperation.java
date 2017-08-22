@@ -16,14 +16,14 @@ import rx.functions.Action1;
 /**
  * The base class for all operations that are executed on the Bluetooth Queue.
  * This class is intended to be a kind of wrapper over an Observable (returned by function
- * {@link RxBleRadioOperation#run(QueueReleaseInterface)}).
+ * {@link QueueOperation#run(QueueReleaseInterface)}).
  *
  * Implements {@link Operation#run(QueueReleaseInterface)} interface which will be subscribed and unsubscribed on the application's
  * main thread.
  *
  * @param <T> What is returned from this operation onNext()
  */
-public abstract class RxBleRadioOperation<T> implements Operation<T> {
+public abstract class QueueOperation<T> implements Operation<T> {
 
     /**
      * A function that returns this operation as an Observable.

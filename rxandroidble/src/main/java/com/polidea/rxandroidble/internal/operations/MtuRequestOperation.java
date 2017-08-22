@@ -5,7 +5,7 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
+import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import javax.inject.Inject;
@@ -13,12 +13,12 @@ import javax.inject.Inject;
 import rx.Observable;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleRadioOperationMtuRequest extends RxBleSingleGattRadioOperation<Integer> {
+public class MtuRequestOperation extends SingleResponseOperation<Integer> {
 
     private final int mtu;
 
     @Inject
-    RxBleRadioOperationMtuRequest(
+    MtuRequestOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             TimeoutConfiguration timeoutConfiguration, int requestedMtu) {

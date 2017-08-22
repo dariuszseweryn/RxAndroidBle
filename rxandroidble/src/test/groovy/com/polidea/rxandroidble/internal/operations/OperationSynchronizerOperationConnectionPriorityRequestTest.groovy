@@ -24,7 +24,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
             timeout.intValue(),
             testScheduler
     )
-    RxBleRadioOperationConnectionPriorityRequest objectUnderTest
+    ConnectionPriorityChangeOperation objectUnderTest
 
     def setup() {
         prepareObjectUnderTest(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER)
@@ -62,7 +62,7 @@ class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specif
     }
 
     def prepareObjectUnderTest(int connectionPriority) {
-        objectUnderTest = new RxBleRadioOperationConnectionPriorityRequest(
+        objectUnderTest = new ConnectionPriorityChangeOperation(
                 mockGattCallback,
                 mockBluetoothGatt,
                 mockTimeoutConfiguration,

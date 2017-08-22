@@ -35,7 +35,7 @@ public class OperationSynchronizerOperationServicesDiscoverTest extends Specific
 
     PublishSubject<RxBleDeviceServices> onServicesDiscoveredPublishSubject = PublishSubject.create()
 
-    RxBleRadioOperationServicesDiscover objectUnderTest
+    ServiceDiscoveryOperation objectUnderTest
 
     def setup() {
         mockGattCallback.getOnServicesDiscovered() >> onServicesDiscoveredPublishSubject
@@ -178,7 +178,7 @@ public class OperationSynchronizerOperationServicesDiscoverTest extends Specific
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationServicesDiscover(mockGattCallback, mockBluetoothGatt,
+        objectUnderTest = new ServiceDiscoveryOperation(mockGattCallback, mockBluetoothGatt,
                 new MockOperationTimeoutConfiguration(timeout.toInteger(), testScheduler))
     }
 

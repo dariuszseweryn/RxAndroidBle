@@ -11,7 +11,7 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -34,7 +34,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONN
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
 import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
-public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGatt> {
+public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
     private final BluetoothDevice bluetoothDevice;
     private final BleConnectionCompat connectionCompat;
@@ -45,7 +45,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
     private final ConnectionStateChangeListener connectionStateChangedAction;
 
     @Inject
-    RxBleRadioOperationConnect(
+    ConnectOperation(
             BluetoothDevice bluetoothDevice,
             BleConnectionCompat connectionCompat,
             RxBleGattCallback rxBleGattCallback,
@@ -64,7 +64,7 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
 
     @Override
     protected void protectedRun(final Emitter<BluetoothGatt> emitter, final QueueReleaseInterface queueReleaseInterface) {
-        final Action0 releaseRadioAction = new Action0() {
+        final Action0 queueReleaseAction = new Action0() {
             @Override
             public void call() {
                 queueReleaseInterface.release();
@@ -73,8 +73,8 @@ public class RxBleRadioOperationConnect extends RxBleRadioOperation<BluetoothGat
         final Subscription subscription = getConnectedBluetoothGatt()
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
-                .doOnUnsubscribe(releaseRadioAction)
-                .doOnTerminate(releaseRadioAction)
+                .doOnUnsubscribe(queueReleaseAction)
+                .doOnTerminate(queueReleaseAction)
                 .subscribe(emitter);
 
         emitter.setSubscription(subscription);

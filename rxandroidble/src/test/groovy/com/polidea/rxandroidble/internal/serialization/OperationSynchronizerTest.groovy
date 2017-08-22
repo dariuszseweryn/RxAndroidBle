@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 import static com.polidea.rxandroidble.internal.Priority.NORMAL
 
 class OperationSynchronizerTest extends Specification {
-    public static final String THREAD_NAME = "radio-test-thread"
+    public static final String THREAD_NAME = "queue-test-thread"
 
     ClientOperationQueueImpl objectUnderTest
 
@@ -91,7 +91,7 @@ class OperationSynchronizerTest extends Specification {
         def testSubscriber = new TestSubscriber()
         def firstOperation = MockOperation.mockOperation(NORMAL, {
             it.onNext(expectedData)
-            it.releaseRadio()
+            it.release()
         })
 
         when:

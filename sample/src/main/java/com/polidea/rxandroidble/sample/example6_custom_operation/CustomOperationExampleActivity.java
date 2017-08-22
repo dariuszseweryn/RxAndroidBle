@@ -10,8 +10,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.RxBleCustomOperation;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleRadioOperationCustom;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -131,7 +131,7 @@ public class CustomOperationExampleActivity extends RxAppCompatActivity {
         runCustomButton.setEnabled(isConnected());
     }
 
-    private static class CustomReadOperation implements RxBleRadioOperationCustom<byte[]> {
+    private static class CustomReadOperation implements RxBleCustomOperation<byte[]> {
 
         private RxBleConnection connection;
         private UUID characteristicUuid;

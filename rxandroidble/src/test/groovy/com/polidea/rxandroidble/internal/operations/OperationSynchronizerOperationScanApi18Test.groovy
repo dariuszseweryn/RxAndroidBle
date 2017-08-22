@@ -27,14 +27,14 @@ public class OperationSynchronizerOperationScanApi18Test extends Specification {
 
     EmulatedScanFilterMatcher mockEmulatedScanFilterMatcher = Mock EmulatedScanFilterMatcher
 
-    RxBleRadioOperationScanApi18 objectUnderTest
+    ScanOperationApi18 objectUnderTest
 
     def setup() {
         prepareObjectUnderTest(mockAdapterWrapper)
     }
 
     def prepareObjectUnderTest(RxBleAdapterWrapper adapterWrapper) {
-        objectUnderTest = new RxBleRadioOperationScanApi18(adapterWrapper, mockInternalScanResultCreator, mockEmulatedScanFilterMatcher)
+        objectUnderTest = new ScanOperationApi18(adapterWrapper, mockInternalScanResultCreator, mockEmulatedScanFilterMatcher)
     }
 
     def "asObservable() should not emit error when RxBleAdapterWrapper.startScan() returns true"() {

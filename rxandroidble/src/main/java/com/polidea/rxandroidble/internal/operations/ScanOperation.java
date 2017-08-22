@@ -5,7 +5,7 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import rx.Emitter;
 import rx.functions.Cancellable;
@@ -13,14 +13,14 @@ import rx.functions.Cancellable;
 /**
  * A class that handles starting and stopping BLE scans.
  *
- * @param <SCAN_RESULT_TYPE>   Type of the objects that the RxBleRadioOperation should emit
+ * @param <SCAN_RESULT_TYPE>   Type of the objects that the {@link QueueOperation} should emit
  * @param <SCAN_CALLBACK_TYPE> Type of the BLE scan callback used by a particular implementation
  */
-abstract public class RxBleRadioOperationScan<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extends RxBleRadioOperation<SCAN_RESULT_TYPE> {
+abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extends QueueOperation<SCAN_RESULT_TYPE> {
 
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
 
-    RxBleRadioOperationScan(RxBleAdapterWrapper rxBleAdapterWrapper) {
+    ScanOperation(RxBleAdapterWrapper rxBleAdapterWrapper) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
     }
 

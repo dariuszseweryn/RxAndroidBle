@@ -10,14 +10,14 @@ import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import rx.Emitter;
 
-public class RxBleRadioOperationScanApi18 extends RxBleRadioOperationScan<RxBleInternalScanResult, BluetoothAdapter.LeScanCallback> {
+public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, BluetoothAdapter.LeScanCallback> {
 
     @NonNull
     private final InternalScanResultCreator scanResultCreator;
     @NonNull
     private final EmulatedScanFilterMatcher scanFilterMatcher;
 
-    public RxBleRadioOperationScanApi18(
+    public ScanOperationApi18(
             @NonNull RxBleAdapterWrapper rxBleAdapterWrapper,
             @NonNull final InternalScanResultCreator scanResultCreator,
             @NonNull final EmulatedScanFilterMatcher scanFilterMatcher

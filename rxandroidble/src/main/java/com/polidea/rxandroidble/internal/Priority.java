@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal;
 
 
 /**
- * The class representing a priority with which an RxBleRadioOperation should be executed.
+ * The class representing a priority with which an {@link QueueOperation} should be executed.
  * Used in @Override definedPriority()
  */
 public class Priority {

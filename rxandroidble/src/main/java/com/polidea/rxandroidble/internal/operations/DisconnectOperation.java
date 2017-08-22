@@ -12,7 +12,7 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.RxBleLog;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -32,7 +32,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISC
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
 import static rx.Observable.just;
 
-public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
+public class DisconnectOperation extends QueueOperation<Void> {
 
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGattProvider bluetoothGattProvider;
@@ -43,7 +43,7 @@ public class RxBleRadioOperationDisconnect extends RxBleRadioOperation<Void> {
     private final ConnectionStateChangeListener connectionStateChangeListener;
 
     @Inject
-    RxBleRadioOperationDisconnect(
+    DisconnectOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGattProvider bluetoothGattProvider,
             @Named(DeviceModule.MAC_ADDRESS) String macAddress,

@@ -34,14 +34,14 @@ public class OperationSynchronizerOperationScanApi21Test extends Specification {
 
     EmulatedScanFilterMatcher mockEmulatedScanFilterMatecher = Mock EmulatedScanFilterMatcher
 
-    RxBleRadioOperationScan objectUnderTest
+    ScanOperation objectUnderTest
 
     private prepareObjectUnderTest(ScanSettings scanSettings, ScanFilter[] offloadedScanFilters) {
         prepareObjectUnderTest(mockAdapterWrapper, scanSettings, offloadedScanFilters)
     }
 
     private prepareObjectUnderTest(RxBleAdapterWrapper rxBleAdapterWrapper, ScanSettings scanSettings, ScanFilter[] offloadedScanFilters) {
-        objectUnderTest = new RxBleRadioOperationScanApi21(rxBleAdapterWrapper, mockInternalScanResultCreator, mockAndroidScanObjectsCreator, scanSettings, mockEmulatedScanFilterMatecher, offloadedScanFilters)
+        objectUnderTest = new ScanOperationApi21(rxBleAdapterWrapper, mockInternalScanResultCreator, mockAndroidScanObjectsCreator, scanSettings, mockEmulatedScanFilterMatecher, offloadedScanFilters)
     }
 
     def "should call AndroidScanObjectsCreator and RxBleAdapterWrapper.startLeScan() when run() and release queue"() {

@@ -6,22 +6,19 @@ import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
-import com.polidea.rxandroidble.internal.operations.Operation;
-import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
-import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
+import com.polidea.rxandroidble.internal.operations.LegacyScanOperation;
+import com.polidea.rxandroidble.internal.operations.Operation;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResultLegacy;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanLegacy;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble.internal.scan.ScanSetup;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
-
-import dagger.Lazy;
-
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
@@ -35,6 +32,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import dagger.Lazy;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action0;
@@ -176,8 +174,8 @@ class RxBleClientImpl extends RxBleClient {
 
     private Observable<RxBleScanResult> createScanOperationApi18(@Nullable final UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
-        final RxBleRadioOperationScanLegacy
-                scanOperation = new RxBleRadioOperationScanLegacy(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
+        final LegacyScanOperation
+                scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return operationQueue.queue(scanOperation)
                 .doOnUnsubscribe(new Action0() {
                     @Override

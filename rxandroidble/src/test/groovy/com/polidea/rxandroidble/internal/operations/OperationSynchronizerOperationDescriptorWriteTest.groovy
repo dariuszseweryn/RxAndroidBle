@@ -29,7 +29,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
-    RxBleRadioOperationDescriptorWrite objectUnderTest
+    DescriptorWriteOperation objectUnderTest
     byte[] testData = ['t', 'e', 's', 't']
     int bluetoothGattCharacteristicDefaultWriteType = 99
     int originalParentBluetoothGattCharacteristicWriteType = 1337
@@ -275,7 +275,7 @@ public class OperationSynchronizerOperationDescriptorWriteTest extends Specifica
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationDescriptorWrite(mockCallback, mockGatt,
+        objectUnderTest = new DescriptorWriteOperation(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), bluetoothGattCharacteristicDefaultWriteType, mockDescriptor, testData)
     }
 }

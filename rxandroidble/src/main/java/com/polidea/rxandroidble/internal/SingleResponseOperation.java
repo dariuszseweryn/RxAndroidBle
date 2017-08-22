@@ -24,17 +24,17 @@ import rx.Subscription;
  * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.
  * @param <T> The type of emitted result.
  */
-public abstract class RxBleSingleGattRadioOperation<T> extends RxBleRadioOperation<T> {
+public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
 
     private final BluetoothGatt bluetoothGatt;
     private final RxBleGattCallback rxBleGattCallback;
     private final BleGattOperationType operationType;
     private final TimeoutConfiguration timeoutConfiguration;
 
-    public RxBleSingleGattRadioOperation(BluetoothGatt bluetoothGatt,
-                                         RxBleGattCallback rxBleGattCallback,
-                                         BleGattOperationType gattOperationType,
-                                         TimeoutConfiguration timeoutConfiguration) {
+    public SingleResponseOperation(BluetoothGatt bluetoothGatt,
+                                   RxBleGattCallback rxBleGattCallback,
+                                   BleGattOperationType gattOperationType,
+                                   TimeoutConfiguration timeoutConfiguration) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
         this.operationType = gattOperationType;

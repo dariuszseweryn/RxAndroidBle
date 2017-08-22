@@ -15,7 +15,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleRadioOperation;
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
@@ -34,7 +34,7 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperation<byte[]> {
+public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
     private final BluetoothGatt bluetoothGatt;
     private final RxBleGattCallback rxBleGattCallback;
@@ -46,7 +46,7 @@ public class RxBleRadioOperationCharacteristicLongWrite extends RxBleRadioOperat
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
 
-    RxBleRadioOperationCharacteristicLongWrite(
+    CharacteristicLongWriteOperation(
             BluetoothGatt bluetoothGatt,
             RxBleGattCallback rxBleGattCallback,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,

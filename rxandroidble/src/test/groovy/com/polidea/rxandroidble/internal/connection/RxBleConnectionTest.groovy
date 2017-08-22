@@ -9,7 +9,7 @@ import android.support.annotation.NonNull
 import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationReadRssi
+import com.polidea.rxandroidble.internal.operations.ReadRssiOperation
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import rx.Completable
 
@@ -45,7 +45,7 @@ class RxBleConnectionTest extends Specification {
     def illegalOperationChecker = Mock IllegalOperationChecker
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
     def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
-            testScheduler, { new RxBleRadioOperationReadRssi(gattCallback, bluetoothGattMock, timeoutConfig) })
+            testScheduler, { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
     def objectUnderTest = new RxBleConnectionImpl(dummyQueue, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
@@ -285,47 +285,47 @@ class RxBleConnectionTest extends Specification {
         NotificationSetupMode.COMPAT  | true  | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupIndication(aChar.getUuid(), nsm).subscribe() }
     }
 
-    def "should pass items emitted by observable returned from RxBleRadioOperationCustom.asObservable()"() {
+    def "should pass items emitted by observable returned from RxBleCustomOperation.asObservable()"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome {
+        def customOperation = customOperationWithOutcome {
             just(true, false, true)
         }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertValues(true, false, true)
     }
 
-    def "should pass error if custom operation will throw out of RxBleRadioOperationCustom.asObservable()"() {
+    def "should pass error if custom operation will throw out of RxBleCustomOperation.asObservable()"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { throw new RuntimeException() }
+        def customOperation = customOperationWithOutcome { throw new RuntimeException() }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(RuntimeException.class)
     }
 
-    def "should release the radio if custom operation will throw out of RxBleRadioOperationCustom.asObservable()"() {
+    def "should release the queue if custom operation will throw out of RxBleCustomOperation.asObservable()"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { throw new RuntimeException() }
+        def customOperation = customOperationWithOutcome { throw new RuntimeException() }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         dummyQueue.semaphore.isReleased()
     }
 
-    def "should pass error if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
+    def "should pass error if observable returned from RxBleCustomOperation.asObservable() will emit error"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { Observable.error(new RuntimeException()) }
+        def customOperation = customOperationWithOutcome { Observable.error(new RuntimeException()) }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(RuntimeException.class)
@@ -334,7 +334,7 @@ class RxBleConnectionTest extends Specification {
     def "should clear native gatt callback after custom operation is finished"() {
         given:
         def nativeCallback = Mock BluetoothGattCallback
-        def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
+        def customOperation = new RxBleCustomOperation<Boolean>() {
 
             @NonNull
             @Override
@@ -347,7 +347,7 @@ class RxBleConnectionTest extends Specification {
         }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         1 * gattCallback.setNativeCallback(null)
@@ -356,7 +356,7 @@ class RxBleConnectionTest extends Specification {
     def "should clear native gatt callback after custom operation failed"() {
         given:
         def nativeCallback = Mock BluetoothGattCallback
-        def radioOperationCustom = new RxBleRadioOperationCustom<Boolean>() {
+        def customOperation = new RxBleCustomOperation<Boolean>() {
 
             @NonNull
             @Override
@@ -369,74 +369,74 @@ class RxBleConnectionTest extends Specification {
         }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         1 * gattCallback.setNativeCallback(null)
     }
 
-    def "should release the radio if observable returned from RxBleRadioOperationCustom.asObservable() will emit error"() {
+    def "should release the queue if observable returned from RxBleCustomOperation.asObservable() will emit error"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { Observable.error(new RuntimeException()) }
+        def customOperation = customOperationWithOutcome { Observable.error(new RuntimeException()) }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         dummyQueue.semaphore.isReleased()
     }
 
-    def "should pass completion to subscriber when observable returned from RxBleRadioOperationCustom.asObservable() will complete"() {
+    def "should pass completion to subscriber when observable returned from RxBleCustomOperation.asObservable() will complete"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { Observable.empty() }
+        def customOperation = customOperationWithOutcome { Observable.empty() }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertCompleted()
     }
 
-    def "should release the radio when observable returned from RxBleRadioOperationCustom.asObservable() will complete"() {
+    def "should release the queue when observable returned from RxBleCustomOperation.asObservable() will complete"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { Observable.empty() }
+        def customOperation = customOperationWithOutcome { Observable.empty() }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         dummyQueue.semaphore.isReleased()
     }
 
-    def "should throw illegal argument exception if RxBleRadioOperationCustom.asObservable() return null"() {
+    def "should throw illegal argument exception if RxBleCustomOperation.asObservable() return null"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { null }
+        def customOperation = customOperationWithOutcome { null }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError(IllegalArgumentException.class)
     }
 
-    def "should release radio if RxBleRadioOperationCustom.asObservable() return null"() {
+    def "should release queue if RxBleCustomOperation.asObservable() return null"() {
         given:
-        def radioOperationCustom = customRadioOperationWithOutcome { null }
+        def customOperation = customOperationWithOutcome { null }
 
         when:
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         then:
         dummyQueue.semaphore.isReleased()
     }
 
     @Unroll
-    def "should release the radio when observable returned from RxBleRadioOperationCustom.asObservable() will terminate even if was unsubscribed before"() {
+    def "should release the queue when observable returned from RxBleCustomOperation.asObservable() will terminate even if was unsubscribed before"() {
 
         given:
         def publishSubject = PublishSubject.create()
-        def radioOperationCustom = customRadioOperationWithOutcome { publishSubject }
-        objectUnderTest.queue(radioOperationCustom).subscribe(testSubscriber)
+        def customOperation = customOperationWithOutcome { publishSubject }
+        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
 
         when:
         testSubscriber.unsubscribe()
@@ -457,8 +457,8 @@ class RxBleConnectionTest extends Specification {
         ]
     }
 
-    public customRadioOperationWithOutcome(Closure<Observable<Boolean>> outcomeSupplier) {
-        new RxBleRadioOperationCustom<Boolean>() {
+    public customOperationWithOutcome(Closure<Observable<Boolean>> outcomeSupplier) {
+        new RxBleCustomOperation<Boolean>() {
 
             @NonNull
             @Override

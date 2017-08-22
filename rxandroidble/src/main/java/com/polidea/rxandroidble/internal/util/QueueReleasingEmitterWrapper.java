@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.util;
 
 
+import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import java.util.concurrent.atomic.AtomicBoolean;
 import rx.Emitter;
@@ -8,7 +9,7 @@ import rx.Observer;
 import rx.functions.Cancellable;
 
 /**
- * A convenience class to use in {@link com.polidea.rxandroidble.internal.RxBleRadioOperation} subclasses. It wraps the {@link Emitter}
+ * A convenience class to use in {@link QueueOperation} subclasses. It wraps the {@link Emitter}
  * and {@link QueueReleaseInterface} and makes sure that the {@link rx.Subscription} it was subscribed to will finish and call
  * {@link QueueReleaseInterface#release()} in either {@link #onCompleted()} or {@link #onError(Throwable)} in case of the wrapped emitter
  * being unsubscribed / canceled.

@@ -6,7 +6,7 @@ import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
+import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.concurrent.TimeUnit;
@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import rx.Observable;
 import rx.Scheduler;
 
-public class RxBleRadioOperationConnectionPriorityRequest extends RxBleSingleGattRadioOperation<Long> {
+public class ConnectionPriorityChangeOperation extends SingleResponseOperation<Long> {
 
     private final int connectionPriority;
     private final long operationTimeout;
@@ -24,7 +24,7 @@ public class RxBleRadioOperationConnectionPriorityRequest extends RxBleSingleGat
     private final Scheduler delayScheduler;
 
     @Inject
-    RxBleRadioOperationConnectionPriorityRequest(
+    ConnectionPriorityChangeOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             TimeoutConfiguration timeoutConfiguration,

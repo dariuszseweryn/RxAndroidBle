@@ -18,7 +18,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class RxBleSingleGattRadioOperationTest extends Specification {
+public class SingleResponseOperationTest extends Specification {
 
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 
@@ -38,7 +38,7 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
 
     @Shared Object testResult = new Object()
 
-    TestSingleGattRadioOperation objectUnderTest
+    TestSingleResponseOperation objectUnderTest
 
     def setup() {
         prepareObjectUnderTest(BleGattOperationType.DESCRIPTOR_READ)
@@ -129,7 +129,7 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
     }
 
     @Unroll
-    def "should release radio after the callback will emit when unsubscribed"() {
+    def "should release queue after the callback will emit when unsubscribed"() {
 
         given:
         givenWillStartOperationSuccessfully()
@@ -155,7 +155,7 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
     }
 
     private prepareObjectUnderTest(BleGattOperationType bleGattOperationType) {
-        objectUnderTest = new TestSingleGattRadioOperation(mockBluetoothGatt, mockGattCallback, bleGattOperationType,
+        objectUnderTest = new TestSingleResponseOperation(mockBluetoothGatt, mockGattCallback, bleGattOperationType,
                 new MockOperationTimeoutConfiguration(testScheduler), callbackPublishSubject, startOperationResult)
     }
 
@@ -171,13 +171,13 @@ public class RxBleSingleGattRadioOperationTest extends Specification {
         objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
     }
 
-    private static class TestSingleGattRadioOperation extends RxBleSingleGattRadioOperation<Object> {
+    private static class TestSingleResponseOperation extends SingleResponseOperation<Object> {
 
         private final PublishSubject<Object> callbackSubject
 
         private final AtomicBoolean startOperationResult
 
-        TestSingleGattRadioOperation(
+        TestSingleResponseOperation(
                 BluetoothGatt bluetoothGatt,
                 RxBleGattCallback rxBleGattCallback,
                 BleGattOperationType bleGattOperationType,

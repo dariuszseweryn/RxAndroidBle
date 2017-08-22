@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
+import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
@@ -16,13 +16,13 @@ import javax.inject.Named;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationCharacteristicRead extends RxBleSingleGattRadioOperation<byte[]> {
+public class CharacteristicReadOperation extends SingleResponseOperation<byte[]> {
 
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
-    RxBleRadioOperationCharacteristicRead(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
-                                          @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-                                          BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+    CharacteristicReadOperation(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
+                                @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+                                BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_READ, timeoutConfiguration);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
     }

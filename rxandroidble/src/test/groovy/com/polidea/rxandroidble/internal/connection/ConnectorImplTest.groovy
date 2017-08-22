@@ -8,8 +8,8 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.operations.MockConnectionComponentBuilder
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect
+import com.polidea.rxandroidble.internal.operations.ConnectOperation
+import com.polidea.rxandroidble.internal.operations.DisconnectOperation
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import rx.Observable
 import rx.observers.TestSubscriber
@@ -22,8 +22,8 @@ public class ConnectorImplTest extends Specification {
     ClientOperationQueue clientOperationQueueMock = Mock ClientOperationQueue
     BluetoothDevice mockDevice = Mock BluetoothDevice
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
-    RxBleRadioOperationConnect mockConnect = Mock RxBleRadioOperationConnect
-    RxBleRadioOperationDisconnect mockDisconnect = Mock RxBleRadioOperationDisconnect
+    ConnectOperation mockConnect = Mock ConnectOperation
+    DisconnectOperation mockDisconnect = Mock DisconnectOperation
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
     PublishSubject<RxBleAdapterStateObservable.BleAdapterState> adapterStatePublishSubject = PublishSubject.create()
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
@@ -55,7 +55,7 @@ public class ConnectorImplTest extends Specification {
 
     }
 
-    def "subscribing prepareConnection() should schedule provided RxBleRadioOperationConnect on ClientOperationQueue"() {
+    def "subscribing prepareConnection() should schedule provided ConnectOperation on ClientOperationQueue"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -67,7 +67,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockConnect)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on ClientOperationQueue if ClientOperationQueue.queue(RxBleRadioOperation) emits error"() {
+    def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue if ClientOperationQueue.queue(Operation) emits error"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -80,7 +80,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on ClientOperationQueue only once if ClientOperationQueue.queue(RxBleRadioOperation) emits error and subscriber will unsubscribe"() {
+    def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue only once if ClientOperationQueue.queue(Operation) emits error and subscriber will unsubscribe"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true
@@ -93,7 +93,7 @@ public class ConnectorImplTest extends Specification {
         1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
     }
 
-    def "prepareConnection() should schedule provided RxBleRadioOperationDisconnect on operation queue when subscriber will unsubscribe"() {
+    def "prepareConnection() should schedule provided DisconnectOperation on operation queue when subscriber will unsubscribe"() {
 
         given:
         mockAdapterWrapper.isBluetoothEnabled() >> true

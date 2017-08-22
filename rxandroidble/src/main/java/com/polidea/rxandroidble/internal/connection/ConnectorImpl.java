@@ -8,7 +8,7 @@ import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
+import com.polidea.rxandroidble.internal.operations.ConnectOperation;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 
@@ -55,7 +55,7 @@ public class ConnectorImpl implements Connector {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
                         .connectionModule(new ConnectionModule(options))
                         .build();
-                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperation();
+                ConnectOperation operationConnect = connectionComponent.connectOperation();
 
                 return enqueueConnectOperation(operationConnect)
                         .flatMap(new Func1<BluetoothGatt, Observable<RxBleConnection>>() {
@@ -71,7 +71,7 @@ public class ConnectorImpl implements Connector {
             }
 
             @NonNull
-            private Observable<BluetoothGatt> enqueueConnectOperation(RxBleRadioOperationConnect operationConnect) {
+            private Observable<BluetoothGatt> enqueueConnectOperation(ConnectOperation operationConnect) {
                 return Observable
                         .merge(
                                 clientOperationQueue.queue(operationConnect),

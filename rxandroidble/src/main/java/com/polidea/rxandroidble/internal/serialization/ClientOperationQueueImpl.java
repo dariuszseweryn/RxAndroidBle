@@ -31,7 +31,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
 
                         /*
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
-                         * status. Below RadioSynchronizationInterface is passed to the RxBleRadioOperation and is meant to be released
+                         * status. Below a QueueSemaphore is passed to the RxBleCustomOperation and is meant to be released
                          * at appropriate time when the next operation should be able to start successfully.
                          */
                         final QueueSemaphore clientOperationSemaphore = new QueueSemaphore();

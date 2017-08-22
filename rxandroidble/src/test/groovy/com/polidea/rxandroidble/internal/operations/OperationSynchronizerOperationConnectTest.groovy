@@ -31,7 +31,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
     BluetoothGattProvider mockBluetoothGattProvider
     TestScheduler timeoutScheduler
-    RxBleRadioOperationConnect objectUnderTest
+    ConnectOperation objectUnderTest
 
     def setup() {
         mockBluetoothGattProvider = Mock(BluetoothGattProvider)
@@ -52,7 +52,7 @@ public class OperationSynchronizerOperationConnectTest extends Specification {
     }
 
     def prepareObjectUnderTest(boolean autoConnect) {
-        objectUnderTest = new RxBleRadioOperationConnect(mockBluetoothDevice, mockBleConnectionCompat, mockCallback,
+        objectUnderTest = new ConnectOperation(mockBluetoothDevice, mockBleConnectionCompat, mockCallback,
                 mockBluetoothGattProvider, timeoutConfiguration, autoConnect, mockConnectionStateChangeListener)
     }
 

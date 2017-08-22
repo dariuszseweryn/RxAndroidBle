@@ -11,13 +11,13 @@ import java.util.Set;
 import java.util.UUID;
 import rx.Emitter;
 
-public class RxBleRadioOperationScanLegacy extends RxBleRadioOperationScan<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
+public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 
     private final boolean isFilterDefined;
     private final UUIDUtil uuidUtil;
     private final Set<UUID> filterUuids;
 
-    public RxBleRadioOperationScanLegacy(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, final UUIDUtil uuidUtil) {
+    public LegacyScanOperation(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, final UUIDUtil uuidUtil) {
         super(rxBleAdapterWrapper);
 
         this.isFilterDefined = filterServiceUUIDs != null && filterServiceUUIDs.length > 0;

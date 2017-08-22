@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.RxBleSingleGattRadioOperation;
+import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import java.util.List;
@@ -20,9 +20,9 @@ import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
 
-public class RxBleRadioOperationServicesDiscover extends RxBleSingleGattRadioOperation<RxBleDeviceServices> {
+public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
-    RxBleRadioOperationServicesDiscover(
+    ServiceDiscoveryOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             TimeoutConfiguration timeoutConfiguration) {

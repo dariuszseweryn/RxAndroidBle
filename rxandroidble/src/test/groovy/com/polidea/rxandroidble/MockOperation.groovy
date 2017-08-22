@@ -5,12 +5,12 @@ import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.Priority
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
-import com.polidea.rxandroidble.internal.RxBleRadioOperation
+import com.polidea.rxandroidble.internal.QueueOperation
 import rx.Emitter
 import rx.Observable
 import rx.subjects.BehaviorSubject
 
-public class MockOperation extends RxBleRadioOperation<Object> {
+public class MockOperation extends QueueOperation<Object> {
 
     Priority priority
     public String lastExecutedOnThread
@@ -18,11 +18,11 @@ public class MockOperation extends RxBleRadioOperation<Object> {
     Closure<MockOperation> closure
     BehaviorSubject<MockOperation> behaviorSubject = BehaviorSubject.create()
 
-    public static RxBleRadioOperation mockOperation(Priority priority, Closure runClosure) {
+    public static QueueOperation mockOperation(Priority priority, Closure runClosure) {
         return new MockOperation(priority, runClosure)
     }
 
-    public static RxBleRadioOperation mockOperation(Priority priority) {
+    public static QueueOperation mockOperation(Priority priority) {
         return new MockOperation(priority, null)
     }
 

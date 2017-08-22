@@ -24,7 +24,7 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
     TestSubscriber<Integer> testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<Integer> changedMtuPublishSubject = PublishSubject.create()
-    RxBleRadioOperationMtuRequest objectUnderTest
+    MtuRequestOperation objectUnderTest
     int mtu = 72
 
     def setup() {
@@ -97,7 +97,7 @@ public class OperationSynchronizerOperationMtuRequestTest extends Specification 
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new RxBleRadioOperationMtuRequest(mockGattCallback, mockBluetoothGatt,
+        objectUnderTest = new MtuRequestOperation(mockGattCallback, mockBluetoothGatt,
                 new MockOperationTimeoutConfiguration(timeout.intValue(), testScheduler), mtu)
     }
 }

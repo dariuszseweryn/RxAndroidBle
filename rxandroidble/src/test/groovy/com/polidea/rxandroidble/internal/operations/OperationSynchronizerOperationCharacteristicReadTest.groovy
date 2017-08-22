@@ -26,10 +26,10 @@ public class OperationSynchronizerOperationCharacteristicReadTest extends Specif
     PublishSubject<ByteAssociation<UUID>> onCharacteristicReadSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     TestScheduler testScheduler = new TestScheduler()
-    RxBleRadioOperationCharacteristicRead objectUnderTest
+    CharacteristicReadOperation objectUnderTest
 
     def setup() {
-        objectUnderTest = new RxBleRadioOperationCharacteristicRead(mockCallback, mockGatt,
+        objectUnderTest = new CharacteristicReadOperation(mockCallback, mockGatt,
                 new MockOperationTimeoutConfiguration(testScheduler), mockCharacteristic)
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
         mockCallback.getOnCharacteristicRead() >> onCharacteristicReadSubject
