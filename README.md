@@ -2,6 +2,7 @@
 <p align="center">
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
+
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -23,6 +24,17 @@ It's your job to maintain single instance of the client. You can use singleton, 
 
 ```java
 RxBleClient rxBleClient = RxBleClient.create(context);
+```
+
+### Turning the bluetooth on / off
+The library does _not_ handle managing the state of the Bluetooth Adapter.
+<br>Direct managing of the state is not recommended as it violates the application user's right to manage the state of their phone. See `Javadoc` of [BluetoothAdapter.enable()](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#enable()) method.
+<br>It is the user's responsibility to inform why the application needs Bluetooth to be turned on and for ask the application's user consent.
+<br>It is possible to show a native activity for turning the Bluetooth on by calling:
+```java
+Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+int REQUEST_ENABLE_BT = 1;
+context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 ```
 
 ### Device discovery
@@ -66,11 +78,7 @@ Subscription flowSubscription = rxBleClient.observeStateChanges()
                 // basically no functionality will work here
             case LOCATION_PERMISSION_NOT_GRANTED:
                 // scanning and connecting will not work
-            case BLUETOOTH_OFF:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_ON:
-                // scanning and connecting will not work
-            case BLUETOOTH_TURNING_OFF:
+            case BLUETOOTH_NOT_ENABLED:
                 // scanning and connecting will not work
             case LOCATION_SERVICES_NOT_ENABLED:
                 // scanning will not work
@@ -333,7 +341,7 @@ NOTE: It is built from the top of the `master` branch and a subject to more freq
 
 To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
 ```groovy
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 ```
 
 ## Unit testing
