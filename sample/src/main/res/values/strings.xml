@@ -6,7 +6,7 @@
     <string name="stop_scan">Stop scan</string>
     <string name="mac_address">MAC: %s</string>
     <string name="connection_state">State: %s</string>
-    <string name="read_rssi">RSSI: %s</string>
+    <string name="read_rssi">RSSI: %d</string>
     <string name="prefix_hex">0x</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
