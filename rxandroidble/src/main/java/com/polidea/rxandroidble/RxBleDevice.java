@@ -3,6 +3,7 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
@@ -83,6 +84,7 @@ public interface RxBleDevice {
      *
      * @return The device name or null if device name is absent.
      */
+    @Nullable
     String getName();
 
     /**
