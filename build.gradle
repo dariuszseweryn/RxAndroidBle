@@ -10,7 +10,6 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
         classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:1.1.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
 }
 
