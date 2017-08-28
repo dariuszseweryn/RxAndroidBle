@@ -51,7 +51,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
 
     @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    public synchronized <T> Observable<T> queue(final Operation<T> operation) {
+    public <T> Observable<T> queue(final Operation<T> operation) {
         return Observable.create(new Action1<Emitter<T>>() {
             @Override
             public void call(Emitter<T> tEmitter) {
