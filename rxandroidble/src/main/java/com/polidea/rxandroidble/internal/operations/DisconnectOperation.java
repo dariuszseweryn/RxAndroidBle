@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.os.DeadObjectException;
 
+import android.support.annotation.RestrictTo;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
@@ -66,9 +67,8 @@ public class DisconnectOperation extends QueueOperation<Void> {
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
         if (bluetoothGatt == null) {
-            RxBleLog.w("Disconnect operation has been executed but GATT instance was null.");
-            queueReleaseInterface.release();
-            emitter.onCompleted();
+            RxBleLog.w("Disconnect operation has been executed but GATT instance was null - considering disconnected.");
+            considerGattDisconnected(emitter, queueReleaseInterface);
         } else {
             (isDisconnected(bluetoothGatt) ? just(bluetoothGatt) : disconnect(bluetoothGatt))
                     .observeOn(bluetoothInteractionScheduler)
@@ -80,18 +80,30 @@ public class DisconnectOperation extends QueueOperation<Void> {
 
                         @Override
                         public void onError(Throwable throwable) {
-                            queueReleaseInterface.release();
-                            emitter.onError(throwable);
+                            RxBleLog.w(
+                                    throwable,
+                                    "Disconnect operation has been executed but finished with an error - considering disconnected."
+                            );
+                            considerGattDisconnected(emitter, queueReleaseInterface);
                         }
 
                         @Override
                         public void onCompleted() {
-                            connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
-                            queueReleaseInterface.release();
-                            emitter.onCompleted();
+                            considerGattDisconnected(emitter, queueReleaseInterface);
                         }
                     });
         }
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
+    void considerGattDisconnected(
+            final Emitter<Void> emitter,
+            final QueueReleaseInterface queueReleaseInterface
+    ) {
+        connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
+        queueReleaseInterface.release();
+        emitter.onCompleted();
     }
 
     private boolean isDisconnected(BluetoothGatt bluetoothGatt) {

@@ -146,6 +146,32 @@ public class OperationDisconnectTest extends Specification {
         1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTED)
     }
 
+    def "should call connectionStateChangedAction with DISCONNECTED when error occurred"() {
+
+        given:
+        testWithGattProviderReturning(mockBluetoothGatt)
+        mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_CONNECTED
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        when:
+        connectionStatePublishSubject.onError(new Throwable("test"))
+
+        then:
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTED)
+    }
+
+    def "should call connectionStateChangedAction with DISCONNECTED when BluetoothGatt is null"() {
+
+        given:
+        testWithGattProviderReturning(null)
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTED)
+    }
+
     private prepareObjectUnderTest() {
         objectUnderTest = new DisconnectOperation(mockGattCallback, mockBluetoothGattProvider, mockMacAddress,
                 mockBluetoothManager, ImmediateScheduler.INSTANCE, new MockOperationTimeoutConfiguration(Schedulers.computation()),
