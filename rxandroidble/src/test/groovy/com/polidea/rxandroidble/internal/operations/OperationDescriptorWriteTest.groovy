@@ -18,7 +18,7 @@ import spock.lang.Unroll
 
 import java.util.concurrent.TimeUnit
 
-public class OperationSynchronizerOperationDescriptorWriteTest extends Specification {
+public class OperationDescriptorWriteTest extends Specification {
 
     BluetoothGatt mockGatt = Mock BluetoothGatt
     RxBleGattCallback mockCallback = Mock RxBleGattCallback

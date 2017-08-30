@@ -14,7 +14,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class OperationSynchronizerOperationReadRssiTest extends Specification {
+public class OperationReadRssiTest extends Specification {
 
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
 

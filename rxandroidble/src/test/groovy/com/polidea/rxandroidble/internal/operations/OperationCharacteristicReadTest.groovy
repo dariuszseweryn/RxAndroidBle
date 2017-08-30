@@ -15,7 +15,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class OperationSynchronizerOperationCharacteristicReadTest extends Specification {
+public class OperationCharacteristicReadTest extends Specification {
 
     UUID mockCharacteristicUUID = UUID.randomUUID()
     UUID differentCharacteristicUUID = UUID.randomUUID()

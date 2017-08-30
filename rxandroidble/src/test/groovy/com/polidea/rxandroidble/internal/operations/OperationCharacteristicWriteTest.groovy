@@ -16,7 +16,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
 
-public class OperationSynchronizerOperationCharacteristicWriteTest extends Specification {
+public class OperationCharacteristicWriteTest extends Specification {
 
     UUID mockCharacteristicUUID = UUID.randomUUID()
     UUID differentCharacteristicUUID = UUID.randomUUID()

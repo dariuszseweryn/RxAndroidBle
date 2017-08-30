@@ -20,7 +20,7 @@ import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class OperationSynchronizerOperationScanApi21Test extends Specification {
+public class OperationScanApi21Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
 

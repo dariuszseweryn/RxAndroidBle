@@ -25,7 +25,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class OperationSynchronizerOperationCharacteristicLongWriteTest extends Specification {
+public class OperationCharacteristicLongWriteTest extends Specification {
 
     private static long DEFAULT_WRITE_DELAY = 1
     UUID mockCharacteristicUUID = UUID.randomUUID()

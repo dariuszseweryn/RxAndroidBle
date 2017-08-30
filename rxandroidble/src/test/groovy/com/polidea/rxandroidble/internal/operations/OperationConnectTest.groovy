@@ -16,7 +16,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class OperationSynchronizerOperationConnectTest extends Specification {
+public class OperationConnectTest extends Specification {
 
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     BluetoothGatt mockGatt = Mock BluetoothGatt

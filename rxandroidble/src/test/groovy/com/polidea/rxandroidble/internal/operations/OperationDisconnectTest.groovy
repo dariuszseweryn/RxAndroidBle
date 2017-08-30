@@ -27,7 +27,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 
-public class OperationSynchronizerOperationDisconnectTest extends Specification {
+public class OperationDisconnectTest extends Specification {
 
     BluetoothDevice mockDevice = Mock BluetoothDevice
     String mockMacAddress = "mockMackAddress"

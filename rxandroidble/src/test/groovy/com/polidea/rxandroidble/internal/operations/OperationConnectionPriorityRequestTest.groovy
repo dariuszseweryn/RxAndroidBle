@@ -10,7 +10,7 @@ import rx.schedulers.TestScheduler
 import spock.lang.Specification
 import java.util.concurrent.TimeUnit
 
-class OperationSynchronizerOperationConnectionPriorityRequestTest extends Specification {
+class OperationConnectionPriorityRequestTest extends Specification {
 
     static long timeout = 10
     int completedDelay = 500L

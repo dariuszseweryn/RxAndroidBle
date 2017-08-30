@@ -16,7 +16,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class OperationSynchronizerOperationDescriptorReadTest extends Specification {
+public class OperationDescriptorReadTest extends Specification {
 
     BluetoothGatt mockGatt = Mock BluetoothGatt
 

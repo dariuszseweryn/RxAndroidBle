@@ -14,7 +14,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
 
-public class OperationSynchronizerOperationMtuRequestTest extends Specification {
+public class OperationMtuRequestTest extends Specification {
 
     static long timeout = 10
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS

@@ -17,7 +17,7 @@ import rx.schedulers.TestScheduler
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 
-public class OperationSynchronizerOperationServicesDiscoverTest extends Specification {
+public class OperationServicesDiscoverTest extends Specification {
 
     static long timeout = 20
 
