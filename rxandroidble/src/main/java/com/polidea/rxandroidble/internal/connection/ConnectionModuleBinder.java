@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGatt;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueueImpl;
 
 import dagger.Binds;
 import javax.inject.Named;
@@ -38,4 +40,8 @@ abstract public class ConnectionModuleBinder {
     @Binds
     @ConnectionScope
     abstract RxBleConnection bindRxBleConnection(RxBleConnectionImpl rxBleConnection);
+
+    @Binds
+    @ConnectionScope
+    abstract ConnectionOperationQueue bindConnectionOperationQueue(ConnectionOperationQueueImpl connectionOperationQueue);
 }

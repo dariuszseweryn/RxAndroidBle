@@ -12,28 +12,28 @@ import java.util.concurrent.TimeUnit;
 
 public interface OperationsProvider {
 
-    RxBleRadioOperationCharacteristicLongWrite provideLongWriteOperation(
+    CharacteristicLongWriteOperation provideLongWriteOperation(
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
             PayloadSizeLimitProvider maxBatchSizeProvider,
             byte[] bytes);
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    RxBleRadioOperationMtuRequest provideMtuChangeOperation(int requestedMtu);
+    MtuRequestOperation provideMtuChangeOperation(int requestedMtu);
 
-    RxBleRadioOperationCharacteristicRead provideReadCharacteristic(BluetoothGattCharacteristic characteristic);
+    CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic);
 
-    RxBleRadioOperationDescriptorRead provideReadDescriptor(BluetoothGattDescriptor descriptor);
+    DescriptorReadOperation provideReadDescriptor(BluetoothGattDescriptor descriptor);
 
-    RxBleRadioOperationReadRssi provideRssiReadOperation();
+    ReadRssiOperation provideRssiReadOperation();
 
-    RxBleRadioOperationServicesDiscover provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit);
+    ServiceDiscoveryOperation provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit);
 
-    RxBleRadioOperationCharacteristicWrite provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data);
+    CharacteristicWriteOperation provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data);
 
-    RxBleRadioOperationDescriptorWrite provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data);
+    DescriptorWriteOperation provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data);
 
-    RxBleRadioOperationConnectionPriorityRequest provideConnectionPriorityChangeOperation(
+    ConnectionPriorityChangeOperation provideConnectionPriorityChangeOperation(
             int connectionPriority,
             long delay,
             TimeUnit timeUnit

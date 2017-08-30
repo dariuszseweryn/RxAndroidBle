@@ -348,7 +348,7 @@ public class RxBleGattCallback {
 
     /**
      * A native callback allows to omit RxJava's abstraction on the {@link BluetoothGattCallback}.
-     * It's intended to be used only with a {@link com.polidea.rxandroidble.RxBleRadioOperationCustom} in a performance
+     * It's intended to be used only with a {@link com.polidea.rxandroidble.RxBleCustomOperation} in a performance
      * critical implementations. If you don't know if your operation is performance critical it's likely that you shouldn't use this API
      * and stick with the RxJava.
      *

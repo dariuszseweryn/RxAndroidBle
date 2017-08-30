@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal.scan;
 
 
 import android.support.annotation.RestrictTo;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanApi18;
+import com.polidea.rxandroidble.internal.operations.ScanOperationApi18;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
@@ -34,7 +34,7 @@ public class ScanSetupBuilderImplApi18 implements ScanSetupBuilder {
         final Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> callbackTypeTransformer
                 = scanSettingsEmulator.emulateCallbackType(scanSettings.getCallbackType());
         return new ScanSetup(
-                new RxBleRadioOperationScanApi18(
+                new ScanOperationApi18(
                         rxBleAdapterWrapper,
                         internalScanResultCreator,
                         new EmulatedScanFilterMatcher(scanFilters)
