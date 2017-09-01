@@ -34,7 +34,7 @@ public interface RxBleRadioOperationCustom<T> {
      * {@link Observer#onError(Throwable)} callback, the {@link RxBleRadio} queue's lock is released so that
      * queue operations can continue.
      * <p>
-     * You <b>must</b> ensure the returned {@link Observable} do terminate either via {@code onCompleted}
+     * You <b>must</b> ensure the returned {@link Observable} does terminate either via {@code onCompleted}
      * or {@code onError(Throwable)}. Otherwise, the internal queue orchestrator will wait forever for
      * your {@link Observable} to complete and the it will not continue to process queued operations.
      *
