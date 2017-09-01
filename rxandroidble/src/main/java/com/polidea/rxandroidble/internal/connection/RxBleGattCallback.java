@@ -51,35 +51,33 @@ public class RxBleGattCallback {
             throw bleGattException;
         }
     };
-    private final Observable disconnectedErrorObservable = gattAndConnectionStateOutput.valueRelay
-            .filter(new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Boolean>() {
-                @Override
-                public Boolean call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
-                    return isDisconnectedOrDisconnecting(pair);
-                }
-            })
-            .map(new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Object>() {
-                @Override
-                public Object call(Pair<BluetoothGatt, RxBleConnectionState> bluetoothGattRxBleConnectionStatePair) {
-                    throw new BleDisconnectedException(bluetoothGattRxBleConnectionStatePair.first.getDevice().getAddress());
-                }
-            })
-            .mergeWith(gattAndConnectionStateOutput.errorRelay.map(errorMapper))
-            .replay()
-            .autoConnect(0);
+    private final Observable disconnectedErrorObservable;
 
     @Inject
     public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler,
                              BluetoothGattProvider bluetoothGattProvider,
-                             NativeCallbackDispatcher nativeCallbackDispatcher) {
+                             NativeCallbackDispatcher nativeCallbackDispatcher,
+                             @Named(ConnectionComponent.NamedStrings.DEVICE_ADDRESS) String deviceAddress) {
         this.callbackScheduler = callbackScheduler;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
-    }
 
-    private boolean isDisconnectedOrDisconnecting(Pair<BluetoothGatt, RxBleConnectionState> pair) {
-        RxBleConnectionState rxBleConnectionState = pair.second;
-        return rxBleConnectionState == RxBleConnectionState.DISCONNECTED || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
+        final Observable<?> isDisconnectedOrDisconnecting = gattAndConnectionStateOutput.valueRelay.filter(
+                new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Boolean>() {
+                    @Override
+                    public Boolean call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
+                        RxBleConnectionState rxBleConnectionState = pair.second;
+                        return rxBleConnectionState == RxBleConnectionState.DISCONNECTED
+                                || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
+                    }
+                }
+        );
+        final Observable<?> otherConnectionErrors = gattAndConnectionStateOutput.errorRelay.map(errorMapper);
+        this.disconnectedErrorObservable = Observable.error(new BleDisconnectedException(deviceAddress))
+                .delaySubscription(isDisconnectedOrDisconnecting)
+                .mergeWith(otherConnectionErrors)
+                .replay()
+                .autoConnect(0);
     }
 
     private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
@@ -351,7 +349,7 @@ public class RxBleGattCallback {
      * It's intended to be used only with a {@link com.polidea.rxandroidble.RxBleCustomOperation} in a performance
      * critical implementations. If you don't know if your operation is performance critical it's likely that you shouldn't use this API
      * and stick with the RxJava.
-     *
+     * <p>
      * The callback reference will be automatically released after the operation is terminated. The main drawback of this API is that
      * we can't assure you the thread on which it will be executed. Please keep this in mind as the system may execute it on a main thread.
      */

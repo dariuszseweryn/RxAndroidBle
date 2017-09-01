@@ -16,7 +16,7 @@ import spock.lang.Specification
 
 class RxBleGattCallbackPerformanceTest extends Specification {
 
-    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), new NativeCallbackDispatcher())
+    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), new NativeCallbackDispatcher(), mockBluetoothDeviceMacAddress)
     def testSubscriber = new TestSubscriber()
     @Shared
     def mockBluetoothGatt = Mock BluetoothGatt
