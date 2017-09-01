@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble.internal.ConnectionSetup;
@@ -51,11 +50,5 @@ public class ConnectionModule {
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                 BluetoothGattCharacteristic.PROPERTY_INDICATE,
                 BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
-    }
-
-    @Provides
-    @Named(ConnectionComponent.NamedStrings.DEVICE_ADDRESS)
-    String provideDeviceAddress(BluetoothDevice bluetoothDevice) {
-        return bluetoothDevice.getAddress();
     }
 }

@@ -20,11 +20,6 @@ public interface ConnectionComponent {
         private NamedInts() { }
     }
 
-    class NamedStrings {
-        static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
-        private NamedStrings() { }
-    }
-
     @Subcomponent.Builder
     interface Builder {
 

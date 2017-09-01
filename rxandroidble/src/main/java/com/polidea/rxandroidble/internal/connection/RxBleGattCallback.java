@@ -16,6 +16,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
@@ -57,7 +58,7 @@ public class RxBleGattCallback {
     public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler,
                              BluetoothGattProvider bluetoothGattProvider,
                              NativeCallbackDispatcher nativeCallbackDispatcher,
-                             @Named(ConnectionComponent.NamedStrings.DEVICE_ADDRESS) String deviceAddress) {
+                             @Named(DeviceModule.MAC_ADDRESS) String deviceAddress) {
         this.callbackScheduler = callbackScheduler;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
