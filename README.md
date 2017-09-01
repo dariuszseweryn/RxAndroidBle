@@ -341,6 +341,8 @@ maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 
 ## Unit testing
 Using RxAndroidBle enables you to unit test your application easily. For examples how to use mocking head to [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble).
+
+Note: Using MockRxAndroidBle in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
 ## Contributing
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
 
