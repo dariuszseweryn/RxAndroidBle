@@ -58,7 +58,7 @@ public class RxBleGattCallback {
     public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler,
                              BluetoothGattProvider bluetoothGattProvider,
                              NativeCallbackDispatcher nativeCallbackDispatcher,
-                             BluetoothDevice bluetoothDevice) {
+                             @Named(ConnectionComponent.NamedStrings.DEVICE_ADDRESS) String deviceAddress) {
         this.callbackScheduler = callbackScheduler;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
@@ -74,7 +74,7 @@ public class RxBleGattCallback {
                 }
         );
         final Observable<?> otherConnectionErrors = gattAndConnectionStateOutput.errorRelay.map(errorMapper);
-        this.disconnectedErrorObservable = Observable.error(new BleDisconnectedException(bluetoothDevice.getAddress()))
+        this.disconnectedErrorObservable = Observable.error(new BleDisconnectedException(deviceAddress))
                 .delaySubscription(isDisconnectedOrDisconnecting)
                 .mergeWith(otherConnectionErrors)
                 .replay()
