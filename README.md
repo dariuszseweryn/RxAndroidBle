@@ -349,7 +349,7 @@ If you would like to contribute code you can do so through GitHub by forking the
 When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible. Please also make sure your code compiles by running ```./gradlew clean checkstyle test```.
 
 ## Support
-* non-commercial — check out [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
+* non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
 * commercial — drop an email to hello@polidea.com for more info
 
 ## Maintainers
