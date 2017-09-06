@@ -6,6 +6,7 @@ import com.polidea.rxandroidble.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import javax.inject.Inject;
 import javax.inject.Named;
 import rx.Observable;
@@ -24,7 +25,8 @@ class DisconnectionRouter {
     @Inject
     DisconnectionRouter(
             @Named(DeviceModule.MAC_ADDRESS) final String macAddress,
-            Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable
+            final RxBleAdapterWrapper adapterWrapper,
+            final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable
     ) {
         disconnectionErrorObservable = Observable.merge(
                 disconnectionErrorRelay
@@ -35,15 +37,22 @@ class DisconnectionRouter {
                             }
                         }),
                 adapterStateObservable
-                        .filter(new Func1<RxBleAdapterStateObservable.BleAdapterState, Boolean>() {
+                        .map(new Func1<RxBleAdapterStateObservable.BleAdapterState, Boolean>() {
                             @Override
                             public Boolean call(RxBleAdapterStateObservable.BleAdapterState bleAdapterState) {
-                                return !bleAdapterState.isUsable();
+                                return bleAdapterState.isUsable();
                             }
                         })
-                        .flatMap(new Func1<RxBleAdapterStateObservable.BleAdapterState, Observable<?>>() {
+                        .startWith(adapterWrapper.isBluetoothEnabled())
+                        .filter(new Func1<Boolean, Boolean>() {
                             @Override
-                            public Observable<?> call(RxBleAdapterStateObservable.BleAdapterState bleAdapterState) {
+                            public Boolean call(Boolean isAdapterUsable) {
+                                return !isAdapterUsable;
+                            }
+                        })
+                        .flatMap(new Func1<Boolean, Observable<?>>() {
+                            @Override
+                            public Observable<?> call(Boolean isAdapterUsable) {
                                 return Observable.error(new BleDisconnectedException(macAddress)); // TODO: Introduce BleDisabledException?
                             }
                         })
