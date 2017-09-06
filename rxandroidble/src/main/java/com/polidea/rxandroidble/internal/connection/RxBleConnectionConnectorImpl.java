@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble.internal.connection;
 
+import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -13,8 +14,6 @@ import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Actions;
 import rx.functions.Func0;
-
-import static com.polidea.rxandroidble.internal.util.ObservableUtil.justOnNext;
 
 public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
 
@@ -40,14 +39,19 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
                         .setAutoConnect(autoConnect)
                         .build();
 
-                return justOnNext(connectionComponent.rxBleConnection())
-                        .delaySubscription(rxBleRadio.queue(operationConnect))
-                        .doOnUnsubscribe(disconnect(connectionComponent.disconnectOperation()))
-                        .mergeWith(connectionComponent.gattCallback().<RxBleConnection>observeDisconnect());
+                final RxBleConnection connection = connectionComponent.rxBleConnection();
+                final Observable<BluetoothGatt> connectedObservable = rxBleRadio.queue(operationConnect);
+                final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
+                final Action0 disconnect = queueIgnoringResult(connectionComponent.disconnectOperation());
+
+                return Observable.just(connection)
+                        .delaySubscription(connectedObservable)
+                        .mergeWith(disconnectedErrorObservable)
+                        .doOnUnsubscribe(disconnect);
             }
 
             @NonNull
-            private Action0 disconnect(final RxBleRadioOperationDisconnect operationDisconnect) {
+            private Action0 queueIgnoringResult(final RxBleRadioOperationDisconnect operationDisconnect) {
                 return new Action0() {
                     @Override
                     public void call() {
