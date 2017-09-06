@@ -1,10 +1,11 @@
 package com.polidea.rxandroidble.internal.connection;
 
 
-import com.jakewharton.rxrelay.BehaviorRelay;
+import com.jakewharton.rxrelay.PublishRelay;
 import com.polidea.rxandroidble.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
+import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import javax.inject.Inject;
@@ -18,7 +19,7 @@ import rx.functions.Func1;
 @ConnectionScope
 class DisconnectionRouter {
 
-    private final BehaviorRelay<BleException> disconnectionErrorRelay = BehaviorRelay.create();
+    private final PublishRelay<BleException> disconnectionErrorRelay = PublishRelay.create();
 
     private final Observable disconnectionErrorObservable;
 
@@ -64,10 +65,19 @@ class DisconnectionRouter {
     /**
      * Method to be called whenever a connection braking exception happens. It will be routed to {@link #asObservable()}.
      *
-     * @param bleException the exception that happened
+     * @param disconnectedException the exception that happened
      */
-    void route(BleException bleException) {
-        disconnectionErrorRelay.call(bleException);
+    void onDisconnectedException(BleDisconnectedException disconnectedException) {
+        disconnectionErrorRelay.call(disconnectedException);
+    }
+
+    /**
+     * Method to be called whenever a BluetoothGattCallback.onConnectionStateChange() will get called with status != GATT_SUCCESS
+     *
+     * @param disconnectedGattException the exception that happened
+     */
+    void onGattConnectionStateException(BleGattException disconnectedGattException) {
+        disconnectionErrorRelay.call(disconnectedGattException);
     }
 
     /**

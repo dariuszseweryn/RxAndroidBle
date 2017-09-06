@@ -104,26 +104,26 @@ class RxBleGattCallbackTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should call DisconnectionRouter.route() when .onConnectionStateChange() callback will receive STATE_DISCONNECTED/STATE_DISCONNECTING regardless of status"() {
+    def "should call DisconnectionRouter.onDisconnectedException() when .onConnectionStateChange() callback will receive STATE_DISCONNECTED/STATE_DISCONNECTING regardless of status"() {
 
         when:
         objectUnderTest.getBluetoothGattCallback().onConnectionStateChange(mockBluetoothGatt, status, state)
 
         then:
-        1 * mockDisconnectionRouter.route({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockBluetoothDeviceMacAddress })
+        1 * mockDisconnectionRouter.onDisconnectedException({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockBluetoothDeviceMacAddress })
 
         where:
         [state, status] << [[STATE_DISCONNECTED, STATE_DISCONNECTING], [GATT_SUCCESS, GATT_FAILURE]].combinations()
     }
 
     @Unroll
-    def "should call DisconnectionRouter.route() when .onConnectionStateChange() callback will receive STATE_CONNECTED/STATE_CONNECTING with status != GATT_SUCCESS "() {
+    def "should call DisconnectionRouter.onGattConnectionStateException() when .onConnectionStateChange() callback will receive STATE_CONNECTED/STATE_CONNECTING with status != GATT_SUCCESS "() {
 
         when:
         objectUnderTest.getBluetoothGattCallback().onConnectionStateChange(mockBluetoothGatt, GATT_FAILURE, state)
 
         then:
-        1 * mockDisconnectionRouter.route({ BleGattException e ->
+        1 * mockDisconnectionRouter.onGattConnectionStateException({ BleGattException e ->
             e.macAddress == mockBluetoothDeviceMacAddress &&
                     e.status == GATT_FAILURE &&
                     e.bleGattOperationType == BleGattOperationType.CONNECTION_STATE
@@ -140,7 +140,10 @@ class RxBleGattCallbackTest extends RoboSpecification {
         callbackCaller.call(objectUnderTest.getBluetoothGattCallback())
 
         then:
-        0 * mockDisconnectionRouter.route(_)
+        0 * mockDisconnectionRouter.onDisconnectedException(_)
+
+        and:
+        0 * mockDisconnectionRouter.onGattConnectionStateException(_)
 
         where:
         callbackCaller << [

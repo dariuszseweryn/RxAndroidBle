@@ -70,9 +70,11 @@ public class RxBleGattCallback {
             bluetoothGattProvider.updateBluetoothGatt(gatt);
 
             if (isDisconnectedOrDisconnecting(newState)) {
-                disconnectionRouter.route(new BleDisconnectedException(gatt.getDevice().getAddress()));
+                disconnectionRouter.onDisconnectedException(new BleDisconnectedException(gatt.getDevice().getAddress()));
             } else if (status != BluetoothGatt.GATT_SUCCESS) {
-                disconnectionRouter.route(new BleGattException(gatt, status, BleGattOperationType.CONNECTION_STATE));
+                disconnectionRouter.onGattConnectionStateException(
+                        new BleGattException(gatt, status, BleGattOperationType.CONNECTION_STATE)
+                );
             }
 
             connectionStatePublishRelay.call(mapConnectionStateToRxBleConnectionStatus(newState));
