@@ -155,7 +155,7 @@ public interface RxBleConnection {
         /**
          * Build function for the long write
          *
-         * @return the Observable which will queue the long write on subscription.
+         * @return the Observable which will enqueue the long write operation when subscribed.
          */
         Observable<byte[]> build();
     }
@@ -522,7 +522,7 @@ public interface RxBleConnection {
      * {@link RxBleCustomOperation#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be forwarded
      * to the {@link Observable} returned by this method.
      * <p>
-     * You <b>must</b> ensure the custom operation's {@link Observable} do terminate either via {@code onCompleted}
+     * You <b>must</b> ensure the custom operation's {@link Observable} does terminate either via {@code onCompleted}
      * or {@code onError(Throwable)}. Otherwise, the internal queue orchestrator will wait forever for
      * your {@link Observable} to complete. Normal queue processing will be resumed after the {@link Observable}
      * returned by {@link RxBleCustomOperation#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}

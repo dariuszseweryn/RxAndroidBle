@@ -27,7 +27,7 @@ RxBleClient rxBleClient = RxBleClient.create(context);
 ```
 
 ### Turning the bluetooth on / off
-The library does _not_ handle managing the state of the Bluetooth Adapter.
+The library does _not_ handle managing the state of the BluetoothAdapter.
 <br>Direct managing of the state is not recommended as it violates the application user's right to manage the state of their phone. See `Javadoc` of [BluetoothAdapter.enable()](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#enable()) method.
 <br>It is the user's responsibility to inform why the application needs Bluetooth to be turned on and for ask the application's user consent.
 <br>It is possible to show a native activity for turning the Bluetooth on by calling:
@@ -121,10 +121,10 @@ subscription.unsubscribe();
 ```
 
 #### Auto connect
-After https://developer.android.com/reference/android/bluetooth/BluetoothDevice.html#connectGatt(android.content.Context, boolean, android.bluetooth.BluetoothGattCallback):
-autoConnect	boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+From <a href="https://developer.android.com/reference/android/bluetooth/BluetoothDevice.html#connectGatt(android.content.Context, boolean, android.bluetooth.BluetoothGattCallback)">BluetoothDevice.connectGatt() Javadoc</a>:
+> autoConnect	boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
 
-Auto connect concept may be misleading at first glance. With the autoconnect flag set to false the connection will end up with an error if a BLE device is not advertising when the `RxBleDevice#establishConnection` method is called. From platform to platform timeout after which the error is emitted differs, but in general it is rather tens of seconds than single seconds.
+Auto connect concept may be misleading at first glance. With the autoconnect flag set to false the connection will end up with an error if a BLE device is not advertising when the `RxBleDevice#establishConnection` method is called. From platform to platform timeout after which the error is emitted differs, but in general it is rather tens of seconds than single seconds (~30 s).
 
 Setting the auto connect flag to true allows you to wait until the BLE device becomes discoverable. The `RxBleConnection` instance won't be emitted until the connection is fully set up. From experience it also handles acquiring wake locks, so it's safe to assume that your Android device will be woken up after the connection has been established - but it is not a documented feature and may change in the future system releases.
 
@@ -293,8 +293,8 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined |
 | LongWriteOperationBuilder | build() | Single | true |
 
-\* this `Observable` when unsubscribed closes/cleanups internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
-\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device — in this situation there is no point to monitor other states as the adapter does not appear during runtime.
+\* this `Observable` when unsubscribed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
+\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
@@ -346,21 +346,22 @@ maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 
 ## Unit testing
 Using RxAndroidBle enables you to unit test your application easily. For examples how to use mocking head to [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble).
+
+Note: Using MockRxAndroidBle in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
 ## Contributing
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
 
 When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible. Please also make sure your code compiles by running ```./gradlew clean checkstyle test```.
 
+## Support
+* non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
+* commercial — drop an email to hello@polidea.com for more info
+
 ## Maintainers
 * Dariusz Seweryn (dariusz.seweryn@polidea.com)
 * Paweł Urban (pawel.urban@polidea.com)
 
-## Contributors, thank you!
-* Michał Zieliński (michal.zielinski@polidea.com)
-* Fracturedpsyche (https://github.com/fracturedpsyche)
-* Andrea Pregnolato (https://github.com/pregno)
-* Matthieu Vachon (https://github.com/maoueh) - custom operations, yay!
-* Pascal Welsch (https://github.com/passsy)
+## [Contributors](https://github.com/Polidea/RxAndroidBle/graphs/contributors), thank you!
 
 ## License
 

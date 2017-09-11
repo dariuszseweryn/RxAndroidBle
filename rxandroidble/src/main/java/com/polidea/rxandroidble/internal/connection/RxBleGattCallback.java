@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.util.Pair;
 
 import com.jakewharton.rxrelay.PublishRelay;
 import com.jakewharton.rxrelay.SerializedRelay;
@@ -16,7 +15,6 @@ import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
@@ -35,8 +33,9 @@ public class RxBleGattCallback {
 
     private final Scheduler callbackScheduler;
     private final BluetoothGattProvider bluetoothGattProvider;
+    private final DisconnectionRouter disconnectionRouter;
     private final NativeCallbackDispatcher nativeCallbackDispatcher;
-    private final Output<Pair<BluetoothGatt, RxBleConnectionState>> gattAndConnectionStateOutput = new Output<>();
+    private final PublishRelay<RxBleConnectionState> connectionStatePublishRelay = PublishRelay.create();
     private final Output<RxBleDeviceServices> servicesDiscoveredOutput = new Output<>();
     private final Output<ByteAssociation<UUID>> readCharacteristicOutput = new Output<>();
     private final Output<ByteAssociation<UUID>> writeCharacteristicOutput = new Output<>();
@@ -46,39 +45,22 @@ public class RxBleGattCallback {
     private final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     private final Output<Integer> readRssiOutput = new Output<>();
     private final Output<Integer> changedMtuOutput = new Output<>();
-    private final Func1<BleGattException, Object> errorMapper = new Func1<BleGattException, Object>() {
+    private final Func1<BleGattException, Observable<?>> errorMapper = new Func1<BleGattException, Observable<?>>() {
         @Override
-        public Object call(BleGattException bleGattException) {
-            throw bleGattException;
+        public Observable<?> call(BleGattException bleGattException) {
+            return Observable.error(bleGattException);
         }
     };
-    private final Observable disconnectedErrorObservable;
 
     @Inject
     public RxBleGattCallback(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler,
                              BluetoothGattProvider bluetoothGattProvider,
-                             NativeCallbackDispatcher nativeCallbackDispatcher,
-                             @Named(DeviceModule.MAC_ADDRESS) String deviceAddress) {
+                             DisconnectionRouter disconnectionRouter,
+                             NativeCallbackDispatcher nativeCallbackDispatcher) {
         this.callbackScheduler = callbackScheduler;
         this.bluetoothGattProvider = bluetoothGattProvider;
+        this.disconnectionRouter = disconnectionRouter;
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
-
-        final Observable<?> isDisconnectedOrDisconnecting = gattAndConnectionStateOutput.valueRelay.filter(
-                new Func1<Pair<BluetoothGatt, RxBleConnectionState>, Boolean>() {
-                    @Override
-                    public Boolean call(Pair<BluetoothGatt, RxBleConnectionState> pair) {
-                        RxBleConnectionState rxBleConnectionState = pair.second;
-                        return rxBleConnectionState == RxBleConnectionState.DISCONNECTED
-                                || rxBleConnectionState == RxBleConnectionState.DISCONNECTING;
-                    }
-                }
-        );
-        final Observable<?> otherConnectionErrors = gattAndConnectionStateOutput.errorRelay.map(errorMapper);
-        this.disconnectedErrorObservable = Observable.error(new BleDisconnectedException(deviceAddress))
-                .delaySubscription(isDisconnectedOrDisconnecting)
-                .mergeWith(otherConnectionErrors)
-                .replay()
-                .autoConnect(0);
     }
 
     private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
@@ -90,8 +72,19 @@ public class RxBleGattCallback {
             super.onConnectionStateChange(gatt, status, newState);
             bluetoothGattProvider.updateBluetoothGatt(gatt);
 
-            propagateErrorIfOccurred(gattAndConnectionStateOutput, gatt, status, BleGattOperationType.CONNECTION_STATE);
-            gattAndConnectionStateOutput.valueRelay.call(new Pair<>(gatt, mapConnectionStateToRxBleConnectionStatus(newState)));
+            if (isDisconnectedOrDisconnecting(newState)) {
+                disconnectionRouter.onDisconnectedException(new BleDisconnectedException(gatt.getDevice().getAddress()));
+            } else if (status != BluetoothGatt.GATT_SUCCESS) {
+                disconnectionRouter.onGattConnectionStateException(
+                        new BleGattException(gatt, status, BleGattOperationType.CONNECTION_STATE)
+                );
+            }
+
+            connectionStatePublishRelay.call(mapConnectionStateToRxBleConnectionStatus(newState));
+        }
+
+        private boolean isDisconnectedOrDisconnecting(int newState) {
+            return newState == BluetoothGatt.STATE_DISCONNECTED || newState == BluetoothGatt.STATE_DISCONNECTING;
         }
 
         @Override
@@ -271,10 +264,9 @@ public class RxBleGattCallback {
     private <T> Observable<T> withDisconnectionHandling(Output<T> output) {
         //noinspection unchecked
         return Observable.merge(
-                disconnectedErrorObservable,
-                gattAndConnectionStateOutput.errorRelay.map(errorMapper),
+                disconnectionRouter.<T>asObservable(),
                 output.valueRelay,
-                output.errorRelay.map(errorMapper)
+                (Observable<T>) output.errorRelay.flatMap(errorMapper)
         );
     }
 
@@ -289,7 +281,7 @@ public class RxBleGattCallback {
      */
     public <T> Observable<T> observeDisconnect() {
         //noinspection unchecked
-        return disconnectedErrorObservable;
+        return disconnectionRouter.asObservable();
     }
 
     /**
@@ -297,15 +289,7 @@ public class RxBleGattCallback {
      * Does NOT emit errors even if status != GATT_SUCCESS.
      */
     public Observable<RxBleConnectionState> getOnConnectionStateChange() {
-        return gattAndConnectionStateOutput.valueRelay.map(
-                new Func1<Pair<BluetoothGatt, RxBleConnectionState>, RxBleConnectionState>() {
-                    @Override
-                    public RxBleConnectionState call(
-                            Pair<BluetoothGatt, RxBleConnectionState> bluetoothGattRxBleConnectionStatePair) {
-                        return bluetoothGattRxBleConnectionStatePair.second;
-                    }
-                }
-        ).observeOn(callbackScheduler);
+        return connectionStatePublishRelay.observeOn(callbackScheduler);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
@@ -327,7 +311,7 @@ public class RxBleGattCallback {
     public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
         //noinspection unchecked
         return Observable.merge(
-                disconnectedErrorObservable,
+                disconnectionRouter.<CharacteristicChangedEvent>asObservable(),
                 changedCharacteristicSerializedPublishRelay
         )
                 .observeOn(callbackScheduler);

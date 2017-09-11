@@ -16,10 +16,10 @@ import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.N
 @Module
 public class ConnectionModule {
 
-    private boolean autoConnect;
-    private boolean suppressOperationCheck;
+    final boolean autoConnect;
+    final boolean suppressOperationCheck;
 
-    public ConnectionModule(ConnectionSetup connectionSetup) {
+    ConnectionModule(ConnectionSetup connectionSetup) {
         this.autoConnect = connectionSetup.autoConnect;
         this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
     }

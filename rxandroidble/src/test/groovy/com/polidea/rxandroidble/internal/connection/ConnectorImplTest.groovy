@@ -1,16 +1,12 @@
 package com.polidea.rxandroidble.internal.connection
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.internal.ConnectionSetup
-import com.polidea.rxandroidble.RxBleAdapterStateObservable
 import com.polidea.rxandroidble.RxBleConnection
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
-import com.polidea.rxandroidble.internal.operations.MockConnectionComponentBuilder
+
 import com.polidea.rxandroidble.internal.operations.ConnectOperation
-import com.polidea.rxandroidble.internal.operations.DisconnectOperation
-import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
+import java.util.concurrent.atomic.AtomicReference
 import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
@@ -19,46 +15,63 @@ import spock.lang.Unroll
 
 public class ConnectorImplTest extends Specification {
 
+    ConnectionComponent.Builder mockConnectionComponentBuilder = Mock ConnectionComponent.Builder
+    ConnectionComponent mockConnectionComponent = Mock ConnectionComponent
+    PublishSubject disconnectErrorPublishSubject = PublishSubject.create()
     ClientOperationQueue clientOperationQueueMock = Mock ClientOperationQueue
-    BluetoothDevice mockDevice = Mock BluetoothDevice
+    RxBleConnection mockConnection = Mock RxBleConnection
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     ConnectOperation mockConnect = Mock ConnectOperation
-    DisconnectOperation mockDisconnect = Mock DisconnectOperation
-    RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
-    PublishSubject<RxBleAdapterStateObservable.BleAdapterState> adapterStatePublishSubject = PublishSubject.create()
+    DisconnectAction mockDisconnectAction = Mock DisconnectAction
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
     BluetoothGatt mockGatt = Mock BluetoothGatt
-    ConnectionComponent.Builder mockConnectionComponentBuilder
     ConnectionSetup defaultConnectionSetup = new ConnectionSetup.Builder().build()
 
     ConnectorImpl objectUnderTest
 
     def setup() {
-        clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(mockGatt)
-        mockCallback.observeDisconnect() >> Observable.never()
-        mockConnectionComponentBuilder = new MockConnectionComponentBuilder(
-                clientOperationQueueMock,
-                Mock(RxBleConnection),
-                mockDevice,
-                mockCallback,
-                mockDisconnect,
-                mockConnect
-        )
+        mockConnectionComponentBuilder.connectionModule(_) >> mockConnectionComponentBuilder
+        mockConnectionComponentBuilder.build() >> mockConnectionComponent
+        mockConnectionComponent.connectOperation() >> mockConnect
+        mockConnectionComponent.disconnectAction() >> mockDisconnectAction
+        mockConnectionComponent.gattCallback() >> mockCallback
+        mockConnectionComponent.rxBleConnection() >> mockConnection
+        mockCallback.observeDisconnect() >> disconnectErrorPublishSubject
 
         objectUnderTest = new ConnectorImpl(
-                mockDevice,
                 clientOperationQueueMock,
-                mockAdapterWrapper,
-                adapterStatePublishSubject,
                 mockConnectionComponentBuilder
         )
+    }
 
+    @Unroll
+    def "subscribing prepareConnection() should pass the provided ConnectionSetup in ConnectionModule to the ConnectionComponent.Builder"() {
+
+        given:
+        AtomicReference<ConnectionModule> connectionModuleAtomicReference = new AtomicReference<>()
+        clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
+        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).setSuppressIllegalOperationCheck(suppressIllegalOperations).build()
+
+        when:
+        objectUnderTest.prepareConnection(connectionSetup).subscribe()
+
+        then:
+        1 * mockConnectionComponentBuilder.connectionModule({ ConnectionModule cm ->
+            connectionModuleAtomicReference.set(cm)
+            true
+        }) >> mockConnectionComponentBuilder
+
+        and:
+        connectionModuleAtomicReference.get().autoConnect == autoConnect
+
+        and:
+        connectionModuleAtomicReference.get().suppressOperationCheck == suppressIllegalOperations
+
+        where:
+        [autoConnect, suppressIllegalOperations] << [[true, false], [true, false]].combinations()
     }
 
     def "subscribing prepareConnection() should schedule provided ConnectOperation on ClientOperationQueue"() {
-
-        given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
 
         when:
         objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
@@ -70,33 +83,30 @@ public class ConnectorImplTest extends Specification {
     def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue if ClientOperationQueue.queue(Operation) emits error"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
         clientOperationQueueMock.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
         objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
-        1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
+        1 * mockDisconnectAction.call()
     }
 
     def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue only once if ClientOperationQueue.queue(Operation) emits error and subscriber will unsubscribe"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
         clientOperationQueueMock.queue(mockConnect) >> Observable.error(new Throwable("test"))
 
         when:
         objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         then:
-        1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
+        1 * mockDisconnectAction.call()
     }
 
     def "prepareConnection() should schedule provided DisconnectOperation on operation queue when subscriber will unsubscribe"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
         clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
 
         when:
@@ -104,13 +114,12 @@ public class ConnectorImplTest extends Specification {
         testSubscriber.unsubscribe()
 
         then:
-        1 * clientOperationQueueMock.queue(mockDisconnect) >> Observable.just(null)
+        1 * mockDisconnectAction.call()
     }
 
     def "prepareConnection() should emit RxBleConnection and not complete"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
         clientOperationQueueMock.queue(mockConnect) >> Observable.just(mockGatt)
 
         when:
@@ -124,7 +133,6 @@ public class ConnectorImplTest extends Specification {
     def "prepareConnection() should emit error from RxBleGattCallback.disconnectedErrorObservable()"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
         def testError = new Throwable("test")
         clientOperationQueueMock.queue(_) >> Observable.just(mockGatt)
 
@@ -136,70 +144,33 @@ public class ConnectorImplTest extends Specification {
         mockCallback.observeDisconnect() >> Observable.error(testError) // Overwriting default behaviour
     }
 
-
-    def "prepareConnection() should emit error from BleDisconnectedException when RxBleAdapterWrapper.isEnabled() returns false"() {
+    def "prepareConnection() should emit exception emitted by RxBleCallback.observeDisconnect()"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> false
-        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
+        RuntimeException testException = new RuntimeException("test")
+        clientOperationQueueMock.queue(mockConnect) >> Observable.never()
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
 
         when:
-        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
+        disconnectErrorPublishSubject.onError(testException)
 
         then:
-        testSubscriber.assertError(BleDisconnectedException)
-
-        where:
-        autoConnect << [
-                true,
-                false
-        ]
+        testSubscriber.assertError testException
     }
 
-    @Unroll
-    def "prepareConnection() should emit BleDisconnectedException when RxBleAdapterStateObservable emits not usable RxBleAdapterStateObservable.BleAdapterState"() {
+    def "prepareConnection() should emit exception emitted by RxBleCallback.observeDisconnect() even after connection"() {
 
         given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
-        clientOperationQueueMock.queue(_) >> Observable.never()
-        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
-        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
+        PublishSubject<BluetoothGatt> connectPublishSubject = PublishSubject.create()
+        RuntimeException testException = new RuntimeException("test")
+        clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        connectPublishSubject.onNext(mockGatt)
 
         when:
-        adapterStatePublishSubject.onNext(state)
+        disconnectErrorPublishSubject.onError(testException)
 
         then:
-        testSubscriber.assertError BleDisconnectedException
-
-        where:
-        autoConnect | state
-        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_OFF
-        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_OFF
-        true        | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_ON
-        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_OFF
-        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_OFF
-        false       | RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_ON
-    }
-
-    @Unroll
-    def "prepareConnection() should not emit BleDisconnectedException when RxBleAdapterStateObservable emits usable RxBleAdapterStateObservable.BleAdapterState"() {
-
-        given:
-        mockAdapterWrapper.isBluetoothEnabled() >> true
-        clientOperationQueueMock.queue(_) >> Observable.never()
-        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).build()
-        objectUnderTest.prepareConnection(connectionSetup).subscribe(testSubscriber)
-
-        when:
-        adapterStatePublishSubject.onNext(RxBleAdapterStateObservable.BleAdapterState.STATE_ON)
-
-        then:
-        testSubscriber.assertNoErrors()
-
-        where:
-        autoConnect << [
-                true,
-                false
-        ]
+        testSubscriber.assertError testException
     }
 }
