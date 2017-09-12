@@ -8,6 +8,7 @@ import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationConnect;
 import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationDisconnect;
 
+import java.util.concurrent.Callable;
 import javax.inject.Inject;
 
 import rx.Observable;
@@ -35,16 +36,23 @@ public class RxBleConnectionConnectorImpl implements RxBleConnection.Connector {
             public Observable<RxBleConnection> call() {
 
                 final ConnectionComponent connectionComponent = connectionComponentBuilder.build();
-                RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperationBuilder()
+                final RxBleRadioOperationConnect operationConnect = connectionComponent.connectOperationBuilder()
                         .setAutoConnect(autoConnect)
                         .build();
 
-                final RxBleConnection connection = connectionComponent.rxBleConnection();
+                final Observable<RxBleConnection> newConnectionObservable = Observable.fromCallable(new Callable<RxBleConnection>() {
+                    @Override
+                    public RxBleConnection call() throws Exception {
+                        // BluetoothGatt is needed for RxBleConnection
+                        // BluetoothGatt is produced by RxBleRadioOperationConnect
+                        return connectionComponent.rxBleConnection();
+                    }
+                });
                 final Observable<BluetoothGatt> connectedObservable = rxBleRadio.queue(operationConnect);
                 final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
                 final Action0 disconnect = queueIgnoringResult(connectionComponent.disconnectOperation());
 
-                return Observable.just(connection)
+                return newConnectionObservable
                         .delaySubscription(connectedObservable)
                         .mergeWith(disconnectedErrorObservable)
                         .doOnUnsubscribe(disconnect);
