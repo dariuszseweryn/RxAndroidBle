@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 1.3.4-SNAPSHOT
+Version 1.3.4
 * Added @Nullable annotation to `RxBleDevice.getName()`. (https://github.com/Polidea/RxAndroidBle/issues/263)
 * Fixed connection not being disconnected when `DeadObjectException` was raised. (https://github.com/Polidea/RxAndroidBle/issues/275)
 
