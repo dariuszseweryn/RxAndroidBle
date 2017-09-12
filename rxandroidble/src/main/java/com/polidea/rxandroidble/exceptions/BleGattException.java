@@ -11,7 +11,7 @@ import android.support.annotation.Nullable;
  * the <a href="https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h">
  * Android system</a>.
  *
- * @see com.polidea.rxandroidble.RxBleDevice#establishConnection(Context, boolean)
+ * @see com.polidea.rxandroidble.RxBleDevice#establishConnection(boolean)
  */
 public class BleGattException extends BleException {
 
