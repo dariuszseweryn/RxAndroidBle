@@ -173,4 +173,23 @@ public class ConnectorImplTest extends Specification {
         then:
         testSubscriber.assertError testException
     }
+
+    def "should call ConnectionComponent.rxBleConnection() only after ConnectOperation will emit"() {
+
+        given:
+        PublishSubject<BluetoothGatt> connectPublishSubject = PublishSubject.create()
+        clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
+
+        when:
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+
+        then:
+        0 * mockConnectionComponent.rxBleConnection()
+
+        when:
+        connectPublishSubject.onNext(mockGatt)
+
+        then:
+        1 * mockConnectionComponent.rxBleConnection() >> mockConnection
+    }
 }
