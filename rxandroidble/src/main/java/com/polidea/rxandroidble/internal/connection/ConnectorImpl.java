@@ -6,6 +6,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 
+import java.util.concurrent.Callable;
 import javax.inject.Inject;
 
 import rx.Observable;
@@ -34,12 +35,19 @@ public class ConnectorImpl implements Connector {
                         .connectionModule(new ConnectionModule(options))
                         .build();
 
-                final RxBleConnection connection = connectionComponent.rxBleConnection();
+                final Observable<RxBleConnection> newConnectionObservable = Observable.fromCallable(new Callable<RxBleConnection>() {
+                    @Override
+                    public RxBleConnection call() throws Exception {
+                        // BluetoothGatt is needed for RxBleConnection
+                        // BluetoothGatt is produced by RxBleRadioOperationConnect
+                        return connectionComponent.rxBleConnection();
+                    }
+                });
                 final Observable<BluetoothGatt> connectedObservable = clientOperationQueue.queue(connectionComponent.connectOperation());
                 final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
                 final DisconnectAction disconnect = connectionComponent.disconnectAction();
 
-                return Observable.just(connection)
+                return newConnectionObservable
                         .delaySubscription(connectedObservable)
                         .mergeWith(disconnectedErrorObservable)
                         .doOnUnsubscribe(disconnect);

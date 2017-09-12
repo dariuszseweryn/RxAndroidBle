@@ -11,7 +11,7 @@ Version 1.4.0-SNAPSHOT
 * _Changed Behaviour_ — `BluetoothGatt` is now called on a single background thread instead of the main thread (https://github.com/Polidea/RxAndroidBle/pull/255)
 * Decoupled command queues for different connections. (https://github.com/Polidea/RxAndroidBle/issues/250)
 
-Version 1.3.4-SNAPSHOT
+Version 1.3.4
 * Added @Nullable annotation to `RxBleDevice.getName()`. (https://github.com/Polidea/RxAndroidBle/issues/263)
 * Fixed connection not being disconnected when `DeadObjectException` was raised. (https://github.com/Polidea/RxAndroidBle/issues/275)
 
