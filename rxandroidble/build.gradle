@@ -45,7 +45,6 @@ android {
 
 dependencies {
     compile rootProject.ext.libs.rxjava
-    compile rootProject.ext.libs.rxandroid
     compile rootProject.ext.libs.rxrelay
     compile rootProject.ext.libs.support_annotations
     compile rootProject.ext.libs.dagger

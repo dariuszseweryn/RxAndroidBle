@@ -114,6 +114,8 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_SET_LOCAL_NOTIFICATION reason if failed to set characteristic notification"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        descriptorWriterMock.writeDescriptor(_, _) >> Observable.empty()
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> false
 
@@ -130,23 +132,64 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR reason if failed to write successfully CCC Descriptor when in DEFAULT mode"() {
+    def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR reason and a cause if failed to write successfully CCC Descriptor when in DEFAULT mode"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> Observable.error(new RuntimeException())
+        def testExceptionCause = new RuntimeException()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> Observable.error(testExceptionCause)
 
         when:
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
 
         then:
         testSubscriber.assertError {
-            BleCannotSetCharacteristicNotificationException e -> e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR
+            BleCannotSetCharacteristicNotificationException e ->
+                e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR &&
+                        e.getCause() == testExceptionCause
         }
 
         where:
         ack << ACK_VALUES
+    }
+
+    @Unroll
+    def "should proxy RxBleGattCallback.observeDisconnect() if happened before .subscribe()"() {
+        given:
+        def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
+        def testException = new RuntimeException("test")
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        disconnectedErrorBehaviourSubject.onError(testException)
+
+        when:
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
+
+        then:
+        testSubscriber.assertError(testException)
+
+        where:
+        [mode, ack] << [MODES, ACK_VALUES].combinations()
+    }
+
+    @Unroll
+    def "should proxy RxBleGattCallback.observeDisconnect() if happened after Observable<byte[]> emission"() {
+        given:
+        def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
+        def testException = new RuntimeException("test")
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
+
+        when:
+        disconnectedErrorBehaviourSubject.onError(testException)
+
+        then:
+        testSubscriber.assertValueCount(1)
+        testSubscriber.assertError(testException)
+
+        where:
+        [mode, ack] << [MODES, ACK_VALUES].combinations()
     }
 
     @Unroll
@@ -381,7 +424,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.error(testException)
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
                 .doOnNext { it.subscribe(testSubscriber) }
-                .subscribe()
+                .subscribe(new TestSubscriber<Observable<byte[]>>())
 
         when:
         disconnectedErrorBehaviourSubject.onError(testException)

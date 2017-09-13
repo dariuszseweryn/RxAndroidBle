@@ -10,8 +10,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.RxBleCustomOperation;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleRadioOperationCustom;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -131,7 +131,7 @@ public class CustomOperationExampleActivity extends RxAppCompatActivity {
         runCustomButton.setEnabled(isConnected());
     }
 
-    private static class CustomReadOperation implements RxBleRadioOperationCustom<byte[]> {
+    private static class CustomReadOperation implements RxBleCustomOperation<byte[]> {
 
         private RxBleConnection connection;
         private UUID characteristicUuid;
@@ -143,7 +143,7 @@ public class CustomOperationExampleActivity extends RxAppCompatActivity {
 
         /**
          * Reads a characteristic 5 times with a 250ms delay between each. This is easily achieve without
-         * a custom operation. The gain here is that only one operation goes into the RxBleRadio queue
+         * a custom operation. The gain here is that only one operation goes into the operation queue
          * eliminating the overhead of going on & out of the operation queue.
          */
         @NonNull

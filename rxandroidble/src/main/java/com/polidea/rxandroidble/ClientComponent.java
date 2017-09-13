@@ -9,28 +9,35 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
-import com.polidea.rxandroidble.internal.RxBleRadio;
-import com.polidea.rxandroidble.internal.radio.RxBleRadioImpl;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifier;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi18;
+import com.polidea.rxandroidble.internal.scan.ScanPreconditionsVerifierApi24;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueueImpl;
 import com.polidea.rxandroidble.scan.ScanResult;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.inject.Named;
+import javax.inject.Provider;
+
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.inject.Named;
-import javax.inject.Provider;
 import rx.Observable;
 import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -38,13 +45,22 @@ import rx.schedulers.Schedulers;
 @Component(modules = {ClientComponent.ClientModule.class, ClientComponent.ClientModuleBinder.class})
 public interface ClientComponent {
 
+    class NamedExecutors {
+
+        public static final String BLUETOOTH_INTERACTION = "executor_bluetooth_interaction";
+        public static final String BLUETOOTH_CALLBACKS = "executor_bluetooth_callbacks";
+        public static final String CONNECTION_QUEUE = "executor_connection_queue";
+        private NamedExecutors() {
+
+        }
+    }
+
     class NamedSchedulers {
 
-        public static final String MAIN_THREAD = "main-thread";
         public static final String COMPUTATION = "computation";
-        public static final String RADIO_OPERATIONS = "callback-emitter";
         public static final String TIMEOUT = "timeout";
-        public static final String GATT_CALLBACK = "callback";
+        public static final String BLUETOOTH_INTERACTION = "bluetooth_interaction";
+        public static final String BLUETOOTH_CALLBACKS = "bluetooth_callbacks";
         private NamedSchedulers() {
 
         }
@@ -116,28 +132,59 @@ public interface ClientComponent {
         }
 
         @Provides
-        @Named(NamedSchedulers.GATT_CALLBACK)
+        @Named(NamedExecutors.CONNECTION_QUEUE)
         @ClientScope
-        static ExecutorService provideGattCallbackExecutorService() {
+        static ExecutorService provideConnectionQueueExecutorService() {
+            return Executors.newCachedThreadPool();
+        }
+
+        @Provides
+        @Named(NamedExecutors.BLUETOOTH_INTERACTION)
+        @ClientScope
+        static ExecutorService provideBluetoothInteractionExecutorService() {
             return Executors.newSingleThreadExecutor();
         }
 
         @Provides
-        @Named(NamedSchedulers.GATT_CALLBACK)
+        @Named(NamedExecutors.BLUETOOTH_CALLBACKS)
         @ClientScope
-        static Scheduler provideGattCallbackScheduler(@Named(NamedSchedulers.GATT_CALLBACK) ExecutorService executorService) {
-            return Schedulers.from(executorService);
+        static ExecutorService provideBluetoothCallbacksExecutorService() {
+            return Executors.newSingleThreadExecutor();
+        }
+
+        @Provides
+        @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
+        @ClientScope
+        static Scheduler provideBluetoothInteractionScheduler(@Named(NamedExecutors.BLUETOOTH_INTERACTION) ExecutorService service) {
+            return Schedulers.from(service);
+        }
+
+        @Provides
+        @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
+        @ClientScope
+        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedExecutors.BLUETOOTH_CALLBACKS) ExecutorService service) {
+            return Schedulers.from(service);
+        }
+
+        @Provides
+        static ClientComponentFinalizer provideFinalizationCloseable(
+                @Named(NamedExecutors.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
+                @Named(NamedExecutors.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService,
+                @Named(NamedExecutors.CONNECTION_QUEUE) final ExecutorService connectionQueueExecutorService
+        ) {
+            return new ClientComponentFinalizer() {
+                @Override
+                public void onFinalize() {
+                    interactionExecutorService.shutdown();
+                    callbacksExecutorService.shutdown();
+                    connectionQueueExecutorService.shutdown();
+                }
+            };
         }
 
         @Provides
         LocationManager provideLocationManager() {
             return (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        }
-
-        @Provides
-        @Named(NamedSchedulers.MAIN_THREAD)
-        static Scheduler provideMainThreadScheduler() {
-            return AndroidSchedulers.mainThread();
         }
 
         @Provides
@@ -191,6 +238,19 @@ public interface ClientComponent {
         static byte[] provideDisableNotificationValue() {
             return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
         }
+
+        @Provides
+        static ScanPreconditionsVerifier provideScanPreconditionVerifier(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<ScanPreconditionsVerifierApi18> scanPreconditionVerifierForApi18,
+                Provider<ScanPreconditionsVerifierApi24> scanPreconditionVerifierForApi24
+        ) {
+            if (deviceSdk < Build.VERSION_CODES.N) {
+                return scanPreconditionVerifierForApi18.get();
+            } else {
+                return scanPreconditionVerifierForApi24.get();
+            }
+        }
     }
 
     @Module
@@ -209,11 +269,7 @@ public interface ClientComponent {
 
         @Binds
         @ClientScope
-        abstract RxBleRadio bindRxBleRadio(RxBleRadioImpl rxBleRadio);
-
-        @Binds
-        @Named(NamedSchedulers.RADIO_OPERATIONS)
-        abstract Scheduler bindCallbackScheduler(@Named(NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler);
+        abstract ClientOperationQueue bindClientOperationQueue(ClientOperationQueueImpl clientOperationQueue);
 
         @Binds
         @Named(NamedSchedulers.TIMEOUT)
@@ -226,4 +282,10 @@ public interface ClientComponent {
     LocationServicesOkObservable locationServicesOkObservable();
 
     RxBleClient rxBleClient();
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    interface ClientComponentFinalizer {
+
+        void onFinalize();
+    }
 }

@@ -25,36 +25,36 @@ public class OperationsProviderImpl implements OperationsProvider {
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGatt bluetoothGatt;
     private final TimeoutConfiguration timeoutConfiguration;
-    private final Scheduler mainThreadScheduler;
+    private final Scheduler bluetoothInteractionScheduler;
     private final Scheduler timeoutScheduler;
-    private final Provider<RxBleRadioOperationReadRssi> rssiReadOperationProvider;
+    private final Provider<ReadRssiOperation> rssiReadOperationProvider;
 
     @Inject
     OperationsProviderImpl(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-            @Named(ClientComponent.NamedSchedulers.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
-            Provider<RxBleRadioOperationReadRssi> rssiReadOperationProvider) {
+            Provider<ReadRssiOperation> rssiReadOperationProvider) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.timeoutConfiguration = timeoutConfiguration;
-        this.mainThreadScheduler = mainThreadScheduler;
+        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutScheduler = timeoutScheduler;
         this.rssiReadOperationProvider = rssiReadOperationProvider;
     }
 
     @Override
-    public RxBleRadioOperationCharacteristicLongWrite provideLongWriteOperation(
+    public CharacteristicLongWriteOperation provideLongWriteOperation(
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
             PayloadSizeLimitProvider maxBatchSizeProvider,
             byte[] bytes) {
 
-        return new RxBleRadioOperationCharacteristicLongWrite(bluetoothGatt,
+        return new CharacteristicLongWriteOperation(bluetoothGatt,
                 rxBleGattCallback,
-                mainThreadScheduler,
+                bluetoothInteractionScheduler,
                 timeoutConfiguration,
                 bluetoothGattCharacteristic,
                 maxBatchSizeProvider,
@@ -64,48 +64,48 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public RxBleRadioOperationMtuRequest provideMtuChangeOperation(int requestedMtu) {
-        return new RxBleRadioOperationMtuRequest(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, requestedMtu);
+    public MtuRequestOperation provideMtuChangeOperation(int requestedMtu) {
+        return new MtuRequestOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, requestedMtu);
     }
 
     @Override
-    public RxBleRadioOperationCharacteristicRead provideReadCharacteristic(BluetoothGattCharacteristic characteristic) {
-        return new RxBleRadioOperationCharacteristicRead(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic);
+    public CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic) {
+        return new CharacteristicReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic);
     }
 
     @Override
-    public RxBleRadioOperationDescriptorRead provideReadDescriptor(BluetoothGattDescriptor descriptor) {
-        return new RxBleRadioOperationDescriptorRead(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, descriptor);
+    public DescriptorReadOperation provideReadDescriptor(BluetoothGattDescriptor descriptor) {
+        return new DescriptorReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, descriptor);
     }
 
     @Override
-    public RxBleRadioOperationReadRssi provideRssiReadOperation() {
+    public ReadRssiOperation provideRssiReadOperation() {
         return rssiReadOperationProvider.get();
     }
 
     @Override
-    public RxBleRadioOperationServicesDiscover provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit) {
-        return new RxBleRadioOperationServicesDiscover(rxBleGattCallback, bluetoothGatt,
+    public ServiceDiscoveryOperation provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit) {
+        return new ServiceDiscoveryOperation(rxBleGattCallback, bluetoothGatt,
                 new TimeoutConfiguration(timeout, timeUnit, timeoutScheduler));
     }
 
     @Override
-    public RxBleRadioOperationCharacteristicWrite provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data) {
-        return new RxBleRadioOperationCharacteristicWrite(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic, data);
+    public CharacteristicWriteOperation provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data) {
+        return new CharacteristicWriteOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic, data);
     }
 
     @Override
-    public RxBleRadioOperationDescriptorWrite provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
-        return new RxBleRadioOperationDescriptorWrite(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
+    public DescriptorWriteOperation provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
+        return new DescriptorWriteOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT, bluetoothGattDescriptor, data);
     }
 
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public RxBleRadioOperationConnectionPriorityRequest provideConnectionPriorityChangeOperation(int connectionPriority,
-                                                                                                 long delay,
-                                                                                                 TimeUnit timeUnit) {
-        return new RxBleRadioOperationConnectionPriorityRequest(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
+    public ConnectionPriorityChangeOperation provideConnectionPriorityChangeOperation(int connectionPriority,
+                                                                                      long delay,
+                                                                                      TimeUnit timeUnit) {
+        return new ConnectionPriorityChangeOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
                 connectionPriority, delay, timeUnit, timeoutScheduler);
     }
 }

@@ -46,7 +46,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
         mockDisconnectionRouter = Mock DisconnectionRouter
         mockDisconnectionSubject = PublishSubject.create()
         mockDisconnectionRouter.asObservable() >> mockDisconnectionSubject
-        objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), mockDisconnectionRouter)
+        objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), mockDisconnectionRouter, new NativeCallbackDispatcher())
     }
 
     def "sanity check"() {

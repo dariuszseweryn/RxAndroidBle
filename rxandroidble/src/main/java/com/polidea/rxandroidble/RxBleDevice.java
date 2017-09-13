@@ -14,24 +14,30 @@ import rx.Observable;
 public interface RxBleDevice {
 
     /**
-     * Observe changes to connection state of the device. On subscription it returns immediately last known RxBleConnectionState.
+     * Observe changes to connection state of the device's {@link android.bluetooth.BluetoothGatt}.
+     * This Observable will never emit errors.
      *
-     * @return the most current RxBleConnectionState
+     * If you would like to have the initial state as well you can use observeConnectionStateChanges().startWith(getConnectionState())
+     *
+     * @return observable that will emit {@link com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState} changes
      */
     Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges();
 
     /**
-     * Returns current connection state
+     * Returns current connection state of the device's {@link android.bluetooth.BluetoothGatt}
+     *
+     * @return the RxBleConnectionState
      */
     RxBleConnection.RxBleConnectionState getConnectionState();
 
     /**
      * @param context     Android's context.
-     * @param autoConnect Marker related with
+     * @param autoConnect Flag related to
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
      *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
      *                    auto connect flag set to true the connection will fail
-     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range.
+     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range after a 30 seconds
+     *                    timeout.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
@@ -61,11 +67,12 @@ public interface RxBleDevice {
      * won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
      * the moment of #establishConnection call.
      *
-     * @param autoConnect Marker related with
+     * @param autoConnect Flag related to
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
      *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
      *                    auto connect flag set to true the connection will fail
-     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range.
+     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range after a 30 seconds
+     *                    timeout.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
