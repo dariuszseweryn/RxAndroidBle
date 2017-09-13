@@ -1,7 +1,7 @@
 ext {
-    supportVersion = '25.3.0'
+    supportVersion = '25.3.1'
     buildToolsVersionVariable = "25.0.3"
-    rxJavaVersion = '1.3.0'
+    rxJavaVersion = '1.3.1'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     daggerVersion = '2.8'
@@ -14,10 +14,10 @@ ext {
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
             rxrelay            : 'com.jakewharton.rxrelay:rxrelay:1.2.0',
             junit              : 'junit:junit:4.12',
-            groovy             : 'org.codehaus.groovy:groovy:2.4.7:grooid',
-            spock              : ['org.spockframework:spock-core:1.0-groovy-2.4',
+            groovy             : 'org.codehaus.groovy:groovy:2.4.12:grooid',
+            spock              : ['org.spockframework:spock-core:1.1-groovy-2.4',
                                   'cglib:cglib-nodep:3.2.5',
-                                  'org.objenesis:objenesis:2.5.1'],
+                                  'org.objenesis:objenesis:2.6'],
             robospock          : 'org.robospock:robospock:1.0.1',
             dagger             : "com.google.dagger:dagger:$daggerVersion",
             dagger_compiler    : "com.google.dagger:dagger-compiler:$daggerVersion"
