@@ -353,7 +353,7 @@ public class RxBleGattCallback {
         }
 
         boolean hasObservers() {
-            return valueRelay.hasObservers() || valueRelay.hasObservers();
+            return valueRelay.hasObservers() || errorRelay.hasObservers();
         }
     }
 }
