@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+Version 1.4.1
+* Fixed issue hasObservers conditional for Output class (https://github.com/Polidea/RxAndroidBle/issues/283)
+
 Version 1.4.0
 * Added native callback usage support in custom operations. You may consider this API if your implementation is performance critical. (https://github.com/Polidea/RxAndroidBle/issues/165)
 * Added pre-scan verification for excessive scan (undocumented Android 7.0 "feature") (https://github.com/Polidea/RxAndroidBle/issues/227)
