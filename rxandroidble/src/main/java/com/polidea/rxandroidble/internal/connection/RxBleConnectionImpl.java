@@ -83,6 +83,21 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.longWriteOperationBuilderProvider = longWriteOperationBuilderProvider;
         this.callbackScheduler = callbackScheduler;
         this.illegalOperationChecker = illegalOperationChecker;
+
+        // unsubscription is not needed as all objects are on @ConnectionScope and will get GCed together
+        gattCallback.getOnMtuChanged()
+                .retryWhen(new Func1<Observable<? extends Throwable>, Observable<?>>() {
+                    @Override
+                    public Observable<?> call(Observable<? extends Throwable> observable) {
+                        return observable;
+                    }
+                })
+                .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer newMtu) {
+                        currentMtu = newMtu;
+                    }
+                });
     }
 
     @Override
@@ -116,14 +131,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public Observable<Integer> requestMtu(int mtu) {
-        return operationQueue
-                .queue(operationsProvider.provideMtuChangeOperation(mtu))
-                .doOnNext(new Action1<Integer>() {
-                    @Override
-                    public void call(Integer newMtu) {
-                        RxBleConnectionImpl.this.currentMtu = newMtu;
-                    }
-                });
+        return operationQueue.queue(operationsProvider.provideMtuChangeOperation(mtu));
     }
 
     @Override

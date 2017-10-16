@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.support.annotation.NonNull
+import com.jakewharton.rxrelay.PublishRelay
 import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
@@ -48,17 +49,22 @@ class RxBleConnectionTest extends Specification {
             testScheduler, { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
-    def objectUnderTest = new RxBleConnectionImpl(dummyQueue, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
-            notificationAndIndicationManagerMock, descriptorWriterMock, operationsProviderMock,
-            { new LongWriteOperationBuilderImpl(dummyQueue, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
-    )
+    def mtuChangeObservablePublishRelay = PublishRelay.<Observable<Integer>>create();
+    def observeDisconnectPublishSubject = PublishSubject.create()
+    def objectUnderTest;
     def connectionStateChange = BehaviorSubject.create()
     def TestSubscriber testSubscriber
 
     def setup() {
         testSubscriber = new TestSubscriber()
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
+        gattCallback.getOnMtuChanged() >> mtuChangeObservablePublishRelay.switchMap { it }
+        gattCallback.observeDisconnect() >> observeDisconnectPublishSubject
         illegalOperationChecker.checkAnyPropertyMatches(_, _) >> Completable.complete()
+        objectUnderTest = new RxBleConnectionImpl(dummyQueue, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
+                notificationAndIndicationManagerMock, descriptorWriterMock, operationsProviderMock,
+                { new LongWriteOperationBuilderImpl(dummyQueue, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
+        )
     }
 
     def "should proxy all calls to .discoverServices() to ServiceDiscoveryManager with proper timeouts"() {
@@ -283,6 +289,45 @@ class RxBleConnectionTest extends Specification {
         NotificationSetupMode.COMPAT  | false | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupNotification(aChar.getUuid(), nsm).subscribe() }
         NotificationSetupMode.COMPAT  | true  | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupIndication(aChar, nsm) }
         NotificationSetupMode.COMPAT  | true  | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupIndication(aChar.getUuid(), nsm).subscribe() }
+    }
+
+    def "should return the default GATT_MTU_MINIMUM before the RxBleGattCallback.onMtuChanged() emits"() {
+
+        expect:
+        objectUnderTest.getMtu() == RxBleConnection.GATT_MTU_MINIMUM
+    }
+
+    def "should return the updated MTU after the RxBleGattCallback.onMtuChanged() emits"() {
+
+        given:
+        def newMtu = 42
+        mtuChangeObservablePublishRelay.call(just(newMtu))
+
+        expect:
+        objectUnderTest.getMtu() == newMtu
+    }
+
+    def "should return the updated MTU after the RxBleGattCallback.onMtuChanged() emits second time"() {
+
+        given:
+        def firstMtu = 42
+        def secondMtu = 50
+        mtuChangeObservablePublishRelay.call(just(firstMtu))
+        mtuChangeObservablePublishRelay.call(just(secondMtu))
+
+        expect:
+        objectUnderTest.getMtu() == secondMtu
+    }
+
+    def "should return the updated MTU after the first RxBleGattCallback.onMtuChanged() emits error"() {
+
+        given:
+        def newMtu = 42
+        mtuChangeObservablePublishRelay.call(error(new RuntimeException("test")))
+        mtuChangeObservablePublishRelay.call(just(newMtu))
+
+        expect:
+        objectUnderTest.getMtu() == newMtu
     }
 
     def "should pass items emitted by observable returned from RxBleCustomOperation.asObservable()"() {
