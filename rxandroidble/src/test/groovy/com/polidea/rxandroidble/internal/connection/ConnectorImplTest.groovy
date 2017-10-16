@@ -8,6 +8,7 @@ import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.operations.ConnectOperation
 import java.util.concurrent.atomic.AtomicReference
 import rx.Observable
+import rx.Subscription
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -23,6 +24,7 @@ public class ConnectorImplTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     ConnectOperation mockConnect = Mock ConnectOperation
     DisconnectAction mockDisconnectAction = Mock DisconnectAction
+    PublishSubject mockMtuWatcher = PublishSubject.create()
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
     BluetoothGatt mockGatt = Mock BluetoothGatt
     ConnectionSetup defaultConnectionSetup = new ConnectionSetup.Builder().build()
@@ -36,6 +38,7 @@ public class ConnectorImplTest extends Specification {
         mockConnectionComponent.disconnectAction() >> mockDisconnectAction
         mockConnectionComponent.gattCallback() >> mockCallback
         mockConnectionComponent.rxBleConnection() >> mockConnection
+        mockConnectionComponent.mtuWatcherCompletable() >> mockMtuWatcher.asObservable().toCompletable()
         mockCallback.observeDisconnect() >> disconnectErrorPublishSubject
 
         objectUnderTest = new ConnectorImpl(
@@ -69,6 +72,24 @@ public class ConnectorImplTest extends Specification {
 
         where:
         [autoConnect, suppressIllegalOperations] << [[true, false], [true, false]].combinations()
+    }
+
+    def "should subscribe MtuWatcherCompletable as long as prepareConnection() is subscribed"() {
+
+        given:
+        clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
+
+        when:
+        Subscription s = objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe()
+
+        then:
+        mockMtuWatcher.hasObservers()
+
+        when:
+        s.unsubscribe()
+
+        then:
+        !mockMtuWatcher.hasObservers()
     }
 
     def "subscribing prepareConnection() should schedule provided ConnectOperation on ClientOperationQueue"() {

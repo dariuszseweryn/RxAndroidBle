@@ -47,9 +47,11 @@ public class ConnectorImpl implements Connector {
                 final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
                 final DisconnectAction disconnect = connectionComponent.disconnectAction();
 
-                return newConnectionObservable
-                        .delaySubscription(connectedObservable)
-                        .mergeWith(disconnectedErrorObservable)
+                return Observable.merge(
+                        newConnectionObservable.delaySubscription(connectedObservable),
+                        disconnectedErrorObservable,
+                        connectionComponent.mtuWatcherCompletable().<RxBleConnection>toObservable()
+                )
                         .doOnUnsubscribe(disconnect);
             }
         });

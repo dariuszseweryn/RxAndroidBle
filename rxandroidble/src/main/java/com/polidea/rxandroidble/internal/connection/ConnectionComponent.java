@@ -4,6 +4,8 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.ConnectOperation;
 
 import dagger.Subcomponent;
+import javax.inject.Named;
+import rx.Completable;
 
 @ConnectionScope
 @Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
@@ -17,7 +19,14 @@ public interface ConnectionComponent {
 
     class NamedInts {
         static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
+        static final String GATT_MTU_MINIMUM = "GATT_MTU_MINIMUM";
         private NamedInts() { }
+    }
+
+    class NamedCompletables {
+        static final String MTU_WATCHER_COMPLETABLE = "MTU_WATCHER_COMPLETABLE";
+        // static final String CONNECTION_PRIORITY_WATCHER_COMPLETABLE = "MTU_WATCHER_COMPLETABLE";
+        private NamedCompletables() { }
     }
 
     @Subcomponent.Builder
@@ -39,4 +48,8 @@ public interface ConnectionComponent {
 
     @ConnectionScope
     RxBleGattCallback gattCallback();
+
+    @ConnectionScope
+    @Named(NamedCompletables.MTU_WATCHER_COMPLETABLE)
+    Completable mtuWatcherCompletable();
 }

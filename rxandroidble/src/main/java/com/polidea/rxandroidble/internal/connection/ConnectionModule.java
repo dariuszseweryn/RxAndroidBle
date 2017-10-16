@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Named;
 import javax.inject.Provider;
 
@@ -27,6 +28,11 @@ public class ConnectionModule {
     @ConnectionScope
     @Provides @Named(AUTO_CONNECT) boolean provideAutoConnect() {
         return autoConnect;
+    }
+
+    @Provides
+    AtomicInteger provideAtomicInteger() {
+        return new AtomicInteger();
     }
 
     @Provides
