@@ -18,7 +18,7 @@ class MtuWatcher extends Completable implements MtuProvider {
     MtuWatcher(
             final RxBleGattCallback rxBleGattCallback,
             final AtomicInteger atomicInteger,
-            @Named(ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD) final int initialValue
+            @Named(ConnectionComponent.NamedInts.GATT_MTU_MINIMUM) final int initialValue
     ) {
         super(new OnSubscribe() {
             @Override
