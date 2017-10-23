@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble.internal.connection
 
-import java.util.concurrent.atomic.AtomicInteger
 import rx.Observable
 import rx.subjects.PublishSubject
 import spock.lang.Specification
@@ -16,7 +15,7 @@ public class MtuWatcherTest extends Specification {
 
     private void setupObjectUnderTest(int minimumGattMtu) {
         mockGattCallback.getOnMtuChanged() >> onMtuChangedObservablePublishSubject.switchMap { it }
-        objectUnderTest = new MtuWatcher(mockGattCallback, new AtomicInteger(), minimumGattMtu)
+        objectUnderTest = new MtuWatcher(mockGattCallback, minimumGattMtu)
     }
 
     @Unroll
@@ -37,7 +36,7 @@ public class MtuWatcherTest extends Specification {
 
         given:
         setupObjectUnderTest(10)
-        objectUnderTest.subscribe()
+        objectUnderTest.onConnectionSubscribed()
         onMtuChangedObservablePublishSubject.onNext(Observable.just(newMtu))
 
         expect:
@@ -52,7 +51,7 @@ public class MtuWatcherTest extends Specification {
 
         given:
         setupObjectUnderTest(10)
-        objectUnderTest.subscribe()
+        objectUnderTest.onConnectionSubscribed()
         onMtuChangedObservablePublishSubject.onNext(Observable.error(new Throwable("test")))
         onMtuChangedObservablePublishSubject.onNext(Observable.just(newMtu))
 
@@ -61,5 +60,26 @@ public class MtuWatcherTest extends Specification {
 
         where:
         newMtu << [60, 900]
+    }
+
+    def "should subscribe from RxBleGattCallback.getOnMtuChanged() accordingly"() {
+
+        given:
+        setupObjectUnderTest(10)
+
+        expect:
+        !onMtuChangedObservablePublishSubject.hasObservers()
+
+        when:
+        objectUnderTest.onConnectionSubscribed()
+
+        then:
+        onMtuChangedObservablePublishSubject.hasObservers()
+
+        when:
+        objectUnderTest.onConnectionUnsubscribed()
+
+        then:
+        !onMtuChangedObservablePublishSubject.hasObservers()
     }
 }

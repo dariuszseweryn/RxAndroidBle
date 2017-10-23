@@ -1,45 +1,47 @@
 package com.polidea.rxandroidble.internal.connection;
 
 
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import javax.inject.Named;
-import rx.Completable;
-import rx.CompletableSubscriber;
-import rx.Subscription;
+import rx.Observable;
 import rx.functions.Action1;
+import rx.subscriptions.SerialSubscription;
 
 @ConnectionScope
-class MtuWatcher extends Completable implements MtuProvider {
+class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Action1<Integer> {
 
-    private final AtomicInteger currentMtuAtomicInteger;
+    private Integer currentMtu;
+
+    private final Observable<Integer> mtuObservable;
+
+    private final SerialSubscription serialSubscription = new SerialSubscription();
 
     @Inject
     MtuWatcher(
             final RxBleGattCallback rxBleGattCallback,
-            final AtomicInteger atomicInteger,
             @Named(ConnectionComponent.NamedInts.GATT_MTU_MINIMUM) final int initialValue
     ) {
-        super(new OnSubscribe() {
-            @Override
-            public void call(CompletableSubscriber completableSubscriber) {
-                Subscription mtuSubscription = rxBleGattCallback.getOnMtuChanged()
-                        .retry()
-                        .subscribe(new Action1<Integer>() {
-                            @Override
-                            public void call(Integer newMtu) {
-                                atomicInteger.set(newMtu);
-                            }
-                        });
-                completableSubscriber.onSubscribe(mtuSubscription);
-            }
-        });
-        atomicInteger.set(initialValue);
-        this.currentMtuAtomicInteger = atomicInteger;
+        this.mtuObservable = rxBleGattCallback.getOnMtuChanged().retry();
+        this.currentMtu = initialValue;
     }
 
     @Override
     public int getMtu() {
-        return currentMtuAtomicInteger.get();
+        return currentMtu;
+    }
+
+    @Override
+    public void onConnectionSubscribed() {
+        serialSubscription.set(mtuObservable.subscribe(this));
+    }
+
+    @Override
+    public void onConnectionUnsubscribed() {
+        serialSubscription.unsubscribe();
+    }
+
+    @Override
+    public void call(Integer newMtu) {
+        this.currentMtu = newMtu;
     }
 }

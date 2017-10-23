@@ -1,22 +1,19 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothGatt;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
 
+import android.bluetooth.BluetoothGatt;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueueImpl;
-
 import dagger.Binds;
-import javax.inject.Named;
-
 import dagger.Module;
 import dagger.Provides;
-import rx.Completable;
-
-import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
-import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
+import dagger.multibindings.IntoSet;
+import javax.inject.Named;
 
 @Module
 abstract class ConnectionModuleBinder {
@@ -49,8 +46,12 @@ abstract class ConnectionModuleBinder {
     abstract MtuProvider bindCurrentMtuProvider(MtuWatcher mtuWatcher);
 
     @Binds
-    @Named(ConnectionComponent.NamedCompletables.MTU_WATCHER_COMPLETABLE)
-    abstract Completable bindMtuWatcherCompletable(MtuWatcher mtuWatcher);
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindMtuWatcherSubscriptionAware(MtuWatcher mtuWatcher);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionAware(DisconnectAction disconnectAction);
 
     @Binds
     @ConnectionScope

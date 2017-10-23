@@ -23,9 +23,9 @@ public class ConnectorImplTest extends Specification {
     RxBleConnection mockConnection = Mock RxBleConnection
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     ConnectOperation mockConnect = Mock ConnectOperation
-    DisconnectAction mockDisconnectAction = Mock DisconnectAction
-    PublishSubject mockMtuWatcher = PublishSubject.create()
     TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
+    ConnectionSubscriptionWatcher mockConnectionSubscriptionAware0 = Mock ConnectionSubscriptionWatcher
+    ConnectionSubscriptionWatcher mockConnectionSubscriptionAware1 = Mock ConnectionSubscriptionWatcher
     BluetoothGatt mockGatt = Mock BluetoothGatt
     ConnectionSetup defaultConnectionSetup = new ConnectionSetup.Builder().build()
 
@@ -35,10 +35,9 @@ public class ConnectorImplTest extends Specification {
         mockConnectionComponentBuilder.connectionModule(_) >> mockConnectionComponentBuilder
         mockConnectionComponentBuilder.build() >> mockConnectionComponent
         mockConnectionComponent.connectOperation() >> mockConnect
-        mockConnectionComponent.disconnectAction() >> mockDisconnectAction
         mockConnectionComponent.gattCallback() >> mockCallback
         mockConnectionComponent.rxBleConnection() >> mockConnection
-        mockConnectionComponent.mtuWatcherCompletable() >> mockMtuWatcher.asObservable().toCompletable()
+        mockConnectionComponent.connectionSubscriptionAwares() >> new HashSet<>(Arrays.asList(mockConnectionSubscriptionAware0, mockConnectionSubscriptionAware1))
         mockCallback.observeDisconnect() >> disconnectErrorPublishSubject
 
         objectUnderTest = new ConnectorImpl(
@@ -74,7 +73,7 @@ public class ConnectorImplTest extends Specification {
         [autoConnect, suppressIllegalOperations] << [[true, false], [true, false]].combinations()
     }
 
-    def "should subscribe MtuWatcherCompletable as long as prepareConnection() is subscribed"() {
+    def "should call ConnectionSubscriptionAware according to prepareConnection() subscription"() {
 
         given:
         clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
@@ -83,13 +82,36 @@ public class ConnectorImplTest extends Specification {
         Subscription s = objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe()
 
         then:
-        mockMtuWatcher.hasObservers()
+        1 * mockConnectionSubscriptionAware0.onConnectionSubscribed()
+        1 * mockConnectionSubscriptionAware1.onConnectionSubscribed()
 
         when:
         s.unsubscribe()
 
         then:
-        !mockMtuWatcher.hasObservers()
+        1 * mockConnectionSubscriptionAware0.onConnectionUnsubscribed()
+        1 * mockConnectionSubscriptionAware1.onConnectionUnsubscribed()
+    }
+
+    def "should call ConnectionSubscriptionAware according to prepareConnection() subscription (error case)"() {
+
+        given:
+        PublishSubject connectPublishSubject = PublishSubject.create()
+        clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
+
+        when:
+        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+
+        then:
+        1 * mockConnectionSubscriptionAware0.onConnectionSubscribed()
+        1 * mockConnectionSubscriptionAware1.onConnectionSubscribed()
+
+        when:
+        connectPublishSubject.onError(new Throwable("test"))
+
+        then:
+        1 * mockConnectionSubscriptionAware0.onConnectionUnsubscribed()
+        1 * mockConnectionSubscriptionAware1.onConnectionUnsubscribed()
     }
 
     def "subscribing prepareConnection() should schedule provided ConnectOperation on ClientOperationQueue"() {
@@ -99,43 +121,6 @@ public class ConnectorImplTest extends Specification {
 
         then:
         1 * clientOperationQueueMock.queue(mockConnect)
-    }
-
-    def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue if ClientOperationQueue.queue(Operation) emits error"() {
-
-        given:
-        clientOperationQueueMock.queue(mockConnect) >> Observable.error(new Throwable("test"))
-
-        when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
-
-        then:
-        1 * mockDisconnectAction.call()
-    }
-
-    def "prepareConnection() should schedule provided DisconnectOperation on ClientOperationQueue only once if ClientOperationQueue.queue(Operation) emits error and subscriber will unsubscribe"() {
-
-        given:
-        clientOperationQueueMock.queue(mockConnect) >> Observable.error(new Throwable("test"))
-
-        when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
-
-        then:
-        1 * mockDisconnectAction.call()
-    }
-
-    def "prepareConnection() should schedule provided DisconnectOperation on operation queue when subscriber will unsubscribe"() {
-
-        given:
-        clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
-
-        when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
-        testSubscriber.unsubscribe()
-
-        then:
-        1 * mockDisconnectAction.call()
     }
 
     def "prepareConnection() should emit RxBleConnection and not complete"() {

@@ -2,10 +2,8 @@ package com.polidea.rxandroidble.internal.connection;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.ConnectOperation;
-
 import dagger.Subcomponent;
-import javax.inject.Named;
-import rx.Completable;
+import java.util.Set;
 
 @ConnectionScope
 @Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
@@ -23,12 +21,6 @@ public interface ConnectionComponent {
         private NamedInts() { }
     }
 
-    class NamedCompletables {
-        static final String MTU_WATCHER_COMPLETABLE = "MTU_WATCHER_COMPLETABLE";
-        // static final String CONNECTION_PRIORITY_WATCHER_COMPLETABLE = "MTU_WATCHER_COMPLETABLE";
-        private NamedCompletables() { }
-    }
-
     @Subcomponent.Builder
     interface Builder {
 
@@ -41,15 +33,11 @@ public interface ConnectionComponent {
     ConnectOperation connectOperation();
 
     @ConnectionScope
-    DisconnectAction disconnectAction();
-
-    @ConnectionScope
     RxBleConnection rxBleConnection();
 
     @ConnectionScope
     RxBleGattCallback gattCallback();
 
     @ConnectionScope
-    @Named(NamedCompletables.MTU_WATCHER_COMPLETABLE)
-    Completable mtuWatcherCompletable();
+    Set<ConnectionSubscriptionWatcher> connectionSubscriptionAwares();
 }

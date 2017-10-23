@@ -6,10 +6,12 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.inject.Inject;
 
 import rx.Observable;
+import rx.functions.Action0;
 import rx.functions.Func0;
 
 public class ConnectorImpl implements Connector {
@@ -45,14 +47,28 @@ public class ConnectorImpl implements Connector {
                 });
                 final Observable<BluetoothGatt> connectedObservable = clientOperationQueue.queue(connectionComponent.connectOperation());
                 final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
-                final DisconnectAction disconnect = connectionComponent.disconnectAction();
+                final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionAwares();
 
                 return Observable.merge(
                         newConnectionObservable.delaySubscription(connectedObservable),
-                        disconnectedErrorObservable,
-                        connectionComponent.mtuWatcherCompletable().<RxBleConnection>toObservable()
+                        disconnectedErrorObservable
                 )
-                        .doOnUnsubscribe(disconnect);
+                        .doOnSubscribe(new Action0() {
+                            @Override
+                            public void call() {
+                                for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
+                                    csa.onConnectionSubscribed();
+                                }
+                            }
+                        })
+                        .doOnUnsubscribe(new Action0() {
+                            @Override
+                            public void call() {
+                                for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
+                                    csa.onConnectionUnsubscribed();
+                                }
+                            }
+                        });
             }
         });
     }

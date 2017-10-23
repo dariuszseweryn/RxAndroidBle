@@ -1,18 +1,14 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothGattCharacteristic;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Named;
-import javax.inject.Provider;
-
 import dagger.Module;
 import dagger.Provides;
-
-import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 @Module
 public class ConnectionModule {
@@ -28,11 +24,6 @@ public class ConnectionModule {
     @ConnectionScope
     @Provides @Named(AUTO_CONNECT) boolean provideAutoConnect() {
         return autoConnect;
-    }
-
-    @Provides
-    AtomicInteger provideAtomicInteger() {
-        return new AtomicInteger();
     }
 
     @Provides
