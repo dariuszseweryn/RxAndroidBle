@@ -1,20 +1,16 @@
 package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothDevice;
-
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.internal.operations.DisconnectOperation;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
-
 import javax.inject.Inject;
-
 import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Actions;
 
 @ConnectionScope
-public class DisconnectAction implements Action0 {
+public class DisconnectAction implements ConnectionSubscriptionWatcher {
 
     private final ConnectionOperationQueue connectionOperationQueue;
     private final ClientOperationQueue clientOperationQueue;
@@ -22,8 +18,8 @@ public class DisconnectAction implements Action0 {
     private final BluetoothDevice bluetoothDevice;
 
     @Inject
-    public DisconnectAction(ConnectionOperationQueue connectionOperationQueue, ClientOperationQueue clientOperationQueue,
-                            DisconnectOperation operationDisconnect, BluetoothDevice bluetoothDevice) {
+    DisconnectAction(ConnectionOperationQueue connectionOperationQueue, ClientOperationQueue clientOperationQueue,
+                     DisconnectOperation operationDisconnect, BluetoothDevice bluetoothDevice) {
         this.connectionOperationQueue = connectionOperationQueue;
         this.clientOperationQueue = clientOperationQueue;
         this.operationDisconnect = operationDisconnect;
@@ -31,7 +27,12 @@ public class DisconnectAction implements Action0 {
     }
 
     @Override
-    public void call() {
+    public void onConnectionSubscribed() {
+        // do nothing
+    }
+
+    @Override
+    public void onConnectionUnsubscribed() {
         connectionOperationQueue.terminate(new BleDisconnectedException(bluetoothDevice.getAddress()));
         enqueueDisconnectOperation(operationDisconnect);
     }

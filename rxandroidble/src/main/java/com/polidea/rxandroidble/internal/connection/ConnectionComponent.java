@@ -2,8 +2,8 @@ package com.polidea.rxandroidble.internal.connection;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.ConnectOperation;
-
 import dagger.Subcomponent;
+import java.util.Set;
 
 @ConnectionScope
 @Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
@@ -17,6 +17,7 @@ public interface ConnectionComponent {
 
     class NamedInts {
         static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
+        static final String GATT_MTU_MINIMUM = "GATT_MTU_MINIMUM";
         private NamedInts() { }
     }
 
@@ -32,11 +33,11 @@ public interface ConnectionComponent {
     ConnectOperation connectOperation();
 
     @ConnectionScope
-    DisconnectAction disconnectAction();
-
-    @ConnectionScope
     RxBleConnection rxBleConnection();
 
     @ConnectionScope
     RxBleGattCallback gattCallback();
+
+    @ConnectionScope
+    Set<ConnectionSubscriptionWatcher> connectionSubscriptionWatchers();
 }
