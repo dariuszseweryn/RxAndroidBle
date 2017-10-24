@@ -17,11 +17,10 @@ import rx.functions.Func1;
  * A class that is responsible for routing all potential sources of disconnection to an Observable that emits only errors.
  */
 @ConnectionScope
-class DisconnectionRouter {
+class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRouterOutput {
 
-    private final PublishRelay<BleException> disconnectionErrorRelay = PublishRelay.create();
-
-    private final Observable disconnectionErrorObservable;
+    private final PublishRelay<BleException> disconnectionErrorInputRelay = PublishRelay.create();
+    private final Observable<BleException> disconnectionErrorOutputObservable;
 
     @Inject
     DisconnectionRouter(
@@ -29,14 +28,8 @@ class DisconnectionRouter {
             final RxBleAdapterWrapper adapterWrapper,
             final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable
     ) {
-        disconnectionErrorObservable = Observable.merge(
-                disconnectionErrorRelay
-                        .flatMap(new Func1<BleException, Observable<?>>() {
-                            @Override
-                            public Observable<?> call(BleException e) {
-                                return Observable.error(e);
-                            }
-                        }),
+        disconnectionErrorOutputObservable = Observable.merge(
+                disconnectionErrorInputRelay,
                 adapterStateObservable
                         .map(new Func1<RxBleAdapterStateObservable.BleAdapterState, Boolean>() {
                             @Override
@@ -51,10 +44,10 @@ class DisconnectionRouter {
                                 return !isAdapterUsable;
                             }
                         })
-                        .flatMap(new Func1<Boolean, Observable<?>>() {
+                        .map(new Func1<Boolean, BleException>() {
                             @Override
-                            public Observable<?> call(Boolean isAdapterUsable) {
-                                return Observable.error(new BleDisconnectedException(macAddress)); // TODO: Introduce BleDisabledException?
+                            public BleException call(Boolean isAdapterUsable) {
+                                return new BleDisconnectedException(macAddress); // TODO: Introduce BleDisabledException?
                             }
                         })
         )
@@ -63,31 +56,39 @@ class DisconnectionRouter {
     }
 
     /**
-     * Method to be called whenever a connection braking exception happens. It will be routed to {@link #asObservable()}.
-     *
-     * @param disconnectedException the exception that happened
+     * @inheritDoc
      */
-    void onDisconnectedException(BleDisconnectedException disconnectedException) {
-        disconnectionErrorRelay.call(disconnectedException);
+    @Override
+    public void onDisconnectedException(BleDisconnectedException disconnectedException) {
+        disconnectionErrorInputRelay.call(disconnectedException);
     }
 
     /**
-     * Method to be called whenever a BluetoothGattCallback.onConnectionStateChange() will get called with status != GATT_SUCCESS
-     *
-     * @param disconnectedGattException the exception that happened
+     * @inheritDoc
      */
-    void onGattConnectionStateException(BleGattException disconnectedGattException) {
-        disconnectionErrorRelay.call(disconnectedGattException);
+    @Override
+    public void onGattConnectionStateException(BleGattException disconnectedGattException) {
+        disconnectionErrorInputRelay.call(disconnectedGattException);
     }
 
     /**
-     * Function returning an Observable that will only throw error in case of a disconnection
-     *
-     * @param <T> the type of returned observable
-     * @return the Observable
+     * @inheritDoc
      */
-    <T> Observable<T> asObservable() {
-        //noinspection unchecked
-        return disconnectionErrorObservable;
+    @Override
+    public Observable<BleException> asExactObservable() {
+        return disconnectionErrorOutputObservable;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public <T> Observable<T> asGenericObservable() {
+        return disconnectionErrorOutputObservable.flatMap(new Func1<BleException, Observable<T>>() {
+            @Override
+            public Observable<T> call(BleException e) {
+                return Observable.error(e);
+            }
+        });
     }
 }
