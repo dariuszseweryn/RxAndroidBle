@@ -11,9 +11,7 @@ import rx.subscriptions.SerialSubscription;
 class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Action1<Integer> {
 
     private Integer currentMtu;
-
     private final Observable<Integer> mtuObservable;
-
     private final SerialSubscription serialSubscription = new SerialSubscription();
 
     @Inject
