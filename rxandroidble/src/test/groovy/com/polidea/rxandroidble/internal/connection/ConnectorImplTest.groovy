@@ -37,7 +37,7 @@ public class ConnectorImplTest extends Specification {
         mockConnectionComponent.connectOperation() >> mockConnect
         mockConnectionComponent.gattCallback() >> mockCallback
         mockConnectionComponent.rxBleConnection() >> mockConnection
-        mockConnectionComponent.connectionSubscriptionAwares() >> new HashSet<>(Arrays.asList(mockConnectionSubscriptionAware0, mockConnectionSubscriptionAware1))
+        mockConnectionComponent.connectionSubscriptionWatchers() >> new HashSet<>(Arrays.asList(mockConnectionSubscriptionAware0, mockConnectionSubscriptionAware1))
         mockCallback.observeDisconnect() >> disconnectErrorPublishSubject
 
         objectUnderTest = new ConnectorImpl(

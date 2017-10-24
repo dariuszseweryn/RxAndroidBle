@@ -47,11 +47,11 @@ abstract class ConnectionModuleBinder {
 
     @Binds
     @IntoSet
-    abstract ConnectionSubscriptionWatcher bindMtuWatcherSubscriptionAware(MtuWatcher mtuWatcher);
+    abstract ConnectionSubscriptionWatcher bindMtuWatcherSubscriptionWatcher(MtuWatcher mtuWatcher);
 
     @Binds
     @IntoSet
-    abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionAware(DisconnectAction disconnectAction);
+    abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionWatcher(DisconnectAction disconnectAction);
 
     @Binds
     @ConnectionScope

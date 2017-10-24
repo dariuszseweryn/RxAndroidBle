@@ -39,5 +39,5 @@ public interface ConnectionComponent {
     RxBleGattCallback gattCallback();
 
     @ConnectionScope
-    Set<ConnectionSubscriptionWatcher> connectionSubscriptionAwares();
+    Set<ConnectionSubscriptionWatcher> connectionSubscriptionWatchers();
 }
