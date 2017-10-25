@@ -1,8 +1,10 @@
 Change Log
 ==========
 
-Version 1.4.2—SNAPSHOT
+Version 1.4.2
 * Fixed MTU value not being updated when changed by the peripheral (https://github.com/Polidea/RxAndroidBle/issues/293)
+* Added info logs regarding start/stop of scans (https://github.com/Polidea/RxAndroidBle/pull/295) 
+* Fixed routing of the actual disconnection error to all queued operations (https://github.com/Polidea/RxAndroidBle/issues/297)
 
 Version 1.4.1
 * Fixed issue hasObservers conditional for Output class (https://github.com/Polidea/RxAndroidBle/issues/283)
