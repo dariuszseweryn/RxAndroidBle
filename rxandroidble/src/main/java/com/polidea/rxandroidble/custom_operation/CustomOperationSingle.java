@@ -3,9 +3,8 @@ package com.polidea.rxandroidble.custom_operation;
 
 import android.bluetooth.BluetoothGatt;
 import com.polidea.rxandroidble.Connection;
-import com.polidea.rxandroidble.internal.RadioReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
@@ -16,7 +15,7 @@ public interface CustomOperationSingle<T> {
     /**
      * Return an observable that implement a custom radio operation using low-level Android BLE API.
      * <p>
-     * The {@link Observable} returned by this method will be subscribed to by the {@link RxBleRadio}
+     * The {@link Observable} returned by this method will be subscribed to by the {@link QueueReleaseInterface}
      * when it determines that the custom operation should be the next to be run.
      * <p>
      * The method receives everything needed to access the low-level Android BLE API objects mainly the
@@ -28,7 +27,7 @@ public interface CustomOperationSingle<T> {
      * <p>
      * As the implementer, your contract is to return an {@link Observable} that completes at some
      * point in time. When the returned observable terminates, either via the {@link Observer#onCompleted()} or
-     * {@link Observer#onError(Throwable)} callback, the {@link RxBleRadio} queue's lock is released so that
+     * {@link Observer#onError(Throwable)} callback, the {@link QueueReleaseInterface} queue's lock is released so that
      * queued operations can continue.
      * <p>
      * You <b>must</b> ensure the returned {@link Observable} do terminate either via {@code onCompleted}
@@ -42,16 +41,16 @@ public interface CustomOperationSingle<T> {
      * {@link RxBleGattCallback#getOnCharacteristicWrite()} — if this requirement will not be fulfilled subsequent calls
      * to {@link BluetoothGatt} made by other operations will be rejected until the previous call will finish.<p>
      *      3. after all calls to {@link BluetoothGatt} will finish the operation must release the radio by calling
-     * {@link RadioReleaseInterface#release()}
+     * {@link QueueReleaseInterface#release()}
      *
      * @param bluetoothGatt         The Android API GATT instance
      * @param rxBleGattCallback     The internal Rx ready bluetooth gatt callback to be notified of GATT operations
      * @param scheduler             The RxBleRadio scheduler used to asObservable operation
-     * @param radioReleaseInterface The interface to call when normal operation of the library should be restored
+     * @param queueReleaseInterface The interface to call when normal operation of the library should be restored
      * @throws Throwable Any exception that your custom operation might throw
      */
     Single<T> create(BluetoothGatt bluetoothGatt,
-                         RxBleGattCallback rxBleGattCallback,
-                         Scheduler scheduler,
-                         RadioReleaseInterface radioReleaseInterface) throws Throwable;
+                     RxBleGattCallback rxBleGattCallback,
+                     Scheduler scheduler,
+                     QueueReleaseInterface queueReleaseInterface) throws Throwable;
 }

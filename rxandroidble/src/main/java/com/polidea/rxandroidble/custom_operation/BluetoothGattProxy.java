@@ -9,12 +9,12 @@ import android.bluetooth.BluetoothGattDescriptor;
  * Proxy for the {@link BluetoothGatt} class. Functions that are available on this interface and on {@link BluetoothGatt} should be called
  * on this interface only to ensure proper behaviour. If a particular method is available only on {@link BluetoothGatt} it is safe to use it
  * directly. Used by {@link com.polidea.rxandroidble.helpers.CustomOperationHelper} for managing and releasing
- * {@link com.polidea.rxandroidble.internal.RadioReleaseInterface} when appropriate.
+ * {@link com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface} when appropriate.
  *
  * The {@link BluetoothGattProxy} implementation will track how many times a function was called so it will be possible to check if
  * {@link android.bluetooth.BluetoothGattCallback} was called in balanced manner and only afterwards release the
- * {@link com.polidea.rxandroidble.internal.RadioReleaseInterface}. This may be especially useful when a custom operation would
- * be completed / errored / unsubscribed in the middle of interaction with {@link BluetoothGatt}.
+ * {@link com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface}. This may be especially useful when a custom operation
+ * would be completed / errored / unsubscribed in the middle of interaction with {@link BluetoothGatt}.
  */
 public interface BluetoothGattProxy {
 
