@@ -54,10 +54,19 @@ abstract class ConnectionModuleBinder {
     abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionWatcher(DisconnectAction disconnectAction);
 
     @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindConnectionQueueSubscriptionWatcher(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
     @ConnectionScope
     abstract RxBleConnection bindRxBleConnection(RxBleConnectionImpl rxBleConnection);
 
     @Binds
-    @ConnectionScope
     abstract ConnectionOperationQueue bindConnectionOperationQueue(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
+    abstract DisconnectionRouterInput bindDisconnectionRouterInput(DisconnectionRouter disconnectionRouter);
+
+    @Binds
+    abstract DisconnectionRouterOutput bindDisconnectionRouterOutput(DisconnectionRouter disconnectionRouter);
 }

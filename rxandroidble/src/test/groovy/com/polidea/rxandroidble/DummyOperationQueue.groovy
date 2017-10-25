@@ -1,8 +1,8 @@
 package com.polidea.rxandroidble
 
-import com.polidea.rxandroidble.exceptions.BleDisconnectedException
-import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
+import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.operations.Operation
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
 import rx.Emitter
 import rx.Observable
 import rx.Subscription
@@ -39,7 +39,7 @@ class DummyOperationQueue implements ConnectionOperationQueue {
     }
 
     @Override
-    void terminate(BleDisconnectedException disconnectedException) {
+    void terminate(BleException disconnectException) {
         // do nothing
     }
 }

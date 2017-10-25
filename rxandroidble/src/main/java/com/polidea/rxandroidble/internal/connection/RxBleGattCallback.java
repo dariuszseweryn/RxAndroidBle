@@ -264,7 +264,7 @@ public class RxBleGattCallback {
     private <T> Observable<T> withDisconnectionHandling(Output<T> output) {
         //noinspection unchecked
         return Observable.merge(
-                disconnectionRouter.<T>asObservable(),
+                disconnectionRouter.<T>asErrorOnlyObservable(),
                 output.valueRelay,
                 (Observable<T>) output.errorRelay.flatMap(errorMapper)
         );
@@ -280,8 +280,7 @@ public class RxBleGattCallback {
      * @throws BleGattException         emitted in case of connection was interrupted unexpectedly.
      */
     public <T> Observable<T> observeDisconnect() {
-        //noinspection unchecked
-        return disconnectionRouter.asObservable();
+        return disconnectionRouter.asErrorOnlyObservable();
     }
 
     /**
@@ -311,7 +310,7 @@ public class RxBleGattCallback {
     public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
         //noinspection unchecked
         return Observable.merge(
-                disconnectionRouter.<CharacteristicChangedEvent>asObservable(),
+                disconnectionRouter.<CharacteristicChangedEvent>asErrorOnlyObservable(),
                 changedCharacteristicSerializedPublishRelay
         )
                 .observeOn(callbackScheduler);

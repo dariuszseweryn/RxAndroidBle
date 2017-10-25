@@ -45,7 +45,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
     def setup() {
         mockDisconnectionRouter = Mock DisconnectionRouter
         mockDisconnectionSubject = PublishSubject.create()
-        mockDisconnectionRouter.asObservable() >> mockDisconnectionSubject
+        mockDisconnectionRouter.asErrorOnlyObservable() >> mockDisconnectionSubject
         objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), mockDisconnectionRouter, new NativeCallbackDispatcher())
     }
 
@@ -90,7 +90,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
         ]
     }
 
-    def "observeDisconnect() should emit error when DisconnectionRouter.asObservable() emits error"() {
+    def "observeDisconnect() should emit error when DisconnectionRouter.asGenericObservable() emits error"() {
 
         given:
         def testException = new RuntimeException("test")
