@@ -20,7 +20,8 @@ class DisconnectionRouterTest extends RoboSpecification {
     String mockMacAddress = "1234"
     PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject = PublishSubject.create()
     DisconnectionRouter objectUnderTest
-    TestSubscriber testSubscriber = new TestSubscriber()
+    TestSubscriber errorTestSubscriber = new TestSubscriber()
+    TestSubscriber valueTestSubscriber = new TestSubscriber()
 
     def createObjectUnderTest(boolean isBluetoothAdapterOnInitially) {
         def mockBleAdapterWrapper = Mock(RxBleAdapterWrapper)
@@ -28,21 +29,25 @@ class DisconnectionRouterTest extends RoboSpecification {
         objectUnderTest = new DisconnectionRouter(mockMacAddress, mockBleAdapterWrapper, mockAdapterStateSubject)
     }
 
-    def "should emit exception from .asObservable() when got one from .onDisconnectedException()"() {
+    def "should emit exception from .as*Observable() when got one from .onDisconnectedException()"() {
 
         given:
         createObjectUnderTest(true)
         BleDisconnectedException testException = new BleDisconnectedException(mockMacAddress)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
 
         when:
         objectUnderTest.onDisconnectedException(testException)
 
         then:
-        testSubscriber.assertError(testException)
+        errorTestSubscriber.assertError(testException)
+
+        and:
+        valueTestSubscriber.assertValue(testException)
     }
 
-    def "should emit exception from .asObservable() when got one from .onDisconnectedException() even before subscription"() {
+    def "should emit exception from .asGenericObservable() when got one from .onDisconnectedException() even before subscription"() {
 
         given:
         createObjectUnderTest(true)
@@ -50,27 +55,45 @@ class DisconnectionRouterTest extends RoboSpecification {
         objectUnderTest.onDisconnectedException(testException)
 
         when:
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
 
         then:
-        testSubscriber.assertError(testException)
+        errorTestSubscriber.assertError(testException)
     }
 
-    def "should emit exception from .asObservable() when got one from .onGattConnectionStatusException()"() {
+    def "should emit exception from .asExactObservable() when got one from .onDisconnectedException() even before subscription"() {
+
+        given:
+        createObjectUnderTest(true)
+        BleDisconnectedException testException = new BleDisconnectedException(mockMacAddress)
+        objectUnderTest.onDisconnectedException(testException)
+
+        when:
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
+
+        then:
+        valueTestSubscriber.assertValue(testException)
+    }
+
+    def "should emit exception from .as*Observable() when got one from .onGattConnectionStatusException()"() {
 
         given:
         createObjectUnderTest(true)
         BleGattException testException = new BleGattException(Mock(BluetoothGatt), BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
 
         when:
         objectUnderTest.onGattConnectionStateException(testException)
 
         then:
-        testSubscriber.assertError(testException)
+        errorTestSubscriber.assertError(testException)
+
+        and:
+        valueTestSubscriber.assertValue(testException)
     }
 
-    def "should emit exception from .asObservable() when got one from .onGattConnectionStatusException() even before subscription"() {
+    def "should emit exception from .asGenericObservable() when got one from .onGattConnectionStatusException() even before subscription"() {
 
         given:
         createObjectUnderTest(true)
@@ -78,68 +101,128 @@ class DisconnectionRouterTest extends RoboSpecification {
         objectUnderTest.onGattConnectionStateException(testException)
 
         when:
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
 
         then:
-        testSubscriber.assertError(testException)
+        errorTestSubscriber.assertError(testException)
+    }
+
+    def "should emit exception from .asExactObservable() when got one from .onGattConnectionStatusException() even before subscription"() {
+
+        given:
+        createObjectUnderTest(true)
+        BleGattException testException = new BleGattException(Mock(BluetoothGatt), BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
+        objectUnderTest.onGattConnectionStateException(testException)
+
+        when:
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
+
+        then:
+        valueTestSubscriber.assertValue(testException)
     }
 
     @Unroll
-    def "should emit exception from .asObservable() when adapterStateObservable emits STATE_TURNING_ON/STATE_TURNING_OFF/STATE_OFF"() {
+    def "should emit exception from .as*Observable() when adapterStateObservable emits STATE_TURNING_ON/STATE_TURNING_OFF/STATE_OFF"() {
 
         given:
         createObjectUnderTest(true)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
 
         when:
         mockAdapterStateSubject.onNext(bleAdapterState)
 
         then:
-        testSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
+        errorTestSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
+
+        and:
+        valueTestSubscriber.assertAnyOnNext { BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress }
+
+        and:
+        valueTestSubscriber.assertValueCount(1)
 
         where:
         bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
     }
 
     @Unroll
-    def "should emit exception from .asObservable() when adapterStateObservable emits STATE_TURNING_ON/STATE_TURNING_OFF/STATE_OFF even before subscription"() {
+    def "should emit exception from .asGenericObservable() when adapterStateObservable emits STATE_TURNING_ON/STATE_TURNING_OFF/STATE_OFF even before subscription"() {
 
         given:
         createObjectUnderTest(true)
         mockAdapterStateSubject.onNext(bleAdapterState)
 
         when:
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
 
         then:
-        testSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
+        errorTestSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
 
         where:
         bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
     }
 
-    def "should emit exception from .asObservable() when RxBleAdapterWrapper.isEnabled() returns false"() {
+    @Unroll
+    def "should emit exception from .asExactObservable() when adapterStateObservable emits STATE_TURNING_ON/STATE_TURNING_OFF/STATE_OFF even before subscription"() {
+
+        given:
+        createObjectUnderTest(true)
+        mockAdapterStateSubject.onNext(bleAdapterState)
+
+        when:
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
+
+        then:
+        valueTestSubscriber.assertAnyOnNext { BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress }
+
+        and:
+        valueTestSubscriber.assertValueCount(1)
+
+        where:
+        bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
+    }
+
+    def "should emit exception from .asGenericObservable() when RxBleAdapterWrapper.isEnabled() returns false"() {
 
         given:
         createObjectUnderTest(false)
 
         when:
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
 
         then:
-        testSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
+        errorTestSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
+    }
+
+    def "should emit exception from .asExactObservable() when RxBleAdapterWrapper.isEnabled() returns false"() {
+
+        given:
+        createObjectUnderTest(false)
+
+        when:
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
+
+        then:
+        valueTestSubscriber.assertAnyOnNext { BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress }
+
+        and:
+        valueTestSubscriber.assertValueCount(1)
     }
 
     def "should not emit exception from .asObservable() when adapterStateObservable emits STATE_ON"() {
 
         given:
         createObjectUnderTest(true)
-        objectUnderTest.asObservable().subscribe(testSubscriber)
+        objectUnderTest.asErrorOnlyObservable().subscribe(errorTestSubscriber)
+        objectUnderTest.asValueOnlyObservable().subscribe(valueTestSubscriber)
 
         when:
         mockAdapterStateSubject.onNext(RxBleAdapterStateObservable.BleAdapterState.STATE_ON)
 
         then:
-        testSubscriber.assertNoErrors()
+        errorTestSubscriber.assertNoErrors()
+
+        and:
+        valueTestSubscriber.assertNoValues()
     }
 }

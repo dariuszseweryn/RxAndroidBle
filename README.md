@@ -322,7 +322,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.4.1"
+compile "com.polidea.rxandroidble:rxandroidble:1.4.2"
 ```
 ### Maven
 
@@ -330,7 +330,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.4.1"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <type>aar</type>
 </dependency>
 ```
@@ -348,6 +348,9 @@ maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 Using RxAndroidBle enables you to unit test your application easily. For examples how to use mocking head to [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble).
 
 Note: Using MockRxAndroidBle in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
+
+## [Small performance comparison](https://github.com/Polidea/RxAndroidBle/issues/41#issuecomment-333513707)
+
 ## Contributing
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
 

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.support.annotation.NonNull
+import com.jakewharton.rxrelay.PublishRelay
 import com.polidea.rxandroidble.*
 import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
@@ -48,8 +49,9 @@ class RxBleConnectionTest extends Specification {
             testScheduler, { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
+    def mtuProvider = Mock MtuProvider
     def objectUnderTest = new RxBleConnectionImpl(dummyQueue, gattCallback, bluetoothGattMock, mockServiceDiscoveryManager,
-            notificationAndIndicationManagerMock, descriptorWriterMock, operationsProviderMock,
+            notificationAndIndicationManagerMock, mtuProvider, descriptorWriterMock, operationsProviderMock,
             { new LongWriteOperationBuilderImpl(dummyQueue, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
     )
     def connectionStateChange = BehaviorSubject.create()
@@ -283,6 +285,21 @@ class RxBleConnectionTest extends Specification {
         NotificationSetupMode.COMPAT  | false | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupNotification(aChar.getUuid(), nsm).subscribe() }
         NotificationSetupMode.COMPAT  | true  | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupIndication(aChar, nsm) }
         NotificationSetupMode.COMPAT  | true  | { RxBleConnection con, BluetoothGattCharacteristic aChar, NotificationSetupMode nsm -> return con.setupIndication(aChar.getUuid(), nsm).subscribe() }
+    }
+
+    def "should proxy .getMtu() calls to MtuProvider"() {
+
+        given:
+        int mtuValue = 10
+
+        when:
+        int receivedMtuValue = objectUnderTest.getMtu()
+
+        then:
+        1 * mtuProvider.getMtu() >> mtuValue
+
+        and:
+        receivedMtuValue == mtuValue
     }
 
     def "should pass items emitted by observable returned from RxBleCustomOperation.asObservable()"() {

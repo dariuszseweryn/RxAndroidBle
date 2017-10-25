@@ -34,7 +34,6 @@ import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func1;
 
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE;
@@ -55,10 +54,9 @@ public class RxBleConnectionImpl implements RxBleConnection {
     private final Scheduler callbackScheduler;
     private final ServiceDiscoveryManager serviceDiscoveryManager;
     private final NotificationAndIndicationManager notificationIndicationManager;
+    private final MtuProvider mtuProvider;
     private final DescriptorWriter descriptorWriter;
     private final IllegalOperationChecker illegalOperationChecker;
-
-    private int currentMtu = GATT_MTU_MINIMUM; // Default value at the beginning
 
     @Inject
     public RxBleConnectionImpl(
@@ -67,6 +65,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
             BluetoothGatt bluetoothGatt,
             ServiceDiscoveryManager serviceDiscoveryManager,
             NotificationAndIndicationManager notificationIndicationManager,
+            MtuProvider mtuProvider,
             DescriptorWriter descriptorWriter,
             OperationsProvider operationProvider,
             Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider,
@@ -78,6 +77,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
         this.bluetoothGatt = bluetoothGatt;
         this.serviceDiscoveryManager = serviceDiscoveryManager;
         this.notificationIndicationManager = notificationIndicationManager;
+        this.mtuProvider = mtuProvider;
         this.descriptorWriter = descriptorWriter;
         this.operationsProvider = operationProvider;
         this.longWriteOperationBuilderProvider = longWriteOperationBuilderProvider;
@@ -116,19 +116,12 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public Observable<Integer> requestMtu(int mtu) {
-        return operationQueue
-                .queue(operationsProvider.provideMtuChangeOperation(mtu))
-                .doOnNext(new Action1<Integer>() {
-                    @Override
-                    public void call(Integer newMtu) {
-                        RxBleConnectionImpl.this.currentMtu = newMtu;
-                    }
-                });
+        return operationQueue.queue(operationsProvider.provideMtuChangeOperation(mtu));
     }
 
     @Override
     public int getMtu() {
-        return currentMtu;
+        return mtuProvider.getMtu();
     }
 
     @Override
