@@ -15,7 +15,7 @@ public interface DisconnectionRouterOutput {
      *
      * @return the Observable
      */
-    Observable<BleException> asExactObservable();
+    Observable<BleException> asValueOnlyObservable();
 
     /**
      * Function returning an Observable that will only throw error in case of a disconnection (will never emit value)
@@ -23,5 +23,5 @@ public interface DisconnectionRouterOutput {
      * @param <T> the type of returned observable
      * @return the Observable
      */
-    <T> Observable<T> asGenericObservable();
+    <T> Observable<T> asErrorOnlyObservable();
 }

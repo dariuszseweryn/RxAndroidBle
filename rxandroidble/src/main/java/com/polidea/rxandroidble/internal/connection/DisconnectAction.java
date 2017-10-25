@@ -31,5 +31,4 @@ class DisconnectAction implements ConnectionSubscriptionWatcher {
                         Actions.<Throwable>toAction1(Actions.empty())
                 );
     }
-
 }

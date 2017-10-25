@@ -30,7 +30,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
     private final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
     private final Future<?> runnableFuture;
     private volatile boolean shouldRun = true;
-    private volatile BleException disconnectionException = null;
+    private BleException disconnectionException = null;
 
     @Inject
     ConnectionOperationQueueImpl(
@@ -64,7 +64,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                         currentSemaphore.awaitRelease();
                         log("FINISHED", operation);
                     } catch (InterruptedException e) {
-                        synchronized (this) {
+                        synchronized (ConnectionOperationQueueImpl.this) {
                             if (!shouldRun) {
                                 break;
                             }
@@ -134,7 +134,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
     @Override
     public void onConnectionSubscribed() {
-        disconnectionThrowableSubscription = disconnectionRouterOutput.asExactObservable().subscribe(new Action1<BleException>() {
+        disconnectionThrowableSubscription = disconnectionRouterOutput.asValueOnlyObservable().subscribe(new Action1<BleException>() {
             @Override
             public void call(BleException bleException) {
                 terminate(bleException);

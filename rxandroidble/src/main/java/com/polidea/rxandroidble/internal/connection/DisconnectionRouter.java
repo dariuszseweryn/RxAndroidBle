@@ -28,28 +28,30 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
             final RxBleAdapterWrapper adapterWrapper,
             final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable
     ) {
+        final Observable<BleException> emitErrorWhenAdapterIsDisabled = adapterStateObservable
+                .map(new Func1<RxBleAdapterStateObservable.BleAdapterState, Boolean>() {
+                    @Override
+                    public Boolean call(RxBleAdapterStateObservable.BleAdapterState bleAdapterState) {
+                        return bleAdapterState.isUsable();
+                    }
+                })
+                .startWith(adapterWrapper.isBluetoothEnabled())
+                .filter(new Func1<Boolean, Boolean>() {
+                    @Override
+                    public Boolean call(Boolean isAdapterUsable) {
+                        return !isAdapterUsable;
+                    }
+                })
+                .map(new Func1<Boolean, BleException>() {
+                    @Override
+                    public BleException call(Boolean isAdapterUsable) {
+                        return new BleDisconnectedException(macAddress); // TODO: Introduce BleDisabledException?
+                    }
+                });
+
         disconnectionErrorOutputObservable = Observable.merge(
                 disconnectionErrorInputRelay,
-                adapterStateObservable
-                        .map(new Func1<RxBleAdapterStateObservable.BleAdapterState, Boolean>() {
-                            @Override
-                            public Boolean call(RxBleAdapterStateObservable.BleAdapterState bleAdapterState) {
-                                return bleAdapterState.isUsable();
-                            }
-                        })
-                        .startWith(adapterWrapper.isBluetoothEnabled())
-                        .filter(new Func1<Boolean, Boolean>() {
-                            @Override
-                            public Boolean call(Boolean isAdapterUsable) {
-                                return !isAdapterUsable;
-                            }
-                        })
-                        .map(new Func1<Boolean, BleException>() {
-                            @Override
-                            public BleException call(Boolean isAdapterUsable) {
-                                return new BleDisconnectedException(macAddress); // TODO: Introduce BleDisabledException?
-                            }
-                        })
+                emitErrorWhenAdapterIsDisabled
         )
                 .replay()
                 .autoConnect(0);
@@ -75,7 +77,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
      * @inheritDoc
      */
     @Override
-    public Observable<BleException> asExactObservable() {
+    public Observable<BleException> asValueOnlyObservable() {
         return disconnectionErrorOutputObservable;
     }
 
@@ -83,7 +85,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
      * @inheritDoc
      */
     @Override
-    public <T> Observable<T> asGenericObservable() {
+    public <T> Observable<T> asErrorOnlyObservable() {
         return disconnectionErrorOutputObservable.flatMap(new Func1<BleException, Observable<T>>() {
             @Override
             public Observable<T> call(BleException e) {
