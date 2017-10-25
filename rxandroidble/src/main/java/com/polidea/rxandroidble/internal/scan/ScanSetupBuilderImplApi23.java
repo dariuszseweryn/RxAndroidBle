@@ -4,7 +4,7 @@ package com.polidea.rxandroidble.internal.scan;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.annotation.RestrictTo;
-import com.polidea.rxandroidble.internal.operations.RxBleRadioOperationScanApi21;
+import com.polidea.rxandroidble.internal.operations.ScanOperationApi21;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
@@ -41,7 +41,7 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
             };
         }
         return new ScanSetup(
-                new RxBleRadioOperationScanApi21(
+                new ScanOperationApi21(
                         rxBleAdapterWrapper,
                         internalScanResultCreator,
                         androidScanObjectsConverter,

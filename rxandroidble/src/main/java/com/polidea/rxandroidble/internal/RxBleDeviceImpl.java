@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.jakewharton.rxrelay.BehaviorRelay;
 import com.polidea.rxandroidble.RxBleConnection;
@@ -83,6 +84,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
+    @Nullable
     public String getName() {
         return bluetoothDevice.getName();
     }

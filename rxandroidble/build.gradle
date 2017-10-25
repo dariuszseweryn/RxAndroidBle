@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'groovyx.android'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
@@ -49,7 +48,7 @@ dependencies {
     compile rootProject.ext.libs.rxrelay
     compile rootProject.ext.libs.support_annotations
     compile rootProject.ext.libs.dagger
-    apt rootProject.ext.libs.dagger_compiler
+    annotationProcessor rootProject.ext.libs.dagger_compiler
 
     // Test dependencies
     testCompile rootProject.ext.libs.junit

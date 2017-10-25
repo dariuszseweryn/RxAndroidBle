@@ -17,6 +17,7 @@ import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.Priority;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.operations.CharacteristicLongWriteOperation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,7 +91,7 @@ public interface RxBleConnection {
     }
 
     /**
-     * The interface of a {@link com.polidea.rxandroidble.internal.operations.RxBleRadioOperationCharacteristicLongWrite} builder.
+     * The interface of a {@link CharacteristicLongWriteOperation} builder.
      */
     interface LongWriteOperationBuilder {
 
@@ -154,7 +155,7 @@ public interface RxBleConnection {
         /**
          * Build function for the long write
          *
-         * @return the Observable which will queue the long write on subscription.
+         * @return the Observable which will enqueue the long write operation when subscribed.
          */
         Observable<byte[]> build();
     }
@@ -512,28 +513,28 @@ public interface RxBleConnection {
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know
      * what your are doing.</b>
      * <p>
-     * Queue an operation for future execution. The method accepts a {@link RxBleRadioOperationCustom} concrete implementation
+     * Queue an operation for future execution. The method accepts a {@link RxBleCustomOperation} concrete implementation
      * and will queue it inside connection operation queue. When ready to execute, the {@link Observable} returned
-     * by the {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be
+     * by the {@link RxBleCustomOperation#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be
      * subscribed to.
      * <p>
      * Every event emitted by the {@link Observable} returned by
-     * {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be forwarded
+     * {@link RxBleCustomOperation#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)} will be forwarded
      * to the {@link Observable} returned by this method.
      * <p>
-     * You <b>must</b> ensure the custom operation's {@link Observable} do terminate either via {@code onCompleted}
+     * You <b>must</b> ensure the custom operation's {@link Observable} does terminate either via {@code onCompleted}
      * or {@code onError(Throwable)}. Otherwise, the internal queue orchestrator will wait forever for
      * your {@link Observable} to complete. Normal queue processing will be resumed after the {@link Observable}
-     * returned by {@link RxBleRadioOperationCustom#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}
+     * returned by {@link RxBleCustomOperation#asObservable(BluetoothGatt, RxBleGattCallback, Scheduler)}
      * completes.
      * <p>
      * The operation will be added to the queue using a {@link Priority#NORMAL}
      * priority.
      *
-     * @param operation The custom radio operation to queue.
-     * @param <T>       The type returned by the {@link RxBleRadioOperationCustom} instance.
+     * @param operation The custom operation to queue.
+     * @param <T>       The type returned by the {@link RxBleCustomOperation} instance.
      * @return Observable emitting the value after execution or an error in case of failure.
      */
-    <T> Observable<T> queue(@NonNull RxBleRadioOperationCustom<T> operation);
+    <T> Observable<T> queue(@NonNull RxBleCustomOperation<T> operation);
 
 }

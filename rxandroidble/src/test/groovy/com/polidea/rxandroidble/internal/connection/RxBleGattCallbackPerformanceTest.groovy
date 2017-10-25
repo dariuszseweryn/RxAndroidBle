@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import rx.Observable
 import rx.internal.schedulers.ImmediateScheduler
 import rx.observers.TestSubscriber
 import spock.lang.Ignore
@@ -16,8 +17,10 @@ import spock.lang.Specification
 
 class RxBleGattCallbackPerformanceTest extends Specification {
 
-    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), new NativeCallbackDispatcher())
+    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), mockDisconnectionRouter, new NativeCallbackDispatcher())
     def testSubscriber = new TestSubscriber()
+    @Shared
+    def mockDisconnectionRouter = Mock DisconnectionRouter
     @Shared
     def mockBluetoothGatt = Mock BluetoothGatt
     @Shared
@@ -29,6 +32,7 @@ class RxBleGattCallbackPerformanceTest extends Specification {
     def iterationsCount = 1000000
 
     def setupSpec() {
+        mockDisconnectionRouter.asObservable() >> Observable.empty()
         mockBluetoothGatt.getDevice() >> mockBluetoothDevice
         mockBluetoothDevice.getAddress() >> mockBluetoothDeviceMacAddress
     }

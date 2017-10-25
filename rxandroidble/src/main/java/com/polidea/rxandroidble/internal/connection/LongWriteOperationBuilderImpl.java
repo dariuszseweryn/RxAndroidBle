@@ -4,9 +4,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.RxBleRadio;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -16,7 +16,7 @@ import rx.functions.Func1;
 
 public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
 
-    private final RxBleRadio rxBleRadio;
+    private final ConnectionOperationQueue operationQueue;
     private final RxBleConnection rxBleConnection;
     private final OperationsProvider operationsProvider;
 
@@ -28,12 +28,12 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
     @Inject
     LongWriteOperationBuilderImpl(
-            RxBleRadio rxBleRadio,
+            ConnectionOperationQueue operationQueue,
             MtuBasedPayloadSizeLimit defaultMaxBatchSizeProvider,
             RxBleConnection rxBleConnection,
             OperationsProvider operationsProvider
     ) {
-        this.rxBleRadio = rxBleRadio;
+        this.operationQueue = operationQueue;
         this.maxBatchSizeProvider = defaultMaxBatchSizeProvider;
         this.rxBleConnection = rxBleConnection;
         this.operationsProvider = operationsProvider;
@@ -85,7 +85,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
         return writtenCharacteristicObservable.flatMap(new Func1<BluetoothGattCharacteristic, Observable<byte[]>>() {
             @Override
             public Observable<byte[]> call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                return rxBleRadio.queue(
+                return operationQueue.queue(
                         operationsProvider.provideLongWriteOperation(bluetoothGattCharacteristic,
                                 writeOperationAckStrategy, maxBatchSizeProvider, bytes)
                 );

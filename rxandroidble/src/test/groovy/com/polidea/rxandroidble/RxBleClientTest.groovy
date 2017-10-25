@@ -21,7 +21,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble.exceptions.BleScanException
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider
-import com.polidea.rxandroidble.internal.RxBleRadio
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble.internal.util.UUIDUtil
 import rx.Observable
 import rx.internal.schedulers.ImmediateScheduler
@@ -33,7 +33,7 @@ class RxBleClientTest extends Specification {
 
     TestSubscriber testSubscriber = new TestSubscriber<>()
 
-    FlatRxBleRadio rxBleRadio = new FlatRxBleRadio()
+    DummyOperationQueue dummyQueue = new DummyOperationQueue()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     UUIDUtil uuidParserSpy = Spy UUIDUtil
@@ -65,10 +65,10 @@ class RxBleClientTest extends Specification {
     ]
 
     def setup() {
-        setupWithRadio(rxBleRadio)
+        setupWithQueue(dummyQueue)
     }
 
-    private void setupWithRadio(RxBleRadio radio) {
+    private void setupWithQueue(ClientOperationQueue queue) {
         contextMock.getApplicationContext() >> contextMock
         mockDeviceProvider.getBleDevice(_ as String) >> { String macAddress ->
             def device = Mock(RxBleDevice)
@@ -79,7 +79,7 @@ class RxBleClientTest extends Specification {
         mockScanSetupBuilder.build(_, _) >> mockScanSetup
         objectUnderTest = new RxBleClientImpl(
                 bleAdapterWrapperSpy,
-                radio,
+                queue,
                 adapterStateObservable.asObservable(),
                 uuidParserSpy,
                 locationServicesStatusMock,
@@ -125,7 +125,7 @@ class RxBleClientTest extends Specification {
     @Unroll
     def "should proxy an error from ScanPreconditionVerifier.verify() when starting a scan"() {
         given:
-        RxBleRadio mockRadio = Mock RxBleRadio
+        ClientOperationQueue mockQueue = Mock ClientOperationQueue
         Throwable testThrowable = new BleScanException(BleScanException.UNKNOWN_ERROR_CODE, new Date())
         mockScanPreconditionVerifier.verify() >> { throw testThrowable }
         def scanObservable = scanStarter.call(objectUnderTest)
@@ -137,7 +137,7 @@ class RxBleClientTest extends Specification {
         testSubscriber.assertError(testThrowable)
 
         and:
-        0 * mockRadio.queue(_) >> Observable.empty()
+        0 * mockQueue.queue(_) >> Observable.empty()
 
         where:
         scanStarter << scanStarters
@@ -153,8 +153,8 @@ class RxBleClientTest extends Specification {
 
     def "should queue scan operation on subscribe (New API)"() {
         given:
-        def radio = Mock(RxBleRadio)
-        setupWithRadio(radio)
+        def queue = Mock(ClientOperationQueue)
+        setupWithQueue(queue)
         def testSubscriber = new TestSubscriber<>()
         def scanObservable = objectUnderTest.scanBleDevices(Mock(ScanSettings))
 
@@ -162,7 +162,7 @@ class RxBleClientTest extends Specification {
         scanObservable.subscribe(testSubscriber)
 
         then:
-        1 * radio.queue(mockOperationScan) >> Observable.empty()
+        1 * queue.queue(mockOperationScan) >> Observable.empty()
     }
 
     def "should not start scan until observable is subscribed"() {
@@ -480,66 +480,6 @@ class RxBleClientTest extends Specification {
         mock.hashCode() >> address.hashCode()
         bleAdapterWrapperSpy.addBondedDevice(mock);
     }
-
-    // [DS 23.05.2017] TODO: cannot make it to work again although it should not be a problem because of using Emitter.setCancellation
-//    /**
-//     * This test reproduces issue: https://github.com/Polidea/RxAndroidBle/issues/17
-//     * It first calls startLegacyLeScan method which takes 100ms to finish
-//     * then it calls stopLegacyLeScan after 50ms but before startLegacyLeScan returns
-//     */
-//    def "should call stopLeScan only after startLeScan finishes and returns true"() {
-//        given:
-//        bleAdapterWrapperSpy.startLeScan(_) >> true
-//        RxBleRadioOperationScan scanOperation = new RxBleRadioOperationScan(null, bleAdapterWrapperSpy, null) {
-//
-//            @Override
-//            synchronized void protectedRun(Emitter<RxBleInternalScanResult> emitter, RadioReleaseInterface radioReleaseInterface) {
-//                // simulate delay when starting scan
-//                Thread.sleep(100)
-//                super.protectedRun(emitter, radioReleaseInterface)
-//            }
-//        }
-//        Thread stopScanThread = new Thread() {
-//
-//            @Override
-//            void run() {
-//                //unsubscribe before scan starts
-//                Thread.sleep(50)
-//                scanOperation.stop();
-//            }
-//        }
-//        def scanTestRadio = new RxBleRadio() {
-//
-//            @Override
-//            def <T> Observable<T> queue(Operation<T> operation) {
-//                return operation
-//                        .asObservable()
-//                        .doOnSubscribe({
-//                    stopScanThread.start()
-//                    Thread runOperationThread = new Thread() {
-//
-//                        @Override
-//                        void run() {
-//                            def semaphore = new MockSemaphore()
-//                            semaphore.awaitRelease()
-//                            operation.run(semaphore)
-//                        }
-//                    }
-//                    runOperationThread.start()
-//                })
-//            }
-//        }
-//
-//        when:
-//        scanTestRadio.queue(scanOperation).subscribe(testSubscriber)
-//        waitForThreadsToCompleteWork()
-//
-//        then:
-//        1 * bleAdapterWrapperSpy.startLegacyLeScan(_)
-//
-//        then:
-//        1 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
-//    }
 
     def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {
 

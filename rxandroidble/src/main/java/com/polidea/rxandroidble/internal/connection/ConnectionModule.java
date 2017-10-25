@@ -1,25 +1,22 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothGattCharacteristic;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import com.polidea.rxandroidble.internal.ConnectionSetup;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
-
-import javax.inject.Named;
-import javax.inject.Provider;
-
 import dagger.Module;
 import dagger.Provides;
-
-import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 @Module
 public class ConnectionModule {
 
-    private boolean autoConnect;
-    private boolean suppressOperationCheck;
+    final boolean autoConnect;
+    final boolean suppressOperationCheck;
 
-    public ConnectionModule(ConnectionSetup connectionSetup) {
+    ConnectionModule(ConnectionSetup connectionSetup) {
         this.autoConnect = connectionSetup.autoConnect;
         this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
     }

@@ -1,26 +1,33 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import android.bluetooth.BluetoothGatt;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
+import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
 
+import android.bluetooth.BluetoothGatt;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl;
-
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueueImpl;
 import dagger.Binds;
-import javax.inject.Named;
-
 import dagger.Module;
 import dagger.Provides;
-
-import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
+import dagger.multibindings.IntoSet;
+import javax.inject.Named;
 
 @Module
-abstract public class ConnectionModuleBinder {
+abstract class ConnectionModuleBinder {
 
     @Provides
     @Named(GATT_WRITE_MTU_OVERHEAD)
     static int gattWriteMtuOverhead() {
         return RxBleConnection.GATT_WRITE_MTU_OVERHEAD;
+    }
+
+    @Provides
+    @Named(GATT_MTU_MINIMUM)
+    static int minimumMtu() {
+        return RxBleConnection.GATT_MTU_MINIMUM;
     }
 
     @Provides
@@ -36,6 +43,30 @@ abstract public class ConnectionModuleBinder {
     abstract OperationsProvider bindOperationsProvider(OperationsProviderImpl operationsProvider);
 
     @Binds
+    abstract MtuProvider bindCurrentMtuProvider(MtuWatcher mtuWatcher);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindMtuWatcherSubscriptionWatcher(MtuWatcher mtuWatcher);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionWatcher(DisconnectAction disconnectAction);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindConnectionQueueSubscriptionWatcher(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
     @ConnectionScope
     abstract RxBleConnection bindRxBleConnection(RxBleConnectionImpl rxBleConnection);
+
+    @Binds
+    abstract ConnectionOperationQueue bindConnectionOperationQueue(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
+    abstract DisconnectionRouterInput bindDisconnectionRouterInput(DisconnectionRouter disconnectionRouter);
+
+    @Binds
+    abstract DisconnectionRouterOutput bindDisconnectionRouterOutput(DisconnectionRouter disconnectionRouter);
 }

@@ -24,9 +24,10 @@ import rx.functions.Cancellable;
 import rx.internal.operators.OnSubscribeCreate;
 
 /**
- * An Observable that emits true when {@link com.polidea.rxandroidble.RxBleClient#scanBleDevices(UUID...)} would not
- * emit {@link com.polidea.rxandroidble.exceptions.BleScanException} with a reason
- * {@link com.polidea.rxandroidble.exceptions.BleScanException#LOCATION_SERVICES_DISABLED}
+ * An Observable that emits false if an attempt to scan with {@link com.polidea.rxandroidble.RxBleClient#scanBleDevices(UUID...)}
+ * would cause the exception {@link com.polidea.rxandroidble.exceptions.BleScanException#LOCATION_SERVICES_DISABLED}; otherwise emits true.
+ * Always emits true in Android versions prior to 6.0.
+ * Typically, receiving false should cause the user to be prompted to enable Location Services.
  */
 public class LocationServicesOkObservable extends Observable<Boolean> {
 
