@@ -63,6 +63,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     // TODO [DS] 08.07.2017 Remove in 2.0.0
     @Deprecated
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        super(createMessage(bluetoothGattCharacteristic, UNKNOWN, null));
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = UNKNOWN;
     }
@@ -70,9 +71,10 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
                                                            Throwable cause) {
-        super(cause);
+        super(createMessage(bluetoothGattCharacteristic, reason, cause));
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = reason;
+        initCause(cause);
     }
 
     public BluetoothGattCharacteristic getBluetoothGattCharacteristic() {
@@ -90,17 +92,17 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
         return reason;
     }
 
-    @Override
-    public String toString() {
+    private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
+                                        Throwable cause) {
         return "BleCannotSetCharacteristicNotificationException{"
                 + "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid()
-                + ", reason=" + reasonDescription()
+                + ", reason=" + reasonDescription(reason)
                 + " (see Javadoc for more comment)"
-                + toStringCauseIfExists()
+                + toStringCauseIfExists(cause)
                 + '}';
     }
 
-    private String reasonDescription() {
+    private static String reasonDescription(int reason) {
         switch (reason) {
 
             case CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR:

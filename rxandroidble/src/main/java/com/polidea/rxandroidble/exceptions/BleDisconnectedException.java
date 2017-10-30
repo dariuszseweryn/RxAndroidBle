@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.exceptions;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
  * Exception emitted when the BLE link has been disconnected either when the connection was already established
@@ -17,24 +18,25 @@ public class BleDisconnectedException extends BleException {
 
     @Deprecated
     public BleDisconnectedException() {
-        super();
+        super(createMessage(null, null));
         bluetoothDeviceAddress = "";
     }
 
     public BleDisconnectedException(Throwable throwable, @NonNull String bluetoothDeviceAddress) {
-        super(throwable);
+        super(createMessage(throwable, bluetoothDeviceAddress));
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+        initCause(throwable);
     }
 
     public BleDisconnectedException(@NonNull String bluetoothDeviceAddress) {
+        super(createMessage(null, bluetoothDeviceAddress));
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
     }
 
-    @Override
-    public String toString() {
+    private static String createMessage(@Nullable Throwable throwable, @Nullable String bluetoothDeviceAddress) {
         return "BleDisconnectedException{"
                 + "bluetoothDeviceAddress='" + bluetoothDeviceAddress + '\''
-                + toStringCauseIfExists()
+                + toStringCauseIfExists(throwable)
                 + '}';
     }
 }

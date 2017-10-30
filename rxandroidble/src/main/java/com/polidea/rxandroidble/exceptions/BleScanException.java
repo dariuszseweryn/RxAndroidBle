@@ -94,19 +94,22 @@ public class BleScanException extends BleException {
     private final Date retryDateSuggestion;
 
     public BleScanException(@Reason int reason) {
+        super(createMessage(reason, null, null));
         this.reason = reason;
         this.retryDateSuggestion = null;
     }
 
     public BleScanException(@Reason int reason, @NonNull Date retryDateSuggestion) {
+        super(createMessage(reason, retryDateSuggestion, null));
         this.reason = reason;
         this.retryDateSuggestion = retryDateSuggestion;
     }
 
     public BleScanException(@Reason int reason, Throwable causeException) {
-        super(causeException);
+        super(createMessage(reason, null, causeException));
         this.reason = reason;
         this.retryDateSuggestion = null;
+        initCause(causeException);
     }
 
     /**
@@ -129,16 +132,15 @@ public class BleScanException extends BleException {
         return retryDateSuggestion;
     }
 
-    @Override
-    public String toString() {
+    public static String createMessage(int reason, Date retryDateSuggestion, @Nullable Throwable cause) {
         return "BleScanException{"
-                + "reason=" + reasonDescription()
-                + retryDateSuggestionIfExists()
-                + toStringCauseIfExists()
+                + "reason=" + reasonDescription(reason)
+                + retryDateSuggestionIfExists(retryDateSuggestion)
+                + toStringCauseIfExists(cause)
                 + '}';
     }
 
-    private String reasonDescription() {
+    private static String reasonDescription(int reason) {
         switch (reason) {
             case BLUETOOTH_CANNOT_START:
                 return "BLUETOOTH_CANNOT_START";
@@ -169,7 +171,7 @@ public class BleScanException extends BleException {
         }
     }
 
-    private String retryDateSuggestionIfExists() {
+    private static String retryDateSuggestionIfExists(Date retryDateSuggestion) {
         if (retryDateSuggestion == null) {
             return "";
         } else {

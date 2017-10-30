@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble.exceptions;
 
+import android.support.annotation.Nullable;
+
 public class BleException extends RuntimeException {
 
     public BleException() {
@@ -14,8 +16,7 @@ public class BleException extends RuntimeException {
         super(throwable);
     }
 
-    String toStringCauseIfExists() {
-        Throwable throwableCause = getCause();
+    static String toStringCauseIfExists(@Nullable Throwable throwableCause) {
         return (throwableCause != null ? ", cause=" + throwableCause.toString() : "");
     }
 }
