@@ -63,7 +63,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     // TODO [DS] 08.07.2017 Remove in 2.0.0
     @Deprecated
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-        super(createMessage(bluetoothGattCharacteristic, UNKNOWN, null));
+        super(createMessage(bluetoothGattCharacteristic, UNKNOWN));
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = UNKNOWN;
     }
@@ -71,10 +71,9 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
                                                            Throwable cause) {
-        super(createMessage(bluetoothGattCharacteristic, reason, cause));
+        super(createMessage(bluetoothGattCharacteristic, reason), cause);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = reason;
-        initCause(cause);
     }
 
     public BluetoothGattCharacteristic getBluetoothGattCharacteristic() {
@@ -92,8 +91,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
         return reason;
     }
 
-    private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
-                                        Throwable cause) {
+    private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason) {
         return reasonDescription(reason) + " (code "
                 + reason + ") with characteristic UUID " + bluetoothGattCharacteristic.getUuid();
     }

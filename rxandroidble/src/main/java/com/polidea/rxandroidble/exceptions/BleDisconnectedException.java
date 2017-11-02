@@ -24,7 +24,6 @@ public class BleDisconnectedException extends BleException {
     public BleDisconnectedException(Throwable throwable, @NonNull String bluetoothDeviceAddress) {
         super(createMessage(bluetoothDeviceAddress), throwable);
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
-        initCause(throwable);
     }
 
     public BleDisconnectedException(@NonNull String bluetoothDeviceAddress) {
