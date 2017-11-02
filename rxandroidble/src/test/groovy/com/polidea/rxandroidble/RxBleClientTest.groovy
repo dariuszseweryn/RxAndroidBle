@@ -518,4 +518,5 @@ class RxBleClientTest extends Specification {
         Thread.sleep(200) // Nasty :<
         true
     }
+
 }

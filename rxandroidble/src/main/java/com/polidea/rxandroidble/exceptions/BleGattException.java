@@ -25,12 +25,14 @@ public class BleGattException extends BleException {
 
     @Deprecated
     public BleGattException(int status, BleGattOperationType bleGattOperationType) {
+        super(createMessage(null, status, bleGattOperationType));
         this.gatt = null;
         this.status = status;
         this.bleGattOperationType = bleGattOperationType;
     }
 
     public BleGattException(@NonNull BluetoothGatt gatt, int status, BleGattOperationType bleGattOperationType) {
+        super(createMessage(gatt, status, bleGattOperationType));
         this.gatt = gatt;
         this.status = status;
         this.bleGattOperationType = bleGattOperationType;
@@ -41,7 +43,7 @@ public class BleGattException extends BleException {
     }
 
     public String getMacAddress() {
-        return gatt != null ? gatt.getDevice().getAddress() : null;
+        return getMacAddress(gatt);
     }
 
     public BleGattOperationType getBleGattOperationType() {
@@ -52,17 +54,20 @@ public class BleGattException extends BleException {
         return status;
     }
 
+    private static String getMacAddress(@Nullable BluetoothGatt gatt) {
+        return (gatt != null && gatt.getDevice() != null) ? gatt.getDevice().getAddress() : null;
+    }
+
     @SuppressLint("DefaultLocale")
-    @Override
-    public String toString() {
+    private static String createMessage(@Nullable BluetoothGatt gatt, int status, BleGattOperationType bleGattOperationType) {
         if (status == UNKNOWN_STATUS) {
-            return String.format("%s{macAddress=%s, bleGattOperationType=%s}",
-                    getClass().getSimpleName(), getMacAddress(), bleGattOperationType);
+            return String.format("GATT exception from MAC address %s, with type %s",
+                    getMacAddress(gatt), bleGattOperationType);
         }
 
         final String link
                 = "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h";
-        return String.format("%s{macAddress=%s, status=%d (0x%02x -> %s), bleGattOperationType=%s}",
-                getClass().getSimpleName(), getMacAddress(), status, status, link, bleGattOperationType);
+        return String.format("GATT exception from MAC address %s, status %d, type %s. (Look up status 0x%02x here %s)",
+                getMacAddress(gatt), status, bleGattOperationType, status, link);
     }
 }

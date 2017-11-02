@@ -1,5 +1,8 @@
 package com.polidea.rxandroidble.exceptions;
 
+/**
+ * Base class of exceptions in this project.
+ */
 public class BleException extends RuntimeException {
 
     public BleException() {
@@ -14,8 +17,7 @@ public class BleException extends RuntimeException {
         super(throwable);
     }
 
-    String toStringCauseIfExists() {
-        Throwable throwableCause = getCause();
-        return (throwableCause != null ? ", cause=" + throwableCause.toString() : "");
+    public BleException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }
