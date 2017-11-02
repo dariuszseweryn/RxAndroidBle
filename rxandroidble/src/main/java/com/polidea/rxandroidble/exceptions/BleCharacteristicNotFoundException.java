@@ -7,6 +7,7 @@ public class BleCharacteristicNotFoundException extends BleException {
     private final UUID charactersisticUUID;
 
     public BleCharacteristicNotFoundException(UUID charactersisticUUID) {
+        super("Characteristic not found with UUID " + charactersisticUUID);
         this.charactersisticUUID = charactersisticUUID;
     }
 
@@ -14,8 +15,4 @@ public class BleCharacteristicNotFoundException extends BleException {
         return charactersisticUUID;
     }
 
-    @Override
-    public String toString() {
-        return "BleCharacteristicNotFoundException{" + "charactersisticUUID=" + charactersisticUUID + '}';
-    }
 }

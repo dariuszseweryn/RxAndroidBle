@@ -63,7 +63,7 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     // TODO [DS] 08.07.2017 Remove in 2.0.0
     @Deprecated
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-        super(createMessage(bluetoothGattCharacteristic, UNKNOWN, null));
+        super(createMessage(bluetoothGattCharacteristic, UNKNOWN));
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = UNKNOWN;
     }
@@ -71,10 +71,9 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public BleCannotSetCharacteristicNotificationException(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
                                                            Throwable cause) {
-        super(createMessage(bluetoothGattCharacteristic, reason, cause));
+        super(createMessage(bluetoothGattCharacteristic, reason), cause);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.reason = reason;
-        initCause(cause);
     }
 
     public BluetoothGattCharacteristic getBluetoothGattCharacteristic() {
@@ -92,28 +91,23 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
         return reason;
     }
 
-    private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
-                                        Throwable cause) {
-        return "BleCannotSetCharacteristicNotificationException{"
-                + "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid()
-                + ", reason=" + reasonDescription(reason)
-                + " (see Javadoc for more comment)"
-                + toStringCauseIfExists(cause)
-                + '}';
+    private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason) {
+        return reasonDescription(reason) + " (code "
+                + reason + ") with characteristic UUID " + bluetoothGattCharacteristic.getUuid();
     }
 
     private static String reasonDescription(int reason) {
         switch (reason) {
 
             case CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR:
-                return "CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR";
+                return "Cannot find client characteristic config descriptor";
             case CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR:
-                return "CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR";
+                return "Cannot write client characteristic config descriptor";
             case CANNOT_SET_LOCAL_NOTIFICATION:
-                return "CANNOT_SET_LOCAL_NOTIFICATION";
+                return "Cannot set local notification";
             case UNKNOWN:
             default:
-                return "UNKNOWN";
+                return "Unknown error";
         }
     }
 }

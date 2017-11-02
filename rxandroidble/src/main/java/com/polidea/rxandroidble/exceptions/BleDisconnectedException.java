@@ -18,25 +18,20 @@ public class BleDisconnectedException extends BleException {
 
     @Deprecated
     public BleDisconnectedException() {
-        super(createMessage(null, null));
         bluetoothDeviceAddress = "";
     }
 
     public BleDisconnectedException(Throwable throwable, @NonNull String bluetoothDeviceAddress) {
-        super(createMessage(throwable, bluetoothDeviceAddress));
+        super(createMessage(bluetoothDeviceAddress), throwable);
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
-        initCause(throwable);
     }
 
     public BleDisconnectedException(@NonNull String bluetoothDeviceAddress) {
-        super(createMessage(null, bluetoothDeviceAddress));
+        super(createMessage(bluetoothDeviceAddress));
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
     }
 
-    private static String createMessage(@Nullable Throwable throwable, @Nullable String bluetoothDeviceAddress) {
-        return "BleDisconnectedException{"
-                + "bluetoothDeviceAddress='" + bluetoothDeviceAddress + '\''
-                + toStringCauseIfExists(throwable)
-                + '}';
+    private static String createMessage(@Nullable String bluetoothDeviceAddress) {
+        return "Disconnected from " + bluetoothDeviceAddress;
     }
 }

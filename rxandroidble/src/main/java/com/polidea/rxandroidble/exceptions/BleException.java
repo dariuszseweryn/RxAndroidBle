@@ -1,7 +1,8 @@
 package com.polidea.rxandroidble.exceptions;
 
-import android.support.annotation.Nullable;
-
+/**
+ * Base class of exceptions in this project.
+ */
 public class BleException extends RuntimeException {
 
     public BleException() {
@@ -16,7 +17,7 @@ public class BleException extends RuntimeException {
         super(throwable);
     }
 
-    static String toStringCauseIfExists(@Nullable Throwable throwableCause) {
-        return (throwableCause != null ? ", cause=" + throwableCause.toString() : "");
+    public BleException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }

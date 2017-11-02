@@ -9,6 +9,8 @@ public class BleConflictingNotificationAlreadySetException extends BleException 
     private final boolean alreadySetIsIndication;
 
     public BleConflictingNotificationAlreadySetException(UUID characteristicUuid, boolean alreadySetIsIndication) {
+        super("Characteristic " + characteristicUuid
+                + " notification already set to " + (alreadySetIsIndication ? "indication" : "notification"));
         this.characteristicUuid = characteristicUuid;
         this.alreadySetIsIndication = alreadySetIsIndication;
     }
@@ -25,11 +27,4 @@ public class BleConflictingNotificationAlreadySetException extends BleException 
         return !alreadySetIsIndication;
     }
 
-    @Override
-    public String toString() {
-        return "BleCharacteristicNotificationOfOtherTypeAlreadySetException{"
-                + "characteristicUuid=" + characteristicUuid.toString()
-                + ", typeAlreadySet=" + (alreadySetIsIndication ? "indication" : "notification")
-                + '}';
-    }
 }
