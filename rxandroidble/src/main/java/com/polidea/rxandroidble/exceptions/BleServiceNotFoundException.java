@@ -7,7 +7,7 @@ public class BleServiceNotFoundException extends BleException {
     private final UUID serviceUUID;
 
     public BleServiceNotFoundException(UUID serviceUUID) {
-        super("BLE Service not found with uuid " + serviceUUID);
+        super("BLE Service not found with UUID " + serviceUUID);
         this.serviceUUID = serviceUUID;
     }
 
