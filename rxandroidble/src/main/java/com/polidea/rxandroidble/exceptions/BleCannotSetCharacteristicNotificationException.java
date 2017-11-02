@@ -94,26 +94,22 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
 
     private static String createMessage(BluetoothGattCharacteristic bluetoothGattCharacteristic, @Reason int reason,
                                         Throwable cause) {
-        return "BleCannotSetCharacteristicNotificationException{"
-                + "bluetoothGattCharacteristic=" + bluetoothGattCharacteristic.getUuid()
-                + ", reason=" + reasonDescription(reason)
-                + " (see Javadoc for more comment)"
-                + toStringCauseIfExists(cause)
-                + '}';
+        return reasonDescription(reason) + " (code "
+                + reason + ") with characteristic UUID " + bluetoothGattCharacteristic.getUuid();
     }
 
     private static String reasonDescription(int reason) {
         switch (reason) {
 
             case CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR:
-                return "CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR";
+                return "Cannot find client characteristic config descriptor";
             case CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR:
-                return "CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR";
+                return "Cannot write client characteristic config descriptor";
             case CANNOT_SET_LOCAL_NOTIFICATION:
-                return "CANNOT_SET_LOCAL_NOTIFICATION";
+                return "Cannot set local notification";
             case UNKNOWN:
             default:
-                return "UNKNOWN";
+                return "Unknown error";
         }
     }
 }

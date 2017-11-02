@@ -94,22 +94,21 @@ public class BleScanException extends BleException {
     private final Date retryDateSuggestion;
 
     public BleScanException(@Reason int reason) {
-        super(createMessage(reason, null, null));
+        super(createMessage(reason, null));
         this.reason = reason;
         this.retryDateSuggestion = null;
     }
 
     public BleScanException(@Reason int reason, @NonNull Date retryDateSuggestion) {
-        super(createMessage(reason, retryDateSuggestion, null));
+        super(createMessage(reason, retryDateSuggestion));
         this.reason = reason;
         this.retryDateSuggestion = retryDateSuggestion;
     }
 
     public BleScanException(@Reason int reason, Throwable causeException) {
-        super(createMessage(reason, null, causeException));
+        super(createMessage(reason, null), causeException);
         this.reason = reason;
         this.retryDateSuggestion = null;
-        initCause(causeException);
     }
 
     /**
@@ -132,42 +131,38 @@ public class BleScanException extends BleException {
         return retryDateSuggestion;
     }
 
-    public static String createMessage(int reason, Date retryDateSuggestion, @Nullable Throwable cause) {
-        return "BleScanException{"
-                + "reason=" + reasonDescription(reason)
-                + retryDateSuggestionIfExists(retryDateSuggestion)
-                + toStringCauseIfExists(cause)
-                + '}';
+    private static String createMessage(int reason, Date retryDateSuggestion) {
+        return reasonDescription(reason) + " (code " + reason + ")" + retryDateSuggestionIfExists(retryDateSuggestion);
     }
 
     private static String reasonDescription(int reason) {
         switch (reason) {
             case BLUETOOTH_CANNOT_START:
-                return "BLUETOOTH_CANNOT_START";
+                return "Bluetooth cannot start";
             case BLUETOOTH_DISABLED:
-                return "BLUETOOTH_DISABLED";
+                return "Bluetooth disabled";
             case BLUETOOTH_NOT_AVAILABLE:
-                return "BLUETOOTH_NOT_AVAILABLE";
+                return "Bluetooth not available";
             case LOCATION_PERMISSION_MISSING:
-                return "LOCATION_PERMISSION_MISSING";
+                return "Location Permission missing";
             case LOCATION_SERVICES_DISABLED:
-                return "LOCATION_SERVICES_DISABLED";
+                return "Location Services disabled";
             case SCAN_FAILED_ALREADY_STARTED:
-                return "SCAN_FAILED_ALREADY_STARTED";
+                return "Scan failed because it has already started";
             case SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
-                return "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
+                return "Scan failed because application registration failed";
             case SCAN_FAILED_INTERNAL_ERROR:
-                return "SCAN_FAILED_INTERNAL_ERROR";
+                return "Scan failed because of an internal error";
             case SCAN_FAILED_FEATURE_UNSUPPORTED:
-                return "SCAN_FAILED_FEATURE_UNSUPPORTED";
+                return "Scan failed because feature unsupported";
             case SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
-                return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+                return "Scan failed because out of hardware resources";
             case UNDOCUMENTED_SCAN_THROTTLE:
-                return "UNDOCUMENTED_SCAN_THROTTLE";
+                return "Undocumented scan throttle";
             case UNKNOWN_ERROR_CODE:
                 // fallthrough
             default:
-                return "UNKNOWN";
+                return "Unknown error";
         }
     }
 
@@ -175,7 +170,7 @@ public class BleScanException extends BleException {
         if (retryDateSuggestion == null) {
             return "";
         } else {
-            return ", retryDateSuggestion=" + retryDateSuggestion;
+            return ", suggested retry date is " + retryDateSuggestion;
         }
     }
 }

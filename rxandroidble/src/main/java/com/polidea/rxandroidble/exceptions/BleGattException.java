@@ -41,7 +41,7 @@ public class BleGattException extends BleException {
     }
 
     public String getMacAddress() {
-        return gatt != null ? gatt.getDevice().getAddress() : null;
+        return getMacAddress(gatt);
     }
 
     public BleGattOperationType getBleGattOperationType() {
@@ -52,17 +52,20 @@ public class BleGattException extends BleException {
         return status;
     }
 
+    private static String getMacAddress(BluetoothGatt gatt) {
+        return gatt != null ? gatt.getDevice().getAddress() : null;
+    }
+
     @SuppressLint("DefaultLocale")
-    @Override
-    public String toString() {
+    private static String createMessage(@Nullable BluetoothGatt gatt, int status, BleGattOperationType bleGattOperationType) {
         if (status == UNKNOWN_STATUS) {
-            return String.format("%s{macAddress=%s, bleGattOperationType=%s}",
-                    getClass().getSimpleName(), getMacAddress(), bleGattOperationType);
+            return String.format("GATT exception from MAC address %s, with type %s",
+                    getMacAddress(gatt), bleGattOperationType);
         }
 
         final String link
                 = "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h";
-        return String.format("%s{macAddress=%s, status=%d (0x%02x -> %s), bleGattOperationType=%s}",
-                getClass().getSimpleName(), getMacAddress(), status, status, link, bleGattOperationType);
+        return String.format("GATT exception from MAC address %s, with status %d (0x%02x -> %s), and type %s}",
+                getMacAddress(gatt), status, status, link, bleGattOperationType);
     }
 }
