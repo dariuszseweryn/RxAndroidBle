@@ -4,7 +4,6 @@ apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
     compileSdkVersion 25
-    buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         minSdkVersion 18
