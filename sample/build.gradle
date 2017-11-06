@@ -17,7 +17,6 @@ repositories {
 
 android {
     compileSdkVersion 25
-    buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         applicationId "com.polidea.rxandroidble.sample"

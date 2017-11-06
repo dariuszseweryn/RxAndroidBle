@@ -4,7 +4,6 @@ apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
     compileSdkVersion 25
-    buildToolsVersion rootProject.ext.buildToolsVersionVariable
 
     defaultConfig {
         minSdkVersion 18
@@ -41,6 +40,20 @@ android {
     }
 
     preBuild.dependsOn 'checkstyle'
+}
+
+// Workaround until groovy-android-gradle-plugin 1.3.0 is released
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('UnitTestGroovyWithGroovyc')) {
+        task.doFirst {
+            ['debug','release'].each {
+                def dir = file("build/generated/source/apt/test/$it")
+                if(!dir.isDirectory()){
+                    dir.mkdirs()
+                }
+            }
+        }
+    }
 }
 
 dependencies {
