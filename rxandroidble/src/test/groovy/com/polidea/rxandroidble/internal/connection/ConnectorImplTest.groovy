@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference
 import rx.Observable
 import rx.Subscription
 import rx.observers.TestSubscriber
+import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -42,7 +43,8 @@ public class ConnectorImplTest extends Specification {
 
         objectUnderTest = new ConnectorImpl(
                 clientOperationQueueMock,
-                mockConnectionComponentBuilder
+                mockConnectionComponentBuilder,
+                Schedulers.immediate()
         )
     }
 
