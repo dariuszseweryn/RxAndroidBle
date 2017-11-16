@@ -2,6 +2,7 @@ package com.polidea.rxandroidble.internal
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.internal.cache.DeviceComponentCache

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.jakewharton.rxrelay.BehaviorRelay;
+import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
@@ -62,7 +63,7 @@ class RxBleDeviceImpl implements RxBleDevice {
         return establishConnection(options);
     }
 
-//    @Override
+    @Override
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override

@@ -1,13 +1,16 @@
-package com.polidea.rxandroidble.internal;
+package com.polidea.rxandroidble;
 
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
-import com.polidea.rxandroidble.RxBleDevice;
+
+import com.polidea.rxandroidble.internal.BleIllegalOperationException;
 
 /**
  * Container for various connection parameters.
  */
 public class ConnectionSetup {
+
+    public static final int DEFAULT_OPERATION_TIMEOUT = 30;
     /**
      * Flag related with
      * {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
@@ -22,16 +25,23 @@ public class ConnectionSetup {
      * don't match those required by the operation. If set to true, an event will be logged without interrupting the execution.
      */
     public final boolean suppressOperationCheck;
+    /**
+     * Timeout in seconds after which the operation will be considered as broken. Eventually the operation will be
+     * canceled and removed from queue.
+     */
+    public final int operationTimeout;
 
-    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck) {
+    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, int operationTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
+        this.operationTimeout = operationTimeout;
     }
 
     public static class Builder {
 
         private boolean autoConnect = false;
         private boolean suppressOperationCheck = false;
+        private int operationTimeout = DEFAULT_OPERATION_TIMEOUT;
 
 
         /**
@@ -64,8 +74,19 @@ public class ConnectionSetup {
             return this;
         }
 
+        /**
+         * @param operationTimeout Timeout in seconds after which the operation will be considered as broken. Eventually the operation
+         *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
+         *                         only and may leave Android's BLE stack in an inconsistent state.
+         * @return this builder instance
+         */
+        public Builder setOperationTimeout(int operationTimeout) {
+            this.operationTimeout = operationTimeout;
+            return this;
+        }
+
         public ConnectionSetup build() {
-            return new ConnectionSetup(autoConnect, suppressOperationCheck);
+            return new ConnectionSetup(autoConnect, suppressOperationCheck, operationTimeout);
         }
     }
 }

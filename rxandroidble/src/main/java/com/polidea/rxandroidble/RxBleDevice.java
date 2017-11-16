@@ -87,6 +87,24 @@ public interface RxBleDevice {
     Observable<RxBleConnection> establishConnection(boolean autoConnect);
 
     /**
+     * API allowing to change default connection behaviors. Please keep in mind that this in an experimental API and it's content may
+     * change in the future. In most applications you should be using the {@link #establishConnection(boolean)} method.
+     *
+     * @param connectionSetup Data object containing connection related settings
+     * @return Observable emitting the connection.
+     * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
+     *                                         was already established or was in pending connection state. This occurs when the
+     *                                         connection was released as a part of expected behavior
+     *                                         (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
+     * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
+     *                                         The exception contains detailed explanation of the error source (type of operation) and
+     *                                         the code proxied from the Android system.
+     * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
+     *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
+     */
+    Observable<RxBleConnection> establishConnection(ConnectionSetup connectionSetup);
+
+    /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.
      *
      * @return The device name or null if device name is absent.

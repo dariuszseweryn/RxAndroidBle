@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
+import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
@@ -23,7 +23,7 @@ public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
 
     DescriptorWriteOperation(RxBleGattCallback rxBleGattCallback,
                              BluetoothGatt bluetoothGatt,
-                             @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+                             @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
                              int bluetoothGattCharacteristicDefaultWriteType,
                              BluetoothGattDescriptor bluetoothGattDescriptor,
                              byte[] data) {

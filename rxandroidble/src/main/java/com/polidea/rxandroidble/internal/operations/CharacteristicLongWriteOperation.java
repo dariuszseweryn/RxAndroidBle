@@ -13,14 +13,14 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.QueueOperation;
+import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
-
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
+
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
@@ -50,7 +50,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             BluetoothGatt bluetoothGatt,
             RxBleGattCallback rxBleGattCallback,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
-            @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+            @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             PayloadSizeLimitProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,

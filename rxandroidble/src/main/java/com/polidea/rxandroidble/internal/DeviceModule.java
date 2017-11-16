@@ -48,12 +48,6 @@ public class DeviceModule {
     }
 
     @Provides
-    @Named(OPERATION_TIMEOUT)
-    static TimeoutConfiguration providesOperationTimeoutConf(@Named(NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
-        return new TimeoutConfiguration(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
-    }
-
-    @Provides
     @Named(CONNECT_TIMEOUT)
     static TimeoutConfiguration providesConnectTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
         return new TimeoutConfiguration(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
