@@ -14,7 +14,10 @@ class QueueSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterfac
             try {
                 wait();
             } catch (InterruptedException e) {
-                RxBleLog.v(e, "Interrupted awaitRelease()");
+                if (!isReleased.get()) {
+                    RxBleLog.w(e, "Queue's awaitRelease() has been interrupted abruptly "
+                            + "while it wasn't released byte release() method.");
+                }
             }
         }
     }
