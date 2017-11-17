@@ -29,9 +29,10 @@ android {
 dependencies {
 
     // Test dependencies
-    testCompile rootProject.ext.libs.junit
-    testCompile rootProject.ext.libs.groovy
-    testCompile rootProject.ext.libs.spock
-    testCompile rootProject.ext.libs.robospock
-    compile project(path: ':rxandroidble')
+    testCompileOnly rootProject.ext.libs.junit
+    testCompileOnly rootProject.ext.libs.groovy
+    testCompileOnly rootProject.ext.libs.spock
+    testCompileOnly rootProject.ext.libs.robospock
+    api project(path: ':rxandroidble')
+    api rootProject.ext.libs.rxjava
 }
