@@ -5,7 +5,7 @@ import android.content.Context
 import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
-import com.polidea.rxandroidble.TimeoutSetup
+import com.polidea.rxandroidble.Timeout
 import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
 import rx.Observable
 import spock.lang.Specification
@@ -44,7 +44,7 @@ class RxBleDeviceProviderTest extends Specification {
         }
 
         @Override
-        Observable<RxBleConnection> establishConnection(boolean autoConnect, TimeoutSetup operationTimeoutSetup) {
+        Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeoutSetup) {
             establishConnection(autoConnect)
         }
 //        @Override

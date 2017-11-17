@@ -8,7 +8,7 @@ import com.jakewharton.rxrelay.BehaviorRelay;
 import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.TimeoutSetup;
+import com.polidea.rxandroidble.Timeout;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble.internal.connection.Connector;
 
@@ -65,10 +65,10 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     @Override
-    public Observable<RxBleConnection> establishConnection(final boolean autoConnect, final TimeoutSetup timeoutSetup) {
+    public Observable<RxBleConnection> establishConnection(final boolean autoConnect, final Timeout timeout) {
         ConnectionSetup options = new ConnectionSetup.Builder()
                 .setAutoConnect(autoConnect)
-                .setOperationTimeout(timeoutSetup)
+                .setOperationTimeout(timeout)
                 .setSuppressIllegalOperationCheck(true)
                 .build();
         return establishConnection(options);

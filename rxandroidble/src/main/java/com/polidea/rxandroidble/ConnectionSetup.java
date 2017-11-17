@@ -31,9 +31,9 @@ public class ConnectionSetup {
      * Timeout in seconds after which the operation will be considered as broken. Eventually the operation will be
      * canceled and removed from queue.
      */
-    public final TimeoutSetup operationTimeout;
+    public final Timeout operationTimeout;
 
-    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, TimeoutSetup operationTimeout) {
+    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, Timeout operationTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
         this.operationTimeout = operationTimeout;
@@ -43,7 +43,7 @@ public class ConnectionSetup {
 
         private boolean autoConnect = false;
         private boolean suppressOperationCheck = false;
-        private TimeoutSetup operationTimeout = new TimeoutSetup(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS);
+        private Timeout operationTimeout = new Timeout(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS);
 
 
         /**
@@ -82,7 +82,7 @@ public class ConnectionSetup {
          *                         only and may leave Android's BLE stack in an inconsistent state.
          * @return this builder instance
          */
-        public Builder setOperationTimeout(TimeoutSetup operationTimeout) {
+        public Builder setOperationTimeout(Timeout operationTimeout) {
             this.operationTimeout = operationTimeout;
             return this;
         }

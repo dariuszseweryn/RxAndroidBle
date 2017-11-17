@@ -6,7 +6,7 @@ import android.content.Context;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
-import com.polidea.rxandroidble.TimeoutSetup;
+import com.polidea.rxandroidble.Timeout;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ public class RxBleDeviceMock implements RxBleDevice {
     }
 
     @Override
-    public Observable<RxBleConnection> establishConnection(boolean autoConnect, TimeoutSetup operationTimeoutSetup) {
+    public Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeout) {
         return establishConnection(autoConnect);
     }
 

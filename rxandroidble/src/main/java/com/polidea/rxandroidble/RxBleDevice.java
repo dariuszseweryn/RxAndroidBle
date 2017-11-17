@@ -3,6 +3,7 @@ package com.polidea.rxandroidble;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
@@ -106,7 +107,7 @@ public interface RxBleDevice {
      *                              of RxBleConnection. Without auto connect flag set to true the connection will fail
      *                              with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not
      *                              in range after a 30 seconds timeout.
-     * @param operationTimeoutSetup Timeout configuration after which the operation will be considered as broken. Eventually the operation
+     * @param operationTimeout Timeout configuration after which the operation will be considered as broken. Eventually the operation
      *                              will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
      *                              only and may leave Android's BLE stack in an inconsistent state.
      * @return Observable emitting the connection.
@@ -120,7 +121,7 @@ public interface RxBleDevice {
      * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
      *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
      */
-    Observable<RxBleConnection> establishConnection(boolean autoConnect, TimeoutSetup operationTimeoutSetup);
+    Observable<RxBleConnection> establishConnection(boolean autoConnect, @NonNull Timeout operationTimeout);
 
     /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.
