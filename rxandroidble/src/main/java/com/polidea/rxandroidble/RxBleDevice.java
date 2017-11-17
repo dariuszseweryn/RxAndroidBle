@@ -87,10 +87,28 @@ public interface RxBleDevice {
     Observable<RxBleConnection> establishConnection(boolean autoConnect);
 
     /**
-     * API allowing to change default connection behaviors. Please keep in mind that this in an experimental API and it's content may
-     * change in the future. In most applications you should be using the {@link #establishConnection(boolean)} method.
+     * Establishes connection with a given BLE device. {@link RxBleConnection} is a handle, used to process BLE operations with a connected
+     * device.
+     * <p>
+     * The connection is automatically disconnected (and released) when resulting Observable is unsubscribed.
+     * On the other hand when the connections is interrupted by the device or the system, the Observable will be unsubscribed as well
+     * following BleDisconnectedException or BleGattException emission.
+     * <p>
+     * During the disconnect process the library automatically handles order and requirement of device disconnect and gatt close operations.
+     * <p>
+     * Autoconnect concept may be misleading at first glance. In cases when the BLE device is available and it is advertising constantly you
+     * won't need to use autoconnect. Use autoconnect for connections where the BLE device is not advertising at
+     * the moment of #establishConnection call.
      *
-     * @param connectionSetup Data object containing connection related settings
+     * @param autoConnect           Flag related to
+     *                              {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)}
+     *                              autoConnect flag. In case of auto connect is enabled the observable will wait with the emission
+     *                              of RxBleConnection. Without auto connect flag set to true the connection will fail
+     *                              with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not
+     *                              in range after a 30 seconds timeout.
+     * @param operationTimeoutSetup Timeout configuration after which the operation will be considered as broken. Eventually the operation
+     *                              will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
+     *                              only and may leave Android's BLE stack in an inconsistent state.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
@@ -102,7 +120,7 @@ public interface RxBleDevice {
      * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
      *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
      */
-    Observable<RxBleConnection> establishConnection(ConnectionSetup connectionSetup);
+    Observable<RxBleConnection> establishConnection(boolean autoConnect, TimeoutSetup operationTimeoutSetup);
 
     /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.

@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.polidea.rxandroidble.internal.BleIllegalOperationException;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Container for various connection parameters.
  */
@@ -29,9 +31,9 @@ public class ConnectionSetup {
      * Timeout in seconds after which the operation will be considered as broken. Eventually the operation will be
      * canceled and removed from queue.
      */
-    public final int operationTimeout;
+    public final TimeoutSetup operationTimeout;
 
-    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, int operationTimeout) {
+    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, TimeoutSetup operationTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
         this.operationTimeout = operationTimeout;
@@ -41,7 +43,7 @@ public class ConnectionSetup {
 
         private boolean autoConnect = false;
         private boolean suppressOperationCheck = false;
-        private int operationTimeout = DEFAULT_OPERATION_TIMEOUT;
+        private TimeoutSetup operationTimeout = new TimeoutSetup(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS);
 
 
         /**
@@ -75,12 +77,12 @@ public class ConnectionSetup {
         }
 
         /**
-         * @param operationTimeout Timeout in seconds after which the operation will be considered as broken. Eventually the operation
+         * @param operationTimeout Timeout after which the operation will be considered as broken. Eventually the operation
          *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
          *                         only and may leave Android's BLE stack in an inconsistent state.
          * @return this builder instance
          */
-        public Builder setOperationTimeout(int operationTimeout) {
+        public Builder setOperationTimeout(TimeoutSetup operationTimeout) {
             this.operationTimeout = operationTimeout;
             return this;
         }

@@ -4,10 +4,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.ConnectionSetup;
+import com.polidea.rxandroidble.TimeoutSetup;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
-
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -24,7 +23,7 @@ public class ConnectionModule {
     public static final String OPERATION_TIMEOUT = "operation-timeout";
     final boolean autoConnect;
     final boolean suppressOperationCheck;
-    final int operationTimeout;
+    private final TimeoutSetup operationTimeout;
 
     ConnectionModule(ConnectionSetup connectionSetup) {
         this.autoConnect = connectionSetup.autoConnect;
@@ -41,7 +40,7 @@ public class ConnectionModule {
     @Provides
     @Named(OPERATION_TIMEOUT)
     TimeoutConfiguration providesOperationTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
-        return new TimeoutConfiguration(operationTimeout, TimeUnit.SECONDS, timeoutScheduler);
+        return new TimeoutConfiguration(operationTimeout.timeout, operationTimeout.timeUnit, timeoutScheduler);
     }
 
     @Provides
