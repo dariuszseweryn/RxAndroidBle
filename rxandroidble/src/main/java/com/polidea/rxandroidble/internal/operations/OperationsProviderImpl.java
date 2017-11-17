@@ -8,7 +8,7 @@ import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.internal.DeviceModule;
+import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
@@ -33,7 +33,7 @@ public class OperationsProviderImpl implements OperationsProvider {
     OperationsProviderImpl(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
-            @Named(DeviceModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
+            @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
             Provider<ReadRssiOperation> rssiReadOperationProvider) {

@@ -2,8 +2,10 @@ package com.polidea.rxandroidble.internal
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
+import com.polidea.rxandroidble.Timeout
 import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
 import rx.Observable
 import spock.lang.Specification
@@ -41,6 +43,10 @@ class RxBleDeviceProviderTest extends Specification {
             throw UnsupportedOperationException()
         }
 
+        @Override
+        Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeoutSetup) {
+            establishConnection(autoConnect)
+        }
 //        @Override
         Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
             throw UnsupportedOperationException()

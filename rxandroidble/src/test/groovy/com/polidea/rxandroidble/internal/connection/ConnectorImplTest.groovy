@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothGatt
-import com.polidea.rxandroidble.internal.ConnectionSetup
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
 

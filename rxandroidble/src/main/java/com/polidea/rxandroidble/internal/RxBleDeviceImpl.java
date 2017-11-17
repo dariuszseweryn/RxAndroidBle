@@ -5,8 +5,10 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.jakewharton.rxrelay.BehaviorRelay;
+import com.polidea.rxandroidble.ConnectionSetup;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
+import com.polidea.rxandroidble.Timeout;
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble.internal.connection.Connector;
 
@@ -62,7 +64,16 @@ class RxBleDeviceImpl implements RxBleDevice {
         return establishConnection(options);
     }
 
-//    @Override
+    @Override
+    public Observable<RxBleConnection> establishConnection(final boolean autoConnect, final Timeout timeout) {
+        ConnectionSetup options = new ConnectionSetup.Builder()
+                .setAutoConnect(autoConnect)
+                .setOperationTimeout(timeout)
+                .setSuppressIllegalOperationCheck(true)
+                .build();
+        return establishConnection(options);
+    }
+
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
         return Observable.defer(new Func0<Observable<RxBleConnection>>() {
             @Override

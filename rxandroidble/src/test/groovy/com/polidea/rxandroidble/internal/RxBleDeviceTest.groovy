@@ -3,6 +3,7 @@ package com.polidea.rxandroidble.internal
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.jakewharton.rxrelay.BehaviorRelay
+import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
 import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException
