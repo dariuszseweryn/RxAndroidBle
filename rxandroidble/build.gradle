@@ -57,16 +57,16 @@ tasks.whenTaskAdded { task ->
 }
 
 dependencies {
-    compile rootProject.ext.libs.rxjava
-    compile rootProject.ext.libs.rxrelay
-    compile rootProject.ext.libs.support_annotations
-    compile rootProject.ext.libs.dagger
+    api rootProject.ext.libs.rxjava
+    api rootProject.ext.libs.support_annotations
+    implementation rootProject.ext.libs.rxrelay
+    implementation rootProject.ext.libs.dagger
     annotationProcessor rootProject.ext.libs.dagger_compiler
 
     // Test dependencies
-    testCompile rootProject.ext.libs.junit
-    testCompile rootProject.ext.libs.groovy
-    testCompile rootProject.ext.libs.spock
-    testCompile rootProject.ext.libs.robospock
-    testCompile rootProject.ext.libs.support
+    testCompileOnly rootProject.ext.libs.junit
+    testCompileOnly rootProject.ext.libs.groovy
+    testCompileOnly rootProject.ext.libs.spock
+    testCompileOnly rootProject.ext.libs.robospock
+    testCompileOnly rootProject.ext.libs.support
 }

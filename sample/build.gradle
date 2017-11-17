@@ -42,13 +42,13 @@ configurations.all {
 }
 
 dependencies {
-    compile project(path: ':rxandroidble')
-    compile "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
-    compile "com.android.support:design:$rootProject.ext.supportVersion"
-    compile 'com.jakewharton:butterknife:8.8.1'
+    implementation project(path: ':rxandroidble')
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
+    implementation "com.android.support:design:$rootProject.ext.supportVersion"
+    implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    compile rootProject.ext.libs.rxjava
-    compile rootProject.ext.libs.rxandroid
-    compile 'com.trello:rxlifecycle:1.0'
-    compile 'com.trello:rxlifecycle-components:1.0'
+    implementation rootProject.ext.libs.rxjava
+    implementation rootProject.ext.libs.rxandroid
+    implementation 'com.trello:rxlifecycle:1.0'
+    implementation 'com.trello:rxlifecycle-components:1.0'
 }
