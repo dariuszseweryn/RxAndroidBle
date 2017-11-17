@@ -1,5 +1,11 @@
 Change Log
 ==========
+Version 1.4.3
+* Log informing that the underlying semaphore in a QueueSemaphore has been interrupted will be printed only when the situation was unexpected.(https://github.com/Polidea/RxAndroidBle/issues/317)
+* Fixed possible race condition when calling `.doOnSubscribe()` and `.doOnUnsubscribe()` which lead to calling `ConnectionOperationQueueImpl.onConnectionUnsubscribed()` before the `.onConnectionSubscribed()` has returned. (https://github.com/Polidea/RxAndroidBle/issues/308)
+* Updated RxJava dependency (https://github.com/Polidea/RxAndroidBle/issues/312)
+* Updated to Gradle 3.0.0/Android Studio 3.0 (https://github.com/Polidea/RxAndroidBle/issues/302)
+* Nicer exception messages (https://github.com/Polidea/RxAndroidBle/issues/303)
 
 Version 1.4.2
 * Fixed MTU value not being updated when changed by the peripheral (https://github.com/Polidea/RxAndroidBle/issues/293)
