@@ -9,8 +9,8 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.0'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
-        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:1.2.0'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.15.0'
+        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:2.0.0'
     }
 }
 
