@@ -42,18 +42,8 @@ android {
     preBuild.dependsOn 'checkstyle'
 }
 
-// Workaround until groovy-android-gradle-plugin 1.3.0 is released
-tasks.whenTaskAdded { task ->
-    if (task.name.contains('UnitTestGroovyWithGroovyc')) {
-        task.doFirst {
-            ['debug','release'].each {
-                def dir = file("build/generated/source/apt/test/$it")
-                if(!dir.isDirectory()){
-                    dir.mkdirs()
-                }
-            }
-        }
-    }
+androidGroovy {
+    skipJavaC = true
 }
 
 dependencies {
