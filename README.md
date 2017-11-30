@@ -360,6 +360,9 @@ When submitting code, please make every effort to follow existing conventions an
 * non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
 * commercial — drop an email to hello@polidea.com for more info
 
+## Discussions
+Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELibraries/RxAndroidBle)
+
 ## Maintainers
 * Dariusz Seweryn (dariusz.seweryn@polidea.com)
 * Paweł Urban (pawel.urban@polidea.com)
