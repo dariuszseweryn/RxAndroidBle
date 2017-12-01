@@ -272,26 +272,26 @@ There are three types of `Observable`s that you may encounter.
 
 The below table contains an overview of used `Observable` patterns
 
-| Interface | Function | Number of values | Completes |
-| --- | --- | --- | --- |
-| RxBleClient | scanBleDevices()* | Infinite | false |
-| RxBleClient | observeStateChanges() | Infinite** | false** |
-| RxBleDevice | observeConnectionStateChanges() | Infinite | false |
-| RxBleDevice | establishConnection()* | Single | false |
-| RxBleConnection | discoverServices() | Single | true |
-| RxBleConnection | setupNotification()* | Single | false |
-| RxBleConnection | setupNotification() emitted Observable | Infinite | false |
-| RxBleConnection | setupIndication()* | Single | false |
-| RxBleConnection | setupIndication() emitted Observable | Infinite | false |
-| RxBleConnection | getCharacteristic() | Single | true |
-| RxBleConnection | readCharacteristic() | Single | true |
-| RxBleConnection | writeCharacteristic() | Single | true |
-| RxBleConnection | readDescriptor() | Single | true |
-| RxBleConnection | writeDescriptor() | Single | true |
-| RxBleConnection | readRssi() | Single | true |
-| RxBleConnection | requestMtu() | Single | true |
-| RxBleConnection | queue() | User defined | User defined |
-| LongWriteOperationBuilder | build() | Single | true |
+| Interface | Function | Number of values | Completes | [Hot/Cold](https://medium.com/@benlesh/hot-vs-cold-observables-f8094ed53339)
+| --- | --- | --- | --- | --- |
+| RxBleClient | scanBleDevices()* | Infinite | false | cold |
+| RxBleClient | observeStateChanges() | Infinite** | false** | hot |
+| RxBleDevice | observeConnectionStateChanges() | Infinite | false | hot |
+| RxBleDevice | establishConnection()* | Single | false | cold |
+| RxBleConnection | discoverServices() | Single | true | cold |
+| RxBleConnection | setupNotification()* | Single | false | cold |
+| RxBleConnection | setupNotification() emitted Observable | Infinite | false | hot |
+| RxBleConnection | setupIndication()* | Single | false | cold |
+| RxBleConnection | setupIndication() emitted Observable | Infinite | false | hot |
+| RxBleConnection | getCharacteristic() | Single | true | cold |
+| RxBleConnection | readCharacteristic() | Single | true | cold |
+| RxBleConnection | writeCharacteristic() | Single | true | cold |
+| RxBleConnection | readDescriptor() | Single | true | cold |
+| RxBleConnection | writeDescriptor() | Single | true | cold |
+| RxBleConnection | readRssi() | Single | true | cold |
+| RxBleConnection | requestMtu() | Single | true | cold |
+| RxBleConnection | queue() | User defined | User defined | cold |
+| LongWriteOperationBuilder | build() | Single | true | cold |
 
 \* this `Observable` when unsubscribed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
 \** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
