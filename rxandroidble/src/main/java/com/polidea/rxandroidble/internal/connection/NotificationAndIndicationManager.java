@@ -1,10 +1,10 @@
 package com.polidea.rxandroidble.internal.connection;
 
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
@@ -12,12 +12,14 @@ import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetE
 import com.polidea.rxandroidble.internal.util.ActiveCharacteristicNotification;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
-import com.polidea.rxandroidble.internal.util.ObservableUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import rx.Completable;
 import rx.Observable;
 import rx.functions.Action0;
@@ -82,30 +84,42 @@ class NotificationAndIndicationManager {
                     final byte[] enableNotificationTypeValue = isIndication ? configEnableIndication : configEnableNotification;
                     final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
-                    final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
+                    setCharacteristicNotification(bluetoothGatt, characteristic, true)
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
-                            .andThen(ObservableUtil.justOnNext(
-                                    observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
-                            ))
-                            .doOnUnsubscribe(new Action0() {
-                                @Override
-                                public void call() {
-                                    notificationCompletedSubject.onCompleted();
-                                    synchronized (activeNotificationObservableMap) {
-                                        activeNotificationObservableMap.remove(id);
-                                    }
-                                    // teardown the notification
-                                    setCharacteristicNotification(bluetoothGatt, characteristic, false)
-                                            .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
-                                            .subscribe(
-                                                    Actions.empty(),
-                                                    Actions.<Throwable>toAction1(Actions.empty())
-                                            );
-                                }
-                            })
-                            .mergeWith(gattCallback.<Observable<byte[]>>observeDisconnect())
-                            .replay(1)
-                            .refCount();
+                            .subscribe();
+
+                    final Observable<Observable<byte[]>> newObservable =
+                            observeOnCharacteristicChangeCallbacks(gattCallback, id)
+                                    .takeUntil(notificationCompletedSubject)
+                                    .map(new Func1<byte[], Observable<byte[]>>() {
+                                        @Override
+                                        public Observable<byte[]> call(byte[] bytes) {
+                                            return Observable.just(bytes);
+                                        }
+                                    })
+                                    .doOnUnsubscribe(new Action0() {
+                                        @Override
+                                        public void call() {
+                                            notificationCompletedSubject.onCompleted();
+                                            synchronized (activeNotificationObservableMap) {
+                                                activeNotificationObservableMap.remove(id);
+                                            }
+                                            // teardown the notification
+                                            setCharacteristicNotification(bluetoothGatt, characteristic, false)
+                                                    .compose(setupModeTransformer(
+                                                            descriptorWriter,
+                                                            characteristic,
+                                                            configDisable,
+                                                            setupMode))
+                                                    .subscribe(
+                                                            Actions.empty(),
+                                                            Actions.<Throwable>toAction1(Actions.empty())
+                                                    );
+                                        }
+                                    })
+                                    .mergeWith(gattCallback.<Observable<byte[]>>observeDisconnect())
+                                    .replay(1)
+                                    .refCount();
                     activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, isIndication));
                     return newObservable;
                 }
