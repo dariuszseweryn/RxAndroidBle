@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @SuppressWarnings("WeakerAccess")
-public class WriteSetup {
+public class SetupWrite {
 
     public static final int WRITE_TYPE_DEFAULT = 0;
 
@@ -24,7 +24,7 @@ public class WriteSetup {
 
     public final int writeType;
 
-    private WriteSetup(int writeType) {
+    private SetupWrite(int writeType) {
         this.writeType = writeType;
     }
 
@@ -40,8 +40,8 @@ public class WriteSetup {
             return this;
         }
 
-        public WriteSetup build() {
-            return new WriteSetup(writeType);
+        public SetupWrite build() {
+            return new SetupWrite(writeType);
         }
     }
 }

@@ -11,8 +11,8 @@ import android.support.annotation.RequiresApi;
 import com.polidea.rxandroidble.custom_operation.CustomOperationCompletable;
 import com.polidea.rxandroidble.custom_operation.CustomOperationObservable;
 import com.polidea.rxandroidble.custom_operation.CustomOperationSingle;
-import com.polidea.rxandroidble.setup.NotificationSetup;
-import com.polidea.rxandroidble.setup.WriteSetup;
+import com.polidea.rxandroidble.setup.SetupNotification;
+import com.polidea.rxandroidble.setup.SetupWrite;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -65,11 +65,11 @@ public interface Connection {
 
     Completable writeCharacteristic(@NonNull Characteristic characteristic, @NonNull byte[] value);
 
-    Completable writeCharacteristic(@NonNull Characteristic characteristic, @NonNull byte[] value, @NonNull WriteSetup writeSetup);
+    Completable writeCharacteristic(@NonNull Characteristic characteristic, @NonNull byte[] value, @NonNull SetupWrite setupWrite);
 
     Observable<Observable<byte[]>> setupNotifcation(@NonNull Characteristic characteristic);
 
-    Observable<Observable<byte[]>> setupNotifcation(@NonNull Characteristic characteristic, @NonNull NotificationSetup notificationSetup);
+    Observable<Observable<byte[]>> setupNotifcation(@NonNull Characteristic characteristic, @NonNull SetupNotification setupNotification);
 
     Single<byte[]> readDescriptor(@NonNull Descriptor descriptor);
 
