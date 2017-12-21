@@ -17,7 +17,7 @@ import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
 import com.polidea.rxandroidble.scan.ScanCallbackType;
 import com.polidea.rxandroidble.scan.ScanRecord;
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @ClientScope

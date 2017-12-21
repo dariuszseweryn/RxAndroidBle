@@ -4,8 +4,8 @@ package com.polidea.rxandroidble.internal.scan;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import java.util.Date;
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 import rx.Scheduler;
 
 public class ScanPreconditionsVerifierApi24 implements ScanPreconditionsVerifier {

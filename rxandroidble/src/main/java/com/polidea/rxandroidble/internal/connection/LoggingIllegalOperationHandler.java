@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import com.polidea.rxandroidble.internal.BleIllegalOperationException;
 import com.polidea.rxandroidble.internal.RxBleLog;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 /**
  * Implementation of {@link IllegalOperationHandler}. This class logs a warning if there was no match between possessed

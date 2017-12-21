@@ -18,8 +18,8 @@ import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 
 import rx.Emitter;
 import rx.Observable;

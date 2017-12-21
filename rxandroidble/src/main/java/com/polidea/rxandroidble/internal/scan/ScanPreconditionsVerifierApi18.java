@@ -4,7 +4,7 @@ package com.polidea.rxandroidble.internal.scan;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 @SuppressWarnings("WeakerAccess")
 public class ScanPreconditionsVerifierApi18 implements ScanPreconditionsVerifier {

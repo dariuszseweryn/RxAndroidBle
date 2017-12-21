@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 public class CheckerLocationPermission {
 
