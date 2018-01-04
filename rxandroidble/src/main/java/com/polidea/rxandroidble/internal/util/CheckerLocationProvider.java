@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.util;
 
 import android.location.LocationManager;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 public class CheckerLocationProvider {
 

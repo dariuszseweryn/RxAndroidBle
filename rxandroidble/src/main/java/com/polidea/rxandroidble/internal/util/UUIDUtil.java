@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 /**
  * Internal helper class for extracting list of Service UUIDs from Advertisement data

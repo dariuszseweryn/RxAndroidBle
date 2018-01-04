@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.internal.BleIllegalOperationException;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 import rx.Completable;
 import rx.functions.Action0;

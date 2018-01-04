@@ -11,8 +11,8 @@ import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class AndroidScanObjectsConverter {

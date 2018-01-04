@@ -8,11 +8,11 @@ import com.polidea.rxandroidble.Timeout;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
-import javax.inject.Named;
-import javax.inject.Provider;
+import bleshadow.javax.inject.Named;
+import bleshadow.javax.inject.Provider;
 
-import dagger.Module;
-import dagger.Provides;
+import bleshadow.dagger.Module;
+import bleshadow.dagger.Provides;
 import rx.Scheduler;
 
 import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;

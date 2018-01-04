@@ -3,7 +3,8 @@ ext {
     rxJavaVersion = '1.3.2'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
-    daggerVersion = '2.8'
+    shadowPluginVersion = '2.0.2'
+    daggerVersion = '2.14.1'
     libs = [
             /* Application dependencies */
             support            : "com.android.support:support-v4:$supportVersion",

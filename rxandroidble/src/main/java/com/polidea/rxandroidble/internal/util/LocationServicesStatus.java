@@ -4,8 +4,8 @@ import android.os.Build;
 
 import com.polidea.rxandroidble.ClientComponent;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 
 public class LocationServicesStatus {
 

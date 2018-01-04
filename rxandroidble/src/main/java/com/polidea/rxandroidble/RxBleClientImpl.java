@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 
-import dagger.Lazy;
+import bleshadow.dagger.Lazy;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action0;

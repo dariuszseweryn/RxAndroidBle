@@ -7,7 +7,7 @@ import com.polidea.rxandroidble.internal.util.CharacteristicPropertiesParser;
 
 import java.util.Locale;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 public class IllegalOperationMessageCreator {
 
