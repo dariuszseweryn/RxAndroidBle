@@ -29,13 +29,13 @@ import com.polidea.rxandroidble.scan.ScanResult;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.inject.Named;
-import javax.inject.Provider;
+import bleshadow.javax.inject.Named;
+import bleshadow.javax.inject.Provider;
 
-import dagger.Binds;
-import dagger.Component;
-import dagger.Module;
-import dagger.Provides;
+import bleshadow.dagger.Binds;
+import bleshadow.dagger.Component;
+import bleshadow.dagger.Module;
+import bleshadow.dagger.Provides;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;

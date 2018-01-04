@@ -21,8 +21,8 @@ import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 
 import rx.Observable;
 import rx.Scheduler;

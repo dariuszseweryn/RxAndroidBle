@@ -10,7 +10,7 @@ import com.polidea.rxandroidble.internal.cache.DeviceComponentCache
 import rx.Observable
 import spock.lang.Specification
 
-import javax.inject.Provider
+import bleshadow.javax.inject.Provider
 
 class RxBleDeviceProviderTest extends Specification {
 

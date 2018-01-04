@@ -8,8 +8,8 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
-import javax.inject.Inject;
-import javax.inject.Named;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
 import rx.Observable;
 import rx.functions.Func1;
 

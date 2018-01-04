@@ -8,7 +8,7 @@ import com.polidea.rxandroidble.internal.operations.ScanOperationApi21;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 import rx.Observable;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

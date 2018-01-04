@@ -11,7 +11,7 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
 import java.util.UUID;
 
-import javax.inject.Named;
+import bleshadow.javax.inject.Named;
 
 import rx.Observable;
 import rx.functions.Func1;

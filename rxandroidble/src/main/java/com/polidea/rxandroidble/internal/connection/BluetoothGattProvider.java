@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 @ConnectionScope
 public class BluetoothGattProvider {

@@ -6,8 +6,8 @@ import com.polidea.rxandroidble.internal.cache.DeviceComponentCache;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Provider;
 
 @ClientScope
 public class RxBleDeviceProvider {

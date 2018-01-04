@@ -15,7 +15,7 @@ import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 import rx.Emitter;
 import rx.Observable;

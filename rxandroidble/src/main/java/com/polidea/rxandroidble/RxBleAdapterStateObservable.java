@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 
-import javax.inject.Inject;
+import bleshadow.javax.inject.Inject;
 
 import rx.Emitter;
 import rx.Observable;
