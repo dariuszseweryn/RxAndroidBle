@@ -344,10 +344,18 @@ To be able to download it you need to add Sonatype Snapshot repository site to y
 maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 ```
 
-## Unit testing
-Using RxAndroidBle enables you to unit test your application easily. For examples how to use mocking head to [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble).
+## Testing
+Using RxAndroidBle enables you to test your application easily.
 
-Note: Using MockRxAndroidBle in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
+### Unit tests
+Most of the objects that the library uses are implementations of interfaces which can be mocked.
+
+Alternatively one could use `MockRxAndroidBle` (more info below). Note: Using `MockRxAndroidBle` in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
+
+### Integration tests
+Sometimes there is a need to develop the application without the access to a physical device. We have created [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble) as a drop-in addon for mocking a simple peripheral.
+
+Unfortunately it is not under active development—PRs are welcomed though. ;)
 
 ## [Small performance comparison](https://github.com/Polidea/RxAndroidBle/issues/41#issuecomment-333513707)
 
