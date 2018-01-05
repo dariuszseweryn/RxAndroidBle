@@ -20,6 +20,10 @@ shadowJar {
     classifier = ''
 }
 
+artifacts {
+    archives shadowJar
+}
+
 dependencies {
     compile rootProject.ext.libs.dagger
 }
