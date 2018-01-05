@@ -72,6 +72,7 @@ public interface ClientComponent {
         public static final String INT_TARGET_SDK = "target-sdk";
         public static final String INT_DEVICE_SDK = "device-sdk";
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
+        public static final String STRING_LOCATION_SERVICES_CHANGED_INTENT_ACTION = "location-services-intent-action";
         private PlatformConstants() {
 
         }
@@ -135,6 +136,14 @@ public interface ClientComponent {
         @Provides
         ContentResolver provideContentResolver() {
             return context.getContentResolver();
+        }
+
+        @Provides
+        @Named(PlatformConstants.STRING_LOCATION_SERVICES_CHANGED_INTENT_ACTION)
+        static String provideLocationServicesChangedIntentAction() {
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                    ? LocationManager.MODE_CHANGED_ACTION
+                    : LocationManager.PROVIDERS_CHANGED_ACTION;
         }
 
         @Provides

@@ -14,7 +14,8 @@ import rx.observers.TestSubscriber
 class LocationServicesOkObservableTest extends RoboSpecification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
-    def objectUnderTest = new LocationServicesOkObservable(contextMock, mockLocationServicesStatus)
+    def locationServicesChangedIntentAction = "test"
+    def objectUnderTest = new LocationServicesOkObservable(contextMock, mockLocationServicesStatus, locationServicesChangedIntentAction)
     BroadcastReceiver registeredReceiver
 
     def setup() {
@@ -31,7 +32,7 @@ class LocationServicesOkObservableTest extends RoboSpecification {
 
         then:
         1 * contextMock.registerReceiver(!null, {
-            it.hasAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+            it.hasAction(locationServicesChangedIntentAction)
         })
     }
 

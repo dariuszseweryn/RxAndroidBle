@@ -5,9 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.location.LocationManager;
 import android.support.annotation.NonNull;
 
+import bleshadow.javax.inject.Named;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.DaggerClientComponent;
 import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
@@ -40,7 +40,12 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
     }
 
     @Inject
-    LocationServicesOkObservable(@NonNull final Context context, @NonNull final LocationServicesStatus locationServicesStatus) {
+    LocationServicesOkObservable(
+            @NonNull final Context context,
+            @NonNull final LocationServicesStatus locationServicesStatus,
+            @Named(ClientComponent.PlatformConstants.STRING_LOCATION_SERVICES_CHANGED_INTENT_ACTION)
+            final String locationServicesChangedIntentAction
+    ) {
         super(new OnSubscribeCreate<>(
                 new Action1<Emitter<Boolean>>() {
                     @Override
@@ -61,7 +66,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
                             }
                         };
 
-                        context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+                        context.registerReceiver(broadcastReceiver, new IntentFilter(locationServicesChangedIntentAction));
                         emitter.setCancellation(new Cancellable() {
                             @Override
                             public void cancel() throws Exception {
