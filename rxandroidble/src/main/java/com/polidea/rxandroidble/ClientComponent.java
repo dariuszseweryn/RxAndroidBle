@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
@@ -129,6 +130,11 @@ public interface ClientComponent {
         @Named(PlatformConstants.INT_DEVICE_SDK)
         static int provideDeviceSdk() {
             return Build.VERSION.SDK_INT;
+        }
+
+        @Provides
+        ContentResolver provideContentResolver() {
+            return context.getContentResolver();
         }
 
         @Provides
