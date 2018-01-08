@@ -53,8 +53,9 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 disconnectionErrorInputRelay,
                 emitErrorWhenAdapterIsDisabled
         )
+                .take(1) // to unsubscribe from adapterStateObservable on first emission
                 .replay()
-                .autoConnect(0);
+                .autoConnect(0); // autoConnect immediately
     }
 
     /**

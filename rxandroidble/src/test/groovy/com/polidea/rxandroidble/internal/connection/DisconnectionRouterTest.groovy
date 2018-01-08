@@ -11,6 +11,7 @@ import com.polidea.rxandroidble.exceptions.BleGattException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import org.robospock.RoboSpecification
+import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Unroll
@@ -224,5 +225,68 @@ class DisconnectionRouterTest extends RoboSpecification {
 
         and:
         valueTestSubscriber.assertNoValues()
+    }
+
+    @Unroll
+    def "should unsubscribe from adapterStateObservable if it emits STATE_OFF/STATE_TURNING_* or if .on*Exception() is called"() {
+
+        given:
+        createObjectUnderTest(true)
+
+        when:
+        disconnectionScenario.call(mockAdapterStateSubject, objectUnderTest)
+
+        then:
+        !mockAdapterStateSubject.hasObservers()
+
+        where:
+        disconnectionScenario << [
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_TURNING_ON)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_TURNING_OFF)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_OFF)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    objectUnderTest.onGattConnectionStateException(new BleGattException(null, 0, BleGattOperationType.CHARACTERISTIC_WRITE))
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    objectUnderTest.onDisconnectedException(new BleDisconnectedException("test"))
+                },
+        ]
+    }
+
+    def "works"() {
+        given:
+        PublishSubject ps = PublishSubject.create()
+        ps.take(1).replay().autoConnect(0)
+
+        expect:
+        ps.hasObservers()
+
+        when:
+        ps.onNext(new Object())
+
+        then:
+        !ps.hasObservers()
+    }
+
+    def "should work (does not work)"() {
+        given:
+        PublishSubject ps0 = PublishSubject.create()
+        PublishSubject ps1 = PublishSubject.create()
+        Observable.merge(ps0, ps1).take(1).replay().autoConnect(0)
+
+        expect:
+        ps0.hasObservers()
+
+        when:
+        ps0.onNext(new Object())
+
+        then:
+        !ps0.hasObservers()
     }
 }
