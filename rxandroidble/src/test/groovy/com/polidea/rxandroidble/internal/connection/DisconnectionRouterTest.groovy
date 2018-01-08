@@ -258,35 +258,4 @@ class DisconnectionRouterTest extends RoboSpecification {
                 },
         ]
     }
-
-    def "works"() {
-        given:
-        PublishSubject ps = PublishSubject.create()
-        ps.take(1).replay().autoConnect(0)
-
-        expect:
-        ps.hasObservers()
-
-        when:
-        ps.onNext(new Object())
-
-        then:
-        !ps.hasObservers()
-    }
-
-    def "should work (does not work)"() {
-        given:
-        PublishSubject ps0 = PublishSubject.create()
-        PublishSubject ps1 = PublishSubject.create()
-        Observable.merge(ps0, ps1).take(1).replay().autoConnect(0)
-
-        expect:
-        ps0.hasObservers()
-
-        when:
-        ps0.onNext(new Object())
-
-        then:
-        !ps0.hasObservers()
-    }
 }

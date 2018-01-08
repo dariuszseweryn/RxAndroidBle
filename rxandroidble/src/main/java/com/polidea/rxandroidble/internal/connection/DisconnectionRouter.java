@@ -53,9 +53,20 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 disconnectionErrorInputRelay,
                 emitErrorWhenAdapterIsDisabled
         )
-                .take(1) // to unsubscribe from adapterStateObservable on first emission
-                .replay()
-                .autoConnect(0); // autoConnect immediately
+                .first() // to unsubscribe from adapterStateObservable on first emission
+                .cache();
+
+        /*
+         The below .subscribe() is only to make the above .cache() to start working as soon as possible.
+         We are not tracking the resulting `Subscription`. This is because of the contract of this class which is supposed to be called
+         when a disconnection happens from one of three places:
+            1. adapterStateObservable: the adapter turning into state other than STATE_ON
+            2. onDisconnectedException
+            3. onGattConnectionStateException
+         One of those events must happen eventually. Then the adapterStateObservable (which uses BroadcastReceiver on a Context) will
+         get unsubscribed. The rest of this chain lives only in the @ConnectionScope context and will get Garbage Collected eventually.
+         */
+        disconnectionErrorOutputObservable.subscribe();
     }
 
     /**
