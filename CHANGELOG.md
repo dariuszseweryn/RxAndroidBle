@@ -1,6 +1,8 @@
 Change Log
 ==========
 Version 1.5.0-SNAPSHOT
+* Added possibility to change default operation timeout (https://github.com/Polidea/RxAndroidBle/pull/321)
+* Fixed Dagger2 compatibility (https://github.com/Polidea/RxAndroidBle/pull/342 https://github.com/Polidea/RxAndroidBle/pull/348)
 * Fixed DisconnectionRouter leaking subscription to RxBleAdapterStateObservable (https://github.com/Polidea/RxAndroidBle/pull/353)
 
 Version 1.4.3
