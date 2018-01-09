@@ -25,6 +25,11 @@ import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble.internal.serialization.ClientOperationQueueImpl;
+import com.polidea.rxandroidble.internal.util.LocationServicesOkObservableApi18;
+import com.polidea.rxandroidble.internal.util.LocationServicesOkObservableApi23;
+import com.polidea.rxandroidble.internal.util.LocationServicesStatus;
+import com.polidea.rxandroidble.internal.util.LocationServicesStatusApi18;
+import com.polidea.rxandroidble.internal.util.LocationServicesStatusApi23;
 import com.polidea.rxandroidble.scan.ScanResult;
 
 import java.util.concurrent.ExecutorService;
@@ -144,6 +149,29 @@ public interface ClientComponent {
             return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
                     ? LocationManager.MODE_CHANGED_ACTION
                     : LocationManager.PROVIDERS_CHANGED_ACTION;
+        }
+
+        @Provides
+        LocationServicesStatus provideLocationServicesStatus(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<LocationServicesStatusApi18> locationServicesStatusApi18Provider,
+                Provider<LocationServicesStatusApi23> locationServicesStatusApi23Provider
+        ) {
+            return deviceSdk < Build.VERSION_CODES.M
+                    ? locationServicesStatusApi18Provider.get()
+                    : locationServicesStatusApi23Provider.get();
+        }
+
+        @Provides
+        @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
+        Observable<Boolean> provideLocationServicesOkObservable(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<LocationServicesOkObservableApi18> locationServicesOkObservableApi18Provider,
+                Provider<LocationServicesOkObservableApi23> locationServicesOkObservableApi23Provider
+        ) {
+            return deviceSdk < Build.VERSION_CODES.M
+                    ? locationServicesOkObservableApi18Provider.get()
+                    : locationServicesOkObservableApi23Provider.get();
         }
 
         @Provides
@@ -273,10 +301,6 @@ public interface ClientComponent {
 
         @Binds
         abstract Observable<RxBleAdapterStateObservable.BleAdapterState> bindStateObs(RxBleAdapterStateObservable stateObservable);
-
-        @Binds
-        @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
-        abstract Observable<Boolean> bindLocationServicesOkObs(LocationServicesOkObservable locationServicesOkObservable);
 
         @Binds
         @ClientScope

@@ -1,21 +1,19 @@
-package com.polidea.rxandroidble.helpers
+package com.polidea.rxandroidble.internal.util
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
-import com.polidea.rxandroidble.internal.util.LocationServicesStatus
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
 import rx.Subscription
 import rx.observers.TestSubscriber
 
 @Config(manifest = Config.NONE)
-class LocationServicesOkObservableTest extends RoboSpecification {
+class LocationServicesOkObservableApi23Test extends RoboSpecification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
-    def locationServicesChangedIntentAction = "test"
-    def objectUnderTest = new LocationServicesOkObservable(contextMock, mockLocationServicesStatus, locationServicesChangedIntentAction)
+    def objectUnderTest = new LocationServicesOkObservableApi23(contextMock, mockLocationServicesStatus)
     BroadcastReceiver registeredReceiver
 
     def setup() {
@@ -32,7 +30,7 @@ class LocationServicesOkObservableTest extends RoboSpecification {
 
         then:
         1 * contextMock.registerReceiver(!null, {
-            it.hasAction(locationServicesChangedIntentAction)
+            it.hasAction("android.location.MODE_CHANGED")
         })
     }
 
@@ -120,12 +118,12 @@ class LocationServicesOkObservableTest extends RoboSpecification {
         testSubscriber.assertValues(false, true, false)
     }
 
-    public postStateChangeBroadcast() {
+    def postStateChangeBroadcast() {
         def intent = new Intent(LocationManager.PROVIDERS_CHANGED_ACTION)
         registeredReceiver.onReceive(contextMock, intent)
     }
 
-    public BroadcastReceiver shouldCaptureRegisteredReceiver() {
+    BroadcastReceiver shouldCaptureRegisteredReceiver() {
         _ * contextMock.registerReceiver({
             BroadcastReceiver receiver ->
                 this.registeredReceiver = receiver

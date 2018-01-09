@@ -9,18 +9,18 @@ import android.os.Build;
 import android.provider.Settings;
 import bleshadow.javax.inject.Inject;
 
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class CheckerLocationProvider {
 
     private final ContentResolver contentResolver;
     private final LocationManager locationManager;
 
     @Inject
-    public CheckerLocationProvider(ContentResolver contentResolver, LocationManager locationManager) {
+    CheckerLocationProvider(ContentResolver contentResolver, LocationManager locationManager) {
         this.contentResolver = contentResolver;
         this.locationManager = locationManager;
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public boolean isLocationProviderEnabled() {
         try {
             return Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF;
