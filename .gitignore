@@ -3,5 +3,5 @@
 local.properties
 *.iml
 /build
-dagger-compiler-shadow
-dagger-library-shadow
+dagger-compiler-shadow/build
+dagger-library-shadow/build
