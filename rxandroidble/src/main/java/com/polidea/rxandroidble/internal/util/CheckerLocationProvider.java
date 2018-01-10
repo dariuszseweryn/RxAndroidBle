@@ -1,15 +1,16 @@
 package com.polidea.rxandroidble.internal.util;
 
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.location.LocationManager;
 
 import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.RequiresApi;
 import bleshadow.javax.inject.Inject;
+import com.polidea.rxandroidble.internal.RxBleLog;
 
-@RequiresApi(Build.VERSION_CODES.KITKAT)
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class CheckerLocationProvider {
 
     private final ContentResolver contentResolver;
@@ -22,11 +23,14 @@ public class CheckerLocationProvider {
     }
 
     public boolean isLocationProviderEnabled() {
-        try {
-            return Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF;
-        } catch (Settings.SettingNotFoundException e) {
-            return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-                    || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                return Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF;
+            } catch (Settings.SettingNotFoundException e) {
+                RxBleLog.w(e, "Could not use LOCATION_MODE check. Falling back to legacy method.");
+            }
         }
+        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 }
