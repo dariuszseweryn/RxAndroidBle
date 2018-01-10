@@ -1,5 +1,10 @@
 Change Log
 ==========
+Version 1.5.0-SNAPSHOT
+* Added possibility to change default operation timeout (https://github.com/Polidea/RxAndroidBle/pull/321)
+* Fixed Dagger2 compatibility (https://github.com/Polidea/RxAndroidBle/pull/342 https://github.com/Polidea/RxAndroidBle/pull/348)
+* Fixed DisconnectionRouter leaking subscription to RxBleAdapterStateObservable (https://github.com/Polidea/RxAndroidBle/pull/353)
+
 Version 1.4.3
 * Log informing that the underlying semaphore in a QueueSemaphore has been interrupted will be printed only when the situation was unexpected.(https://github.com/Polidea/RxAndroidBle/issues/317)
 * Fixed possible race condition when calling `.doOnSubscribe()` and `.doOnUnsubscribe()` which lead to calling `ConnectionOperationQueueImpl.onConnectionUnsubscribed()` before the `.onConnectionSubscribed()` has returned. (https://github.com/Polidea/RxAndroidBle/issues/308)
