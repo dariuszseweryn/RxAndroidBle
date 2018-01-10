@@ -1,15 +1,15 @@
 package com.polidea.rxandroidble.internal.util;
 
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.location.LocationManager;
 
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import bleshadow.javax.inject.Inject;
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
+@RequiresApi(Build.VERSION_CODES.KITKAT)
 public class CheckerLocationProvider {
 
     private final ContentResolver contentResolver;
