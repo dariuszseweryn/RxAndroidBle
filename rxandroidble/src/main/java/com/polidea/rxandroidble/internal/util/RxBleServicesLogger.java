@@ -38,7 +38,7 @@ public class RxBleServicesLogger {
     public void log(RxBleDeviceServices rxBleDeviceServices, BluetoothDevice device) {
         if (RxBleLog.isAtLeast(RxBleLog.VERBOSE)) {
             RxBleLog.v("Preparing services description");
-            RxBleLog.d(prepareServicesDescription(rxBleDeviceServices, device));
+            RxBleLog.v(prepareServicesDescription(rxBleDeviceServices, device));
         }
     }
 
