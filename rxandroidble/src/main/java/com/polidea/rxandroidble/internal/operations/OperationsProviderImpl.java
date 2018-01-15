@@ -11,6 +11,7 @@ import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.util.RxBleServicesLogger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +25,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGatt bluetoothGatt;
+    private final RxBleServicesLogger bleServicesLogger;
     private final TimeoutConfiguration timeoutConfiguration;
     private final Scheduler bluetoothInteractionScheduler;
     private final Scheduler timeoutScheduler;
@@ -33,12 +35,14 @@ public class OperationsProviderImpl implements OperationsProvider {
     OperationsProviderImpl(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
+            RxBleServicesLogger bleServicesLogger,
             @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
             Provider<ReadRssiOperation> rssiReadOperationProvider) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
+        this.bleServicesLogger = bleServicesLogger;
         this.timeoutConfiguration = timeoutConfiguration;
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutScheduler = timeoutScheduler;
@@ -85,7 +89,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     @Override
     public ServiceDiscoveryOperation provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit) {
-        return new ServiceDiscoveryOperation(rxBleGattCallback, bluetoothGatt,
+        return new ServiceDiscoveryOperation(rxBleGattCallback, bluetoothGatt, bleServicesLogger,
                 new TimeoutConfiguration(timeout, timeUnit, timeoutScheduler));
     }
 
