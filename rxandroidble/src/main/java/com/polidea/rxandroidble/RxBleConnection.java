@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Func2;
 
 /**
  * The BLE connection handle, supporting GATT operations. Operations are enqueued and the library makes sure that they are not
@@ -130,6 +131,13 @@ public interface RxBleConnection {
          * @return the LongWriteOperationBuilder
          */
         LongWriteOperationBuilder setMaxBatchSize(@IntRange(from = 1, to = GATT_MTU_MAXIMUM - GATT_WRITE_MTU_OVERHEAD) int maxBatchSize);
+
+        /**
+         * Setter for a retry strategy in case something goes wrong when writing data.
+         * @param writeOperationRetryStrategy the retry strategy
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setWriteOperationRetryStrategy(@NonNull WriteOperationRetryStrategy writeOperationRetryStrategy);
 
         /**
          * Setter for a strategy used to mark batch write completed. Only after previous batch has finished, the next (if any left) can be
@@ -442,6 +450,9 @@ public interface RxBleConnection {
      */
     Observable<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
 
+    interface WriteOperationRetryStrategy extends Func2<Integer, Throwable, Boolean> {
+
+    }
 
     /**
      * Performs a GATT request connection priority operation, which requests a connection parameter

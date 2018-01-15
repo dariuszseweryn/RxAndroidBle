@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationAckStrategy;
+import com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
@@ -33,6 +34,7 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.functions.Func2;
 
 public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
@@ -43,8 +45,10 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
     private final PayloadSizeLimitProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
+    private final WriteOperationRetryStrategy writeOperationRetryStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
+    private int retryCounter;
 
     CharacteristicLongWriteOperation(
             BluetoothGatt bluetoothGatt,
@@ -54,6 +58,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             PayloadSizeLimitProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,
+            WriteOperationRetryStrategy writeOperationRetryStrategy,
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
@@ -62,12 +67,14 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.batchSizeProvider = batchSizeProvider;
         this.writeOperationAckStrategy = writeOperationAckStrategy;
+        this.writeOperationRetryStrategy = writeOperationRetryStrategy;
         this.bytesToWrite = bytesToWrite;
+        this.retryCounter = 0;
     }
 
     @Override
     protected void protectedRun(final Emitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {
-        int batchSize = batchSizeProvider.getPayloadSizeLimit();
+        final int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
@@ -87,9 +94,11 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         timeoutObservable,
                         timeoutConfiguration.timeoutScheduler
                 )
+                .doOnNext(resetRetryCounter())
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
+                .retry(retryStrategy(byteBuffer, batchSize))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
@@ -206,6 +215,32 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         return !emitterWrapper.isWrappedEmitterUnsubscribed();
                     }
                 };
+            }
+        };
+    }
+
+    private Action1<ByteAssociation<UUID>> resetRetryCounter() {
+        return new Action1<ByteAssociation<UUID>>() {
+            @Override
+            public void call(ByteAssociation<UUID> uuidByteAssociation) {
+                retryCounter = 0;
+            }
+        };
+    }
+
+    private Func2<Integer, Throwable, Boolean> retryStrategy(final ByteBuffer byteBuffer, final int batchSize) {
+        return new Func2<Integer, Throwable, Boolean>() {
+            @Override
+            public Boolean call(Integer integer, Throwable throwable) {
+                // Individual counter for each batch payload.
+                retryCounter++;
+                final Boolean retry = writeOperationRetryStrategy.call(retryCounter, throwable);
+                if (!retry) {
+                    return false;
+                }
+                // Reset buffer to last position
+                byteBuffer.position(byteBuffer.position() - batchSize);
+                return true;
             }
         };
     }

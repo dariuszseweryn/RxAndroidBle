@@ -49,6 +49,7 @@ public class OperationsProviderImpl implements OperationsProvider {
     public CharacteristicLongWriteOperation provideLongWriteOperation(
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
+            RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy,
             PayloadSizeLimitProvider maxBatchSizeProvider,
             byte[] bytes) {
 
@@ -59,6 +60,7 @@ public class OperationsProviderImpl implements OperationsProvider {
                 bluetoothGattCharacteristic,
                 maxBatchSizeProvider,
                 writeOperationAckStrategy,
+                writeOperationRetryStrategy,
                 bytes);
     }
 
