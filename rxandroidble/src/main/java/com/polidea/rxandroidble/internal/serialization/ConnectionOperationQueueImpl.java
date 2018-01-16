@@ -21,6 +21,11 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationRemoved;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationStarted;
+
 @ConnectionScope
 public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, ConnectionSubscriptionWatcher {
 
@@ -49,7 +54,8 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                     try {
                         final FIFORunnableEntry<?> entry = queue.take();
                         final Operation<?> operation = entry.operation;
-                        log("STARTED", operation);
+                        final long startedAtTime = System.currentTimeMillis();
+                        logOperationStarted(operation);
 
                         /*
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
@@ -62,7 +68,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                         entry.emitter.setSubscription(subscription);
 
                         currentSemaphore.awaitRelease();
-                        log("FINISHED", operation);
+                        logOperationFinished(operation, startedAtTime, System.currentTimeMillis());
                     } catch (InterruptedException e) {
                         synchronized (ConnectionOperationQueueImpl.this) {
                             if (!shouldRun) {
@@ -101,12 +107,12 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                     @Override
                     public void cancel() throws Exception {
                         if (queue.remove(entry)) {
-                            log("REMOVED", operation);
+                            logOperationRemoved(operation);
                         }
                     }
                 });
 
-                log("QUEUED", operation);
+                logOperationQueued(operation);
                 queue.add(entry);
             }
         }, Emitter.BackpressureMode.NONE);
@@ -122,14 +128,6 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
         shouldRun = false;
         disconnectionException = disconnectException;
         runnableFuture.cancel(true);
-    }
-
-    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
-    void log(String prefix, Operation operation) {
-
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
-            RxBleLog.d("%8s %s(%d)", prefix, operation.getClass().getSimpleName(), System.identityHashCode(operation));
-        }
     }
 
     @Override
