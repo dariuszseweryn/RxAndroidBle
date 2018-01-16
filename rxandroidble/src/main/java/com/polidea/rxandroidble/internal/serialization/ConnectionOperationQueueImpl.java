@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
@@ -10,8 +11,11 @@ import com.polidea.rxandroidble.internal.connection.ConnectionScope;
 import com.polidea.rxandroidble.internal.connection.ConnectionSubscriptionWatcher;
 import com.polidea.rxandroidble.internal.connection.DisconnectionRouterOutput;
 import com.polidea.rxandroidble.internal.operations.Operation;
+
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import rx.Emitter;
@@ -49,6 +53,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                     try {
                         final FIFORunnableEntry<?> entry = queue.take();
                         final Operation<?> operation = entry.operation;
+                        final long startedAtTime = System.currentTimeMillis();
                         log("STARTED", operation);
 
                         /*
@@ -62,7 +67,8 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                         entry.emitter.setSubscription(subscription);
 
                         currentSemaphore.awaitRelease();
-                        log("FINISHED", operation);
+                        log(String.format(Locale.getDefault(),
+                                "FINISHED in %dms", (System.currentTimeMillis() - startedAtTime)), operation);
                     } catch (InterruptedException e) {
                         synchronized (ConnectionOperationQueueImpl.this) {
                             if (!shouldRun) {

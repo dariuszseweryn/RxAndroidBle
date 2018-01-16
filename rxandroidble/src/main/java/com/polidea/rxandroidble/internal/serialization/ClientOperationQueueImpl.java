@@ -1,9 +1,13 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.operations.Operation;
+
+import java.util.Locale;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import rx.Emitter;
@@ -27,6 +31,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                     try {
                         final FIFORunnableEntry<?> entry = queue.take();
                         final Operation<?> operation = entry.operation;
+                        final long startedAtTime = System.currentTimeMillis();
                         log("STARTED", operation);
 
                         /*
@@ -40,7 +45,8 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                         entry.emitter.setSubscription(subscription);
 
                         clientOperationSemaphore.awaitRelease();
-                        log("FINISHED", operation);
+                        log(String.format(Locale.getDefault(),
+                                "FINISHED in %dms", (System.currentTimeMillis() - startedAtTime)), operation);
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing client operation queue");
                     }
