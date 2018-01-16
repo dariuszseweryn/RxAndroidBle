@@ -15,7 +15,10 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 
-import static com.polidea.rxandroidble.internal.util.OperationLogger.*;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationRemoved;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationStarted;
 
 public class ClientOperationQueueImpl implements ClientOperationQueue {
 

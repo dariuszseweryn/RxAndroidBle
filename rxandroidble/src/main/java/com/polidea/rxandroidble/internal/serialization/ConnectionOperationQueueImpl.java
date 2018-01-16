@@ -12,7 +12,6 @@ import com.polidea.rxandroidble.internal.connection.ConnectionSubscriptionWatche
 import com.polidea.rxandroidble.internal.connection.DisconnectionRouterOutput;
 import com.polidea.rxandroidble.internal.operations.Operation;
 
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -25,7 +24,10 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 
-import static com.polidea.rxandroidble.internal.util.OperationLogger.*;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationRemoved;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationStarted;
 
 @ConnectionScope
 public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, ConnectionSubscriptionWatcher {
