@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
-
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
@@ -11,10 +10,8 @@ import com.polidea.rxandroidble.internal.connection.ConnectionScope;
 import com.polidea.rxandroidble.internal.connection.ConnectionSubscriptionWatcher;
 import com.polidea.rxandroidble.internal.connection.DisconnectionRouterOutput;
 import com.polidea.rxandroidble.internal.operations.Operation;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import rx.Emitter;

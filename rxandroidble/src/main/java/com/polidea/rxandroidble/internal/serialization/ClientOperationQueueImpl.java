@@ -1,11 +1,9 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
-
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.operations.Operation;
-
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import rx.Emitter;
