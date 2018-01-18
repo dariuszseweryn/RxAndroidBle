@@ -320,7 +320,8 @@ public class RxBleConnectionMock implements RxBleConnection {
             }
 
             @Override
-            public LongWriteOperationBuilder setWriteOperationRetryStrategy(@NonNull WriteOperationRetryStrategy writeOperationRetryStrategy) {
+            public LongWriteOperationBuilder setWriteOperationRetryStrategy(
+                    @NonNull WriteOperationRetryStrategy writeOperationRetryStrategy) {
                 this.writeOperationRetryStrategy = writeOperationRetryStrategy;
                 return this;
             }
