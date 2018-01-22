@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import bleshadow.javax.inject.Named;
-
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
@@ -34,7 +33,6 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
 public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
@@ -48,7 +46,6 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private final WriteOperationRetryStrategy writeOperationRetryStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
-    private int retryCounter;
 
     CharacteristicLongWriteOperation(
             BluetoothGatt bluetoothGatt,
@@ -69,7 +66,6 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         this.writeOperationAckStrategy = writeOperationAckStrategy;
         this.writeOperationRetryStrategy = writeOperationRetryStrategy;
         this.bytesToWrite = bytesToWrite;
-        this.retryCounter = 0;
     }
 
     @Override
@@ -94,11 +90,10 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         timeoutObservable,
                         timeoutConfiguration.timeoutScheduler
                 )
-                .doOnNext(resetRetryCounter())
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
-                .retry(retryStrategy(byteBuffer, batchSize))
+                .retryWhen(retryOperationStrategy(writeOperationRetryStrategy, byteBuffer, batchSize))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
@@ -219,28 +214,46 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         };
     }
 
-    private Action1<ByteAssociation<UUID>> resetRetryCounter() {
-        return new Action1<ByteAssociation<UUID>>() {
+    private static Func1<Observable<? extends Throwable>, Observable<?>> retryOperationStrategy(
+            final WriteOperationRetryStrategy writeOperationRetryStrategy,
+            final ByteBuffer byteBuffer,
+            final int batchSize) {
+        return new Func1<Observable<? extends Throwable>, Observable<?>>() {
             @Override
-            public void call(ByteAssociation<UUID> uuidByteAssociation) {
-                retryCounter = 0;
+            public Observable<?> call(Observable<? extends Throwable> observable) {
+                return observable
+                        .flatMap(applyRetryStrategy())
+                        .map(replaceByteBufferPositionForRetry());
             }
-        };
-    }
 
-    private Func2<Integer, Throwable, Boolean> retryStrategy(final ByteBuffer byteBuffer, final int batchSize) {
-        return new Func2<Integer, Throwable, Boolean>() {
-            @Override
-            public Boolean call(Integer integer, Throwable throwable) {
-                // Individual counter for each batch payload.
-                retryCounter++;
-                final Boolean retry = writeOperationRetryStrategy.call(retryCounter, throwable);
-                if (!retry) {
-                    return false;
-                }
-                // Reset buffer to last position
-                byteBuffer.position(byteBuffer.position() - batchSize);
-                return true;
+            @NonNull
+            private Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>> applyRetryStrategy() {
+                return new Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
+                    @Override
+                    public Observable<WriteOperationRetryStrategy.LongWriteFailure> call(Throwable cause) {
+                        if (!(cause instanceof BleException)) {
+                            return Observable.error(cause);
+                        }
+
+                        final int failedBatchNumber = (byteBuffer.position() - batchSize) / batchSize;
+                        final WriteOperationRetryStrategy.LongWriteFailure longWriteFailure =
+                                new WriteOperationRetryStrategy.LongWriteFailure(failedBatchNumber, (BleException) cause);
+
+                        return writeOperationRetryStrategy.call(Observable.just(longWriteFailure));
+                    }
+                };
+            }
+
+            @NonNull
+            private Func1<WriteOperationRetryStrategy.LongWriteFailure, Object> replaceByteBufferPositionForRetry() {
+                return new Func1<WriteOperationRetryStrategy.LongWriteFailure, Object>() {
+                    @Override
+                    public Object call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
+                        final int newBufferPosition = longWriteFailure.getBatchNumber() * batchSize;
+                        byteBuffer.position(newBufferPosition);
+                        return longWriteFailure;
+                    }
+                };
             }
         };
     }

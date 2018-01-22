@@ -12,6 +12,7 @@ import android.support.annotation.RequiresApi;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
-import rx.functions.Func2;
+import rx.functions.Func1;
 
 /**
  * The BLE connection handle, supporting GATT operations. Operations are enqueued and the library makes sure that they are not
@@ -134,6 +135,17 @@ public interface RxBleConnection {
 
         /**
          * Setter for a retry strategy in case something goes wrong when writing data.
+         * If any {@link BleException} is raised, a {@link WriteOperationRetryStrategy.LongWriteFailure} object will be emitted.
+         * {@link WriteOperationRetryStrategy.LongWriteFailure} contains both the {@link BleException} and the batch number
+         * for which the write request failed.
+         * The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the writeOperationRetryStrategy will be used to retry
+         * the specified batch number write request.
+         *
+         * If this is not specified - the next batch of bytes is written right after the failed one, and the failed one is just dropped.
+         *
+         * It is expected that the Observable returned from the writeOperationRetryStrategy will emit exactly the same events as the source,
+         * however you may delay them at your pace.
+         *
          * @param writeOperationRetryStrategy the retry strategy
          * @return the LongWriteOperationBuilder
          */
@@ -166,6 +178,45 @@ public interface RxBleConnection {
          * @return the Observable which will enqueue the long write operation when subscribed.
          */
         Observable<byte[]> build();
+    }
+
+    interface WriteOperationRetryStrategy extends Func1<Observable<WriteOperationRetryStrategy.LongWriteFailure>,
+            Observable<WriteOperationRetryStrategy.LongWriteFailure>> {
+
+        class LongWriteFailure {
+
+            final int batchNumber;
+            final BleException cause;
+
+            /**
+             * Default constructor
+             *
+             * @param batchNumber the batch number on which the write request failed
+             * @param cause       the failed cause of the write request
+             */
+            public LongWriteFailure(int batchNumber, BleException cause) {
+                this.batchNumber = batchNumber;
+                this.cause = cause;
+            }
+
+            /**
+             * Get the batch number of the failed write request
+             *
+             * @return the batch number
+             */
+            public int getBatchNumber() {
+                return batchNumber;
+            }
+
+            /**
+             * Get the failed cause of the write request
+             *
+             * @return a {@link BleException}
+             */
+            public BleException getCause() {
+                return cause;
+            }
+        }
     }
 
     interface WriteOperationAckStrategy extends Observable.Transformer<Boolean, Boolean> {
@@ -449,10 +500,6 @@ public interface RxBleConnection {
      * @see #discoverServices() to obtain the characteristic.
      */
     Observable<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
-
-    interface WriteOperationRetryStrategy extends Func2<Integer, Throwable, Boolean> {
-
-    }
 
     /**
      * Performs a GATT request connection priority operation, which requests a connection parameter
