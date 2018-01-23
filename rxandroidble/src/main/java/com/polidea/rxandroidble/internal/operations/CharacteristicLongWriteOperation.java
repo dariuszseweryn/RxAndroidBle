@@ -7,7 +7,6 @@ import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.ClientComponent;
-import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationAckStrategy;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
