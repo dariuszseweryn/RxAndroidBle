@@ -7,12 +7,14 @@ import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.ClientComponent;
+import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationAckStrategy;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
@@ -220,38 +222,48 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             final int batchSize) {
         return new Func1<Observable<? extends Throwable>, Observable<?>>() {
             @Override
-            public Observable<?> call(Observable<? extends Throwable> observable) {
-                return observable
-                        .flatMap(applyRetryStrategy())
-                        .map(replaceByteBufferPositionForRetry());
+            public Observable<?> call(Observable<? extends Throwable> emittedOnWriteFailure) {
+                return writeOperationRetryStrategy.call(emittedOnWriteFailure
+                        .flatMap(canRetryError())
+                        .map(toLongWriteFailureObject())
+                )
+                        .doOnNext(replaceByteBufferPositionForRetry());
             }
 
             @NonNull
-            private Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>> applyRetryStrategy() {
-                return new Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
+            private Func1<Throwable, WriteOperationRetryStrategy.LongWriteFailure> toLongWriteFailureObject() {
+                return new Func1<Throwable, WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
-                    public Observable<WriteOperationRetryStrategy.LongWriteFailure> call(Throwable cause) {
-                        if (!(cause instanceof BleException)) {
-                            return Observable.error(cause);
-                        }
-
+                    public WriteOperationRetryStrategy.LongWriteFailure call(Throwable throwable) {
                         final int failedBatchNumber = (byteBuffer.position() - batchSize) / batchSize;
-                        final WriteOperationRetryStrategy.LongWriteFailure longWriteFailure =
-                                new WriteOperationRetryStrategy.LongWriteFailure(failedBatchNumber, (BleException) cause);
-
-                        return writeOperationRetryStrategy.call(Observable.just(longWriteFailure));
+                        return new WriteOperationRetryStrategy.LongWriteFailure(
+                                failedBatchNumber,
+                                (BleGattCharacteristicException) throwable
+                        );
                     }
                 };
             }
 
             @NonNull
-            private Func1<WriteOperationRetryStrategy.LongWriteFailure, Object> replaceByteBufferPositionForRetry() {
-                return new Func1<WriteOperationRetryStrategy.LongWriteFailure, Object>() {
+            private Action1<WriteOperationRetryStrategy.LongWriteFailure> replaceByteBufferPositionForRetry() {
+                return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
-                    public Object call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
+                    public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
                         final int newBufferPosition = longWriteFailure.getBatchNumber() * batchSize;
                         byteBuffer.position(newBufferPosition);
-                        return longWriteFailure;
+                    }
+                };
+            }
+
+            @NonNull
+            private Func1<Throwable, Observable<Throwable>> canRetryError() {
+                return new Func1<Throwable, Observable<Throwable>>() {
+                    @Override
+                    public Observable<Throwable> call(Throwable throwable) {
+                        if (!(throwable instanceof BleGattCharacteristicException)) {
+                            return Observable.error(throwable);
+                        }
+                        return Observable.just(throwable);
                     }
                 };
             }

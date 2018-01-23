@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.Priority;
@@ -186,7 +187,7 @@ public interface RxBleConnection {
         class LongWriteFailure {
 
             final int batchNumber;
-            final BleException cause;
+            final BleGattCharacteristicException cause;
 
             /**
              * Default constructor
@@ -194,7 +195,7 @@ public interface RxBleConnection {
              * @param batchNumber the batch number on which the write request failed
              * @param cause       the failed cause of the write request
              */
-            public LongWriteFailure(int batchNumber, BleException cause) {
+            public LongWriteFailure(int batchNumber, BleGattCharacteristicException cause) {
                 this.batchNumber = batchNumber;
                 this.cause = cause;
             }
