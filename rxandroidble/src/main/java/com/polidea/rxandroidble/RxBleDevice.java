@@ -35,9 +35,10 @@ public interface RxBleDevice {
      * @param context     Android's context.
      * @param autoConnect Flag related to
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
-     *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
-     *                    auto connect flag set to true the connection will fail
-     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range after a 30 seconds
+     *                    If false—the connection will fail with {@link com.polidea.rxandroidble.exceptions.BleGattException} if
+     *                    the device is not in range after a 30 seconds timeout. If set to true the connection will be pending indefinitely.
+     *                    Unlike native Android API if set to true and the connection will be lost there will NOT be any attempt to
+     *                    reconnect unless explicitly resubscribed.
      *                    timeout.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
@@ -70,10 +71,10 @@ public interface RxBleDevice {
      *
      * @param autoConnect Flag related to
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
-     *                    In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
-     *                    auto connect flag set to true the connection will fail
-     *                    with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not in range after a 30 seconds
-     *                    timeout.
+     *                    If false—the connection will fail with {@link com.polidea.rxandroidble.exceptions.BleGattException} if
+     *                    the device is not in range after a 30 seconds timeout. If set to true the connection will be pending indefinitely.
+     *                    Unlike native Android API if set to true and the connection will be lost there will NOT be any attempt to
+     *                    reconnect unless explicitly resubscribed.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
@@ -103,10 +104,11 @@ public interface RxBleDevice {
      *
      * @param autoConnect           Flag related to
      *                              {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)}
-     *                              autoConnect flag. In case of auto connect is enabled the observable will wait with the emission
-     *                              of RxBleConnection. Without auto connect flag set to true the connection will fail
-     *                              with {@link com.polidea.rxandroidble.exceptions.BleGattException} if the device is not
-     *                              in range after a 30 seconds timeout.
+     *                              autoConnect flag.
+     *                              If false—the connection will fail with {@link com.polidea.rxandroidble.exceptions.BleGattException} if
+     *                              the device is not in range after a 30 seconds timeout. If set to true the connection will be pending
+     *                              indefinitely. Unlike native Android API if set to true and the connection will be lost there will NOT be
+     *                              any attempt to reconnect unless explicitly resubscribed.
      * @param operationTimeout Timeout configuration after which the operation will be considered as broken. Eventually the operation
      *                              will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
      *                              only and may leave Android's BLE stack in an inconsistent state.
