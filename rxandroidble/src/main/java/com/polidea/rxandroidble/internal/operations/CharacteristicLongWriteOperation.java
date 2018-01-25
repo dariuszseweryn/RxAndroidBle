@@ -222,10 +222,10 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         return new Func1<Observable<? extends Throwable>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Throwable> emittedOnWriteFailure) {
-                return writeOperationRetryStrategy.call(emittedOnWriteFailure
+                return emittedOnWriteFailure
                         .flatMap(canRetryError())
                         .map(toLongWriteFailureObject())
-                )
+                        .compose(writeOperationRetryStrategy)
                         .doOnNext(replaceByteBufferPositionForRetry());
             }
 

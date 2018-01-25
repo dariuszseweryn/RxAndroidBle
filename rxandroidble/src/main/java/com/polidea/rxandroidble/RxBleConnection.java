@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble;
 
+import static com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy.*;
+
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -29,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
-import rx.functions.Func1;
 
 /**
  * The BLE connection handle, supporting GATT operations. Operations are enqueued and the library makes sure that they are not
@@ -135,15 +136,13 @@ public interface RxBleConnection {
         LongWriteOperationBuilder setMaxBatchSize(@IntRange(from = 1, to = GATT_MTU_MAXIMUM - GATT_WRITE_MTU_OVERHEAD) int maxBatchSize);
 
         /**
-         * Setter for a retry strategy in case something goes wrong when writing data.
-         * If any {@link BleException} is raised, a {@link WriteOperationRetryStrategy.LongWriteFailure} object will be emitted.
-         * {@link WriteOperationRetryStrategy.LongWriteFailure} contains both the {@link BleException} and the batch number
-         * for which the write request failed.
-         * The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the writeOperationRetryStrategy will be used to retry
-         * the specified batch number write request.
-         *
+         * Setter for a retry strategy in case something goes wrong when writing data. If any {@link BleException} is raised,
+         * a {@link LongWriteFailure} object will be emitted. {@link LongWriteFailure} contains both the {@link BleException} and the batch
+         * number for which the write request failed. The {@link LongWriteFailure} emitted by the writeOperationRetryStrategy will be used
+         * to retry the specified batch number write request.
+         * <br>
          * If this is not specified - the next batch of bytes is written right after the failed one, and the failed one is just dropped.
-         *
+         * <br>
          * It is expected that the Observable returned from the writeOperationRetryStrategy will emit exactly the same events as the source,
          * however you may delay them at your pace.
          *
@@ -181,8 +180,7 @@ public interface RxBleConnection {
         Observable<byte[]> build();
     }
 
-    interface WriteOperationRetryStrategy extends Func1<Observable<WriteOperationRetryStrategy.LongWriteFailure>,
-            Observable<WriteOperationRetryStrategy.LongWriteFailure>> {
+    interface WriteOperationRetryStrategy extends Observable.Transformer<LongWriteFailure, LongWriteFailure> {
 
         class LongWriteFailure {
 
