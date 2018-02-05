@@ -94,7 +94,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
-                .retryWhen(retryOperationStrategy(writeOperationRetryStrategy, byteBuffer, batchSize))
+                .retryWhen(errorIsRetryableAndAccordingTo(writeOperationRetryStrategy, byteBuffer, batchSize))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
@@ -215,7 +215,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         };
     }
 
-    private static Func1<Observable<? extends Throwable>, Observable<?>> retryOperationStrategy(
+    private static Func1<Observable<? extends Throwable>, Observable<?>> errorIsRetryableAndAccordingTo (
             final WriteOperationRetryStrategy writeOperationRetryStrategy,
             final ByteBuffer byteBuffer,
             final int batchSize) {
@@ -223,28 +223,31 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             @Override
             public Observable<?> call(Observable<? extends Throwable> emittedOnWriteFailure) {
                 return emittedOnWriteFailure
-                        .flatMap(canRetryError())
-                        .map(toLongWriteFailureObject())
+                        .flatMap(toLongWriteFailureOrError())
                         .compose(writeOperationRetryStrategy)
-                        .doOnNext(replaceByteBufferPositionForRetry());
+                        .doOnNext(repositionByteBufferForRetry());
             }
 
             @NonNull
-            private Func1<Throwable, WriteOperationRetryStrategy.LongWriteFailure> toLongWriteFailureObject() {
-                return new Func1<Throwable, WriteOperationRetryStrategy.LongWriteFailure>() {
+            private Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>> toLongWriteFailureOrError() {
+                return new Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
                     @Override
-                    public WriteOperationRetryStrategy.LongWriteFailure call(Throwable throwable) {
-                        final int failedBatchNumber = (byteBuffer.position() - batchSize) / batchSize;
-                        return new WriteOperationRetryStrategy.LongWriteFailure(
+                    public Observable<WriteOperationRetryStrategy.LongWriteFailure> call(Throwable throwable) {
+                        if (!(throwable instanceof BleGattCharacteristicException)) {
+                            return Observable.error(throwable);
+                        }
+                        final int failedBatchNumber = calculateFailedBatchNumber(byteBuffer, batchSize);
+                        WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
                                 failedBatchNumber,
                                 (BleGattCharacteristicException) throwable
                         );
+                        return Observable.just(longWriteFailure);
                     }
                 };
             }
 
             @NonNull
-            private Action1<WriteOperationRetryStrategy.LongWriteFailure> replaceByteBufferPositionForRetry() {
+            private Action1<WriteOperationRetryStrategy.LongWriteFailure> repositionByteBufferForRetry() {
                 return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
                     public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
@@ -254,17 +257,12 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 };
             }
 
-            @NonNull
-            private Func1<Throwable, Observable<Throwable>> canRetryError() {
-                return new Func1<Throwable, Observable<Throwable>>() {
-                    @Override
-                    public Observable<Throwable> call(Throwable throwable) {
-                        if (!(throwable instanceof BleGattCharacteristicException)) {
-                            return Observable.error(throwable);
-                        }
-                        return Observable.just(throwable);
-                    }
-                };
+            private int calculateFailedBatchNumber(ByteBuffer byteBuffer, int batchSize) {
+                if (byteBuffer.hasRemaining()) {
+                    return (byteBuffer.position() - batchSize) / batchSize;
+                } else {
+                    return byteBuffer.position() / batchSize;
+                }
             }
         };
     }
