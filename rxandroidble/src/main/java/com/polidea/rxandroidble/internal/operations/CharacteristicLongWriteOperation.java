@@ -215,7 +215,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         };
     }
 
-    private static Func1<Observable<? extends Throwable>, Observable<?>> errorIsRetryableAndAccordingTo (
+    private static Func1<Observable<? extends Throwable>, Observable<?>> errorIsRetryableAndAccordingTo(
             final WriteOperationRetryStrategy writeOperationRetryStrategy,
             final ByteBuffer byteBuffer,
             final int batchSize) {

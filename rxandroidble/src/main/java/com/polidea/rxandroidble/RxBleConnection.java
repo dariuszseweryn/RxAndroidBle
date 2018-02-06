@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble;
 
-import static com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy.*;
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -137,9 +135,10 @@ public interface RxBleConnection {
 
         /**
          * Setter for a retry strategy in case something goes wrong when writing data. If any {@link BleException} is raised,
-         * a {@link LongWriteFailure} object will be emitted. {@link LongWriteFailure} contains both the {@link BleException} and the batch
-         * number for which the write request failed. The {@link LongWriteFailure} emitted by the writeOperationRetryStrategy will be used
-         * to retry the specified batch number write request.
+         * a {@link WriteOperationRetryStrategy.LongWriteFailure} object will be emitted.
+         * {@link WriteOperationRetryStrategy.LongWriteFailure} contains both the {@link BleException} and the batch number
+         * for which the write request failed. The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the
+         * writeOperationRetryStrategy will be used to retry the specified batch number write request.
          * <br>
          * If this is not specified - the next batch of bytes is written right after the failed one, and the failed one is just dropped.
          * <br>
@@ -180,7 +179,8 @@ public interface RxBleConnection {
         Observable<byte[]> build();
     }
 
-    interface WriteOperationRetryStrategy extends Observable.Transformer<LongWriteFailure, LongWriteFailure> {
+    interface WriteOperationRetryStrategy extends Observable.Transformer<WriteOperationRetryStrategy.LongWriteFailure,
+            WriteOperationRetryStrategy.LongWriteFailure> {
 
         class LongWriteFailure {
 
