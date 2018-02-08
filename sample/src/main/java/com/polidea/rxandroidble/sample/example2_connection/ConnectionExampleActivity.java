@@ -57,7 +57,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
         bleDevice.establishConnection(false)
-                .flatMap(rxBleConnection -> rxBleConnection.requestMtu(72))
+                .flatMapSingle(rxBleConnection -> rxBleConnection.requestMtu(72))
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())

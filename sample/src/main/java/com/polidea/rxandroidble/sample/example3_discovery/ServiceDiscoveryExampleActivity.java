@@ -35,7 +35,7 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
         bleDevice.establishConnection(false)
-                .flatMap(RxBleConnection::discoverServices)
+                .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())

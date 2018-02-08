@@ -24,7 +24,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         def servicesList = bluetoothGattContainsServices()
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(30, TimeUnit.SECONDS).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(30, TimeUnit.SECONDS).test()
 
         then:
         testSubscriber.assertAnyOnNext { RxBleDeviceServices services -> services.getBluetoothGattServices() == servicesList }
@@ -42,11 +42,12 @@ class ServiceDiscoveryManagerTest extends Specification {
         def mockedOperation = Mock(ServiceDiscoveryOperation)
 
         when:
-        objectUnderTest.getDiscoverServicesObservable(timeout, timeoutTimeUnit).subscribe()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(timeout, timeoutTimeUnit).test()
 
         then:
+        testSubscriber.assertNoErrors()
         1 * mockServiceDiscoveryOperationProvider.provideServiceDiscoveryOperation(timeout, timeoutTimeUnit) >> mockedOperation
-        1 * mockQueue.queue(mockedOperation) >> Observable.empty()
+        1 * mockQueue.queue(mockedOperation) >> Observable.just(new RxBleDeviceServices(Arrays.asList()))
     }
 
     def "should proxy services from ClientOperationQueue.queue()"() {
@@ -58,7 +59,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         mockQueue.queue(_) >> Observable.just(mockedDiscoveredServices)
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
 
         then:
         testSubscriber.assertValue(mockedDiscoveredServices)
@@ -73,7 +74,7 @@ class ServiceDiscoveryManagerTest extends Specification {
         mockQueue.queue(_) >> Observable.error(testThrowable)
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
 
         then:
         testSubscriber.assertError(testThrowable)
@@ -87,13 +88,13 @@ class ServiceDiscoveryManagerTest extends Specification {
         mockQueue.queue(_) >>> [Observable.error(new Throwable()), Observable.just(Mock(RxBleDeviceServices))]
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
 
         then:
         testSubscriber.assertError(Throwable)
 
         when:
-        def testSubscriber1 = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber1 = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
 
         then:
         testSubscriber1.assertNoErrors()
@@ -109,8 +110,8 @@ class ServiceDiscoveryManagerTest extends Specification {
         RxBleDeviceServices result = Mock(RxBleDeviceServices)
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
-        def testSubscriber1 = objectUnderTest.getDiscoverServicesObservable(10, TimeUnit.MINUTES).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber1 = objectUnderTest.getDiscoverServicesSingle(10, TimeUnit.MINUTES).test()
 
         then:
         1 * mockQueue.queue(_) >> resultSubject
@@ -133,14 +134,14 @@ class ServiceDiscoveryManagerTest extends Specification {
         RxBleDeviceServices result = Mock(RxBleDeviceServices)
 
         when:
-        def testSubscriber = objectUnderTest.getDiscoverServicesObservable(5, TimeUnit.MILLISECONDS).test()
+        def testSubscriber = objectUnderTest.getDiscoverServicesSingle(5, TimeUnit.MILLISECONDS).test()
 
         then:
         1 * mockQueue.queue(_) >> Observable.just(result)
         testSubscriber.assertValue(result)
 
         when:
-        def testSubscriber1 = objectUnderTest.getDiscoverServicesObservable(10, TimeUnit.MINUTES).test()
+        def testSubscriber1 = objectUnderTest.getDiscoverServicesSingle(10, TimeUnit.MINUTES).test()
 
         then:
         0 * mockQueue.queue(_)

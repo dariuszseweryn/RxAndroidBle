@@ -180,7 +180,7 @@ public interface RxBleConnection {
      *                                     the discovery for internal reasons.
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#SERVICE_DISCOVERY} type.
      */
-    Observable<RxBleDeviceServices> discoverServices();
+    Single<RxBleDeviceServices> discoverServices();
 
     /**
      * Performs GATT service discovery and emits discovered results. After service discovery you can walk through
@@ -198,7 +198,7 @@ public interface RxBleConnection {
      *                                     the discovery for internal reasons.
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#SERVICE_DISCOVERY} type.
      */
-    Observable<RxBleDeviceServices> discoverServices(@IntRange(from = 1) long timeout, @NonNull TimeUnit timeUnit);
+    Single<RxBleDeviceServices> discoverServices(@IntRange(from = 1) long timeout, @NonNull TimeUnit timeUnit);
 
     /**
      * @see #setupNotification(UUID, NotificationSetupMode)  with default setup mode.
@@ -318,7 +318,7 @@ public interface RxBleConnection {
      * @return Observable emitting matching characteristic or error if hasn't been found.
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      */
-    Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid);
+    Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid);
 
     /**
      * Performs GATT read operation on a characteristic with given UUID.
@@ -329,7 +329,7 @@ public interface RxBleConnection {
      * @throws BleGattCannotStartException        if read operation couldn't be started for internal reason.
      * @throws BleGattException                   if read operation failed
      */
-    Observable<byte[]> readCharacteristic(@NonNull UUID characteristicUuid);
+    Single<byte[]> readCharacteristic(@NonNull UUID characteristicUuid);
 
     /**
      * Performs GATT read operation on a given characteristic.
@@ -341,7 +341,7 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    Observable<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic);
+    Single<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic);
 
     /**
      * Performs GATT write operation on a characteristic with given UUID.
@@ -352,7 +352,7 @@ public interface RxBleConnection {
      * @throws BleGattCannotStartException        if write operation couldn't be started for internal reason.
      * @throws BleGattException                   if write operation failed
      */
-    Observable<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data);
+    Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data);
 
     /**
      * Performs GATT write operation on a given characteristic. The value that will be transmitted is referenced
@@ -369,7 +369,7 @@ public interface RxBleConnection {
      * @see #discoverServices() to obtain the characteristic.
      */
     @Deprecated
-    Observable<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
+    Single<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
 
     /**
      * Performs GATT write operation on a given characteristic.
@@ -382,7 +382,7 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    Observable<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data);
+    Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data);
 
     /**
      * Returns a LongWriteOperationBuilder used for creating atomic write operations divided into multiple writes.
@@ -405,7 +405,7 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    Observable<byte[]> readDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid, @NonNull UUID descriptorUuid);
+    Single<byte[]> readDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid, @NonNull UUID descriptorUuid);
 
     /**
      * Performs GATT read operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
@@ -417,7 +417,7 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic from which you can get the {@link BluetoothGattDescriptor}.
      * @see #discoverServices() to obtain the {@link BluetoothGattDescriptor}.
      */
-    Observable<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor);
+    Single<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor);
 
     /**
      * Performs GATT write operation on a descriptor from a characteristic with a given UUID from a service with a given UUID.
@@ -429,7 +429,7 @@ public interface RxBleConnection {
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
      */
-    Observable<byte[]> writeDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid,
+    Single<byte[]> writeDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid,
                                        @NonNull UUID descriptorUuid, @NonNull byte[] data);
 
     /**
@@ -442,7 +442,7 @@ public interface RxBleConnection {
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    Observable<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
+    Single<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
 
 
     /**
@@ -489,7 +489,7 @@ public interface RxBleConnection {
      *
      * @return Observable emitting the read RSSI value
      */
-    Observable<Integer> readRssi();
+    Single<Integer> readRssi();
 
     /**
      * Performs GATT MTU (Maximum Transfer Unit) request.
@@ -502,7 +502,7 @@ public interface RxBleConnection {
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
      */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    Observable<Integer> requestMtu(@IntRange(from = GATT_MTU_MINIMUM, to = GATT_MTU_MAXIMUM) int mtu);
+    Single<Integer> requestMtu(@IntRange(from = GATT_MTU_MINIMUM, to = GATT_MTU_MAXIMUM) int mtu);
 
     /**
      * Get currently negotiated MTU value. On pre-lollipop Android versions it will always return 23.
