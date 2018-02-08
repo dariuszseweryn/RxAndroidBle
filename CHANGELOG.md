@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.0-SNAPSHOT
+Version 1.5.0-SNAPSHOT (RxJava2)
 * Introduced API in RxJava2
 * Removed deprecated establishConnection method
 * Introduced BleDescriptorNotFoundException
