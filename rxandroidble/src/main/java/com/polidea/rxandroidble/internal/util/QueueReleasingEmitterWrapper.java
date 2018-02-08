@@ -3,10 +3,14 @@ package com.polidea.rxandroidble.internal.util;
 
 import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
+
 import java.util.concurrent.atomic.AtomicBoolean;
-import rx.Emitter;
-import rx.Observer;
-import rx.functions.Cancellable;
+
+import io.reactivex.Emitter;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Cancellable;
 
 /**
  * A convenience class to use in {@link QueueOperation} subclasses. It wraps the {@link Emitter}
@@ -23,22 +27,27 @@ public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable
 
     private final QueueReleaseInterface queueReleaseInterface;
 
-    public QueueReleasingEmitterWrapper(Emitter<T> emitter, QueueReleaseInterface queueReleaseInterface) {
+    public QueueReleasingEmitterWrapper(ObservableEmitter<T> emitter, QueueReleaseInterface queueReleaseInterface) {
         this.emitter = emitter;
         this.queueReleaseInterface = queueReleaseInterface;
-        emitter.setCancellation(this);
+        emitter.setCancellable(this);
     }
 
     @Override
-    public void onCompleted() {
+    public void onComplete() {
         queueReleaseInterface.release();
-        emitter.onCompleted();
+        emitter.onComplete();
     }
 
     @Override
     public void onError(Throwable e) {
         queueReleaseInterface.release();
         emitter.onError(e);
+    }
+
+    @Override
+    public void onSubscribe(Disposable d) {
+
     }
 
     @Override

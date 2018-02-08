@@ -6,14 +6,17 @@ import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
+import com.polidea.rxandroidble.exceptions.BleDescriptorNotFoundException;
 import com.polidea.rxandroidble.exceptions.BleServiceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
-
 import java.util.concurrent.Callable;
-import rx.Observable;
-import rx.functions.Func1;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 /**
  * Service discovery result containing list of services and characteristics within the services.
@@ -41,15 +44,17 @@ public class RxBleDeviceServices {
      * @return Observable emitting matching services or error if hasn't been found.
      * @throws BleServiceNotFoundException if service with given UUID hasn't been found.
      */
-    public Observable<BluetoothGattService> getService(@NonNull final UUID serviceUuid) {
-        return Observable.from(bluetoothGattServices)
-                .takeFirst(new Func1<BluetoothGattService, Boolean>() {
+    public Single<BluetoothGattService> getService(@NonNull final UUID serviceUuid) {
+        return Observable.fromIterable(bluetoothGattServices)
+                .filter(new Predicate<BluetoothGattService>() {
+
                     @Override
-                    public Boolean call(BluetoothGattService bluetoothGattService) {
+                    public boolean test(BluetoothGattService bluetoothGattService) throws Exception {
                         return bluetoothGattService.getUuid().equals(serviceUuid);
                     }
                 })
-                .switchIfEmpty(Observable.<BluetoothGattService>error(new BleServiceNotFoundException(serviceUuid)));
+                .firstElement()
+                .switchIfEmpty(Single.<BluetoothGattService>error(new BleServiceNotFoundException(serviceUuid)));
     }
 
     /**
@@ -63,8 +68,8 @@ public class RxBleDeviceServices {
      * @return Observable emitting matching characteristic or error if hasn't been found.
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      */
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
-        return Observable.fromCallable(new Callable<BluetoothGattCharacteristic>() {
+    public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
+        return Single.fromCallable(new Callable<BluetoothGattCharacteristic>() {
             @Override
             public BluetoothGattCharacteristic call() throws Exception {
                 for (BluetoothGattService service : bluetoothGattServices) {
@@ -88,54 +93,57 @@ public class RxBleDeviceServices {
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      * @see RxBleDeviceServices#getCharacteristic(UUID)
      */
-    public Observable<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID serviceUuid, @NonNull final UUID characteristicUuid) {
+    public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID serviceUuid, @NonNull final UUID characteristicUuid) {
         return getService(serviceUuid)
-                .map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
+                .map(new Function<BluetoothGattService, BluetoothGattCharacteristic>() {
                     @Override
-                    public BluetoothGattCharacteristic call(BluetoothGattService bluetoothGattService) {
-                        return bluetoothGattService.getCharacteristic(characteristicUuid);
-                    }
-                })
-                .takeFirst(new Func1<BluetoothGattCharacteristic, Boolean>() {
-                    @Override
-                    public Boolean call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                        return bluetoothGattCharacteristic != null;
-                    }
-                })
-                .switchIfEmpty(Observable.<BluetoothGattCharacteristic>error(new BleCharacteristicNotFoundException(characteristicUuid)));
-    }
+                    public BluetoothGattCharacteristic apply(BluetoothGattService bluetoothGattService) {
+                        final BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(characteristicUuid);
 
-    // TODO: [PU] 15.03.2016 Consider moving getDescriptor to the characteristic
-    public Observable<BluetoothGattDescriptor> getDescriptor(final UUID characteristicUuid, final UUID descriptorUuid) {
-        return getCharacteristic(characteristicUuid)
-                .map(new Func1<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
-                    @Override
-                    public BluetoothGattDescriptor call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                        return bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
-                    }
-                })
-                .filter(new Func1<Object, Boolean>() {
-                    @Override
-                    public Boolean call(Object bluetoothGattDescriptor) {
-                        return bluetoothGattDescriptor != null;
+                        if (characteristic == null) {
+                            throw new BleCharacteristicNotFoundException(characteristicUuid);
+                        }
+                        return characteristic;
                     }
                 });
     }
 
-    public Observable<BluetoothGattDescriptor> getDescriptor(
+    public Single<BluetoothGattDescriptor> getDescriptor(final UUID characteristicUuid, final UUID descriptorUuid) {
+        return getCharacteristic(characteristicUuid)
+                .map(new Function<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
+                    @Override
+                    public BluetoothGattDescriptor apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                        final BluetoothGattDescriptor descriptor = bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
+
+                        if (descriptor == null) {
+                            throw new BleDescriptorNotFoundException(descriptorUuid);
+                        }
+
+                        return descriptor;
+                    }
+                });
+    }
+
+    public Single<BluetoothGattDescriptor> getDescriptor(
             final UUID serviceUuid, final UUID characteristicUuid, final UUID descriptorUuid
     ) {
         return getService(serviceUuid)
-                .map(new Func1<BluetoothGattService, BluetoothGattCharacteristic>() {
+                .map(new Function<BluetoothGattService, BluetoothGattCharacteristic>() {
                     @Override
-                    public BluetoothGattCharacteristic call(BluetoothGattService bluetoothGattService) {
+                    public BluetoothGattCharacteristic apply(BluetoothGattService bluetoothGattService) {
                         return bluetoothGattService.getCharacteristic(characteristicUuid);
                     }
                 })
-                .map(new Func1<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
+                .map(new Function<BluetoothGattCharacteristic, BluetoothGattDescriptor>() {
                     @Override
-                    public BluetoothGattDescriptor call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-                        return bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
+                    public BluetoothGattDescriptor apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+                        final BluetoothGattDescriptor descriptor = bluetoothGattCharacteristic.getDescriptor(descriptorUuid);
+
+                        if (descriptor == null) {
+                            throw new BleDescriptorNotFoundException(descriptorUuid);
+                        }
+
+                        return descriptor;
                     }
                 });
     }

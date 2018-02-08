@@ -1,13 +1,15 @@
 package com.polidea.rxandroidble.internal.util;
 
-import rx.Observable;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 
 public class ObservableUtil {
 
-    private static final Observable.Transformer<?, ?> IDENTITY_TRANSFORMER
-            = new Observable.Transformer<Object, Object>() {
+    private static final ObservableTransformer<?, ?> IDENTITY_TRANSFORMER
+            = new ObservableTransformer<Object, Object>() {
         @Override
-        public Observable<Object> call(Observable<Object> rxBleInternalScanResultObservable) {
+        public Observable<Object> apply(Observable<Object> rxBleInternalScanResultObservable) {
             return rxBleInternalScanResultObservable;
         }
     };
@@ -20,8 +22,8 @@ public class ObservableUtil {
         return Observable.<T>never().startWith(onNext);
     }
 
-    public static <T> Observable.Transformer<T, T> identityTransformer() {
+    public static <T> ObservableTransformer<T, T> identityTransformer() {
         //noinspection unchecked
-        return (Observable.Transformer<T, T>) IDENTITY_TRANSFORMER;
+        return (ObservableTransformer<T, T>) IDENTITY_TRANSFORMER;
     }
 }

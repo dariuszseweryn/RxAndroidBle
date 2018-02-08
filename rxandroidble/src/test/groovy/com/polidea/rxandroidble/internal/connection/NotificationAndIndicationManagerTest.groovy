@@ -1,8 +1,5 @@
 package com.polidea.rxandroidble.internal.connection
 
-import static rx.Observable.from
-import static rx.Observable.just
-
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
@@ -10,51 +7,35 @@ import com.polidea.rxandroidble.NotificationSetupMode
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent
+import io.reactivex.Observable
+import io.reactivex.Single
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
-import rx.Observable
-import rx.observers.TestSubscriber
-import rx.subjects.BehaviorSubject
-import rx.subjects.PublishSubject
 import spock.lang.Unroll
+
+import static io.reactivex.Observable.just
 
 @Config(manifest = Config.NONE)
 class NotificationAndIndicationManagerTest extends RoboSpecification {
 
     public static final CHARACTERISTIC_UUID = UUID.fromString("f301f518-5414-471c-8a7b-2ef6d1b7373d")
-
     public static final CHARACTERISTIC_INSTANCE_ID = 1
-
     public static final OTHER_UUID = UUID.fromString("ab906173-5daa-4d6b-8604-c2be69122d57")
-
     public static final OTHER_INSTANCE_ID = 2
-
     public static final byte[] EMPTY_DATA = [] as byte[]
-
     public static final byte[] NOT_EMPTY_DATA = [1, 2, 3] as byte[]
-
     public static final byte[] OTHER_DATA = [2, 2, 3] as byte[]
-
     public static final byte[] ENABLE_NOTIFICATION_VALUE = [1] as byte[]
-
     public static final byte[] ENABLE_INDICATION_VALUE = [2] as byte[]
-
     public static final byte[] DISABLE_NOTIFICATION_VALUE = [3] as byte[]
-
     public static final boolean[] ACK_VALUES = [true, false]
-
     public static final NotificationSetupMode[] MODES = [NotificationSetupMode.DEFAULT, NotificationSetupMode.COMPAT]
-
     def bluetoothGattMock = Mock(BluetoothGatt)
-
     def rxBleGattCallbackMock = Mock(RxBleGattCallback)
-
     def descriptorWriterMock = Mock(DescriptorWriter)
-
     NotificationAndIndicationManager objectUnderTest
-
-    def testSubscriber = new TestSubscriber()
-
     def disconnectedErrorBehaviourSubject = BehaviorSubject.create()
 
     def setup() {
@@ -72,14 +53,14 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_FIND_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR reason if CLIENT_CONFIGURATION_DESCRIPTION wasn't found when in DEFAULT mode"() {
 
         given:
-        descriptorWriterMock.writeDescriptor(_, _) >> just(new byte[0])
+        descriptorWriterMock.writeDescriptor(_, _) >> Single.just(EMPTY_DATA)
         bluetoothGattMock.setCharacteristicNotification(_, _) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         characteristic.getDescriptor(_) >> null
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).test()
 
         then:
         testSubscriber.assertError {
@@ -94,13 +75,13 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should setup notification even if CLIENT_CONFIGURATION_DESCRIPTION wasn't found when in COMPAT mode"() {
 
         given:
-        descriptorWriterMock.writeDescriptor(_, _) >> just(new byte[0])
+        descriptorWriterMock.writeDescriptor(_, _) >> Single.just(EMPTY_DATA)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         characteristic.getDescriptor(_) >> null
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.COMPAT, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.COMPAT, ack).test()
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(_, _) >> true
@@ -114,13 +95,13 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     def "should emit BleCannotSetCharacteristicNotificationException with CANNOT_SET_LOCAL_NOTIFICATION reason if failed to set characteristic notification"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
-        descriptorWriterMock.writeDescriptor(_, _) >> Observable.empty()
+        descriptorWriterMock.writeDescriptor(_, _) >> Single.just(EMPTY_DATA)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> false
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
 
         then:
         testSubscriber.assertError {
@@ -139,10 +120,10 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         def testExceptionCause = new RuntimeException()
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> Observable.error(testExceptionCause)
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> Single.error(testExceptionCause)
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).test()
 
         then:
         testSubscriber.assertError {
@@ -164,7 +145,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         disconnectedErrorBehaviourSubject.onError(testException)
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
 
         then:
         testSubscriber.assertError(testException)
@@ -174,12 +155,12 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should proxy RxBleGattCallback.observeDisconnect() if happened after Observable<byte[]> emission"() {
+    def "should proxy RxBleGattCallback.observeDisconnect() if happened after io.reactivex.Observable<byte[]> emission"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         def testException = new RuntimeException("test")
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
 
         when:
         disconnectedErrorBehaviourSubject.onError(testException)
@@ -200,10 +181,10 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).subscribe(testSubscriber)
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack).test()
 
         then:
-        1 * descriptorWriterMock.writeDescriptor(descriptor, value) >> Observable.empty()
+        1 * descriptorWriterMock.writeDescriptor(descriptor, value) >> Single.just(EMPTY_DATA)
 
         where:
         ack << ACK_VALUES
@@ -213,17 +194,18 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     @Unroll
     def "should notify about value change and stay subscribed"() {
         given:
+        println("Values: " + changeNotificationsAndExpectedValues + " mode: " + mode + " ack: " + ack)
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
-        rxBleGattCallbackMock.getOnCharacteristicChanged() >> from(changeNotificationsAndExpectedValues.collect {
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.fromIterable(changeNotificationsAndExpectedValues.collect {
             new CharacteristicChangedEvent(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, it)
         })
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).test()
 
         then:
         testSubscriber.assertValues(changeNotificationsAndExpectedValues)
-        testSubscriber.assertNotCompleted()
+        testSubscriber.assertNotTerminated()
 
         where:
         [changeNotificationsAndExpectedValues, mode, ack] << [
@@ -240,11 +222,11 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         bluetoothGattMock.getOnCharacteristicChanged() >> just(otherCharacteristicNotificationId)
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).test()
 
         then:
         testSubscriber.assertNoValues()
-        testSubscriber.assertNotCompleted()
+        testSubscriber.assertNotComplete()
 
         where:
         [mode, ack, otherCharacteristicNotificationId] << [
@@ -261,16 +243,15 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     @Unroll
     def "should not setup another notification if one was already done on the same characteristic"() {
         given:
-        def secondSubscriber = new TestSubscriber()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> PublishSubject.create()
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> just(new byte[0])
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> Single.just(EMPTY_DATA)
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(secondSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
+        def secondSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
@@ -288,18 +269,17 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     @Unroll
     def "should not setup another notification if one was already done on the same characteristic even if not subscribed yet"() {
         given:
-        def secondSubscriber = new TestSubscriber()
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> PublishSubject.create()
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> just(new byte[0])
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> Single.just(EMPTY_DATA)
         def firstObservable = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
         def secondObservable = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
 
         when:
-        firstObservable.subscribe(testSubscriber)
-        secondObservable.subscribe(secondSubscriber)
+        def testSubscriber = firstObservable.test()
+        def secondSubscriber = secondObservable.test()
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
@@ -320,9 +300,8 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         def characteristicChangeSubject = PublishSubject.create()
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> characteristicChangeSubject
-        def secondSubscriber = new TestSubscriber()
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).subscribe(testSubscriber)
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).subscribe(secondSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).test()
+        def secondSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).flatMap({ it }).test()
 
         when:
         characteristicChangeSubject.onNext(new CharacteristicChangedEvent(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, NOT_EMPTY_DATA))
@@ -342,28 +321,27 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> PublishSubject.create()
-        def secondSubscriber = new TestSubscriber()
 
         when:
-        def firstSubscription = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe()
-        def secondSubscription = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(secondSubscriber)
+        def firstSubscription = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
+        def secondSubscription = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
 
         then:
-        writerCalls * descriptorWriterMock.writeDescriptor(descriptor, { it == enableValue }) >> just(new byte[0])
+        writerCalls * descriptorWriterMock.writeDescriptor(descriptor, { it == enableValue }) >> Single.just(EMPTY_DATA)
 
         when:
-        firstSubscription.unsubscribe()
+        firstSubscription.dispose()
 
         then:
         0 * bluetoothGattMock.setCharacteristicNotification(characteristic, false) >> true
-        0 * descriptorWriterMock.writeDescriptor(descriptor, _) >> just(new byte[0])
+        0 * descriptorWriterMock.writeDescriptor(descriptor, _) >> Single.just(EMPTY_DATA)
 
         when:
-        secondSubscription.unsubscribe()
+        secondSubscription.dispose()
 
         then:
         1 * bluetoothGattMock.setCharacteristicNotification(characteristic, false) >> true
-        writerCalls * descriptorWriterMock.writeDescriptor(descriptor, { it == DISABLE_NOTIFICATION_VALUE }) >> just(new byte[0])
+        writerCalls * descriptorWriterMock.writeDescriptor(descriptor, { it == DISABLE_NOTIFICATION_VALUE }) >> Single.just(EMPTY_DATA)
 
         where:
         mode                          | ack   | writerCalls | enableValue
@@ -378,11 +356,10 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> PublishSubject.create()
-        def secondSubscriber = new TestSubscriber()
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode0, acks[0]).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode0, acks[0]).test()
 
         when:
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode1, acks[1]).subscribe(secondSubscriber)
+        def secondSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode1, acks[1]).test()
 
         then:
         testSubscriber.assertNoErrors()
@@ -397,34 +374,34 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
-    def "should complete the emitted Observable<byte> when unsubscribed"() {
+    def "should complete the emitted io.reactivex.Observable<byte> when unsubscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
-        def emittedObservableSubscriber = new TestSubscriber()
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
-                .doOnNext { it.subscribe(emittedObservableSubscriber) }
-                .subscribe(testSubscriber)
+        def emittedObservableSubscriber
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
+                .doOnNext { emittedObservableSubscriber = it.test() }
+                .test()
 
         when:
-        testSubscriber.unsubscribe()
+        testSubscriber.dispose()
 
         then:
-        emittedObservableSubscriber.assertCompleted()
+        emittedObservableSubscriber.assertComplete()
 
         where:
         [mode, ack] << [MODES, ACK_VALUES].combinations()
     }
 
     @Unroll
-    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted Observable<byte>"() {
+    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted io.reactivex.Observable<byte>"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         def testException = new RuntimeException("test")
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.error(testException)
-        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
-                .doOnNext { it.subscribe(testSubscriber) }
-                .subscribe(new TestSubscriber<Observable<byte[]>>())
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
+                .doOnNext { it.test() }
+                .test()
 
         when:
         disconnectedErrorBehaviourSubject.onError(testException)
@@ -454,7 +431,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     public shouldSetupCharacteristicNotificationCorrectly(UUID characteristicUUID, int instanceId) {
         def characteristic = mockCharacteristicWithValue(uuid: characteristicUUID, instanceId: instanceId, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> just(new byte[0])
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> Single.just(EMPTY_DATA)
         bluetoothGattMock.setCharacteristicNotification(characteristic, _) >> true
         characteristic
     }

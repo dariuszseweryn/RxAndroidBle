@@ -1,11 +1,9 @@
 package com.polidea.rxandroidble.internal.serialization
 
 import com.polidea.rxandroidble.MockOperation
-import rx.Emitter
-import rx.Observable
-import rx.Scheduler
-import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
+import io.reactivex.ObservableEmitter
+import io.reactivex.Scheduler
+import io.reactivex.schedulers.Schedulers
 import spock.lang.Specification
 
 import java.util.concurrent.Executors
@@ -73,7 +71,7 @@ class OperationSynchronizerTest extends Specification {
 
         when:
         objectUnderTest.queue(firstOperation).subscribe()
-        objectUnderTest.queue(secondOperation).subscribe().unsubscribe()
+        objectUnderTest.queue(secondOperation).subscribe().dispose()
         waitForThreadsToCompleteWork()
 
         then:
@@ -88,62 +86,58 @@ class OperationSynchronizerTest extends Specification {
     def "should emit onNext from operation"() {
         given:
         def expectedData = "some string"
-        def testSubscriber = new TestSubscriber()
         def firstOperation = MockOperation.mockOperation(NORMAL, {
             it.onNext(expectedData)
             it.release()
         })
 
         when:
-        objectUnderTest.queue(firstOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(firstOperation).test()
         waitForThreadsToCompleteWork()
 
         then:
         testSubscriber.assertValue(expectedData)
 
         and:
-        testSubscriber.assertNotCompleted()
+        testSubscriber.assertNotComplete()
     }
 
     def "should emit onNext and release queue if completed"() {
         given:
         def expectedData = "some string"
-        def testSubscriber = new TestSubscriber()
         def firstOperation = MockOperation.mockOperation(NORMAL, {
             it.onNext(expectedData)
-            it.onCompleted()
+            it.onComplete()
         })
 
         when:
-        objectUnderTest.queue(firstOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(firstOperation).test()
         waitForThreadsToCompleteWork()
 
         then:
         testSubscriber.assertValue(expectedData)
 
         and:
-        testSubscriber.assertCompleted()
+        testSubscriber.assertComplete()
     }
 
     def "should emit onError and release queue if error occured"() {
         given:
-        def firstTestSubscriber = new TestSubscriber()
-        def secondTestSubscriber = new TestSubscriber()
         def firstOperation =  MockOperation.mockOperation(NORMAL, {
                     it.onError(new Throwable("First throwable"))
                 })
 
         def secondOperation = new MockOperation(NORMAL, null) {
             @Override
-            void protectedRun(Emitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
+            void protectedRun(ObservableEmitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
                 // simulate that a not handled exception was thrown somewhere
                 throw new Exception("Second throwable")
             }
         }
 
         when:
-        objectUnderTest.queue(firstOperation).subscribe(firstTestSubscriber)
-        objectUnderTest.queue(secondOperation).subscribe(secondTestSubscriber)
+        def firstTestSubscriber = objectUnderTest.queue(firstOperation).test()
+        def secondTestSubscriber = objectUnderTest.queue(secondOperation).test()
         waitForThreadsToCompleteWork()
 
         then:
@@ -167,7 +161,7 @@ class OperationSynchronizerTest extends Specification {
     public operationReleasingQueueAfterSemaphoreIsReleased(semaphore) {
         MockOperation.mockOperation(NORMAL, {
             semaphore.acquire()
-            it.onCompleted()
+            it.onComplete()
         })
     }
 
@@ -186,7 +180,7 @@ class OperationSynchronizerTest extends Specification {
     }
 
     private static void waitForOperationsToFinishRunning(MockOperation... operations) {
-        Observable<MockOperation> observable
+        io.reactivex.Observable<MockOperation> observable
         for (MockOperation mockOperation : operations) {
             if (observable == null) {
                 observable = mockOperation.getFinishedRunningObservable()
@@ -194,6 +188,6 @@ class OperationSynchronizerTest extends Specification {
                 observable = observable.flatMap({ mockOperation.getFinishedRunningObservable() })
             }
         }
-        if (observable != null) observable.timeout(1, TimeUnit.SECONDS).toBlocking().first()
+        if (observable != null) observable.timeout(1, TimeUnit.SECONDS).blockingFirst()
     }
 }

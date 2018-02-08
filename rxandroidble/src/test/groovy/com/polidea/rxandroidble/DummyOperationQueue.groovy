@@ -3,39 +3,27 @@ package com.polidea.rxandroidble
 import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.operations.Operation
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue
-import rx.Emitter
-import rx.Observable
-import rx.Subscription
-import rx.functions.Action1
-import rx.functions.Cancellable
+import com.polidea.rxandroidble.internal.util.DisposableUtil
+import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
+import io.reactivex.ObservableOnSubscribe
+import io.reactivex.annotations.NonNull
 
 class DummyOperationQueue implements ConnectionOperationQueue {
     public final MockSemaphore semaphore = new MockSemaphore()
 
     @Override
     def <T> Observable<T> queue(Operation<T> operation) {
-        return Observable.create(
-                new Action1<Emitter>() {
-
-                    @Override
-                    void call(Emitter tEmitter) {
-                        semaphore.awaitRelease()
-
-                        Subscription s = operation
-                                .run(semaphore)
-                                .subscribe(tEmitter)
-
-                        tEmitter.setCancellation(new Cancellable() {
-
-                            @Override
-                            void cancel() throws Exception {
-                                s.unsubscribe();
-                            }
-                        })
-                    }
-                },
-                Emitter.BackpressureMode.NONE
-        )
+        return Observable.create(new ObservableOnSubscribe() {
+            @Override
+            void subscribe(@NonNull ObservableEmitter tEmitter) throws Exception {
+                semaphore.awaitRelease()
+                def disposableObserver = operation
+                        .run(semaphore)
+                        .subscribeWith(DisposableUtil.disposableEmitter(tEmitter))
+                tEmitter.setDisposable(disposableObserver)
+            }
+        })
     }
 
     @Override

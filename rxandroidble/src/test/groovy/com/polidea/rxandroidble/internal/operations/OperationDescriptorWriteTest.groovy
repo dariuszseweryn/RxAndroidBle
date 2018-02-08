@@ -6,13 +6,12 @@ import android.bluetooth.BluetoothGattDescriptor
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.PublishSubject
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -25,7 +24,6 @@ public class OperationDescriptorWriteTest extends Specification {
     BluetoothGattDescriptor mockDescriptor = Mock BluetoothGattDescriptor
     BluetoothGattDescriptor differentDescriptor = Mock BluetoothGattDescriptor
     BluetoothGattCharacteristic mockParentCharacteristic = Mock BluetoothGattCharacteristic
-    def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<ByteAssociation<BluetoothGattDescriptor>> onDescriptorWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
@@ -44,7 +42,7 @@ public class OperationDescriptorWriteTest extends Specification {
     def "should call only once BluetoothGattDescriptor.setValue() before calling BluetoothGatt.writeDescriptor() on single write when run()"() {
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockDescriptor.setValue(testData) >> true
@@ -59,7 +57,7 @@ public class OperationDescriptorWriteTest extends Specification {
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertNoErrors()
@@ -71,7 +69,7 @@ public class OperationDescriptorWriteTest extends Specification {
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -89,7 +87,7 @@ public class OperationDescriptorWriteTest extends Specification {
         shouldEmitErrorOnDescriptorWrite(testException)
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertError testException
@@ -102,7 +100,7 @@ public class OperationDescriptorWriteTest extends Specification {
         onDescriptorWriteSubject.onNext(new ByteAssociation<BluetoothGattDescriptor>(mockDescriptor, new byte[0]))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertNoValues()
@@ -119,7 +117,7 @@ public class OperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertValue dataFromCharacteristic
@@ -136,7 +134,7 @@ public class OperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertValueCount 1
@@ -151,7 +149,7 @@ public class OperationDescriptorWriteTest extends Specification {
         givenDescriptorWithUUIDWritesData([descriptor: differentDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertValueCount 0
@@ -168,7 +166,7 @@ public class OperationDescriptorWriteTest extends Specification {
         prepareObjectUnderTest()
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertValueCount 1
@@ -183,7 +181,7 @@ public class OperationDescriptorWriteTest extends Specification {
         givenDescriptorWithUUIDWritesData([descriptor: mockDescriptor, value: []])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockQueueReleaseInterface.release()
@@ -195,7 +193,7 @@ public class OperationDescriptorWriteTest extends Specification {
         givenDescriptorWriteFailToStart()
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockQueueReleaseInterface.release()
@@ -206,7 +204,7 @@ public class OperationDescriptorWriteTest extends Specification {
         shouldEmitErrorOnDescriptorWrite(new Throwable("test"))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockQueueReleaseInterface.release()
@@ -219,7 +217,7 @@ public class OperationDescriptorWriteTest extends Specification {
         mockGatt.writeDescriptor(mockDescriptor) >> writeStartSuccess
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockParentCharacteristic.setWriteType(bluetoothGattCharacteristicDefaultWriteType)
@@ -235,7 +233,7 @@ public class OperationDescriptorWriteTest extends Specification {
 
         given:
         givenDescriptorWriteStartsOk()
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

@@ -1,33 +1,29 @@
 package com.polidea.rxandroidble.internal.connection
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
+import android.bluetooth.*
 import android.support.annotation.NonNull
-import com.jakewharton.rxrelay.PublishRelay
 import com.polidea.rxandroidble.*
-import com.polidea.rxandroidble.exceptions.*
+import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException
+import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble.internal.operations.ReadRssiOperation
 import com.polidea.rxandroidble.internal.util.ByteAssociation
-import rx.Completable
-
-import java.util.concurrent.TimeUnit
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import rx.Observable
-import rx.Scheduler
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.BehaviorSubject
-import rx.subjects.PublishSubject
+import com.polidea.rxandroidble.internal.util.RxBleServicesLogger
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.functions.Predicate
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static rx.Observable.error
-import static rx.Observable.from
-import static rx.Observable.just
+import java.util.concurrent.TimeUnit
+
+import static io.reactivex.Observable.just
 
 class RxBleConnectionTest extends Specification {
 
@@ -42,11 +38,12 @@ class RxBleConnectionTest extends Specification {
     def gattCallback = Mock RxBleGattCallback
     def bluetoothGattMock = Mock BluetoothGatt
     def mockServiceDiscoveryManager = Mock ServiceDiscoveryManager
-    def testScheduler = new TestScheduler()
     def illegalOperationChecker = Mock IllegalOperationChecker
+    def testScheduler = new TestScheduler()
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
-    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
-            testScheduler, { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
+    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, Mock(RxBleServicesLogger),
+            timeoutConfig, testScheduler, testScheduler,
+            { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
     def mtuProvider = Mock MtuProvider
@@ -55,10 +52,8 @@ class RxBleConnectionTest extends Specification {
             { new LongWriteOperationBuilderImpl(dummyQueue, { 20 }, Mock(RxBleConnection)) }, testScheduler, illegalOperationChecker
     )
     def connectionStateChange = BehaviorSubject.create()
-    def TestSubscriber testSubscriber
 
     def setup() {
-        testSubscriber = new TestSubscriber()
         gattCallback.getOnConnectionStateChange() >> connectionStateChange
         illegalOperationChecker.checkAnyPropertyMatches(_, _) >> Completable.complete()
     }
@@ -88,7 +83,7 @@ class RxBleConnectionTest extends Specification {
         shouldFailStartingCharacteristicWrite()
 
         when:
-        setupWriteClosure.call(objectUnderTest, characteristic, OTHER_DATA).subscribe(testSubscriber)
+        def testSubscriber = setupWriteClosure.call(objectUnderTest, characteristic, OTHER_DATA).test()
 
         then:
         testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_WRITE }
@@ -110,7 +105,7 @@ class RxBleConnectionTest extends Specification {
         shouldFailStartingCharacteristicRead()
 
         when:
-        setupReadClosure.call(objectUnderTest, characteristic).subscribe(testSubscriber)
+        def testSubscriber = setupReadClosure.call(objectUnderTest, characteristic).test()
 
         then:
         testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.CHARACTERISTIC_READ }
@@ -127,10 +122,17 @@ class RxBleConnectionTest extends Specification {
         shouldReturnStartingStatusAndEmitRssiValueThroughCallback { false }
 
         when:
-        objectUnderTest.readRssi().subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.readRssi().test()
 
         then:
-        testSubscriber.assertError { BleGattCannotStartException e -> e.bleGattOperationType == BleGattOperationType.READ_RSSI }
+        testSubscriber.assertError(BleGattCannotStartException)
+        testSubscriber.assertErrorMessage("GATT exception from MAC address null, with type BleGattOperation{description='READ_RSSI'}")
+        testSubscriber.assertError(new Predicate<BleGattCannotStartException>() {
+            @Override
+            boolean test(@io.reactivex.annotations.NonNull BleGattCannotStartException throwable) throws Exception {
+                return throwable.bleGattOperationType == BleGattOperationType.READ_RSSI
+            }
+        })
     }
 
     def "should emit BleCharacteristicNotFoundException during read operation if no services were found"() {
@@ -138,7 +140,7 @@ class RxBleConnectionTest extends Specification {
         shouldDiscoverServices([])
 
         when:
-        objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).test()
 
         then:
         testSubscriber.assertError BleCharacteristicNotFoundException
@@ -151,7 +153,7 @@ class RxBleConnectionTest extends Specification {
         service.getCharacteristic(_) >> null
 
         when:
-        objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).test()
 
         then:
         testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
@@ -168,7 +170,7 @@ class RxBleConnectionTest extends Specification {
                 [uuid: CHARACTERISTIC_UUID, value: NOT_EMPTY_DATA])
 
         when:
-        objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.readCharacteristic(CHARACTERISTIC_UUID).test()
 
         then:
         testSubscriber.assertValue NOT_EMPTY_DATA
@@ -179,7 +181,7 @@ class RxBleConnectionTest extends Specification {
         shouldDiscoverServices([])
 
         when:
-        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).test()
 
         then:
         testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
@@ -190,7 +192,7 @@ class RxBleConnectionTest extends Specification {
         shouldGattContainServiceWithCharacteristic(null)
 
         when:
-        objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.writeCharacteristic(CHARACTERISTIC_UUID, NOT_EMPTY_DATA).test()
 
         then:
         testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
@@ -205,7 +207,7 @@ class RxBleConnectionTest extends Specification {
         gattCallback.getOnCharacteristicWrite() >> onWriteSubject
 
         when:
-        setupWriteClosure.call(objectUnderTest, mockedCharacteristic, OTHER_DATA).subscribe(testSubscriber)
+        def testSubscriber = setupWriteClosure.call(objectUnderTest, mockedCharacteristic, OTHER_DATA).test()
 
         then:
         testSubscriber.assertValue(OTHER_DATA)
@@ -232,7 +234,7 @@ class RxBleConnectionTest extends Specification {
         }
 
         when:
-        objectUnderTest.readRssi().subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.readRssi().test()
 
         then:
         testSubscriber.assertValue(EXPECTED_RSSI_VALUE)
@@ -246,7 +248,7 @@ class RxBleConnectionTest extends Specification {
         characteristic.getUuid() >> CHARACTERISTIC_UUID
 
         when:
-        setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).subscribe(testSubscriber)
+        def testSubscriber = setupTriggerNotificationClosure.call(objectUnderTest, characteristic).flatMap({ it }).test()
 
         then:
         testSubscriber.assertError { BleCharacteristicNotFoundException e -> e.charactersisticUUID == CHARACTERISTIC_UUID }
@@ -309,7 +311,7 @@ class RxBleConnectionTest extends Specification {
         }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
         testSubscriber.assertValues(true, false, true)
@@ -320,7 +322,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { throw new RuntimeException() }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
         testSubscriber.assertError(RuntimeException.class)
@@ -331,7 +333,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { throw new RuntimeException() }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
         dummyQueue.semaphore.isReleased()
@@ -342,7 +344,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { Observable.error(new RuntimeException()) }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
         testSubscriber.assertError(RuntimeException.class)
@@ -353,18 +355,16 @@ class RxBleConnectionTest extends Specification {
         def nativeCallback = Mock BluetoothGattCallback
         def customOperation = new RxBleCustomOperation<Boolean>() {
 
-            @NonNull
             @Override
-            Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
-                                             RxBleGattCallback rxBleGattCallback,
-                                             Scheduler scheduler) throws Throwable {
+            Observable<byte[]> asObservable(BluetoothGatt bluetoothGatt, RxBleGattCallback rxBleGattCallback,
+                                            Scheduler scheduler) throws Throwable {
                 rxBleGattCallback.setNativeCallback(nativeCallback)
                 return just(true)
             }
         }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).test()
 
         then:
         1 * gattCallback.setNativeCallback(null)
@@ -377,16 +377,16 @@ class RxBleConnectionTest extends Specification {
 
             @NonNull
             @Override
-            Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
-                                             RxBleGattCallback rxBleGattCallback,
-                                             Scheduler scheduler) throws Throwable {
+            Observable<byte[]> asObservable(BluetoothGatt bluetoothGatt,
+                                            RxBleGattCallback rxBleGattCallback,
+                                            Scheduler scheduler) throws Throwable {
                 rxBleGattCallback.setNativeCallback(nativeCallback)
-                return error(new IllegalArgumentException("Oh no, da error!"))
+                return Observable.error(new IllegalArgumentException("Oh no, da error!"))
             }
         }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).test()
 
         then:
         1 * gattCallback.setNativeCallback(null)
@@ -397,7 +397,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { Observable.error(new RuntimeException()) }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).test()
 
         then:
         dummyQueue.semaphore.isReleased()
@@ -408,10 +408,10 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { Observable.empty() }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
-        testSubscriber.assertCompleted()
+        testSubscriber.assertComplete()
     }
 
     def "should release the queue when observable returned from RxBleCustomOperation.asObservable() will complete"() {
@@ -419,7 +419,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { Observable.empty() }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).test()
 
         then:
         dummyQueue.semaphore.isReleased()
@@ -430,7 +430,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { null }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         then:
         testSubscriber.assertError(IllegalArgumentException.class)
@@ -441,7 +441,7 @@ class RxBleConnectionTest extends Specification {
         def customOperation = customOperationWithOutcome { null }
 
         when:
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        objectUnderTest.queue(customOperation).test()
 
         then:
         dummyQueue.semaphore.isReleased()
@@ -453,10 +453,10 @@ class RxBleConnectionTest extends Specification {
         given:
         def publishSubject = PublishSubject.create()
         def customOperation = customOperationWithOutcome { publishSubject }
-        objectUnderTest.queue(customOperation).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.queue(customOperation).test()
 
         when:
-        testSubscriber.unsubscribe()
+        testSubscriber.dispose()
 
         then:
         !dummyQueue.semaphore.isReleased()
@@ -469,57 +469,58 @@ class RxBleConnectionTest extends Specification {
 
         where:
         callback << [
-                { rx.Observer o -> o.onCompleted() },
-                { rx.Observer o -> o.onError(new Throwable()) }
+                { PublishSubject o -> o.onComplete() },
+                { PublishSubject o -> o.onError(new Throwable()) }
         ]
     }
 
-    public customOperationWithOutcome(Closure<Observable<Boolean>> outcomeSupplier) {
+    def customOperationWithOutcome(Closure<Observable<Boolean>> outcomeSupplier) {
         new RxBleCustomOperation<Boolean>() {
 
             @NonNull
             @Override
-            Observable<Boolean> asObservable(BluetoothGatt bluetoothGatt,
-                                             RxBleGattCallback rxBleGattCallback,
-                                             Scheduler scheduler) throws Throwable {
+            Observable<byte[]> asObservable(BluetoothGatt bluetoothGatt,
+                                            RxBleGattCallback rxBleGattCallback,
+                                            Scheduler scheduler) throws Throwable {
                 outcomeSupplier()
             }
         }
     }
 
-    public mockDescriptorAndAttachToCharacteristic(BluetoothGattCharacteristic characteristic) {
+    def mockDescriptorAndAttachToCharacteristic(BluetoothGattCharacteristic characteristic) {
         def descriptor = Spy(BluetoothGattDescriptor, constructorArgs: [RxBleConnectionImpl.CLIENT_CHARACTERISTIC_CONFIG_UUID, 0])
         descriptor.getCharacteristic() >> characteristic
         characteristic.getDescriptor(RxBleConnectionImpl.CLIENT_CHARACTERISTIC_CONFIG_UUID) >> descriptor
         descriptor
     }
 
-    public shouldGattContainServiceWithCharacteristic(BluetoothGattCharacteristic characteristic, UUID characteristicUUID = CHARACTERISTIC_UUID) {
+    def shouldGattContainServiceWithCharacteristic(BluetoothGattCharacteristic characteristic, UUID characteristicUUID = CHARACTERISTIC_UUID) {
         characteristic.getUuid() >> characteristicUUID
         shouldContainOneServiceWithoutCharacteristics().getCharacteristic(characteristicUUID) >> characteristic
     }
 
-    public shouldContainOneServiceWithoutCharacteristics() {
+    def shouldContainOneServiceWithoutCharacteristics() {
         def service = Mock BluetoothGattService
         shouldDiscoverServices([service])
         service
     }
 
-    public shouldReturnStartingStatusAndEmitRssiValueThroughCallback(Closure<Boolean> closure) {
+    def shouldReturnStartingStatusAndEmitRssiValueThroughCallback(Closure<Boolean> closure) {
         def rssiSubject = PublishSubject.create()
         gattCallback.getOnRssiRead() >> rssiSubject
         bluetoothGattMock.readRemoteRssi() >> { closure?.call(rssiSubject) }
     }
 
-    public shouldServiceContainCharacteristic(BluetoothGattService service, UUID uuid, int instanceId, byte[] characteristicValue) {
+    def shouldServiceContainCharacteristic(BluetoothGattService service, UUID uuid, int instanceId, byte[] characteristicValue) {
         service.getCharacteristic(uuid) >> mockCharacteristicWithValue(uuid: uuid, instanceId: instanceId, value: characteristicValue)
     }
 
-    public shouldGattCallbackReturnDataOnRead(Map... parameters) {
-        gattCallback.getOnCharacteristicRead() >> { from(parameters.collect { ByteAssociation.create it['uuid'], it['value'] }) }
+    def shouldGattCallbackReturnDataOnRead(Map... parameters) {
+        gattCallback.getOnCharacteristicRead() >> {
+            Observable.fromIterable(parameters.collect { ByteAssociation.create it['uuid'], it['value'] }) }
     }
 
-    public mockCharacteristicWithValue(Map characteristicData) {
+    def mockCharacteristicWithValue(Map characteristicData) {
         def characteristic = Mock BluetoothGattCharacteristic
         characteristic.getValue() >> characteristicData['value']
         characteristic.getUuid() >> characteristicData['uuid']
@@ -527,15 +528,15 @@ class RxBleConnectionTest extends Specification {
         characteristic
     }
 
-    public shouldDiscoverServices(ArrayList<BluetoothGattService> services) {
+    def shouldDiscoverServices(ArrayList<BluetoothGattService> services) {
         mockServiceDiscoveryManager.getDiscoverServicesObservable(_, _) >> just(new RxBleDeviceServices(services))
     }
 
-    public shouldFailStartingCharacteristicWrite() {
+    def shouldFailStartingCharacteristicWrite() {
         bluetoothGattMock.writeCharacteristic(_) >> false
     }
 
-    public shouldFailStartingCharacteristicRead() {
+    def shouldFailStartingCharacteristicRead() {
         bluetoothGattMock.readCharacteristic(_) >> false
     }
 
@@ -547,9 +548,9 @@ class RxBleConnectionTest extends Specification {
 
     private static Closure<Observable<byte[]>> writeCharacteristicCharacteristicClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic, byte[] data -> return connection.writeCharacteristic(characteristic, data) }
 
+    @SuppressWarnings("GrDeprecatedAPIUsage")
     private static Closure<Observable<byte[]>> writeCharacteristicCharacteristicDeprecatedClosure = { RxBleConnection connection, BluetoothGattCharacteristic characteristic, byte[] data ->
         characteristic.setValue(data)
         return connection.writeCharacteristic(characteristic)
     }
-
 }

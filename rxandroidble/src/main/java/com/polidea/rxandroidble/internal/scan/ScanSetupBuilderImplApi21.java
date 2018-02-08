@@ -4,12 +4,16 @@ package com.polidea.rxandroidble.internal.scan;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.internal.operations.ScanOperationApi21;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanSettings;
+
 import bleshadow.javax.inject.Inject;
-import rx.Observable;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
@@ -39,7 +43,7 @@ public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
          Android 5.0 (API21) does not handle FIRST_MATCH and / or MATCH_LOST callback type
          https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder.html#setCallbackType(int)
           */
-        final Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> callbackTypeTransformer
+        final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> callbackTypeTransformer
                 = scanSettingsEmulator.emulateCallbackType(scanSettings.getCallbackType());
         return new ScanSetup(
                 new ScanOperationApi21(
@@ -49,9 +53,9 @@ public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
                         scanSettings,
                         new EmulatedScanFilterMatcher(scanFilters),
                         null),
-                new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+                new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
                     @Override
-                    public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
+                    public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
                         return observable.compose(callbackTypeTransformer);
                     }
                 }

@@ -1,33 +1,22 @@
 package com.polidea.rxandroidble.internal.util
 
-import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.STATE_OFF
-import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.STATE_ON
-import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_OFF
-import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.STATE_TURNING_ON
-
 import com.polidea.rxandroidble.RxBleAdapterStateObservable
 import com.polidea.rxandroidble.RxBleClient
-import java.util.concurrent.TimeUnit
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.BehaviorSubject
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.BehaviorSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.TimeUnit
+
+import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.*
+
 class ClientStateObservableTest extends Specification {
-
     def adapterWrapperMock = Mock RxBleAdapterWrapper
-
     BehaviorSubject<RxBleAdapterStateObservable.BleAdapterState> adapterStateSubject = BehaviorSubject.create()
-
     BehaviorSubject<Boolean> locationServicesOkSubject = BehaviorSubject.create()
-
     def locationServicesStatusMock = Mock LocationServicesStatus
-
     def testScheduler = new TestScheduler()
-
-    def testSubscriber = new TestSubscriber()
-
     def objectUnderTest = new ClientStateObservable(adapterWrapperMock, adapterStateSubject, locationServicesOkSubject, locationServicesStatusMock, testScheduler)
 
     @Unroll
@@ -41,10 +30,10 @@ class ClientStateObservableTest extends Specification {
         locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionState
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
-        testSubscriber.assertCompleted()
+        testSubscriber.assertComplete()
 
         where:
         [initialAdapterState, initialLocationServicesOkState, locationPermissionState] << [
@@ -73,10 +62,10 @@ class ClientStateObservableTest extends Specification {
         locationServicesStatusMock.isLocationPermissionOk() >> locationPermissionState
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
-        testSubscriber.assertNotCompleted()
+        testSubscriber.assertNotComplete()
 
         where:
         [adapterState, servicesState, locationPermissionState] << [
@@ -103,7 +92,7 @@ class ClientStateObservableTest extends Specification {
         adapterWrapperMock.isBluetoothEnabled() >> (adapterState == STATE_ON)
         locationServicesStatusMock.isLocationPermissionOk() >> false
         locationServicesOkSubject.onNext(servicesState)
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         when:
         testScheduler.triggerActions()
@@ -139,7 +128,7 @@ class ClientStateObservableTest extends Specification {
         adapterWrapperMock.isBluetoothEnabled() >> true
         locationServicesStatusMock.isLocationPermissionOk() >> true
         locationServicesOkSubject.onNext(true)
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         when:
         testScheduler.triggerActions()
@@ -161,7 +150,7 @@ class ClientStateObservableTest extends Specification {
         adapterWrapperMock.isBluetoothEnabled() >> true
         locationServicesStatusMock.isLocationPermissionOk() >> true
         locationServicesOkSubject.onNext(true)
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         when:
         testScheduler.triggerActions()

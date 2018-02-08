@@ -1,14 +1,17 @@
 package com.polidea.rxandroidble.internal.operations;
 
 import android.os.DeadObjectException;
+
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.QueueOperation;
+import com.polidea.rxandroidble.internal.RxBleLog;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
-import rx.Emitter;
-import rx.functions.Cancellable;
+
+import io.reactivex.Emitter;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.functions.Cancellable;
 
 /**
  * A class that handles starting and stopping BLE scans.
@@ -25,12 +28,12 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
     }
 
     @Override
-    final protected void protectedRun(final Emitter<SCAN_RESULT_TYPE> emitter, QueueReleaseInterface queueReleaseInterface) {
+    final protected void protectedRun(final ObservableEmitter<SCAN_RESULT_TYPE> emitter, QueueReleaseInterface queueReleaseInterface) {
 
         final SCAN_CALLBACK_TYPE scanCallback = createScanCallback(emitter);
 
         try {
-            emitter.setCancellation(new Cancellable() {
+            emitter.setCancellable(new Cancellable() {
                 @Override
                 public void cancel() throws Exception {
                     RxBleLog.i("Scan operation is requested to stop.");

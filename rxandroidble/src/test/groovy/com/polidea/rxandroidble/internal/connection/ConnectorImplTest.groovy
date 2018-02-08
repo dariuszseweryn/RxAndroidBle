@@ -3,17 +3,15 @@ package com.polidea.rxandroidble.internal.connection
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
-import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
-
 import com.polidea.rxandroidble.internal.operations.ConnectOperation
-import java.util.concurrent.atomic.AtomicReference
-import rx.Observable
-import rx.Subscription
-import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
-import rx.subjects.PublishSubject
+import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.concurrent.atomic.AtomicReference
 
 public class ConnectorImplTest extends Specification {
 
@@ -24,7 +22,6 @@ public class ConnectorImplTest extends Specification {
     RxBleConnection mockConnection = Mock RxBleConnection
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     ConnectOperation mockConnect = Mock ConnectOperation
-    TestSubscriber<RxBleConnection> testSubscriber = TestSubscriber.create()
     ConnectionSubscriptionWatcher mockConnectionSubscriptionAware0 = Mock ConnectionSubscriptionWatcher
     ConnectionSubscriptionWatcher mockConnectionSubscriptionAware1 = Mock ConnectionSubscriptionWatcher
     BluetoothGatt mockGatt = Mock BluetoothGatt
@@ -44,7 +41,7 @@ public class ConnectorImplTest extends Specification {
         objectUnderTest = new ConnectorImpl(
                 clientOperationQueueMock,
                 mockConnectionComponentBuilder,
-                Schedulers.immediate()
+                Schedulers.trampoline()
         )
     }
 
@@ -81,14 +78,14 @@ public class ConnectorImplTest extends Specification {
         clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
 
         when:
-        Subscription s = objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe()
+        def disposable = objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe()
 
         then:
         1 * mockConnectionSubscriptionAware0.onConnectionSubscribed()
         1 * mockConnectionSubscriptionAware1.onConnectionSubscribed()
 
         when:
-        s.unsubscribe()
+        disposable.dispose()
 
         then:
         1 * mockConnectionSubscriptionAware0.onConnectionUnsubscribed()
@@ -102,7 +99,7 @@ public class ConnectorImplTest extends Specification {
         clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
 
         when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         then:
         1 * mockConnectionSubscriptionAware0.onConnectionSubscribed()
@@ -119,7 +116,7 @@ public class ConnectorImplTest extends Specification {
     def "subscribing prepareConnection() should schedule provided ConnectOperation on ClientOperationQueue"() {
 
         when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         then:
         1 * clientOperationQueueMock.queue(mockConnect)
@@ -131,11 +128,11 @@ public class ConnectorImplTest extends Specification {
         clientOperationQueueMock.queue(mockConnect) >> Observable.just(mockGatt)
 
         when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         then:
         testSubscriber.assertValueCount(1)
-        testSubscriber.assertNotCompleted()
+        testSubscriber.assertNotComplete()
     }
 
     def "prepareConnection() should emit error from RxBleGattCallback.disconnectedErrorObservable()"() {
@@ -145,7 +142,7 @@ public class ConnectorImplTest extends Specification {
         clientOperationQueueMock.queue(_) >> Observable.just(mockGatt)
 
         when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         then:
         testSubscriber.assertError(testError)
@@ -157,7 +154,7 @@ public class ConnectorImplTest extends Specification {
         given:
         RuntimeException testException = new RuntimeException("test")
         clientOperationQueueMock.queue(mockConnect) >> Observable.never()
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         when:
         disconnectErrorPublishSubject.onError(testException)
@@ -172,7 +169,7 @@ public class ConnectorImplTest extends Specification {
         PublishSubject<BluetoothGatt> connectPublishSubject = PublishSubject.create()
         RuntimeException testException = new RuntimeException("test")
         clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.prepareConnection(defaultConnectionSetup).test()
         connectPublishSubject.onNext(mockGatt)
 
         when:
@@ -189,7 +186,7 @@ public class ConnectorImplTest extends Specification {
         clientOperationQueueMock.queue(mockConnect) >> connectPublishSubject
 
         when:
-        objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe(testSubscriber)
+        objectUnderTest.prepareConnection(defaultConnectionSetup).test()
 
         then:
         0 * mockConnectionComponent.rxBleConnection()

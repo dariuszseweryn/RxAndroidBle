@@ -1,7 +1,8 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import com.polidea.rxandroidble.internal.operations.Operation;
-import rx.Observable;
+
+import io.reactivex.Observable;
 
 /**
  * Interface used for serialization of {@link Operation} execution.

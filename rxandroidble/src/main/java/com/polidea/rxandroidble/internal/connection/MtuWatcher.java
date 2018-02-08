@@ -3,16 +3,17 @@ package com.polidea.rxandroidble.internal.connection;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.subscriptions.SerialSubscription;
+
+import io.reactivex.Observable;
+import io.reactivex.disposables.SerialDisposable;
+import io.reactivex.functions.Consumer;
 
 @ConnectionScope
-class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Action1<Integer> {
+class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer<Integer> {
 
     private Integer currentMtu;
     private final Observable<Integer> mtuObservable;
-    private final SerialSubscription serialSubscription = new SerialSubscription();
+    private final SerialDisposable serialSubscription = new SerialDisposable();
 
     @Inject
     MtuWatcher(
@@ -35,11 +36,11 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Action1<
 
     @Override
     public void onConnectionUnsubscribed() {
-        serialSubscription.unsubscribe();
+        serialSubscription.dispose();
     }
 
     @Override
-    public void call(Integer newMtu) {
+    public void accept(Integer newMtu) {
         this.currentMtu = newMtu;
     }
 }

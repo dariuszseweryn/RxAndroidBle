@@ -19,5 +19,4 @@ public class BleCharacteristicNotFoundException extends BleException {
     public UUID getCharactersisticUUID() {
         return charactersisticUUID;
     }
-
 }

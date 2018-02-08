@@ -5,14 +5,14 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
-
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+
 import java.util.UUID;
 
 import bleshadow.javax.inject.Inject;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
 
@@ -82,9 +82,9 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
         // TODO: [DS 24.05.2017] Think about a warning if specified maxBatchSize is greater than MTU
 
-        return writtenCharacteristicObservable.flatMap(new Func1<BluetoothGattCharacteristic, Observable<byte[]>>() {
+        return writtenCharacteristicObservable.flatMap(new Function<BluetoothGattCharacteristic, Observable<byte[]>>() {
             @Override
-            public Observable<byte[]> call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+            public Observable<byte[]> apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
                 return operationQueue.queue(
                         operationsProvider.provideLongWriteOperation(bluetoothGattCharacteristic,
                                 writeOperationAckStrategy, maxBatchSizeProvider, bytes)

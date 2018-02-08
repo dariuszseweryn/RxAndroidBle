@@ -13,14 +13,14 @@ import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.example4_characteristic.CharacteristicOperationExampleActivity;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
-import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
 public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
@@ -36,10 +36,10 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     public void onConnectToggleClick() {
         bleDevice.establishConnection(false)
                 .flatMap(RxBleConnection::discoverServices)
-                .first() // Disconnect automatically after discovery
+                .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnUnsubscribe(this::updateUI)
+                .doFinally(this::updateUI)
                 .subscribe(adapter::swapScanResult, this::onConnectionFailure);
 
         updateUI();

@@ -1,31 +1,21 @@
 package com.polidea.rxandroidble.internal.operations
 
-import static android.bluetooth.BluetoothProfile.GATT
-import static android.bluetooth.BluetoothProfile.STATE_CONNECTED
-import static android.bluetooth.BluetoothProfile.STATE_CONNECTING
-import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
-import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTING
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED
-import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING
-
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener
-import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
-import rx.internal.schedulers.ImmediateScheduler
-import rx.observers.TestSubscriber
-import rx.schedulers.Schedulers
-import rx.subjects.PublishSubject
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
+import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static android.bluetooth.BluetoothProfile.*
+import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
 
 public class OperationDisconnectTest extends Specification {
 
@@ -37,7 +27,6 @@ public class OperationDisconnectTest extends Specification {
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
     PublishSubject<RxBleConnection.RxBleConnectionState> connectionStatePublishSubject = PublishSubject.create()
     ConnectionStateChangeListener mockConnectionStateChangeListener = Mock ConnectionStateChangeListener
-    TestSubscriber<Void> testSubscriber = new TestSubscriber()
     BluetoothGattProvider mockBluetoothGattProvider
     DisconnectOperation objectUnderTest
 
@@ -55,10 +44,10 @@ public class OperationDisconnectTest extends Specification {
         testWithGattProviderReturning(null)
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
-        testSubscriber.assertCompleted()
+        testSubscriber.assertComplete()
 
         then:
         mockBluetoothGattProvider.getBluetoothGatt() >> null
@@ -72,7 +61,7 @@ public class OperationDisconnectTest extends Specification {
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_DISCONNECTED
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockBluetoothGatt.close()
@@ -89,7 +78,7 @@ public class OperationDisconnectTest extends Specification {
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> initialState
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockBluetoothGatt.disconnect()
@@ -137,7 +126,7 @@ public class OperationDisconnectTest extends Specification {
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_CONNECTED
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         connectionStatePublishSubject.onNext(DISCONNECTED)
@@ -151,7 +140,7 @@ public class OperationDisconnectTest extends Specification {
         given:
         testWithGattProviderReturning(mockBluetoothGatt)
         mockBluetoothManager.getConnectionState(mockDevice, GATT) >> STATE_CONNECTED
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         connectionStatePublishSubject.onError(new Throwable("test"))
@@ -166,7 +155,7 @@ public class OperationDisconnectTest extends Specification {
         testWithGattProviderReturning(null)
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockConnectionStateChangeListener.onConnectionStateChange(DISCONNECTED)
@@ -174,7 +163,7 @@ public class OperationDisconnectTest extends Specification {
 
     private prepareObjectUnderTest() {
         objectUnderTest = new DisconnectOperation(mockGattCallback, mockBluetoothGattProvider, mockMacAddress,
-                mockBluetoothManager, ImmediateScheduler.INSTANCE, new MockOperationTimeoutConfiguration(Schedulers.computation()),
+                mockBluetoothManager, Schedulers.trampoline(), new MockOperationTimeoutConfiguration(Schedulers.computation()),
                 mockConnectionStateChangeListener)
     }
 }

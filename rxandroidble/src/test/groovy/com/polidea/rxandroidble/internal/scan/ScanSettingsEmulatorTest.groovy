@@ -3,19 +3,16 @@ package com.polidea.rxandroidble.internal.scan
 import android.bluetooth.BluetoothDevice
 import com.polidea.rxandroidble.scan.ScanCallbackType
 import com.polidea.rxandroidble.scan.ScanSettings
-import java.util.concurrent.TimeUnit
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.PublishSubject
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.concurrent.TimeUnit
 
 public class ScanSettingsEmulatorTest extends Specification {
 
     private TestScheduler testScheduler = new TestScheduler()
-
-    private TestSubscriber testSubscriber = new TestSubscriber()
-
     private ScanSettingsEmulator objectUnderTest = new ScanSettingsEmulator(testScheduler)
 
     @Unroll
@@ -25,7 +22,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("1")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)).test()
 
         when:
         subject.onNext(scanResult0)
@@ -59,7 +56,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("2")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)).test()
 
         when:
         subject.onNext(scanResult0)
@@ -91,7 +88,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         given:
         def scanResult = mockScan("0")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).test()
 
         when:
         subject.onNext(scanResult)
@@ -118,7 +115,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("1")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).test()
         subject.onNext(scanResult0)
 
         when:
@@ -154,7 +151,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("2")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_MATCH_LOST)).test()
 
         when:
         subject.onNext(scanResult0)
@@ -198,7 +195,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("1")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)).test()
 
         when:
         subject.onNext(scanResult0)
@@ -247,7 +244,7 @@ public class ScanSettingsEmulatorTest extends Specification {
         def scanResult0 = mockScan("1")
         def scanResult1 = mockScan("2")
         PublishSubject<RxBleInternalScanResult> subject = PublishSubject.create()
-        subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)).subscribe(testSubscriber)
+        def testSubscriber = subject.compose(objectUnderTest.emulateCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)).test()
 
         when:
         subject.onNext(scanResult0)

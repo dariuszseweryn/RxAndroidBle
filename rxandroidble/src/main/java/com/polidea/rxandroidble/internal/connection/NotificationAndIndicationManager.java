@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.NotificationSetupMode;
 import com.polidea.rxandroidble.exceptions.BleCannotSetCharacteristicNotificationException;
@@ -13,18 +14,25 @@ import com.polidea.rxandroidble.internal.util.ActiveCharacteristicNotification;
 import com.polidea.rxandroidble.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Completable;
-import rx.Observable;
-import rx.functions.Action0;
-import rx.functions.Actions;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.subjects.PublishSubject;
+
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.internal.functions.Functions;
+import io.reactivex.subjects.PublishSubject;
 
 @ConnectionScope
 class NotificationAndIndicationManager {
@@ -60,9 +68,9 @@ class NotificationAndIndicationManager {
     Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
             @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean isIndication
     ) {
-        return Observable.defer(new Func0<Observable<Observable<byte[]>>>() {
+        return Observable.defer(new Callable<ObservableSource<Observable<byte[]>>>() {
             @Override
-            public Observable<Observable<byte[]>> call() {
+            public ObservableSource<Observable<byte[]>> call() throws Exception {
                 synchronized (activeNotificationObservableMap) {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
@@ -87,10 +95,10 @@ class NotificationAndIndicationManager {
                             .andThen(ObservableUtil.justOnNext(
                                     observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
                             ))
-                            .doOnUnsubscribe(new Action0() {
+                            .doFinally(new Action() {
                                 @Override
-                                public void call() {
-                                    notificationCompletedSubject.onCompleted();
+                                public void run() {
+                                    notificationCompletedSubject.onComplete();
                                     synchronized (activeNotificationObservableMap) {
                                         activeNotificationObservableMap.remove(id);
                                     }
@@ -98,8 +106,8 @@ class NotificationAndIndicationManager {
                                     setCharacteristicNotification(bluetoothGatt, characteristic, false)
                                             .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
                                             .subscribe(
-                                                    Actions.empty(),
-                                                    Actions.<Throwable>toAction1(Actions.empty())
+                                                    Functions.EMPTY_ACTION,
+                                                    Functions.emptyConsumer()
                                             );
                                 }
                             })
@@ -117,9 +125,9 @@ class NotificationAndIndicationManager {
     private static Completable setCharacteristicNotification(final BluetoothGatt bluetoothGatt,
                                                              final BluetoothGattCharacteristic characteristic,
                                                              final boolean isNotificationEnabled) {
-        return Completable.fromAction(new Action0() {
+        return Completable.fromAction(new Action() {
             @Override
-            public void call() {
+            public void run() {
                 if (!bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled)) {
                     throw new BleCannotSetCharacteristicNotificationException(
                             characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION, null
@@ -130,13 +138,13 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static Completable.Transformer setupModeTransformer(final DescriptorWriter descriptorWriter,
-                                                                final BluetoothGattCharacteristic characteristic,
-                                                                final byte[] value,
-                                                                final NotificationSetupMode mode) {
-        return new Completable.Transformer() {
+    private static CompletableTransformer setupModeTransformer(final DescriptorWriter descriptorWriter,
+                                                               final BluetoothGattCharacteristic characteristic,
+                                                               final byte[] value,
+                                                               final NotificationSetupMode mode) {
+        return new CompletableTransformer() {
             @Override
-            public Completable call(Completable completable) {
+            public Completable apply(Completable completable) {
                 if (mode == NotificationSetupMode.DEFAULT) {
                     return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
                 } else { // NotificationSetupMode.COMPAT
@@ -150,15 +158,15 @@ class NotificationAndIndicationManager {
     private static Observable<byte[]> observeOnCharacteristicChangeCallbacks(RxBleGattCallback gattCallback,
                                                                              final CharacteristicNotificationId characteristicId) {
         return gattCallback.getOnCharacteristicChanged()
-                .filter(new Func1<CharacteristicChangedEvent, Boolean>() {
+                .filter(new Predicate<CharacteristicChangedEvent>() {
                     @Override
-                    public Boolean call(CharacteristicChangedEvent notificationIdWithData) {
+                    public boolean test(CharacteristicChangedEvent notificationIdWithData) {
                         return notificationIdWithData.equals(characteristicId);
                     }
                 })
-                .map(new Func1<CharacteristicChangedEvent, byte[]>() {
+                .map(new Function<CharacteristicChangedEvent, byte[]>() {
                     @Override
-                    public byte[] call(CharacteristicChangedEvent notificationIdWithData) {
+                    public byte[] apply(CharacteristicChangedEvent notificationIdWithData) {
                         return notificationIdWithData.data;
                     }
                 });
@@ -181,9 +189,9 @@ class NotificationAndIndicationManager {
 
         return descriptorWriter.writeDescriptor(descriptor, value)
                 .toCompletable()
-                .onErrorResumeNext(new Func1<Throwable, Completable>() {
+                .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
                     @Override
-                    public Completable call(Throwable throwable) {
+                    public CompletableSource apply(Throwable throwable) throws Exception {
                         return Completable.error(new BleCannotSetCharacteristicNotificationException(
                                 bluetoothGattCharacteristic,
                                 BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,

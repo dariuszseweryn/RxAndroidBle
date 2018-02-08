@@ -5,13 +5,12 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.operations.Operation;
-
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
 
-import rx.Emitter;
-import rx.Observable;
-import rx.functions.Action1;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
 /**
  * The base class for all operations that are executed on the Bluetooth Queue.
@@ -35,9 +34,9 @@ public abstract class QueueOperation<T> implements Operation<T> {
     public final Observable<T> run(final QueueReleaseInterface queueReleaseInterface) {
 
         return Observable.create(
-                new Action1<Emitter<T>>() {
+                new ObservableOnSubscribe<T>() {
                     @Override
-                    public void call(Emitter<T> emitter) {
+                    public void subscribe(ObservableEmitter<T> emitter) throws Exception {
                         try {
                             protectedRun(emitter, queueReleaseInterface);
                         } catch (DeadObjectException deadObjectException) {
@@ -46,8 +45,7 @@ public abstract class QueueOperation<T> implements Operation<T> {
                             emitter.onError(throwable);
                         }
                     }
-                },
-                Emitter.BackpressureMode.NONE
+                }
         );
     }
 
@@ -65,7 +63,7 @@ public abstract class QueueOperation<T> implements Operation<T> {
      * @param emitter the emitter to be called in order to inform the caller about the output of a particular run of the operation
      * @param queueReleaseInterface the queue release interface to release the queue when ready
      */
-    protected abstract void protectedRun(Emitter<T> emitter, QueueReleaseInterface queueReleaseInterface) throws Throwable;
+    protected abstract void protectedRun(ObservableEmitter<T> emitter, QueueReleaseInterface queueReleaseInterface) throws Throwable;
 
     /**
      * This function will be overridden in concrete operation implementations to provide an exception with needed context

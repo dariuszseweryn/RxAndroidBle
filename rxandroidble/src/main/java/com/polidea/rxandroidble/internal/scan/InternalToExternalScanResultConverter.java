@@ -2,13 +2,16 @@ package com.polidea.rxandroidble.internal.scan;
 
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.scan.ScanResult;
+
 import bleshadow.javax.inject.Inject;
-import rx.functions.Func1;
+
+import io.reactivex.functions.Function;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class InternalToExternalScanResultConverter implements Func1<RxBleInternalScanResult, ScanResult> {
+public class InternalToExternalScanResultConverter implements Function<RxBleInternalScanResult, ScanResult> {
 
     private final RxBleDeviceProvider deviceProvider;
 
@@ -18,7 +21,7 @@ public class InternalToExternalScanResultConverter implements Func1<RxBleInterna
     }
 
     @Override
-    public ScanResult call(RxBleInternalScanResult rxBleInternalScanResult) {
+    public ScanResult apply(RxBleInternalScanResult rxBleInternalScanResult) {
         return new ScanResult(
                 deviceProvider.getBleDevice(rxBleInternalScanResult.getBluetoothDevice().getAddress()),
                 rxBleInternalScanResult.getRssi(),

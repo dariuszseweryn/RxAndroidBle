@@ -4,8 +4,10 @@ import com.polidea.rxandroidble.RxBleConnection;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import rx.Observable;
-import rx.functions.Action0;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Action;
 
 /**
  * Observable transformer that can be used to share connection between many subscribers.
@@ -31,12 +33,12 @@ import rx.functions.Action0;
  *
  * @see com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException
  */
-public class ConnectionSharingAdapter implements Observable.Transformer<RxBleConnection, RxBleConnection> {
+public class ConnectionSharingAdapter implements ObservableTransformer<RxBleConnection, RxBleConnection> {
 
     private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
 
     @Override
-    public Observable<RxBleConnection> call(Observable<RxBleConnection> source) {
+    public ObservableSource<RxBleConnection> apply(Observable<RxBleConnection> upstream) {
         synchronized (connectionObservable) {
             final Observable<RxBleConnection> rxBleConnectionObservable = connectionObservable.get();
 
@@ -44,10 +46,10 @@ public class ConnectionSharingAdapter implements Observable.Transformer<RxBleCon
                 return rxBleConnectionObservable;
             }
 
-            final Observable<RxBleConnection> newConnectionObservable = source
-                    .doOnUnsubscribe(new Action0() {
+            final Observable<RxBleConnection> newConnectionObservable = upstream
+                    .doFinally(new Action() {
                         @Override
-                        public void call() {
+                        public void run() {
                             connectionObservable.set(null);
                         }
                     })

@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 import bleshadow.javax.inject.Inject;
 
-import rx.Observable;
-import rx.Scheduler;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
 
 public class ConnectionPriorityChangeOperation extends SingleResponseOperation<Long> {
 
@@ -40,8 +40,8 @@ public class ConnectionPriorityChangeOperation extends SingleResponseOperation<L
     }
 
     @Override
-    protected Observable<Long> getCallback(RxBleGattCallback rxBleGattCallback) {
-        return Observable.timer(operationTimeout, timeUnit, delayScheduler);
+    protected Single<Long> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return Single.timer(operationTimeout, timeUnit, delayScheduler);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

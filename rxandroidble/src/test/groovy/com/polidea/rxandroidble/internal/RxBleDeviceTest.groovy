@@ -2,7 +2,7 @@ package com.polidea.rxandroidble.internal
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import com.jakewharton.rxrelay.BehaviorRelay
+import com.jakewharton.rxrelay2.BehaviorRelay
 import com.polidea.rxandroidble.ConnectionSetup
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.RxBleDevice
@@ -10,25 +10,23 @@ import com.polidea.rxandroidble.exceptions.BleAlreadyConnectedException
 import com.polidea.rxandroidble.exceptions.BleGattException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.connection.Connector
-import rx.Observable
-import rx.observers.TestSubscriber
-import rx.subjects.PublishSubject
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.*
 
-public class RxBleDeviceTest extends Specification {
+class RxBleDeviceTest extends Specification {
 
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     Connector mockConnector = Mock Connector
     RxBleConnection mockConnection = Mock RxBleConnection
     PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
-    BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateBehaviorRelay = BehaviorRelay.create(DISCONNECTED)
+    BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateBehaviorRelay = BehaviorRelay.createDefault(DISCONNECTED)
     @Shared BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
     RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay)
-    TestSubscriber deviceConnectionStateSubscriber = new TestSubscriber()
     static List<EstablishConnectionCaller> establishConnectionCallers = []
     static List<EstablishConnectionTestSetup> establishConnectionTestSetups = []
 
@@ -37,7 +35,7 @@ public class RxBleDeviceTest extends Specification {
         establishConnectionCallers = [
                 new EstablishConnectionCaller(
                         "0",
-                        { RxBleDevice d, ConnectionSetup cs -> d.establishConnection(null, cs.autoConnect) }
+                        { RxBleDevice d, ConnectionSetup cs -> d.establishConnection(cs.autoConnect) }
                 ),
                 new EstablishConnectionCaller(
                         "1",
@@ -141,17 +139,17 @@ public class RxBleDeviceTest extends Specification {
     def "should emit only new states from BehaviourRelay<RxBleConnectionState>"() {
 
         given:
-        connectionStateBehaviorRelay.call(initialState)
-        rxBleDevice.observeConnectionStateChanges().subscribe(deviceConnectionStateSubscriber)
+        connectionStateBehaviorRelay.accept(initialState)
+        def deviceConnectionStateSubscriber = rxBleDevice.observeConnectionStateChanges().test()
 
         when:
-        connectionStateBehaviorRelay.call(initialState)
+        connectionStateBehaviorRelay.accept(initialState)
 
         then:
         deviceConnectionStateSubscriber.assertNoValues()
 
         when:
-        connectionStateBehaviorRelay.call(nextState)
+        connectionStateBehaviorRelay.accept(nextState)
 
         then:
         deviceConnectionStateSubscriber.assertValue(nextState)
@@ -176,11 +174,10 @@ public class RxBleDeviceTest extends Specification {
     def "should emit connection and stay subscribed after it was established => call:#establishConnectionSetup"() {
 
         given:
-        def testSubscriber = new TestSubscriber()
         def connectionObservable = establishConnectionSetup.establishConnection(rxBleDevice)
 
         when:
-        connectionObservable.subscribe(testSubscriber)
+        def testSubscriber = connectionObservable.test()
         notifyConnectionWasEstablished()
 
         then:
@@ -195,14 +192,13 @@ public class RxBleDeviceTest extends Specification {
     def "should emit BleAlreadyConnectedException if already connected => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1\""() {
 
         given:
-        def testSubscriber = new TestSubscriber()
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
         connectionObs0.subscribe()
         notifyConnectionWasEstablished()
 
         when:
-        connectionObs1.subscribe(testSubscriber)
+        def testSubscriber = connectionObs1.test()
 
         then:
         testSubscriber.assertError BleAlreadyConnectedException
@@ -218,13 +214,12 @@ public class RxBleDeviceTest extends Specification {
     def "should emit BleAlreadyConnectedException if there is already one subscriber to .establishConnection() => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
-        TestSubscriber testSubscriber = new TestSubscriber()
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
-        connectionObs0.subscribe()
+        connectionObs0.test()
 
         when:
-        connectionObs1.subscribe(testSubscriber)
+        def testSubscriber = connectionObs1.test()
 
         then:
         testSubscriber.assertError(BleAlreadyConnectedException)
@@ -240,20 +235,18 @@ public class RxBleDeviceTest extends Specification {
     def "should create new connection if previous connection was established and released before second subscriber has subscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
-        def firstSubscriber = new TestSubscriber()
-        def secondSubscriber = new TestSubscriber()
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
-        def subscription = connectionObs0.subscribe(firstSubscriber)
+        def firstSubscriber = connectionObs0.test()
         notifyConnectionWasEstablished()
-        subscription.unsubscribe()
+        firstSubscriber.dispose()
 
         when:
-        connectionObs1.subscribe(secondSubscriber)
+        def secondSubscriber = connectionObs1.test()
 
         then:
         firstSubscriber.assertValueCount 1
-        firstSubscriber.assertReceivedOnNextNot(secondSubscriber.onNextEvents)
+        firstSubscriber.assertReceivedOnNextNot(secondSubscriber.values())
 
         where:
         [establishConnectionSetup0, establishConnectionSetup1] << [
@@ -266,13 +259,13 @@ public class RxBleDeviceTest extends Specification {
     def "should not emit BleAlreadyConnectedException if there is already was subscriber to .establishConnection() but it unsubscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
-        TestSubscriber testSubscriber = new TestSubscriber()
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
-        connectionObs0.subscribe().unsubscribe()
+        def testSubscriber = connectionObs0.test()
+        testSubscriber.dispose()
 
         when:
-        connectionObs1.subscribe(testSubscriber)
+        connectionObs1.test()
 
         then:
         testSubscriber.assertNoErrors()
@@ -288,15 +281,14 @@ public class RxBleDeviceTest extends Specification {
     def "should unsubscribe from connection if it was dropped => call:#establishConnectionSetup"() {
 
         given:
-        def connectionTestSubscriber = new TestSubscriber()
-        establishConnectionSetup.establishConnection(rxBleDevice).subscribe(connectionTestSubscriber)
+        def connectionTestSubscriber = establishConnectionSetup.establishConnection(rxBleDevice).test()
         notifyConnectionWasEstablished()
 
         when:
         dropConnection()
 
         then:
-        connectionTestSubscriber.isUnsubscribed()
+        connectionTestSubscriber.assertTerminated()
 
         where:
         establishConnectionSetup << establishConnectionTestSetups
@@ -306,7 +298,7 @@ public class RxBleDeviceTest extends Specification {
     def "should return connection state from BehaviourRelay<RxBleConnectionState>"() {
 
         given:
-        connectionStateBehaviorRelay.call(state)
+        connectionStateBehaviorRelay.accept(state)
 
         expect:
         rxBleDevice.getConnectionState() == state
@@ -321,19 +313,19 @@ public class RxBleDeviceTest extends Specification {
         rxBleDevice.getBluetoothDevice() == mockBluetoothDevice
     }
 
-    public void startConnecting() {
+    void startConnecting() {
         rxStartConnecting().subscribe({}, {})
     }
 
-    public Observable<RxBleConnection> rxStartConnecting() {
+    io.reactivex.Observable<RxBleConnection> rxStartConnecting() {
         return rxBleDevice.establishConnection(false)
     }
 
-    public void notifyConnectionWasEstablished() {
+    void notifyConnectionWasEstablished() {
         mockConnectorEstablishConnectionPublishSubject.onNext(mockConnection)
     }
 
-    public void dropConnection() {
+    void dropConnection() {
         mockConnectorEstablishConnectionPublishSubject.onError(new BleGattException(mockBluetoothGatt, BleGattOperationType.CONNECTION_STATE))
     }
 
@@ -349,35 +341,34 @@ public class RxBleDeviceTest extends Specification {
         }
 
         @Override
-        public String toString() {
+        String toString() {
             return "{" +
                     "method='" + description + '\'' +
-                    '}';
+                    '}'
         }
     }
 
     private class EstablishConnectionTestSetup {
 
-        final EstablishConnectionCaller establishConnectionCaller;
-
-        final ConnectionSetup connectionSetup;
+        final EstablishConnectionCaller establishConnectionCaller
+        final ConnectionSetup connectionSetup
 
         EstablishConnectionTestSetup(EstablishConnectionCaller establishConnectionCaller, ConnectionSetup connectionSetup) {
             this.establishConnectionCaller = establishConnectionCaller
             this.connectionSetup = connectionSetup
         }
 
-        Observable<RxBleConnection> establishConnection(RxBleDevice d) {
+        io.reactivex.Observable<RxBleConnection> establishConnection(RxBleDevice d) {
             return establishConnectionCaller.connectionStartClosure.call(d, connectionSetup)
         }
 
         @Override
-        public String toString() {
+        String toString() {
             return "{" +
                     "method=" + establishConnectionCaller.description +
                     ", autoConnect=" + connectionSetup.autoConnect +
                     ", suppressIllegalOperationCheck=" + connectionSetup.suppressOperationCheck +
-                    '}';
+                    '}'
         }
     }
 }

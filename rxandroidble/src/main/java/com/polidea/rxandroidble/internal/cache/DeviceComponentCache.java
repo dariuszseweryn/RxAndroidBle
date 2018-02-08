@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import com.polidea.rxandroidble.ClientScope;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,11 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import bleshadow.javax.inject.Inject;
-
-import rx.Observable;
-import rx.functions.Action2;
-import rx.functions.Func0;
-import rx.functions.Func1;
 
 @ClientScope
 public class DeviceComponentCache implements Map<String, DeviceComponent> {
@@ -64,37 +60,17 @@ public class DeviceComponentCache implements Map<String, DeviceComponent> {
     @NonNull
     @Override
     public Set<Entry<String, DeviceComponent>> entrySet() {
-        return Observable.from(cache.entrySet())
-                .filter(new Func1<Entry<String, DeviceComponentWeakReference>, Boolean>() {
-                    @Override
-                    public Boolean call(Entry<String, DeviceComponentWeakReference> stringDeviceWeakReferenceEntry) {
-                        return !stringDeviceWeakReferenceEntry.getValue().isEmpty();
-                    }
-                })
-                .map(new Func1<Entry<String, DeviceComponentWeakReference>, CacheEntry>() {
-                    @Override
-                    public CacheEntry call(Entry<String, DeviceComponentWeakReference> stringDeviceWeakReferenceEntry) {
-                        return new CacheEntry(
-                                stringDeviceWeakReferenceEntry.getKey(),
-                                deviceComponentReferenceProvider.provide(stringDeviceWeakReferenceEntry.getValue().get())
-                        );
-                    }
-                })
-                .collect(
-                        new Func0<HashSet<Entry<String, DeviceComponent>>>() {
-                            @Override
-                            public HashSet<Entry<String, DeviceComponent>> call() {
-                                return new HashSet<>();
-                            }
-                        },
-                        new Action2<HashSet<Entry<String, DeviceComponent>>, CacheEntry>() {
-                            @Override
-                            public void call(HashSet<Entry<String, DeviceComponent>> entries, CacheEntry e) {
-                                entries.add(e);
-                            }
-                        }
-                )
-                .toBlocking().first();
+        final HashSet<Entry<String, DeviceComponent>> components = new HashSet<>();
+
+        for (Entry<String, DeviceComponentWeakReference> entry : cache.entrySet()) {
+            final DeviceComponentWeakReference entryValue = entry.getValue();
+
+            if (!entryValue.isEmpty()) {
+                components.add(new CacheEntry(entry.getKey(), deviceComponentReferenceProvider.provide(entryValue.get())));
+            }
+        }
+
+        return components;
     }
 
     @Nullable
@@ -146,22 +122,15 @@ public class DeviceComponentCache implements Map<String, DeviceComponent> {
     @NonNull
     @Override
     public Collection<DeviceComponent> values() {
-        return Observable.from(cache.values())
-                .filter(new Func1<DeviceComponentWeakReference, Boolean>() {
-                    @Override
-                    public Boolean call(DeviceComponentWeakReference deviceComponentWeakReference) {
-                        return !deviceComponentWeakReference.isEmpty();
-                    }
-                })
-                .map(new Func1<DeviceComponentWeakReference, DeviceComponent>() {
-                    @Override
-                    public DeviceComponent call(DeviceComponentWeakReference deviceComponentWeakReference) {
-                        return deviceComponentWeakReference.get();
-                    }
-                })
-                .toList()
-                .toBlocking()
-                .first();
+        final ArrayList<DeviceComponent> components = new ArrayList<>();
+
+        for (DeviceComponentWeakReference deviceComponentWeakReference : cache.values()) {
+            if (!deviceComponentWeakReference.isEmpty()) {
+                components.add(deviceComponentWeakReference.get());
+            }
+        }
+
+        return components;
     }
 
     private void evictEmptyReferences() {

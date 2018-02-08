@@ -5,14 +5,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.internal.RxBleLog;
-
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
+
 import java.util.Set;
 import java.util.UUID;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 public abstract class RxBleClient {
 

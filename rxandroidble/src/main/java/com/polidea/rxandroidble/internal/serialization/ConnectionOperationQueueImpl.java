@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
@@ -10,16 +11,19 @@ import com.polidea.rxandroidble.internal.connection.ConnectionScope;
 import com.polidea.rxandroidble.internal.connection.ConnectionSubscriptionWatcher;
 import com.polidea.rxandroidble.internal.connection.DisconnectionRouterOutput;
 import com.polidea.rxandroidble.internal.operations.Operation;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Emitter;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Cancellable;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Cancellable;
+import io.reactivex.observers.DisposableObserver;
 
 import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
 import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
@@ -31,7 +35,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
     private final String deviceMacAddress;
     private final DisconnectionRouterOutput disconnectionRouterOutput;
-    private Subscription disconnectionThrowableSubscription;
+    private DisposableObserver<BleException> disconnectionThrowableSubscription;
     private final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
     private final Future<?> runnableFuture;
     private volatile boolean shouldRun = true;
@@ -63,10 +67,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                          * at appropriate time when the next operation should be able to start successfully.
                          */
                         currentSemaphore = new QueueSemaphore();
-
-                        Subscription subscription = entry.run(currentSemaphore, callbackScheduler);
-                        entry.emitter.setSubscription(subscription);
-
+                        entry.run(currentSemaphore, callbackScheduler);
                         currentSemaphore.awaitRelease();
                         logOperationFinished(operation, startedAtTime, System.currentTimeMillis());
                     } catch (InterruptedException e) {
@@ -88,7 +89,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
     private synchronized void flushQueue() {
         while (!queue.isEmpty()) {
             final FIFORunnableEntry<?> entryToFinish = queue.takeNow();
-            entryToFinish.emitter.onError(disconnectionException);
+            entryToFinish.operationResultObserver.onError(disconnectionException);
         }
     }
 
@@ -98,12 +99,12 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
         if (!shouldRun) {
             return Observable.error(disconnectionException);
         }
-        return Observable.create(new Action1<Emitter<T>>() {
-            @Override
-            public void call(Emitter<T> tEmitter) {
-                final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
 
-                tEmitter.setCancellation(new Cancellable() {
+        return Observable.create(new ObservableOnSubscribe<T>() {
+            @Override
+            public void subscribe(ObservableEmitter<T> emitter) throws Exception {
+                final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, emitter);
+                emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
                         if (queue.remove(entry)) {
@@ -115,7 +116,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                 logOperationQueued(operation);
                 queue.add(entry);
             }
-        }, Emitter.BackpressureMode.NONE);
+        });
     }
 
     @Override
@@ -132,17 +133,28 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
     @Override
     public void onConnectionSubscribed() {
-        disconnectionThrowableSubscription = disconnectionRouterOutput.asValueOnlyObservable().subscribe(new Action1<BleException>() {
-            @Override
-            public void call(BleException bleException) {
-                terminate(bleException);
-            }
-        });
+        disconnectionThrowableSubscription = disconnectionRouterOutput.asValueOnlyObservable()
+                .subscribeWith(new DisposableObserver<BleException>() {
+                    @Override
+                    public void onComplete() {
+
+                    }
+
+                    @Override
+                    public void onNext(BleException bleException) {
+                        terminate(bleException);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+
+                    }
+                });
     }
 
     @Override
     public void onConnectionUnsubscribed() {
-        disconnectionThrowableSubscription.unsubscribe();
+        disconnectionThrowableSubscription.dispose();
         disconnectionThrowableSubscription = null;
         terminate(new BleDisconnectedException(deviceMacAddress));
     }

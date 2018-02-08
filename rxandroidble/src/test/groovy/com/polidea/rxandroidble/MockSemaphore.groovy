@@ -4,7 +4,7 @@ import com.polidea.rxandroidble.internal.serialization.QueueAwaitReleaseInterfac
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 
 class MockSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface {
-    int permits = 0;
+    int permits = 0
 
     MockSemaphore() {
     }
@@ -20,6 +20,6 @@ class MockSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface
     }
 
     boolean isReleased() {
-        permits <= 0;
+        permits <= 0
     }
 }
