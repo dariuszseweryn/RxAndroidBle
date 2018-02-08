@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleDeviceServices;
@@ -12,6 +13,7 @@ import com.polidea.rxandroidble.RxBleScanResult;
 import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import rx.Observable;
-import rx.functions.Func1;
-import rx.subjects.ReplaySubject;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.subjects.ReplaySubject;
 
 /**
  * A mocked {@link RxBleClient}. Callers supply device parameters such as services,
@@ -260,13 +264,14 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public RxBleDevice getBleDevice(@NonNull final String macAddress) {
         RxBleDevice rxBleDevice = discoveredDevicesSubject
-            .first(new Func1<RxBleDeviceMock, Boolean>() {
-                @Override
-                public Boolean call(RxBleDeviceMock device) {
-                    return device.getMacAddress().equals(macAddress);
-                }
-            })
-            .toBlocking().first();
+                .filter(new Predicate<RxBleDeviceMock>() {
+                    @Override
+                    public boolean test(RxBleDeviceMock device) {
+                        return device.getMacAddress().equals(macAddress);
+                    }
+                })
+                .firstOrError()
+                .blockingGet();
 
         if (rxBleDevice == null) {
             throw new IllegalStateException("Mock is not configured for a given mac address. Use Builder#addDevice method.");
@@ -292,15 +297,15 @@ public class RxBleClientMock extends RxBleClient {
     @NonNull
     private Observable<RxBleScanResult> createScanOperation(@Nullable final UUID[] filterServiceUUIDs) {
         return discoveredDevicesSubject
-                .filter(new Func1<RxBleDeviceMock, Boolean>() {
+                .filter(new Predicate<RxBleDeviceMock>() {
                     @Override
-                    public Boolean call(RxBleDeviceMock rxBleDevice) {
+                    public boolean test(RxBleDeviceMock rxBleDevice) {
                         return RxBleClientMock.this.filterDevice(rxBleDevice, filterServiceUUIDs);
                     }
                 })
-                .map(new Func1<RxBleDeviceMock, RxBleScanResult>() {
+                .map(new Function<RxBleDeviceMock, RxBleScanResult>() {
                     @Override
-                    public RxBleScanResult call(RxBleDeviceMock rxBleDeviceMock) {
+                    public RxBleScanResult apply(RxBleDeviceMock rxBleDeviceMock) {
                         return RxBleClientMock.this.createRxBleScanResult(rxBleDeviceMock);
                     }
                 });

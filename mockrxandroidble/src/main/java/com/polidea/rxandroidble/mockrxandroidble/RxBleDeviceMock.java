@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble.mockrxandroidble;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;
@@ -13,13 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import rx.Observable;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.subjects.BehaviorSubject;
+import io.reactivex.Observable;
+import io.reactivex.functions.Action;
+import io.reactivex.internal.functions.Functions;
+import io.reactivex.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
@@ -28,7 +27,7 @@ import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISC
 public class RxBleDeviceMock implements RxBleDevice {
 
     private RxBleConnection rxBleConnection;
-    private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.create(
+    private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.createDefault(
             DISCONNECTED
     );
     private String name;
@@ -59,33 +58,27 @@ public class RxBleDeviceMock implements RxBleDevice {
     }
 
     @Override
-    @Deprecated
-    public Observable<RxBleConnection> establishConnection(Context context, boolean autoConnect) {
-        return establishConnection(autoConnect);
-    }
-
-    @Override
     public Observable<RxBleConnection> establishConnection(boolean autoConnect) {
-        return Observable.defer(new Func0<Observable<RxBleConnection>>() {
+        return Observable.defer(new Callable<Observable<RxBleConnection>>() {
             @Override
             public Observable<RxBleConnection> call() {
                 if (isConnected.compareAndSet(false, true)) {
                     return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
-                            .doOnSubscribe(new Action0() {
+                            .doOnSubscribe(Functions.actionConsumer(new Action() {
                                 @Override
-                                public void call() {
+                                public void run() throws Exception {
                                     connectionStateBehaviorSubject.onNext(CONNECTING);
                                 }
-                            })
-                            .doOnNext(new Action1<RxBleConnection>() {
+                            }))
+                            .doOnNext(Functions.actionConsumer(new Action() {
                                 @Override
-                                public void call(RxBleConnection rxBleConnection) {
+                                public void run() throws Exception {
                                     connectionStateBehaviorSubject.onNext(CONNECTED);
                                 }
-                            })
-                            .doOnUnsubscribe(new Action0() {
+                            }))
+                            .doFinally(new Action() {
                                 @Override
-                                public void call() {
+                                public void run() {
                                     connectionStateBehaviorSubject.onNext(DISCONNECTED);
                                     isConnected.set(false);
                                 }
@@ -112,7 +105,7 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public RxBleConnection.RxBleConnectionState getConnectionState() {
-        return observeConnectionStateChanges().toBlocking().first();
+        return observeConnectionStateChanges().blockingFirst();
     }
 
     @Override
