@@ -77,7 +77,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
             triggerDisconnect();
         } else {
             connectionObservable
-                    .flatMap(RxBleConnection::discoverServices)
+                    .flatMapSingle(RxBleConnection::discoverServices)
                     .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnSubscribe(disposable -> connectButton.setText(R.string.connecting))
@@ -97,6 +97,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
         if (isConnected()) {
             connectionObservable
+                    .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(bytes -> {
@@ -112,6 +113,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
         if (isConnected()) {
             connectionObservable
+                    .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, getInputBytes()))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -184,6 +186,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
     /**
      * This method updates the UI to a proper state.
+     *
      * @param characteristic a nullable {@link BluetoothGattCharacteristic}. If it is null then UI is assuming a disconnected state.
      */
     private void updateUI(BluetoothGattCharacteristic characteristic) {

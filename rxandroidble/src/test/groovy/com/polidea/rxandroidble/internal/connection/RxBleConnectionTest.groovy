@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.internal.util.RxBleServicesLogger
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Scheduler
+import io.reactivex.Single
 import io.reactivex.functions.Predicate
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.BehaviorSubject
@@ -64,7 +65,7 @@ class RxBleConnectionTest extends Specification {
         invokationClosure.call(objectUnderTest)
 
         then:
-        1 * mockServiceDiscoveryManager.getDiscoverServicesObservable(timeout, timeoutTimeUnit) >> Observable.empty()
+        1 * mockServiceDiscoveryManager.getDiscoverServicesSingle(timeout, timeoutTimeUnit) >> Single.just(new RxBleDeviceServices([]))
 
         where:
         timeout | timeoutTimeUnit  | invokationClosure
@@ -529,7 +530,7 @@ class RxBleConnectionTest extends Specification {
     }
 
     def shouldDiscoverServices(ArrayList<BluetoothGattService> services) {
-        mockServiceDiscoveryManager.getDiscoverServicesObservable(_, _) >> just(new RxBleDeviceServices(services))
+        mockServiceDiscoveryManager.getDiscoverServicesSingle(_, _) >> Single.just(new RxBleDeviceServices(services))
     }
 
     def shouldFailStartingCharacteristicWrite() {

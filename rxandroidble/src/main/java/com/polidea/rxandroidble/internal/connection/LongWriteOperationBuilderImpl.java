@@ -12,6 +12,7 @@ import java.util.UUID;
 import bleshadow.javax.inject.Inject;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
 public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
@@ -20,7 +21,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     private final RxBleConnection rxBleConnection;
     private final OperationsProvider operationsProvider;
 
-    private Observable<BluetoothGattCharacteristic> writtenCharacteristicObservable;
+    private Single<BluetoothGattCharacteristic> writtenCharacteristicObservable;
     private PayloadSizeLimitProvider maxBatchSizeProvider;
     private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
 
@@ -53,7 +54,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
     @Override
     public RxBleConnection.LongWriteOperationBuilder setCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-        this.writtenCharacteristicObservable = Observable.just(bluetoothGattCharacteristic);
+        this.writtenCharacteristicObservable = Single.just(bluetoothGattCharacteristic);
         return this;
     }
 
@@ -82,7 +83,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
 
         // TODO: [DS 24.05.2017] Think about a warning if specified maxBatchSize is greater than MTU
 
-        return writtenCharacteristicObservable.flatMap(new Function<BluetoothGattCharacteristic, Observable<byte[]>>() {
+        return writtenCharacteristicObservable.flatMapObservable(new Function<BluetoothGattCharacteristic, Observable<byte[]>>() {
             @Override
             public Observable<byte[]> apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
                 return operationQueue.queue(

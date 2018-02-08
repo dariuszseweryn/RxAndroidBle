@@ -97,11 +97,8 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMap { rxBleConnection ->
-            rxBleConnection
-                    .requestMtu(72)
-        }
-        .test()
+                .flatMapSingle { rxBleConnection -> rxBleConnection.requestMtu(72) }
+                .test()
 
         then:
         testSubscriber.assertValue(72)
@@ -134,9 +131,8 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMap { rxBleConnection ->
-            rxBleConnection
-                    .discoverServices()
+                .flatMapSingle { rxBleConnection ->
+            rxBleConnection.discoverServices()
                     .map { rxBleDeviceServices -> rxBleDeviceServices.getBluetoothGattServices() }
                     .map { servicesList -> servicesList.size() }
         }
@@ -152,7 +148,7 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
+                .flatMapSingle { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
                 .map { data -> new String(data) }
                 .test()
 
@@ -166,7 +162,7 @@ public class RxBleClientMockTest extends RoboSpecification {
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMap { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
+                .flatMapSingle { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
                 .map { data -> new String(data) }
                 .test()
 
