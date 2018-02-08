@@ -101,7 +101,8 @@ public class RxBleConnectionMock implements RxBleConnection {
         return discoverServices()
                 .flatMapSingle(new Function<RxBleDeviceServices, SingleSource<? extends BluetoothGattCharacteristic>>() {
                     @Override
-                    public SingleSource<? extends BluetoothGattCharacteristic> apply(RxBleDeviceServices rxBleDeviceServices) throws Exception {
+                    public SingleSource<? extends BluetoothGattCharacteristic> apply(RxBleDeviceServices rxBleDeviceServices)
+                            throws Exception {
                         return rxBleDeviceServices.getCharacteristic(characteristicUuid);
                     }
                 });
