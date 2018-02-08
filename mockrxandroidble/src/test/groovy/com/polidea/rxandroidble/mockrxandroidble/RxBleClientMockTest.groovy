@@ -1,11 +1,12 @@
 package com.polidea.rxandroidble.mockrxandroidble
 
 import android.os.Build
+import com.polidea.rxandroidble.RxBleClient
 import com.polidea.rxandroidble.RxBleConnection
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
-import rx.observers.TestSubscriber
-import rx.subjects.PublishSubject
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends RoboSpecification {
@@ -14,9 +15,9 @@ public class RxBleClientMockTest extends RoboSpecification {
     def characteristicUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
     def characteristicNotifiedUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
     def characteristicData = "Polidea".getBytes()
-    def descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb");
-    def descriptorData = "Config".getBytes();
-    def rxBleClient
+    def descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb")
+    def descriptorData = "Config".getBytes()
+    def RxBleClient rxBleClient
     def PublishSubject characteristicNotificationSubject = PublishSubject.create()
 
     def createDevice(deviceName, macAddress, rssi) {
@@ -42,72 +43,57 @@ public class RxBleClientMockTest extends RoboSpecification {
     def setup() {
         rxBleClient = new RxBleClientMock.Builder()
                 .addDevice(
-                    createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42)
-        ).build();
+                createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42)
+        ).build()
     }
 
     def "should return filtered BluetoothDevice"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices(serviceUUID)
+        def testSubscriber = rxBleClient.scanBleDevices(serviceUUID)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
     }
 
     def "should return the BluetoothDevice name"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices()
+        def testSubscriber = rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getName() }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue("TestDevice")
     }
 
     def "should return the BluetoothDevice address"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices()
+        def testSubscriber = rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
     }
 
     def "should return the BluetoothDevice rssi"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices()
+        def testSubscriber = rxBleClient.scanBleDevices()
                 .take(1)
                 .map { scanResult -> scanResult.getRssi() }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue(42)
     }
 
     def "should return the BluetoothDevice mtu"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -115,7 +101,7 @@ public class RxBleClientMockTest extends RoboSpecification {
             rxBleConnection
                     .requestMtu(72)
         }
-        .subscribe(testSubscriber)
+        .test()
 
         then:
         testSubscriber.assertValue(72)
@@ -123,21 +109,18 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def "should return BluetoothDevices that were added on the fly"() {
         given:
-        def testNameSubscriber = TestSubscriber.create()
-        def testAddressSubscriber = TestSubscriber.create()
-        def testRssiSubscriber = TestSubscriber.create()
         def discoverableDevicesSubject = PublishSubject.create()
         def dynRxBleClient = new RxBleClientMock.Builder()
                 .setDeviceDiscoveryObservable(discoverableDevicesSubject)
-                .build();
+                .build()
         discoverableDevicesSubject.onNext(createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42))
         discoverableDevicesSubject.onNext(createDevice("SecondDevice", "AA:BB:CC:DD:EE:00", 17))
 
         when:
         def scanObservable = dynRxBleClient.scanBleDevices()
-        scanObservable.map { scanResult -> scanResult.getBleDevice().getName() }.subscribe(testNameSubscriber)
-        scanObservable.map { scanResult -> scanResult.getBleDevice().getMacAddress() }.subscribe(testAddressSubscriber)
-        scanObservable.map { scanResult -> scanResult.getRssi() }.subscribe(testRssiSubscriber)
+        def testNameSubscriber = scanObservable.map { scanResult -> scanResult.getBleDevice().getName() }.test()
+        def testAddressSubscriber = scanObservable.map { scanResult -> scanResult.getBleDevice().getMacAddress() }.test()
+        def testRssiSubscriber = scanObservable.map { scanResult -> scanResult.getRssi() }.test()
 
         then:
         testNameSubscriber.assertValues("TestDevice", "SecondDevice")
@@ -146,11 +129,8 @@ public class RxBleClientMockTest extends RoboSpecification {
     }
 
     def "should return services list"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -160,41 +140,35 @@ public class RxBleClientMockTest extends RoboSpecification {
                     .map { rxBleDeviceServices -> rxBleDeviceServices.getBluetoothGattServices() }
                     .map { servicesList -> servicesList.size() }
         }
-        .subscribe(testSubscriber)
+        .test()
 
         then:
         testSubscriber.assertValue(1)
     }
 
     def "should return characteristic data"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
                 .map { data -> new String(data) }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue("Polidea")
     }
 
     def "should return descriptor data"() {
-        given:
-        def testSubscriber = TestSubscriber.create()
-
         when:
-        rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
                 .map { data -> new String(data) }
-                .subscribe(testSubscriber)
+                .test()
 
         then:
         testSubscriber.assertValue("Config")
@@ -202,13 +176,14 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def "should return notification data"() {
         given:
-        def testSubscriber = TestSubscriber.create()
-        rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicNotifiedUUID) }
-                .subscribe { obs -> obs.map { data -> new String(data) } subscribe(testSubscriber) }
+                .flatMap({ Observable<byte[]> observable -> observable })
+                .map { new String(it) }
+                .test()
 
         when:
         characteristicNotificationSubject.onNext("NotificationData".getBytes())
@@ -219,9 +194,8 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def "should emit correct connection state values when connected"() {
         given:
-        def testSubscriber = TestSubscriber.create()
         def device = rxBleClient.getBleDevice("AA:BB:CC:DD:EE:FF")
-        device.observeConnectionStateChanges().subscribe(testSubscriber);
+        def testSubscriber = device.observeConnectionStateChanges().test()
 
         when:
         device.establishConnection(false).subscribe {}
@@ -235,13 +209,12 @@ public class RxBleClientMockTest extends RoboSpecification {
 
     def "should emit correct connection state values when disconnected"() {
         given:
-        def testSubscriber = TestSubscriber.create()
         def device = rxBleClient.getBleDevice("AA:BB:CC:DD:EE:FF")
-        device.observeConnectionStateChanges().subscribe(testSubscriber);
-        def subscription = device.establishConnection(false).subscribe {}
+        def testSubscriber = device.observeConnectionStateChanges().test()
+        def subscription = device.establishConnection(false).test()
 
         when:
-        subscription.unsubscribe()
+        subscription.dispose()
 
         then:
         testSubscriber.assertValues(
