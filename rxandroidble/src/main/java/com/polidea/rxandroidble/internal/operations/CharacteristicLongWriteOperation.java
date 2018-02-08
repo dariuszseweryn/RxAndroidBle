@@ -224,8 +224,8 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             public Observable<?> call(Observable<? extends Throwable> emittedOnWriteFailure) {
                 return emittedOnWriteFailure
                         .flatMap(toLongWriteFailureOrError())
-                        .compose(writeOperationRetryStrategy)
-                        .doOnNext(repositionByteBufferForRetry());
+                        .doOnNext(repositionByteBufferForRetry())
+                        .compose(writeOperationRetryStrategy);
             }
 
             @NonNull
@@ -259,7 +259,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
             private int calculateFailedBatchNumber(ByteBuffer byteBuffer, int batchSize) {
                 if (byteBuffer.hasRemaining()) {
-                    return (byteBuffer.position() - batchSize) / batchSize;
+                    return (byteBuffer.position() / batchSize) - 1;
                 } else {
                     return byteBuffer.position() / batchSize;
                 }
