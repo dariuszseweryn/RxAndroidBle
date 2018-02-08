@@ -10,17 +10,17 @@ import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
-import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
-import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle2.android.ActivityEvent.DESTROY;
+import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
@@ -32,7 +32,7 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
     @BindView(R.id.connect_toggle)
     Button connectButton;
     private RxBleDevice bleDevice;
-    private Subscription connectionSubscription;
+    private Disposable connectionDisposable;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
@@ -40,10 +40,10 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionSubscription = bleDevice.establishConnection(false)
+            connectionDisposable = bleDevice.establishConnection(false)
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(this::clearSubscription)
+                    .doFinally(this::clearSubscription)
                     .flatMap(rxBleConnection -> // Set desired interval.
                             Observable.interval(2, SECONDS).flatMap(sequence -> rxBleConnection.readRssi()))
                     .subscribe(this::updateRssi, this::onConnectionFailure);
@@ -85,14 +85,14 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
     }
 
     private void clearSubscription() {
-        connectionSubscription = null;
+        connectionDisposable = null;
         updateUI();
     }
 
     private void triggerDisconnect() {
 
-        if (connectionSubscription != null) {
-            connectionSubscription.unsubscribe();
+        if (connectionDisposable != null) {
+            connectionDisposable.dispose();
         }
     }
 

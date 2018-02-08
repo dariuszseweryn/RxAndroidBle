@@ -4,15 +4,14 @@ import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.PublishSubject
+import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.PublishSubject
-import spock.lang.Specification
 
 public class OperationReadRssiTest extends Specification {
 
@@ -21,8 +20,6 @@ public class OperationReadRssiTest extends Specification {
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-
-    TestSubscriber<Integer> testSubscriber = new TestSubscriber()
 
     TestScheduler testScheduler = new TestScheduler()
 
@@ -38,7 +35,7 @@ public class OperationReadRssiTest extends Specification {
     def "should call BluetoothGatt.readRemoteRssi() exactly once when run()"() {
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe()
 
         then:
         1 * mockBluetoothGatt.readRemoteRssi() >> true
@@ -50,7 +47,7 @@ public class OperationReadRssiTest extends Specification {
         mockBluetoothGatt.readRemoteRssi() >> false
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -68,14 +65,14 @@ public class OperationReadRssiTest extends Specification {
 
         given:
         mockBluetoothGatt.readRemoteRssi() >> true
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testObserver = objectUnderTest.run(mockQueueReleaseInterface).test()
         def testException = new Exception("test")
 
         when:
         onReadRemoteRssiPublishSubject.onError(testException)
 
         then:
-        testSubscriber.assertError(testException)
+        testObserver.assertError(testException)
 
         and:
         1 * mockQueueReleaseInterface.release()
@@ -88,15 +85,10 @@ public class OperationReadRssiTest extends Specification {
         def rssi2 = 2
         def rssi3 = 3
         mockBluetoothGatt.readRemoteRssi() >> true
-
-        when:
         onReadRemoteRssiPublishSubject.onNext(rssi1)
 
-        then:
-        testSubscriber.assertNoValues()
-
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertNoValues()
@@ -121,7 +113,7 @@ public class OperationReadRssiTest extends Specification {
 
         given:
         mockBluetoothGatt.readRemoteRssi() >> true
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         testScheduler.advanceTimeBy(30, TimeUnit.SECONDS)

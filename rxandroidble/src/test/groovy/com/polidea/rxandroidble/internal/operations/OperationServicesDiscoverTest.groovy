@@ -6,38 +6,27 @@ import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble.internal.util.RxBleServicesLogger
+import io.reactivex.Observable
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.PublishSubject
+import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
-import rx.Observable
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.PublishSubject
-import spock.lang.Specification
 
 public class OperationServicesDiscoverTest extends Specification {
 
     static long timeout = 20
-
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
-
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
-
     RxBleServicesLogger mockRxBleServicesLogger = Mock RxBleServicesLogger
-
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
-
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
-
-    TestSubscriber<RxBleDeviceServices> testSubscriber = new TestSubscriber()
-
     TestScheduler testScheduler = new TestScheduler()
-
     PublishSubject<RxBleDeviceServices> onServicesDiscoveredPublishSubject = PublishSubject.create()
-
     ServiceDiscoveryOperation objectUnderTest
 
     def setup() {
@@ -48,7 +37,7 @@ public class OperationServicesDiscoverTest extends Specification {
     def "should call BluetoothGatt.discoverServices() exactly once when run()"() {
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockBluetoothGatt.discoverServices() >> true
@@ -60,7 +49,7 @@ public class OperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> false
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertError BleGattCannotStartException
@@ -75,10 +64,9 @@ public class OperationServicesDiscoverTest extends Specification {
     }
 
     def "should emit an error if RxBleGattCallback will emit error on RxBleGattCallback.getOnServicesDiscovered() and release queue"() {
-
         given:
         mockBluetoothGatt.discoverServices() >> true
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
         def testException = new Exception("test")
 
         when:
@@ -98,15 +86,10 @@ public class OperationServicesDiscoverTest extends Specification {
         def value2 = new RxBleDeviceServices(new ArrayList<>())
         def value3 = new RxBleDeviceServices(new ArrayList<>())
         mockBluetoothGatt.discoverServices() >> true
-
-        when:
         onServicesDiscoveredPublishSubject.onNext(value1)
 
-        then:
-        testSubscriber.assertNoValues()
-
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertNoValues()
@@ -133,7 +116,7 @@ public class OperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> true
         mockGattCallback.onServicesDiscovered >> Observable.never()
         mockBluetoothGatt.getServices() >> []
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
@@ -153,7 +136,7 @@ public class OperationServicesDiscoverTest extends Specification {
         mockBluetoothGatt.discoverServices() >> true
         mockGattCallback.onServicesDiscovered >> Observable.never()
         mockBluetoothGatt.getServices() >> createMockedBluetoothGattServiceList()
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         testScheduler.advanceTimeTo(timeout, timeoutTimeUnit)
@@ -169,7 +152,7 @@ public class OperationServicesDiscoverTest extends Specification {
         mockGattCallback.onServicesDiscovered >> Observable.never()
         def mockedBluetoothGattServiceList = createMockedBluetoothGattServiceList()
         mockBluetoothGatt.getServices() >> mockedBluetoothGattServiceList
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         testScheduler.advanceTimeTo(timeout + 5, timeoutTimeUnit)

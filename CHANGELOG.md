@@ -1,5 +1,11 @@
 Change Log
 ==========
+
+Version 2.0-SNAPSHOT
+* Introduced API in RxJava2
+* Removed deprecated establishConnection method
+* Introduced BleDescriptorNotFoundException
+
 Version 1.5.0-SNAPSHOT
 * Added possibility to change default operation timeout (https://github.com/Polidea/RxAndroidBle/pull/321)
 * Fixed Dagger2 compatibility (https://github.com/Polidea/RxAndroidBle/pull/342 https://github.com/Polidea/RxAndroidBle/pull/348)

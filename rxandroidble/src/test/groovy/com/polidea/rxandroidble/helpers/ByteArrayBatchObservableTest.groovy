@@ -1,15 +1,13 @@
 package com.polidea.rxandroidble.helpers
 
-import rx.observers.TestSubscriber
+import io.reactivex.annotations.NonNull
+import io.reactivex.functions.Predicate
 import spock.lang.Specification
 import spock.lang.Unroll
-
 
 class ByteArrayBatchObservableTest extends Specification {
 
     ByteArrayBatchObservable objectUnderTest;
-
-    TestSubscriber<byte[]> testSubscriber = new TestSubscriber<>();
 
     private void prepareObjectUnderTest(byte[] bytes, int maxBatchSize) {
         objectUnderTest = new ByteArrayBatchObservable(bytes, maxBatchSize)
@@ -23,13 +21,13 @@ class ByteArrayBatchObservableTest extends Specification {
         prepareObjectUnderTest(byteArray, maxBatchSize)
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
         testSubscriber.assertValueCount(valuesCount)
 
         and:
-        testSubscriber.assertCompleted()
+        testSubscriber.assertComplete()
 
         where:
         byteArraySize | maxBatchSize | valuesCount
@@ -47,7 +45,7 @@ class ByteArrayBatchObservableTest extends Specification {
         prepareObjectUnderTest(byteArray, maxBatchSize)
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
         testSubscriber.assertAllBatchesSmaller(maxBatchSize)
@@ -67,7 +65,7 @@ class ByteArrayBatchObservableTest extends Specification {
         prepareObjectUnderTest(byteArray, maxBatchSize)
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
         testSubscriber.assertLastBatchesSize(lastBatchSize)
@@ -85,7 +83,7 @@ class ByteArrayBatchObservableTest extends Specification {
         prepareObjectUnderTest(arrayFrom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 3)
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
         testSubscriber.assertValuesEquals(arrayFrom(0, 1, 2), arrayFrom(3, 4, 5), arrayFrom(6, 7, 8), arrayFrom(9))
@@ -94,15 +92,21 @@ class ByteArrayBatchObservableTest extends Specification {
     def "should emit values from the state of the byte array at the time of creation"() {
 
         given:
-        def arrayOfBytes = arrayFrom(0)
-        prepareObjectUnderTest(arrayOfBytes, 3)
-        arrayOfBytes[0] = 1
+        def expectedBytes = arrayFrom(0)
+        prepareObjectUnderTest(expectedBytes, 3)
+        expectedBytes[0] = 1
 
         when:
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         then:
-        testSubscriber.assertValueEquals(arrayFrom(0))
+        testSubscriber.assertValueCount(1)
+        testSubscriber.assertValue(new Predicate<byte[]>() {
+            @Override
+            boolean test(@NonNull byte[] bytes) throws Exception {
+                return bytes == expectedBytes
+            }
+        })
     }
 
     @Unroll

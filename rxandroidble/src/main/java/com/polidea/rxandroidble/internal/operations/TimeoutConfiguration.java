@@ -2,7 +2,8 @@ package com.polidea.rxandroidble.internal.operations;
 
 import java.util.concurrent.TimeUnit;
 
-import rx.Scheduler;
+import io.reactivex.Scheduler;
+
 
 public class TimeoutConfiguration {
 

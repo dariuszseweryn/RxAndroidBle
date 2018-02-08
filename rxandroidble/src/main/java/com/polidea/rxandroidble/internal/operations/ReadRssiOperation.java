@@ -10,7 +10,7 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import rx.Observable;
+import io.reactivex.Single;
 
 public class ReadRssiOperation extends SingleResponseOperation<Integer> {
 
@@ -21,8 +21,8 @@ public class ReadRssiOperation extends SingleResponseOperation<Integer> {
     }
 
     @Override
-    protected Observable<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
-        return rxBleGattCallback.getOnRssiRead();
+    protected Single<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback.getOnRssiRead().firstOrError();
     }
 
     @Override

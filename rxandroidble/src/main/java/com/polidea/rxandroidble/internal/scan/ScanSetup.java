@@ -2,8 +2,10 @@ package com.polidea.rxandroidble.internal.scan;
 
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.internal.operations.Operation;
-import rx.Observable;
+
+import io.reactivex.ObservableTransformer;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetup {
@@ -16,11 +18,11 @@ public class ScanSetup {
      * Some functionality (behaviour) is not supported by hardware on older APIs. scanOperationBehaviourEmulatorTransformer is returned
      * by {@link ScanSetupBuilder} from combined emulation transformers provided by {@link ScanSettingsEmulator}
      */
-    public final Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> scanOperationBehaviourEmulatorTransformer;
+    public final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> scanOperationBehaviourEmulatorTransformer;
 
     public ScanSetup(
             Operation<RxBleInternalScanResult> scanOperation,
-            Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> scanOperationBehaviourEmulatorTransformer
+            ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> scanOperationBehaviourEmulatorTransformer
     ) {
         this.scanOperation = scanOperation;
         this.scanOperationBehaviourEmulatorTransformer = scanOperationBehaviourEmulatorTransformer;

@@ -28,16 +28,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
 import bleshadow.dagger.Lazy;
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Action0;
-import rx.functions.Func0;
-import rx.functions.Func1;
+import io.reactivex.Maybe;
+import io.reactivex.MaybeSource;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 class RxBleClientImpl extends RxBleClient {
 
@@ -46,7 +50,7 @@ class RxBleClientImpl extends RxBleClient {
     private final RxBleDeviceProvider rxBleDeviceProvider;
     private final ScanSetupBuilder scanSetupBuilder;
     private final ScanPreconditionsVerifier scanPreconditionVerifier;
-    private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
+    private final Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ClientComponent.ClientComponentFinalizer clientComponentFinalizer;
     private final Scheduler bluetoothInteractionScheduler;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
@@ -65,7 +69,7 @@ class RxBleClientImpl extends RxBleClient {
                     RxBleDeviceProvider rxBleDeviceProvider,
                     ScanSetupBuilder scanSetupBuilder,
                     ScanPreconditionsVerifier scanPreconditionVerifier,
-                    Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
+                    Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer) {
         this.uuidUtil = uuidUtil;
@@ -108,7 +112,7 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(final ScanSettings scanSettings, final ScanFilter... scanFilters) {
-        return Observable.defer(new Func0<Observable<ScanResult>>() {
+        return Observable.defer(new Callable<ObservableSource<? extends ScanResult>>() {
             @Override
             public Observable<ScanResult> call() {
                 scanPreconditionVerifier.verify();
@@ -125,9 +129,9 @@ class RxBleClientImpl extends RxBleClient {
 
 
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
-        return Observable.defer(new Func0<Observable<RxBleScanResult>>() {
+        return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
             @Override
-            public Observable<RxBleScanResult> call() {
+            public ObservableSource<? extends RxBleScanResult> call() throws Exception {
                 scanPreconditionVerifier.verify();
                 return initializeScan(filterServiceUUIDs);
             }
@@ -149,21 +153,26 @@ class RxBleClientImpl extends RxBleClient {
         }
     }
 
+    /**
+     * This {@link Observable} will not emit values by design. It may only emit {@link BleScanException} if
+     * bluetooth adapter is turned down.
+     */
     private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
         return rxBleAdapterStateObservable
-                .filter(new Func1<BleAdapterState, Boolean>() {
+                .filter(new Predicate<BleAdapterState>() {
                     @Override
-                    public Boolean call(BleAdapterState state) {
+                    public boolean test(BleAdapterState state) throws Exception {
                         return state != BleAdapterState.STATE_ON;
                     }
                 })
-                .first()
-                .flatMap(new Func1<BleAdapterState, Observable<? extends T>>() {
+                .firstElement()
+                .flatMap(new Function<BleAdapterState, MaybeSource<T>>() {
                     @Override
-                    public Observable<? extends T> call(BleAdapterState status) {
-                        return Observable.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
+                    public MaybeSource<T> apply(BleAdapterState bleAdapterState) throws Exception {
+                        return Maybe.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
                     }
-                });
+                })
+                .toObservable();
     }
 
     private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResultLegacy scanResult) {
@@ -177,19 +186,18 @@ class RxBleClientImpl extends RxBleClient {
         final LegacyScanOperation
                 scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return operationQueue.queue(scanOperation)
-                .doOnUnsubscribe(new Action0() {
+                .doFinally(new Action() {
                     @Override
-                    public void call() {
-
+                    public void run() throws Exception {
                         synchronized (queuedScanOperations) {
                             queuedScanOperations.remove(filteredUUIDs);
                         }
                     }
                 })
                 .mergeWith(this.<RxBleInternalScanResultLegacy>bluetoothAdapterOffExceptionObservable())
-                .map(new Func1<RxBleInternalScanResultLegacy, RxBleScanResult>() {
+                .map(new Function<RxBleInternalScanResultLegacy, RxBleScanResult>() {
                     @Override
-                    public RxBleScanResult call(RxBleInternalScanResultLegacy scanResult) {
+                    public RxBleScanResult apply(RxBleInternalScanResultLegacy scanResult) {
                         return convertToPublicScanResult(scanResult);
                     }
                 })

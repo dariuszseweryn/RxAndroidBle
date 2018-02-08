@@ -8,12 +8,13 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble.internal.util.ByteAssociation;
 
 import bleshadow.javax.inject.Named;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Single;
+
+import static com.polidea.rxandroidble.internal.util.ByteAssociationUtil.descriptorPredicate;
+import static com.polidea.rxandroidble.internal.util.ByteAssociationUtil.getBytesFromAssociation;
 
 public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
 
@@ -34,21 +35,12 @@ public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
     }
 
     @Override
-    protected Observable<byte[]> getCallback(RxBleGattCallback rxBleGattCallback) {
+    protected Single<byte[]> getCallback(RxBleGattCallback rxBleGattCallback) {
         return rxBleGattCallback
                 .getOnDescriptorWrite()
-                .filter(new Func1<ByteAssociation<BluetoothGattDescriptor>, Boolean>() {
-                    @Override
-                    public Boolean call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
-                        return uuidPair.first.equals(bluetoothGattDescriptor);
-                    }
-                })
-                .map(new Func1<ByteAssociation<BluetoothGattDescriptor>, byte[]>() {
-                    @Override
-                    public byte[] call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
-                        return uuidPair.second;
-                    }
-                });
+                .filter(descriptorPredicate(bluetoothGattDescriptor))
+                .firstOrError()
+                .map(getBytesFromAssociation());
     }
 
     @Override

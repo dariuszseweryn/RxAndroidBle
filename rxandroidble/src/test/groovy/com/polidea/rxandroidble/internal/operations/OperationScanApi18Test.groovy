@@ -4,29 +4,23 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.support.annotation.Nullable
 import com.polidea.rxandroidble.exceptions.BleScanException
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher
-import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
 import com.polidea.rxandroidble.internal.scan.InternalScanResultCreator
+import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
-import java.util.concurrent.Semaphore
-import java.util.concurrent.atomic.AtomicReference
-import rx.observers.TestSubscriber
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicReference
 
 public class OperationScanApi18Test extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
-
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
-
-    TestSubscriber testSubscriber = new TestSubscriber()
-
     InternalScanResultCreator mockInternalScanResultCreator = Mock InternalScanResultCreator
-
     EmulatedScanFilterMatcher mockEmulatedScanFilterMatcher = Mock EmulatedScanFilterMatcher
-
     ScanOperationApi18 objectUnderTest
 
     def setup() {
@@ -43,7 +37,7 @@ public class OperationScanApi18Test extends Specification {
         mockAdapterWrapper.startLegacyLeScan(_) >> true
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertNoErrors()
@@ -53,7 +47,7 @@ public class OperationScanApi18Test extends Specification {
 
         given:
         mockAdapterWrapper.startLegacyLeScan(_) >> false
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         objectUnderTest.run()
@@ -66,7 +60,7 @@ public class OperationScanApi18Test extends Specification {
 
         given:
         AtomicReference<BluetoothAdapter.LeScanCallback> capturedLeScanCallbackRef = captureScanCallback()
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
         def scannedDevice = Mock(BluetoothDevice)
         def scannedBytes = new byte[5]
         def scannedRssi = 5
@@ -89,7 +83,7 @@ public class OperationScanApi18Test extends Specification {
         def capturedLeScanCallbackRef = captureScanCallback()
         def mockInternalScanResult = Mock RxBleInternalScanResult
         mockInternalScanResultCreator.create(_, _, _) >> mockInternalScanResult
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         capturedLeScanCallbackRef.get().onLeScan(Mock(BluetoothDevice), 0, new byte[0])
@@ -111,7 +105,7 @@ public class OperationScanApi18Test extends Specification {
         mockAdapterWrapper.startLegacyLeScan(_) >> startScanResult
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         (1.._) * mockQueueReleaseInterface.release()

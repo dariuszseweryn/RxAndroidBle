@@ -7,23 +7,26 @@ import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
-import rx.Observable
-import rx.functions.Func1
-import rx.internal.schedulers.ImmediateScheduler
-import rx.observers.TestSubscriber
-import rx.schedulers.TestScheduler
-import rx.subjects.PublishSubject
+import io.reactivex.Observable
+import io.reactivex.ObservableSource
+import io.reactivex.Scheduler
+import io.reactivex.annotations.NonNull
+import io.reactivex.functions.Function
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 public class OperationCharacteristicLongWriteTest extends Specification {
 
@@ -35,14 +38,14 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
-    def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     TestScheduler timeoutScheduler = new TestScheduler()
-    ImmediateScheduler immediateScheduler = ImmediateScheduler.INSTANCE
+    Scheduler immediateScheduler = Schedulers.trampoline()
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     CharacteristicLongWriteOperation objectUnderTest
-    @Shared Exception testException = new Exception("testException")
+    @Shared
+    Exception testException = new Exception("testException")
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
@@ -59,7 +62,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, writtenBytes)
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue(writtenBytes) >> true
@@ -80,7 +83,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(maxBatchSize, writtenBytes)
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWrites(expectedBatchesCount)
 
         then:
@@ -107,7 +110,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWrites(3)
 
         then:
@@ -123,7 +126,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWrites(failingWriteIndex)
 
         then:
@@ -147,7 +150,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
@@ -168,12 +171,6 @@ public class OperationCharacteristicLongWriteTest extends Specification {
 
         then:
         0 * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
-
-        when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
-
-        then:
-        (1.._) * mockCallback.getOnCharacteristicWrite() >> Observable.empty()
     }
 
     def "should complete part of the write if RxBleGattCallback.onCharacteristicWrite() will be called with proper characteristic"() {
@@ -184,7 +181,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWrites(1)
 
         then:
@@ -204,7 +201,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWritesToComplete(1)
 
         then:
@@ -231,7 +228,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWritesToComplete(3)
 
         then:
@@ -247,7 +244,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWrites(failingWriteIndex)
 
         then:
@@ -266,7 +263,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(20, byteArray(60))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWritesToComplete(failingWriteIndex)
 
         then:
@@ -283,7 +280,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         givenWillWriteNextBatchImmediatelyAfterPrevious()
         givenCharacteristicWriteOkButEventuallyStalls(failingWriteIndex)
         prepareObjectUnderTest(20, byteArray(60))
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         when:
         advanceTimeForWritesToComplete(failingWriteIndex)
@@ -315,7 +312,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(maxBatchSize, byteArray(20))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         testSubscriber.assertError(IllegalArgumentException)
@@ -332,13 +329,13 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(1, byteArray(20))
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockGatt.writeCharacteristic(mockCharacteristic) >> true
 
         when:
-        testSubscriber.unsubscribe()
+        testSubscriber.dispose()
 
         then:
         0 * mockQueueReleaseInterface.release()
@@ -364,7 +361,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
-        writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
+        writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
     }
 
     private AcknowledgementTrigger givenWillTriggerWriteAcknowledgement() {
@@ -380,15 +377,15 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         public void acknowledgeWrite() {
             triggerSubject.with {
                 onNext(true)
-                onCompleted()
+                onComplete()
             }
         }
 
         @Override
-        Observable<Boolean> call(Observable<Boolean> writeAck) {
-            return writeAck.flatMap(new Func1<Boolean, Observable<Boolean>>() {
+        ObservableSource<Boolean> apply(@NonNull Observable<Boolean> writeAck) {
+            writeAck.flatMap(new Function<Boolean, Observable<Boolean>>() {
                 @Override
-                Observable<Boolean> call(Boolean o) {
+                Observable<Boolean> apply(Boolean o) {
                     return triggerSubject
                 }
             })
@@ -396,7 +393,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     }
 
     private static byte[] byteArray(int size) {
-        byte[] bytes = new byte[size];
+        byte[] bytes = new byte[size]
         for (int i = 0; i < size; i++) {
             bytes[i] = i
         }

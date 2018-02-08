@@ -4,10 +4,9 @@ import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import io.reactivex.disposables.Disposable
 import org.robolectric.annotation.Config
 import org.robospock.RoboSpecification
-import rx.Subscription
-import rx.observers.TestSubscriber
 
 import static com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState.*
 
@@ -22,7 +21,6 @@ class RxBleAdapterStateObservableTest extends RoboSpecification {
     }
 
     def "should register to correct receiver on subscribe"() {
-
         when:
         objectUnderTest.subscribe()
 
@@ -32,13 +30,13 @@ class RxBleAdapterStateObservableTest extends RoboSpecification {
         })
     }
 
-    def "should unregister after observable was unsubscribed"() {
+    def "should unregister after observable was disposed"() {
         given:
         shouldCaptureRegisteredReceiver()
-        Subscription subscription = objectUnderTest.subscribe()
+        Disposable disposable = objectUnderTest.subscribe()
 
         when:
-        subscription.unsubscribe()
+        disposable.dispose()
 
         then:
         1 * contextMock.unregisterReceiver(registeredReceiver)
@@ -47,8 +45,7 @@ class RxBleAdapterStateObservableTest extends RoboSpecification {
     def "should map all bluetooth change states"() {
         given:
         shouldCaptureRegisteredReceiver()
-        def testSubscriber = new TestSubscriber()
-        objectUnderTest.subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.test()
 
         when:
         postStateChangeBroadcast(bluetoothChange)

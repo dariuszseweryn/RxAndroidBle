@@ -2,10 +2,13 @@ package com.polidea.rxandroidble.internal.connection;
 
 
 import android.bluetooth.BluetoothGattDescriptor;
+
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+
 import bleshadow.javax.inject.Inject;
-import rx.Observable;
+
+import io.reactivex.Single;
 
 @ConnectionScope
 class DescriptorWriter {
@@ -19,7 +22,7 @@ class DescriptorWriter {
         this.operationsProvider = operationsProvider;
     }
 
-    Observable<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
-        return operationQueue.queue(operationsProvider.provideWriteDescriptor(bluetoothGattDescriptor, data));
+    Single<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
+        return operationQueue.queue(operationsProvider.provideWriteDescriptor(bluetoothGattDescriptor, data)).firstOrError();
     }
 }

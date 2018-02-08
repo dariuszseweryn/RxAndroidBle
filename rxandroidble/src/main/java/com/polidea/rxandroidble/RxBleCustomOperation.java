@@ -6,9 +6,9 @@ import android.support.annotation.NonNull;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
 
-import rx.Observable;
-import rx.Observer;
-import rx.Scheduler;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 
 /**
  * Represents a custom operation that will be enqueued for future execution within the client instance.
@@ -29,7 +29,7 @@ public interface RxBleCustomOperation<T> {
      * returned by {@link RxBleConnection#queue(RxBleCustomOperation)}
      * <p>
      * As the implementer, your contract is to return an {@link Observable} that completes at some
-     * point in time. When the returned observable terminates, either via the {@link Observer#onCompleted()} or
+     * point in time. When the returned observable terminates, either via the {@link Observer#onComplete()} or
      * {@link Observer#onError(Throwable)} callback, the {@link ConnectionOperationQueue} queue's lock is released so that
      * queue operations can continue.
      * <p>

@@ -1,16 +1,13 @@
 package com.polidea.rxandroidble.internal.connection
 
 import android.bluetooth.BluetoothGatt
-import rx.observers.TestSubscriber
 import spock.lang.Specification
 
 class BluetoothGattProviderTest extends Specification {
     BluetoothGattProvider objectUnderTest
-    TestSubscriber testSubscriber
 
     def setup() {
         objectUnderTest = new BluetoothGattProvider()
-        testSubscriber = new TestSubscriber<>()
     }
 
     def "should return null when asked for GATT initially"() {

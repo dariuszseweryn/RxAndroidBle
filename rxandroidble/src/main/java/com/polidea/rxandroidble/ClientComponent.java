@@ -35,17 +35,16 @@ import com.polidea.rxandroidble.scan.ScanResult;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import bleshadow.javax.inject.Named;
-import bleshadow.javax.inject.Provider;
-
 import bleshadow.dagger.Binds;
 import bleshadow.dagger.Component;
 import bleshadow.dagger.Module;
 import bleshadow.dagger.Provides;
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
+import bleshadow.javax.inject.Named;
+import bleshadow.javax.inject.Provider;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 @ClientScope
 @Component(modules = {ClientComponent.ClientModule.class, ClientComponent.ClientModuleBinder.class})
@@ -305,7 +304,7 @@ public interface ClientComponent {
         abstract Scheduler bindTimeoutScheduler(@Named(NamedSchedulers.COMPUTATION) Scheduler computationScheduler);
 
         @Binds
-        abstract Func1<RxBleInternalScanResult, ScanResult> provideScanResultMapper(InternalToExternalScanResultConverter mapper);
+        abstract Function<RxBleInternalScanResult, ScanResult> provideScanResultMapper(InternalToExternalScanResultConverter mapper);
     }
 
     LocationServicesOkObservable locationServicesOkObservable();

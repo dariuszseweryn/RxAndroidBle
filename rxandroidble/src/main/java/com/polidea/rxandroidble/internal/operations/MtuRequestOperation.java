@@ -10,7 +10,7 @@ import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 
 import bleshadow.javax.inject.Inject;
 
-import rx.Observable;
+import io.reactivex.Single;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class MtuRequestOperation extends SingleResponseOperation<Integer> {
@@ -27,8 +27,8 @@ public class MtuRequestOperation extends SingleResponseOperation<Integer> {
     }
 
     @Override
-    protected Observable<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
-        return rxBleGattCallback.getOnMtuChanged();
+    protected Single<Integer> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback.getOnMtuChanged().firstOrError();
     }
 
     @Override

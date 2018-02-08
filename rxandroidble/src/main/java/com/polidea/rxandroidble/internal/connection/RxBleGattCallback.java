@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.jakewharton.rxrelay.PublishRelay;
-import com.jakewharton.rxrelay.SerializedRelay;
+import com.jakewharton.rxrelay2.PublishRelay;
+import com.jakewharton.rxrelay2.Relay;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble.RxBleDeviceServices;
@@ -24,9 +24,10 @@ import java.util.UUID;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Function;
+
 
 @ConnectionScope
 public class RxBleGattCallback {
@@ -39,15 +40,15 @@ public class RxBleGattCallback {
     private final Output<RxBleDeviceServices> servicesDiscoveredOutput = new Output<>();
     private final Output<ByteAssociation<UUID>> readCharacteristicOutput = new Output<>();
     private final Output<ByteAssociation<UUID>> writeCharacteristicOutput = new Output<>();
-    private final SerializedRelay<CharacteristicChangedEvent, CharacteristicChangedEvent>
+    private final Relay<CharacteristicChangedEvent>
             changedCharacteristicSerializedPublishRelay = PublishRelay.<CharacteristicChangedEvent>create().toSerialized();
     private final Output<ByteAssociation<BluetoothGattDescriptor>> readDescriptorOutput = new Output<>();
     private final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     private final Output<Integer> readRssiOutput = new Output<>();
     private final Output<Integer> changedMtuOutput = new Output<>();
-    private final Func1<BleGattException, Observable<?>> errorMapper = new Func1<BleGattException, Observable<?>>() {
+    private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
-        public Observable<?> call(BleGattException bleGattException) {
+        public Observable<?> apply(BleGattException bleGattException) {
             return Observable.error(bleGattException);
         }
     };
@@ -80,7 +81,7 @@ public class RxBleGattCallback {
                 );
             }
 
-            connectionStatePublishRelay.call(mapConnectionStateToRxBleConnectionStatus(newState));
+            connectionStatePublishRelay.accept(mapConnectionStateToRxBleConnectionStatus(newState));
         }
 
         private boolean isDisconnectedOrDisconnecting(int newState) {
@@ -95,7 +96,7 @@ public class RxBleGattCallback {
 
             if (servicesDiscoveredOutput.hasObservers()
                     && !propagateErrorIfOccurred(servicesDiscoveredOutput, gatt, status, BleGattOperationType.SERVICE_DISCOVERY)) {
-                servicesDiscoveredOutput.valueRelay.call(new RxBleDeviceServices(gatt.getServices()));
+                servicesDiscoveredOutput.valueRelay.accept(new RxBleDeviceServices(gatt.getServices()));
             }
         }
 
@@ -108,7 +109,7 @@ public class RxBleGattCallback {
             if (readCharacteristicOutput.hasObservers() && !propagateErrorIfOccurred(
                     readCharacteristicOutput, gatt, characteristic, status, BleGattOperationType.CHARACTERISTIC_READ
             )) {
-                readCharacteristicOutput.valueRelay.call(new ByteAssociation<>(characteristic.getUuid(), characteristic.getValue()));
+                readCharacteristicOutput.valueRelay.accept(new ByteAssociation<>(characteristic.getUuid(), characteristic.getValue()));
             }
         }
 
@@ -121,7 +122,7 @@ public class RxBleGattCallback {
             if (writeCharacteristicOutput.hasObservers() && !propagateErrorIfOccurred(
                     writeCharacteristicOutput, gatt, characteristic, status, BleGattOperationType.CHARACTERISTIC_WRITE
             )) {
-                writeCharacteristicOutput.valueRelay.call(new ByteAssociation<>(characteristic.getUuid(), characteristic.getValue()));
+                writeCharacteristicOutput.valueRelay.accept(new ByteAssociation<>(characteristic.getUuid(), characteristic.getValue()));
             }
         }
 
@@ -137,7 +138,7 @@ public class RxBleGattCallback {
              * threads.
              */
             if (changedCharacteristicSerializedPublishRelay.hasObservers()) {
-                changedCharacteristicSerializedPublishRelay.call(
+                changedCharacteristicSerializedPublishRelay.accept(
                         new CharacteristicChangedEvent(
                                 characteristic.getUuid(),
                                 characteristic.getInstanceId(),
@@ -155,7 +156,7 @@ public class RxBleGattCallback {
 
             if (readDescriptorOutput.hasObservers()
                     && !propagateErrorIfOccurred(readDescriptorOutput, gatt, descriptor, status, BleGattOperationType.DESCRIPTOR_READ)) {
-                readDescriptorOutput.valueRelay.call(new ByteAssociation<>(descriptor, descriptor.getValue()));
+                readDescriptorOutput.valueRelay.accept(new ByteAssociation<>(descriptor, descriptor.getValue()));
             }
         }
 
@@ -167,7 +168,7 @@ public class RxBleGattCallback {
 
             if (writeDescriptorOutput.hasObservers()
                     && !propagateErrorIfOccurred(writeDescriptorOutput, gatt, descriptor, status, BleGattOperationType.DESCRIPTOR_WRITE)) {
-                writeDescriptorOutput.valueRelay.call(new ByteAssociation<>(descriptor, descriptor.getValue()));
+                writeDescriptorOutput.valueRelay.accept(new ByteAssociation<>(descriptor, descriptor.getValue()));
             }
         }
 
@@ -186,7 +187,7 @@ public class RxBleGattCallback {
 
             if (readRssiOutput.hasObservers()
                     && !propagateErrorIfOccurred(readRssiOutput, gatt, status, BleGattOperationType.READ_RSSI)) {
-                readRssiOutput.valueRelay.call(rssi);
+                readRssiOutput.valueRelay.accept(rssi);
             }
         }
 
@@ -198,7 +199,7 @@ public class RxBleGattCallback {
 
             if (changedMtuOutput.hasObservers()
                     && !propagateErrorIfOccurred(changedMtuOutput, gatt, status, BleGattOperationType.ON_MTU_CHANGED)) {
-                changedMtuOutput.valueRelay.call(mtu);
+                changedMtuOutput.valueRelay.accept(mtu);
             }
         }
     };
@@ -257,7 +258,7 @@ public class RxBleGattCallback {
 
     private boolean propagateStatusError(Output output, BleGattException exception) {
         //noinspection unchecked
-        output.errorRelay.call(exception);
+        output.errorRelay.accept(exception);
         return true;
     }
 

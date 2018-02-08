@@ -14,18 +14,18 @@ import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
 import com.polidea.rxandroidble.sample.util.HexString;
 import com.polidea.rxandroidble.utils.ConnectionSharingAdapter;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.subjects.PublishSubject;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.subjects.PublishSubject;
 
-import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
 public class CharacteristicOperationExampleActivity extends RxAppCompatActivity {
 
@@ -45,7 +45,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     @BindView(R.id.notify)
     Button notifyButton;
     private UUID characteristicUuid;
-    private PublishSubject<Void> disconnectTriggerSubject = PublishSubject.create();
+    private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
 
@@ -78,9 +78,9 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         } else {
             connectionObservable
                     .flatMap(RxBleConnection::discoverServices)
-                    .flatMap(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
+                    .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe(() -> connectButton.setText(R.string.connecting))
+                    .doOnSubscribe(disposable -> connectButton.setText(R.string.connecting))
                     .subscribe(
                             characteristic -> {
                                 updateUI(characteristic);
@@ -179,7 +179,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     }
 
     private void triggerDisconnect() {
-        disconnectTriggerSubject.onNext(null);
+        disconnectTriggerSubject.onNext(true);
     }
 
     /**

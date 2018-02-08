@@ -4,21 +4,19 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import rx.Observable
-import rx.internal.schedulers.ImmediateScheduler
-import rx.observers.TestSubscriber
+import io.reactivex.Observable
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subscribers.TestSubscriber
 import spock.lang.Ignore
 import spock.lang.Shared
+import spock.lang.Specification
 
 import static android.bluetooth.BluetoothGatt.GATT_FAILURE
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 
-import spock.lang.Specification
-
 class RxBleGattCallbackPerformanceTest extends Specification {
 
-    def objectUnderTest = new RxBleGattCallback(ImmediateScheduler.INSTANCE, Mock(BluetoothGattProvider), mockDisconnectionRouter, new NativeCallbackDispatcher())
-    def testSubscriber = new TestSubscriber()
+    def objectUnderTest = new RxBleGattCallback(new TestScheduler(), Mock(BluetoothGattProvider), mockDisconnectionRouter, new NativeCallbackDispatcher())
     @Shared
     def mockDisconnectionRouter = Mock DisconnectionRouter
     @Shared
@@ -47,7 +45,7 @@ class RxBleGattCallbackPerformanceTest extends Specification {
     def "performance test gatt callback using RxJava API"() {
         given:
         def startedTimestamp = System.currentTimeMillis()
-        objectUnderTest.onCharacteristicRead.subscribe(testSubscriber)
+        objectUnderTest.onCharacteristicRead.test()
 
         when:
         invokeCharacteristicReadCallback(iterationsCount)

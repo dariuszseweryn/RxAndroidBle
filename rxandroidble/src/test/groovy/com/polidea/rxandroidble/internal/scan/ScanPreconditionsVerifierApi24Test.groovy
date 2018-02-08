@@ -1,17 +1,16 @@
 package com.polidea.rxandroidble.internal.scan
 
 import com.polidea.rxandroidble.exceptions.BleScanException
-import java.util.concurrent.TimeUnit
-import rx.Scheduler
-import rx.schedulers.TestScheduler
+import io.reactivex.Scheduler
+import io.reactivex.schedulers.TestScheduler
 import spock.lang.Specification
+
+import java.util.concurrent.TimeUnit
 
 public class ScanPreconditionsVerifierApi24Test extends Specification {
 
     private TestScheduler testScheduler = new TestScheduler()
-
     private ScanPreconditionsVerifierApi18 mockScanPreconditionVerifierApi18 = Mock ScanPreconditionsVerifierApi18
-
     private ScanPreconditionsVerifierApi24 objectUnderTest = new ScanPreconditionsVerifierApi24(mockScanPreconditionVerifierApi18, testScheduler)
 
     def setup() {
@@ -23,6 +22,7 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         given:
         Scheduler scheduler = Mock Scheduler
         objectUnderTest = new ScanPreconditionsVerifierApi24(mockScanPreconditionVerifierApi18, scheduler)
+        scheduler.now(TimeUnit.MILLISECONDS) >> TimeUnit.SECONDS.toMillis(5)
 
         when:
         objectUnderTest.verify()
@@ -31,7 +31,7 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         1 * mockScanPreconditionVerifierApi18.verify()
 
         then:
-        1 * scheduler.now() >> TimeUnit.MINUTES.toMillis(1)
+        thrown BleScanException
     }
 
     def "should proxy exception thrown by ScanPreconditionsVerifierApi18"() {
@@ -44,7 +44,7 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         objectUnderTest.verify()
 
         then:
-        thrown(BleScanException)
+        thrown BleScanException
     }
 
     def "should throw BleScanException.UNDOCUMENTED_SCAN_THROTTLE if called 6th time during a 30 second window"() {
@@ -62,7 +62,7 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         then:
         BleScanException e = thrown BleScanException
         e.getReason() == BleScanException.UNDOCUMENTED_SCAN_THROTTLE
-        e.getRetryDateSuggestion() == (new Date(testScheduler.now() + TimeUnit.SECONDS.toMillis(30)))
+        e.getRetryDateSuggestion() == (new Date(testScheduler.now(TimeUnit.MILLISECONDS) + TimeUnit.SECONDS.toMillis(30)))
     }
 
     def "should not throw BleScanException.UNDOCUMENTED_SCAN_THROTTLE if called 6th time after a 30 second window"() {

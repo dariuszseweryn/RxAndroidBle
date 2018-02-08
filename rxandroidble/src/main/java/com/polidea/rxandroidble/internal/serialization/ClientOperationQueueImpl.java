@@ -1,18 +1,20 @@
 package com.polidea.rxandroidble.internal.serialization;
 
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.operations.Operation;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Emitter;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Cancellable;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
 import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
 import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationRemoved;
@@ -41,8 +43,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                          * at appropriate time when the next operation should be able to start successfully.
                          */
                         final QueueSemaphore clientOperationSemaphore = new QueueSemaphore();
-                        Subscription subscription = entry.run(clientOperationSemaphore, callbackScheduler);
-                        entry.emitter.setSubscription(subscription);
+                        entry.run(clientOperationSemaphore, callbackScheduler);
                         clientOperationSemaphore.awaitRelease();
                         logOperationFinished(operation, startedAtTime, System.currentTimeMillis());
                     } catch (InterruptedException e) {
@@ -56,21 +57,31 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
     @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public <T> Observable<T> queue(final Operation<T> operation) {
-        return Observable.create(new Action1<Emitter<T>>() {
+        return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void call(Emitter<T> tEmitter) {
+            public void subscribe(ObservableEmitter<T> tEmitter) throws Exception {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
-                tEmitter.setCancellation(new Cancellable() {
+
+                tEmitter.setDisposable(Disposables.fromAction(new Action() {
                     @Override
-                    public void cancel() throws Exception {
+                    public void run() throws Exception {
                         if (queue.remove(entry)) {
                             logOperationRemoved(operation);
                         }
                     }
-                });
+                }));
+
                 logOperationQueued(operation);
                 queue.add(entry);
             }
-        }, Emitter.BackpressureMode.NONE);
+        });
+    }
+
+    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
+    private void log(String prefix, Operation operation) {
+
+        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+            RxBleLog.d("%8s %s(%d)", prefix, operation.getClass().getSimpleName(), System.identityHashCode(operation));
+        }
     }
 }

@@ -18,14 +18,15 @@ import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
 public class ScanActivity extends AppCompatActivity {
 
@@ -34,7 +35,7 @@ public class ScanActivity extends AppCompatActivity {
     @BindView(R.id.scan_results)
     RecyclerView recyclerView;
     private RxBleClient rxBleClient;
-    private Subscription scanSubscription;
+    private Disposable scanDisposable;
     private ScanResultsAdapter resultsAdapter;
 
     @Override
@@ -50,19 +51,20 @@ public class ScanActivity extends AppCompatActivity {
     public void onScanToggleClick() {
 
         if (isScanning()) {
-            scanSubscription.unsubscribe();
+            scanDisposable.dispose();
         } else {
-            scanSubscription = rxBleClient.scanBleDevices(
+            scanDisposable = rxBleClient.scanBleDevices(
                     new ScanSettings.Builder()
                             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
                             .build(),
                     new ScanFilter.Builder()
+                            .setDeviceAddress("B4:99:4C:34:DC:8B")
                             // add custom filters if needed
                             .build()
             )
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(this::clearSubscription)
+                    .doFinally(this::clearSubscription)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
         }
 
@@ -129,7 +131,7 @@ public class ScanActivity extends AppCompatActivity {
             /*
              * Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
              */
-            scanSubscription.unsubscribe();
+            scanDisposable.dispose();
         }
     }
 
@@ -147,7 +149,7 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private boolean isScanning() {
-        return scanSubscription != null;
+        return scanDisposable != null;
     }
 
     private void onAdapterItemClick(ScanResult scanResults) {
@@ -165,7 +167,7 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void clearSubscription() {
-        scanSubscription = null;
+        scanDisposable = null;
         resultsAdapter.clearScanResults();
         updateButtonUIState();
     }

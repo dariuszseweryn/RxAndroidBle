@@ -16,11 +16,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.functions.Func1;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
@@ -38,11 +38,11 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
     }
 
     @Override
-    protected Observable<RxBleDeviceServices> getCallback(RxBleGattCallback rxBleGattCallback) {
-        return rxBleGattCallback.getOnServicesDiscovered()
-                .doOnNext(new Action1<RxBleDeviceServices>() {
+    protected Single<RxBleDeviceServices> getCallback(RxBleGattCallback rxBleGattCallback) {
+        return rxBleGattCallback.getOnServicesDiscovered().firstOrError()
+                .doOnSuccess(new Consumer<RxBleDeviceServices>() {
                     @Override
-                    public void call(RxBleDeviceServices rxBleDeviceServices) {
+                    public void accept(RxBleDeviceServices rxBleDeviceServices) throws Exception {
                         bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice());
                     }
                 });
@@ -69,30 +69,30 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
      */
     @NonNull
     @Override
-    protected Observable<RxBleDeviceServices> timeoutFallbackProcedure(
+    protected Single<RxBleDeviceServices> timeoutFallbackProcedure(
             final BluetoothGatt bluetoothGatt,
             final RxBleGattCallback rxBleGattCallback,
             final Scheduler timeoutScheduler
     ) {
-        return Observable.defer(new Func0<Observable<RxBleDeviceServices>>() {
+        return Single.defer(new Callable<SingleSource<? extends RxBleDeviceServices>>() {
             @Override
-            public Observable<RxBleDeviceServices> call() {
+            public SingleSource<? extends RxBleDeviceServices> call() throws Exception {
                 final List<BluetoothGattService> services = bluetoothGatt.getServices();
                 if (services.size() == 0) {
                     // if after the timeout services are empty we have no other option to declare a failed discovery
-                    return Observable.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
+                    return Single.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
                 } else {
                 /*
                 it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time
                 if there are some services available we will wait for 5 more seconds just to be sure that
                 the timeout was not triggered right in the moment of filling the services and then emit a value.
                  */
-                    return Observable
+                    return Single
                             .timer(5, TimeUnit.SECONDS, timeoutScheduler)
-                            .flatMap(new Func1<Long, Observable<RxBleDeviceServices>>() {
+                            .flatMap(new Function<Long, Single<RxBleDeviceServices>>() {
                                 @Override
-                                public Observable<RxBleDeviceServices> call(Long t) {
-                                    return Observable.fromCallable(new Callable<RxBleDeviceServices>() {
+                                public Single<RxBleDeviceServices> apply(Long delayedSeconds) {
+                                    return Single.fromCallable(new Callable<RxBleDeviceServices>() {
                                         @Override
                                         public RxBleDeviceServices call() throws Exception {
                                             return new RxBleDeviceServices(bluetoothGatt.getServices());

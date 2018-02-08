@@ -1,22 +1,18 @@
 package com.polidea.rxandroidble.helpers;
 
-
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import bleshadow.javax.inject.Named;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.DaggerClientComponent;
+import com.polidea.rxandroidble.internal.util.DisposableUtil;
 
 import java.util.UUID;
 
 import bleshadow.javax.inject.Inject;
-
-import rx.Emitter;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.internal.operators.OnSubscribeCreate;
+import bleshadow.javax.inject.Named;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 
 /**
  * An Observable that emits false if an attempt to scan with {@link com.polidea.rxandroidble.RxBleClient#scanBleDevices(UUID...)}
@@ -25,6 +21,9 @@ import rx.internal.operators.OnSubscribeCreate;
  * Typically, receiving false should cause the user to be prompted to enable Location Services.
  */
 public class LocationServicesOkObservable extends Observable<Boolean> {
+
+    @NonNull
+    private final Observable<Boolean> locationServicesOkObsImpl;
 
     public static LocationServicesOkObservable createInstance(@NonNull final Context context) {
         return DaggerClientComponent
@@ -36,17 +35,13 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
 
     @Inject
     LocationServicesOkObservable(
-            @Named(ClientComponent.NamedBooleanObservables.LOCATION_SERVICES_OK) final Observable<Boolean> locationServicesOkObsImpl
-    ) {
-        super(new OnSubscribeCreate<>(
-                new Action1<Emitter<Boolean>>() {
-                    @Override
-                    public void call(final Emitter<Boolean> emitter) {
-                        Subscription subscription = locationServicesOkObsImpl.subscribe(emitter);
-                        emitter.setSubscription(subscription);
-                    }
-                },
-                Emitter.BackpressureMode.LATEST
-        ));
+            @NonNull
+            @Named(ClientComponent.NamedBooleanObservables.LOCATION_SERVICES_OK) final Observable<Boolean> locationServicesOkObsImpl) {
+        this.locationServicesOkObsImpl = locationServicesOkObsImpl;
+    }
+
+    @Override
+    protected void subscribeActual(final Observer<? super Boolean> observer) {
+        observer.onSubscribe(locationServicesOkObsImpl.subscribeWith(DisposableUtil.disposableObserver(observer)));
     }
 }

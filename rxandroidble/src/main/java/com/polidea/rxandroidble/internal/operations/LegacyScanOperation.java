@@ -2,14 +2,17 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import rx.Emitter;
+
+import io.reactivex.Emitter;
 
 public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 

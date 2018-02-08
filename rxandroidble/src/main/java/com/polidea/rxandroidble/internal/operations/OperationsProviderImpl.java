@@ -19,7 +19,7 @@ import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
 
-import rx.Scheduler;
+import io.reactivex.Scheduler;
 
 public class OperationsProviderImpl implements OperationsProvider {
 

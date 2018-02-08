@@ -2,26 +2,28 @@ package com.polidea.rxandroidble.internal.serialization;
 
 
 import android.support.annotation.NonNull;
+
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.operations.Operation;
+
 import java.util.concurrent.atomic.AtomicLong;
-import rx.Emitter;
-import rx.Scheduler;
-import rx.Subscription;
+
+import io.reactivex.ObservableEmitter;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
 
 class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
 
     private static final AtomicLong SEQUENCE = new AtomicLong(0);
-
     private final long seqNum;
-
     final Operation<T> operation;
+    final ObservableEmitter<T> operationResultObserver;
 
-    final Emitter<T> emitter;
-
-    FIFORunnableEntry(Operation<T> operation, Emitter<T> subject) {
+    FIFORunnableEntry(Operation<T> operation, ObservableEmitter<T> operationResultObserver) {
         seqNum = SEQUENCE.getAndIncrement();
         this.operation = operation;
-        this.emitter = subject;
+        this.operationResultObserver = operationResultObserver;
     }
 
     public int compareTo(@NonNull FIFORunnableEntry other) {
@@ -32,15 +34,45 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
         return res;
     }
 
-    public Subscription run(QueueSemaphore semaphore, Scheduler subscribeScheduler) {
+    public void run(QueueSemaphore semaphore, Scheduler subscribeScheduler) {
         /*
          * In some implementations (i.e. Samsung Android 4.3) calling BluetoothDevice.connectGatt()
          * from thread other than main thread ends in connecting with status 133. It's safer to make bluetooth calls
          * on the main thread.
          */
-        return operation.run(semaphore)
-                .subscribeOn(subscribeScheduler)
-                .unsubscribeOn(subscribeScheduler)
-                .subscribe(emitter);
+
+        if (!operationResultObserver.isDisposed()) {
+            operation.run(semaphore)
+                    .subscribeOn(subscribeScheduler)
+                    .unsubscribeOn(subscribeScheduler)
+                    .subscribe(new Observer<T>() {
+                        @Override
+                        public void onSubscribe(Disposable disposable) {
+                            /*
+                             * We end up overwriting a disposable that was set to the observer in order to remove operation from queue.
+                             * This is ok since at this moment the operation is taken out of the queue anyway.
+                             */
+                            operationResultObserver.setDisposable(disposable);
+                        }
+
+                        @Override
+                        public void onNext(T item) {
+                            operationResultObserver.onNext(item);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            operationResultObserver.onError(e);
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            operationResultObserver.onComplete();
+                        }
+                    });
+        } else {
+            RxBleLog.d("FIFORunnableEntry", "Operation was about to be run but "
+                    + "the observer was already disposed: " + operation);
+        }
     }
 }

@@ -24,9 +24,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import rx.Completable;
-import rx.Observable;
-import rx.Scheduler;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
 
 /**
  * The BLE connection handle, supporting GATT operations. Operations are enqueued and the library makes sure that they are not
@@ -72,7 +74,7 @@ public interface RxBleConnection {
     @Deprecated
     interface Connector {
 
-        Observable<RxBleConnection> prepareConnection(boolean autoConnect);
+        Single<RxBleConnection> prepareConnection(boolean autoConnect);
     }
 
     enum RxBleConnectionState {
@@ -160,7 +162,7 @@ public interface RxBleConnection {
         Observable<byte[]> build();
     }
 
-    interface WriteOperationAckStrategy extends Observable.Transformer<Boolean, Boolean> {
+    interface WriteOperationAckStrategy extends ObservableTransformer<Boolean, Boolean> {
 
     }
 

@@ -12,8 +12,9 @@ import com.polidea.rxandroidble.internal.util.ByteAssociation;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Single;
+
+import static com.polidea.rxandroidble.internal.util.ByteAssociationUtil.descriptorPredicate;
 
 public class DescriptorReadOperation extends SingleResponseOperation<ByteAssociation<BluetoothGattDescriptor>> {
 
@@ -28,15 +29,11 @@ public class DescriptorReadOperation extends SingleResponseOperation<ByteAssocia
     }
 
     @Override
-    protected Observable<ByteAssociation<BluetoothGattDescriptor>> getCallback(RxBleGattCallback rxBleGattCallback) {
+    protected Single<ByteAssociation<BluetoothGattDescriptor>> getCallback(RxBleGattCallback rxBleGattCallback) {
         return rxBleGattCallback
                 .getOnDescriptorRead()
-                .filter(new Func1<ByteAssociation<BluetoothGattDescriptor>, Boolean>() {
-                    @Override
-                    public Boolean call(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
-                        return uuidPair.first.equals(bluetoothGattDescriptor);
-                    }
-                });
+                .filter(descriptorPredicate(bluetoothGattDescriptor))
+                .firstOrError();
     }
 
     @Override

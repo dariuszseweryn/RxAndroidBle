@@ -2,10 +2,13 @@ package com.polidea.rxandroidble;
 
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
-import rx.Observable;
-import rx.Scheduler;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 
 /**
  * @inheritDoc
@@ -27,8 +30,8 @@ public interface RxBleRadioOperationCustom<T> extends RxBleCustomOperation<T> {
      * returned by {@link RxBleConnection#queue(RxBleCustomOperation)}
      * <p>
      * As the implementer, your contract is to return an {@link Observable} that completes at some
-     * point in time. When the returned observable terminates, either via the {@link rx.Observer#onCompleted()} or
-     * {@link rx.Observer#onError(Throwable)} callback, the {@link ConnectionOperationQueue} lock is released so that
+     * point in time. When the returned observable terminates, either via the {@link Observer#onComplete()} or
+     * {@link Observer#onError(Throwable)} callback, the {@link ConnectionOperationQueue} lock is released so that
      * queue operations can continue.
      * <p>
      * You <b>must</b> ensure the returned {@link Observable} does terminate either via {@code onCompleted}

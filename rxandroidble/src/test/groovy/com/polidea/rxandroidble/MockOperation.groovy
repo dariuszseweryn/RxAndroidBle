@@ -4,11 +4,10 @@ import android.os.DeadObjectException
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble.exceptions.BleException
 import com.polidea.rxandroidble.internal.Priority
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.QueueOperation
-import rx.Emitter
-import rx.Observable
-import rx.subjects.BehaviorSubject
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
+import io.reactivex.ObservableEmitter
+import io.reactivex.subjects.BehaviorSubject
 
 public class MockOperation extends QueueOperation<Object> {
 
@@ -32,7 +31,7 @@ public class MockOperation extends QueueOperation<Object> {
     }
 
     @Override
-    void protectedRun(Emitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
+    void protectedRun(ObservableEmitter<Object> emitter, QueueReleaseInterface queueReleaseInterface) {
         executionCount++
         lastExecutedOnThread = Thread.currentThread().getName()
         closure?.call(emitter)
@@ -54,7 +53,7 @@ public class MockOperation extends QueueOperation<Object> {
         return new BleDisconnectedException("MockDeviceAddress")
     }
 
-    public Observable<MockOperation> getFinishedRunningObservable() {
+    public io.reactivex.Observable<MockOperation> getFinishedRunningObservable() {
         behaviorSubject
     }
 }

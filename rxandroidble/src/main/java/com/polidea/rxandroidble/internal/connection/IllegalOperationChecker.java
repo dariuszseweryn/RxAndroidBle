@@ -2,13 +2,13 @@ package com.polidea.rxandroidble.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble.internal.BleIllegalOperationException;
+import com.polidea.rxandroidble.internal.BluetoothGattCharacteristicProperty;
 
 import bleshadow.javax.inject.Inject;
 
-import rx.Completable;
-import rx.functions.Action0;
+import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 
 /**
  * Class for checking whether the requested operation is legal on chosen characteristic.
@@ -35,8 +35,8 @@ public class IllegalOperationChecker {
      */
     public Completable checkAnyPropertyMatches(final BluetoothGattCharacteristic characteristic,
                                                final @BluetoothGattCharacteristicProperty int neededProperties) {
-        return Completable.fromAction(new Action0() {
-            public void call() {
+        return Completable.fromAction(new Action() {
+            public void run() {
                 final int characteristicProperties = characteristic.getProperties();
 
                 if ((characteristicProperties & neededProperties) == 0) {

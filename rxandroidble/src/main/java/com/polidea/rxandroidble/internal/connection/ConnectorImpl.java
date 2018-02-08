@@ -9,13 +9,16 @@ import com.polidea.rxandroidble.internal.serialization.ClientOperationQueue;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
-import bleshadow.javax.inject.Inject;
 
+import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Action0;
-import rx.functions.Func0;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 public class ConnectorImpl implements Connector {
 
@@ -35,10 +38,9 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
-        return Observable.defer(new Func0<Observable<RxBleConnection>>() {
+        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
-            public Observable<RxBleConnection> call() {
-
+            public ObservableSource<RxBleConnection> call() throws Exception {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
                         .connectionModule(new ConnectionModule(options))
                         .build();
@@ -52,24 +54,24 @@ public class ConnectorImpl implements Connector {
                     }
                 });
                 final Observable<BluetoothGatt> connectedObservable = clientOperationQueue.queue(connectionComponent.connectOperation());
-                final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
+                final Observable<RxBleConnection> disconnectedErrorSingle = connectionComponent.gattCallback().observeDisconnect();
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
 
                 return Observable.merge(
                         newConnectionObservable.delaySubscription(connectedObservable),
-                        disconnectedErrorObservable
+                        disconnectedErrorSingle
                 )
-                        .doOnSubscribe(new Action0() {
+                        .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
-                            public void call() {
+                            public void accept(Disposable disposable) throws Exception {
                                 for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
                                     csa.onConnectionSubscribed();
                                 }
                             }
                         })
-                        .doOnUnsubscribe(new Action0() {
+                        .doFinally(new Action() {
                             @Override
-                            public void call() {
+                            public void run() throws Exception {
                                 for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
                                     csa.onConnectionUnsubscribed();
                                 }

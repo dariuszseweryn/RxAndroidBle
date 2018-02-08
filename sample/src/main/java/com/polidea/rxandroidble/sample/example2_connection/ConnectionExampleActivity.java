@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble.sample.example2_connection;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SwitchCompat;
@@ -12,16 +14,16 @@ import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.sample.DeviceActivity;
 import com.polidea.rxandroidble.sample.R;
 import com.polidea.rxandroidble.sample.SampleApplication;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
-import static com.trello.rxlifecycle.android.ActivityEvent.DESTROY;
-import static com.trello.rxlifecycle.android.ActivityEvent.PAUSE;
+import static com.trello.rxlifecycle2.android.ActivityEvent.DESTROY;
+import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
 public class ConnectionExampleActivity extends RxAppCompatActivity {
 
@@ -36,30 +38,30 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     @BindView(R.id.autoconnect)
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
-    private Subscription connectionSubscription;
+    private Disposable connectionDisposable;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
-
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionSubscription = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
+            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(this::clearSubscription)
+                    .doFinally(this::clearSubscription)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
         bleDevice.establishConnection(false)
                 .flatMap(rxBleConnection -> rxBleConnection.requestMtu(72))
-                .first() // Disconnect automatically after discovery
+                .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnUnsubscribe(this::updateUI)
+                .doFinally(this::updateUI)
                 .subscribe(this::onMtuReceived, this::onConnectionFailure);
     }
 
@@ -71,7 +73,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
-
         // How to listen for connection state changes
         bleDevice.observeConnectionStateChanges()
                 .compose(bindUntilEvent(DESTROY))
@@ -88,6 +89,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
     }
 
+    @SuppressWarnings("unused")
     private void onConnectionReceived(RxBleConnection connection) {
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show();
@@ -104,14 +106,13 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void clearSubscription() {
-        connectionSubscription = null;
+        connectionDisposable = null;
         updateUI();
     }
 
     private void triggerDisconnect() {
-
-        if (connectionSubscription != null) {
-            connectionSubscription.unsubscribe();
+        if (connectionDisposable != null) {
+            connectionDisposable.dispose();
         }
     }
 

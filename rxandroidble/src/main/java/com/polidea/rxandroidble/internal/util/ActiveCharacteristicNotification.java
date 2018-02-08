@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble.internal.util;
 
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class ActiveCharacteristicNotification {
 

@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble.internal.connection
 
-import rx.Observable
-import rx.subjects.PublishSubject
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 

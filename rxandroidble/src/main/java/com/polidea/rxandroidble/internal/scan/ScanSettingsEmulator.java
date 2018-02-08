@@ -1,62 +1,65 @@
 package com.polidea.rxandroidble.internal.scan;
 
 
-import static com.polidea.rxandroidble.internal.util.ObservableUtil.identityTransformer;
-
 import android.support.annotation.IntRange;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.scan.ScanCallbackType;
 import com.polidea.rxandroidble.scan.ScanSettings;
+
 import java.util.concurrent.TimeUnit;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.observables.GroupedObservable;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Function;
+import io.reactivex.observables.GroupedObservable;
+
+import static com.polidea.rxandroidble.internal.util.ObservableUtil.identityTransformer;
 
 public class ScanSettingsEmulator {
 
     private final Scheduler scheduler;
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatch;
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatch;
 
     @Inject
     public ScanSettingsEmulator(@Named(ClientComponent.NamedSchedulers.COMPUTATION) final Scheduler scheduler) {
         this.scheduler = scheduler;
 
-        this.emulateFirstMatch = new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+        this.emulateFirstMatch = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
 
-            private Func1<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatchFunc = toFirstMatch();
+            private Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatchFunc = toFirstMatch();
             private final Observable<Long> timerObservable = Observable.timer(10L, TimeUnit.SECONDS, scheduler);
-            private final Func1<RxBleInternalScanResult, Observable<?>> emitAfterTimerFunc
-                    = new Func1<RxBleInternalScanResult, Observable<?>>() {
+            private final Function<RxBleInternalScanResult, Observable<?>> emitAfterTimerFunc
+                    = new Function<RxBleInternalScanResult, Observable<?>>() {
                 @Override
-                public Observable<?> call(RxBleInternalScanResult internalScanResult) {
+                public Observable<?> apply(RxBleInternalScanResult internalScanResult) {
                     return timerObservable;
                 }
             };
-            private final Func1<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>> takeFirstFromEachWindowFunc
-                    = new Func1<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
+            private final Function<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>> takeFirstFromEachWindowFunc
+                    = new Function<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
                 @Override
-                public Observable<RxBleInternalScanResult> call(
+                public Observable<RxBleInternalScanResult> apply(
                         Observable<RxBleInternalScanResult> rxBleInternalScanResultObservable) {
                     return rxBleInternalScanResultObservable.take(1);
                 }
             };
 
             @Override
-            public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
-                return observable.publish(new Func1<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
+            public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
+                return observable.publish(new Function<Observable<RxBleInternalScanResult>, ObservableSource<RxBleInternalScanResult>>() {
+
                     @Override
-                    public Observable<RxBleInternalScanResult> call(final Observable<RxBleInternalScanResult> publishedObservable) {
-                        final Func0<Observable<?>> closeTenSecondsAfterMostRecentEmissionFunc = new Func0<Observable<?>>() {
-                            @Override
-                            public Observable<?> call() {
-                                return publishedObservable.switchMap(emitAfterTimerFunc);
-                            }
-                        };
+                    public ObservableSource<RxBleInternalScanResult>
+                    apply(final Observable<RxBleInternalScanResult> publishedObservable) throws Exception {
+                        final Observable<Object> closeTenSecondsAfterMostRecentEmissionFunc = publishedObservable
+                                .switchMap(emitAfterTimerFunc);
                         return publishedObservable
                                 .window(closeTenSecondsAfterMostRecentEmissionFunc)
                                 .flatMap(takeFirstFromEachWindowFunc)
@@ -67,7 +70,7 @@ public class ScanSettingsEmulator {
         };
     }
 
-    Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateScanMode(@ScanSettings.ScanMode int scanMode) {
+    ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateScanMode(@ScanSettings.ScanMode int scanMode) {
         switch (scanMode) {
 
             case ScanSettings.SCAN_MODE_BALANCED:
@@ -84,35 +87,33 @@ public class ScanSettingsEmulator {
         }
     }
 
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> scanModeBalancedTransformer() {
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> scanModeBalancedTransformer() {
         return repeatedWindowTransformer(2500);
     }
 
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> scanModeLowPowerTransformer() {
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> scanModeLowPowerTransformer() {
         return repeatedWindowTransformer(500);
     }
 
     /**
      * A convenience method for running a scan for a period of time and repeat in five seconds intervals.
+     *
      * @param windowInMillis window for which the observable should be active
      * @return Observable.Transformer that will take the original observable for specific time and repeat subscription after 5 seconds
      */
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> repeatedWindowTransformer(
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> repeatedWindowTransformer(
             @IntRange(from = 0, to = 4999) final int windowInMillis
     ) {
         final long repeatCycleTimeInMillis = TimeUnit.SECONDS.toMillis(5);
         final long delayToNextWindow = Math.max(repeatCycleTimeInMillis - windowInMillis, 0); // to be sure that it won't be negative
-        return new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+        return new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
-            public Observable<RxBleInternalScanResult> call(final Observable<RxBleInternalScanResult> rxBleInternalScanResultObservable) {
+            public Observable<RxBleInternalScanResult> apply(final Observable<RxBleInternalScanResult> rxBleInternalScanResultObservable) {
                 return rxBleInternalScanResultObservable.take(windowInMillis, TimeUnit.MILLISECONDS, scheduler)
-                        .repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
+                        .repeatWhen(new Function<Observable<Object>, ObservableSource<?>>() {
                             @Override
-                            public Observable<?> call(Observable<? extends Void> observable) {
-                                return observable.delay(
-                                        delayToNextWindow,
-                                        TimeUnit.MILLISECONDS,
-                                        scheduler
+                            public ObservableSource<?> apply(Observable<Object> observable) throws Exception {
+                                return observable.delay(delayToNextWindow, TimeUnit.MILLISECONDS, scheduler
                                 );
                             }
                         });
@@ -120,7 +121,7 @@ public class ScanSettingsEmulator {
         };
     }
 
-    Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateCallbackType(
+    ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateCallbackType(
             @ScanSettings.CallbackType final int callbackType) {
         switch (callbackType) {
             case ScanSettings.CALLBACK_TYPE_FIRST_MATCH:
@@ -136,22 +137,22 @@ public class ScanSettingsEmulator {
         }
     }
 
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> splitByAddressAndForEach(
-            final Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> compose
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> splitByAddressAndForEach(
+            final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> compose
     ) {
-        return new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+        return new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
-            public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
+            public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
                 return observable
-                        .groupBy(new Func1<RxBleInternalScanResult, String>() {
+                        .groupBy(new Function<RxBleInternalScanResult, String>() {
                             @Override
-                            public String call(RxBleInternalScanResult rxBleInternalScanResult) {
+                            public String apply(RxBleInternalScanResult rxBleInternalScanResult) {
                                 return rxBleInternalScanResult.getBluetoothDevice().getAddress();
                             }
                         })
-                        .flatMap(new Func1<GroupedObservable<String, RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
+                        .flatMap(new Function<GroupedObservable<String, RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
                             @Override
-                            public Observable<RxBleInternalScanResult> call(
+                            public Observable<RxBleInternalScanResult> apply(
                                     GroupedObservable<String, RxBleInternalScanResult> groupedObservable) {
                                 return groupedObservable.compose(compose);
                             }
@@ -160,10 +161,10 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private Func1<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatch() {
-        return new Func1<RxBleInternalScanResult, RxBleInternalScanResult>() {
+    private Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatch() {
+        return new Function<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
-            public RxBleInternalScanResult call(RxBleInternalScanResult rxBleInternalScanResult) {
+            public RxBleInternalScanResult apply(RxBleInternalScanResult rxBleInternalScanResult) {
                 return new RxBleInternalScanResult(
                         rxBleInternalScanResult.getBluetoothDevice(),
                         rxBleInternalScanResult.getRssi(),
@@ -175,18 +176,18 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateMatchLost
-            = new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateMatchLost
+            = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
         @Override
-        public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
+        public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
             return observable.debounce(10, TimeUnit.SECONDS, scheduler).map(toMatchLost());
         }
     };
 
-    private Func1<RxBleInternalScanResult, RxBleInternalScanResult> toMatchLost() {
-        return new Func1<RxBleInternalScanResult, RxBleInternalScanResult>() {
+    private Function<RxBleInternalScanResult, RxBleInternalScanResult> toMatchLost() {
+        return new Function<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
-            public RxBleInternalScanResult call(RxBleInternalScanResult rxBleInternalScanResult) {
+            public RxBleInternalScanResult apply(RxBleInternalScanResult rxBleInternalScanResult) {
                 return new RxBleInternalScanResult(
                         rxBleInternalScanResult.getBluetoothDevice(),
                         rxBleInternalScanResult.getRssi(),
@@ -198,13 +199,13 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatchAndMatchLost
-            = new Observable.Transformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatchAndMatchLost
+            = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
         @Override
-        public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
-            return observable.publish(new Func1<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
+        public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
+            return observable.publish(new Function<Observable<RxBleInternalScanResult>, Observable<RxBleInternalScanResult>>() {
                 @Override
-                public Observable<RxBleInternalScanResult> call(Observable<RxBleInternalScanResult> observable) {
+                public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
                     return Observable.merge(
                             observable.compose(emulateFirstMatch),
                             observable.compose(emulateMatchLost)

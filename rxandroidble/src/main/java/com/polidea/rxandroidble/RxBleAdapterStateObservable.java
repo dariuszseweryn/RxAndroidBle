@@ -9,11 +9,10 @@ import android.support.annotation.NonNull;
 
 import bleshadow.javax.inject.Inject;
 
-import rx.Emitter;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Cancellable;
-import rx.internal.operators.OnSubscribeCreate;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 
 /**
  * Observes Bluetooth adapter state. This responds to user interactions as well as system controlled state changes.
@@ -41,34 +40,34 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
     }
 
+    @NonNull
+    private final Context context;
+
     @Inject
     public RxBleAdapterStateObservable(@NonNull final Context context) {
-        super(new OnSubscribeCreate<>(
-                new Action1<Emitter<BleAdapterState>>() {
-                    @Override
-                    public void call(final Emitter<BleAdapterState> emitter) {
-                        final BroadcastReceiver receiver = new BroadcastReceiver() {
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                String action = intent.getAction();
+        this.context = context;
+    }
 
-                                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-                                    emitter.onNext(mapToBleAdapterState(state));
-                                }
-                            }
-                        };
-                        context.registerReceiver(receiver, createFilter());
-                        emitter.setCancellation(new Cancellable() {
-                            @Override
-                            public void cancel() throws Exception {
-                                context.unregisterReceiver(receiver);
-                            }
-                        });
-                    }
-                },
-                Emitter.BackpressureMode.LATEST
-        ));
+    @Override
+    protected void subscribeActual(final Observer<? super BleAdapterState> observer) {
+        final BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+
+                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                    observer.onNext(mapToBleAdapterState(state));
+                }
+            }
+        };
+        context.registerReceiver(receiver, createFilter());
+        observer.onSubscribe(Disposables.fromAction(new Action() {
+            @Override
+            public void run() throws Exception {
+                context.unregisterReceiver(receiver);
+            }
+        }));
     }
 
     private static BleAdapterState mapToBleAdapterState(int state) {

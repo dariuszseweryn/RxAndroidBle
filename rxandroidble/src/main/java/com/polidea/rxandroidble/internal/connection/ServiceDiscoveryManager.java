@@ -4,22 +4,27 @@ package com.polidea.rxandroidble.internal.connection;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
+
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble.internal.operations.ServiceDiscoveryOperation;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble.internal.serialization.ConnectionOperationQueue;
+
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import bleshadow.javax.inject.Inject;
-import rx.Observable;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.SerializedSubject;
+
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.Subject;
 
 @ConnectionScope
 class ServiceDiscoveryManager {
@@ -28,8 +33,7 @@ class ServiceDiscoveryManager {
     private final BluetoothGatt bluetoothGatt;
     private final OperationsProvider operationProvider;
     private Observable<RxBleDeviceServices> deviceServicesObservable;
-    private SerializedSubject<TimeoutConfiguration, TimeoutConfiguration> timeoutBehaviorSubject
-            = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
+    private Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
     private boolean hasCachedResults = false;
 
     @Inject
@@ -45,45 +49,46 @@ class ServiceDiscoveryManager {
             // optimisation to decrease the number of allocations
             return deviceServicesObservable;
         } else {
-            return deviceServicesObservable.doOnSubscribe(new Action0() {
-                @Override
-                public void call() {
-                    timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
-                }
-            });
+            return deviceServicesObservable.doOnSubscribe(
+                    new Consumer<Disposable>() {
+                        @Override
+                        public void accept(Disposable disposable) throws Exception {
+                            timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
+                        }
+                    });
         }
     }
 
     private void reset() {
         hasCachedResults = false;
-        this.deviceServicesObservable = Observable.fromCallable(new Func0<List<BluetoothGattService>>() {
+        this.deviceServicesObservable = Observable.fromCallable(new Callable<List<BluetoothGattService>>() {
             @Override
             public List<BluetoothGattService> call() {
                 return bluetoothGatt.getServices();
             }
         })
-                .filter(new Func1<List<BluetoothGattService>, Boolean>() {
+                .filter(new Predicate<List<BluetoothGattService>>() {
                     @Override
-                    public Boolean call(List<BluetoothGattService> bluetoothGattServices) {
+                    public boolean test(List<BluetoothGattService> bluetoothGattServices) {
                         return bluetoothGattServices.size() > 0;
                     }
                 })
-                .map(new Func1<List<BluetoothGattService>, RxBleDeviceServices>() {
+                .map(new Function<List<BluetoothGattService>, RxBleDeviceServices>() {
                     @Override
-                    public RxBleDeviceServices call(List<BluetoothGattService> bluetoothGattServices) {
+                    public RxBleDeviceServices apply(List<BluetoothGattService> bluetoothGattServices) {
                         return new RxBleDeviceServices(bluetoothGattServices);
                     }
                 })
                 .switchIfEmpty(getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout()))
-                .doOnNext(new Action1<RxBleDeviceServices>() {
+                .doOnNext(new Consumer<RxBleDeviceServices>() {
                     @Override
-                    public void call(RxBleDeviceServices rxBleDeviceServices) {
+                    public void accept(RxBleDeviceServices rxBleDeviceServices) {
                         hasCachedResults = true;
                     }
                 })
-                .doOnError(new Action1<Throwable>() {
+                .doOnError(new Consumer<Throwable>() {
                     @Override
-                    public void call(Throwable throwable) {
+                    public void accept(Throwable throwable) {
                         reset();
                     }
                 })
@@ -96,10 +101,10 @@ class ServiceDiscoveryManager {
     }
 
     @NonNull
-    private Func1<TimeoutConfiguration, Observable<RxBleDeviceServices>> scheduleActualDiscoveryWithTimeout() {
-        return new Func1<TimeoutConfiguration, Observable<RxBleDeviceServices>>() {
+    private Function<TimeoutConfiguration, Observable<RxBleDeviceServices>> scheduleActualDiscoveryWithTimeout() {
+        return new Function<TimeoutConfiguration, Observable<RxBleDeviceServices>>() {
             @Override
-            public Observable<RxBleDeviceServices> call(TimeoutConfiguration timeoutConf) {
+            public Observable<RxBleDeviceServices> apply(TimeoutConfiguration timeoutConf) {
                 final ServiceDiscoveryOperation operation = operationProvider
                         .provideServiceDiscoveryOperation(timeoutConf.timeout, timeoutConf.timeoutTimeUnit);
                 return operationQueue.queue(operation);

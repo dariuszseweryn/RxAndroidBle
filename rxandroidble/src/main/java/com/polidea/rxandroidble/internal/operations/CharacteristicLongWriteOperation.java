@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble.internal.operations;
 
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.DeadObjectException;
@@ -25,14 +24,18 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import bleshadow.javax.inject.Named;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.observers.DisposableObserver;
 
-import rx.Emitter;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
+import static com.polidea.rxandroidble.internal.util.DisposableUtil.disposableEmitter;
 
 public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
@@ -66,9 +69,9 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     @Override
-    protected void protectedRun(final Emitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {
+    protected void protectedRun(final ObservableEmitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface)
+            throws Throwable {
         int batchSize = batchSizeProvider.getPayloadSizeLimit();
-
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
         }
@@ -76,36 +79,42 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.CHARACTERISTIC_LONG_WRITE)
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
-
         final QueueReleasingEmitterWrapper<byte[]> emitterWrapper = new QueueReleasingEmitterWrapper<>(emitter, queueReleaseInterface);
         writeBatchAndObserve(batchSize, byteBuffer)
                 .subscribeOn(bluetoothInteractionScheduler)
-                .takeFirst(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
+                .filter(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
+                .take(1)
                 .timeout(
                         timeoutConfiguration.timeout,
                         timeoutConfiguration.timeoutTimeUnit,
-                        timeoutObservable,
-                        timeoutConfiguration.timeoutScheduler
+                        timeoutConfiguration.timeoutScheduler,
+                        timeoutObservable
                 )
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
-                .toCompletable()
-                .subscribe(
-                        new Action0() {
-                            @Override
-                            public void call() {
-                                emitterWrapper.onNext(bytesToWrite);
-                                emitterWrapper.onCompleted();
-                            }
-                        },
-                        new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                emitterWrapper.onError(throwable);
-                            }
-                        }
-                );
+                .subscribe(new Observer<ByteAssociation<UUID>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        // not used
+                    }
+
+                    @Override
+                    public void onNext(ByteAssociation<UUID> uuidByteAssociation) {
+                        // not used
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        emitterWrapper.onError(e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        emitterWrapper.onNext(bytesToWrite);
+                        emitterWrapper.onComplete();
+                    }
+                });
     }
 
     @Override
@@ -117,11 +126,12 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
         final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
         return Observable.create(
-                new Action1<Emitter<ByteAssociation<UUID>>>() {
+                new ObservableOnSubscribe<ByteAssociation<UUID>>() {
                     @Override
-                    public void call(Emitter<ByteAssociation<UUID>> emitter) {
-                        final Subscription s = onCharacteristicWrite.subscribe(emitter);
-                        emitter.setSubscription(s);
+                    public void subscribe(ObservableEmitter<ByteAssociation<UUID>> emitter) throws Exception {
+                        final DisposableObserver writeCallbackObserver = onCharacteristicWrite
+                                .subscribeWith(disposableEmitter(emitter));
+                        emitter.setDisposable(writeCallbackObserver);
 
                         /*
                          * Since Android OS calls {@link android.bluetooth.BluetoothGattCallback} callbacks on arbitrary background
@@ -132,7 +142,6 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                          * Because of such a situation - it is important to first establish a full RxJava flow and only then
                          * call writeCharacteristic.
                          */
-
                         try {
                             final byte[] bytesBatch = getNextBatch(byteBuffer, batchSize);
                             writeData(bytesBatch);
@@ -140,8 +149,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                             emitter.onError(throwable);
                         }
                     }
-                },
-                Emitter.BackpressureMode.BUFFER);
+                });
     }
 
     private byte[] getNextBatch(ByteBuffer byteBuffer, int batchSize) {
@@ -162,47 +170,52 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         }
     }
 
-    private static Func1<ByteAssociation<UUID>, Boolean> writeResponseForMatchingCharacteristic(
+    private static Predicate<ByteAssociation<UUID>> writeResponseForMatchingCharacteristic(
             final BluetoothGattCharacteristic bluetoothGattCharacteristic
     ) {
-        return new Func1<ByteAssociation<UUID>, Boolean>() {
+        return new Predicate<ByteAssociation<UUID>>() {
             @Override
-            public Boolean call(ByteAssociation<UUID> uuidByteAssociation) {
+            public boolean test(ByteAssociation<UUID> uuidByteAssociation) {
                 return uuidByteAssociation.first.equals(bluetoothGattCharacteristic.getUuid());
             }
         };
     }
 
-    private static Func1<Observable<? extends Void>, Observable<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
+    private static Function<Observable<?>, ObservableSource<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
             final WriteOperationAckStrategy writeOperationAckStrategy,
             final ByteBuffer byteBuffer,
             final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
-        return new Func1<Observable<? extends Void>, Observable<?>>() {
+        return new Function<Observable<?>, ObservableSource<?>>() {
+
             @Override
-            public Observable<?> call(Observable<? extends Void> emittingOnBatchWriteFinished) {
-                return writeOperationAckStrategy.call(
-                        emittingOnBatchWriteFinished
-                                .takeWhile(notUnsubscribed(emitterWrapper))
-                                .map(bufferIsNotEmpty(byteBuffer))
-                )
-                        .takeWhile(bufferIsNotEmpty(byteBuffer));
+            public ObservableSource<?> apply(Observable<?> emittingOnBatchWriteFinished) throws Exception {
+                return emittingOnBatchWriteFinished
+                        .takeWhile(notUnsubscribed(emitterWrapper))
+                        .map(bufferIsNotEmpty(byteBuffer))
+                        .compose(writeOperationAckStrategy)
+                        .takeUntil(new Predicate<Boolean>() {
+                            @Override
+                            public boolean test(Boolean hasRemaining) throws Exception {
+                                return !hasRemaining;
+                            }
+                        });
             }
 
             @NonNull
-            private Func1<Object, Boolean> bufferIsNotEmpty(final ByteBuffer byteBuffer) {
-                return new Func1<Object, Boolean>() {
+            private Function<Object, Boolean> bufferIsNotEmpty(final ByteBuffer byteBuffer) {
+                return new Function<Object, Boolean>() {
                     @Override
-                    public Boolean call(Object emittedFromActStrategy) {
+                    public Boolean apply(Object emittedFromActStrategy) throws Exception {
                         return byteBuffer.hasRemaining();
                     }
                 };
             }
 
             @NonNull
-            private Func1<Object, Boolean> notUnsubscribed(final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
-                return new Func1<Object, Boolean>() {
+            private Predicate<Object> notUnsubscribed(final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
+                return new Predicate<Object>() {
                     @Override
-                    public Boolean call(Object emission) {
+                    public boolean test(Object emission) {
                         return !emitterWrapper.isWrappedEmitterUnsubscribed();
                     }
                 };
