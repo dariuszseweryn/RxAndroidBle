@@ -9,12 +9,10 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
+import com.polidea.rxandroidble.internal.connection.NoRetryStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
-import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import rx.Observable
 import rx.functions.Func1
 import rx.internal.schedulers.ImmediateScheduler
@@ -24,6 +22,10 @@ import rx.subjects.PublishSubject
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 public class OperationCharacteristicLongWriteTest extends Specification {
 
@@ -35,6 +37,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
+    RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy
     def testSubscriber = new TestSubscriber()
     TestScheduler testScheduler = new TestScheduler()
     TestScheduler timeoutScheduler = new TestScheduler()
@@ -364,11 +367,13 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     }
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
-        writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
+        writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        writeOperationRetryStrategy = new NoRetryStrategy()
     }
 
     private AcknowledgementTrigger givenWillTriggerWriteAcknowledgement() {
         def trigger = new AcknowledgementTrigger()
+        this.writeOperationRetryStrategy = new NoRetryStrategy()
         this.writeOperationAckStrategy = trigger
         return trigger
     }
@@ -525,6 +530,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
                 mockCharacteristic,
                 { maxBatchSize },
                 writeOperationAckStrategy,
+                writeOperationRetryStrategy,
                 testData
         )
     }
