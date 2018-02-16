@@ -3,6 +3,15 @@
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
 
+## RxJava2.X :tada: :confetti_ball: :tada:
+
+RxJava2.X finally reached a state where you can use the snapshot. Keep in mind that this is provided AS IS and may be subject to issues.
+
+We'll be happy to hear your feedback if you'd see any issues.
+
+Come and chat with us on Gitter https://gitter.im/RxBLELibraries/RxAndroidBle
+
+
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -322,15 +331,15 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.4.3"
+compile "com.polidea.rxandroidble:rxandroidble2:1.5.0-SNAPSHOT"
 ```
 ### Maven
 
 ```xml
 <dependency>
-  <groupId>com.polidea.rxandroidble</groupId>
+  <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.4.3</version>
+  <version>1.5.0-SNAPSHOT</version>
   <type>aar</type>
 </dependency>
 ```
