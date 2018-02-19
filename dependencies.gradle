@@ -1,5 +1,5 @@
 ext {
-    supportVersion = '26.0.2'
+    supportVersion = '27.0.2'
     rxJavaVersion = '2.1.9'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
