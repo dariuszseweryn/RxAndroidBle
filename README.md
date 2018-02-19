@@ -11,6 +11,10 @@ We'll be happy to hear your feedback if you'd see any issues.
 
 Come and chat with us on Gitter https://gitter.im/RxBLELibraries/RxAndroidBle
 
+At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 apply.
+
+You can read more about differences [here](https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0).
+
 
 ## Introduction
 
@@ -50,7 +54,7 @@ context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 Scanning devices in the area is simple as that:
 
 ```java
-Subscription scanSubscription = rxBleClient.scanBleDevices(
+Disposable scanSubscription = rxBleClient.scanBleDevices(
         new ScanSettings.Builder()
             // .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // change if needed
             // .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES) // change if needed
@@ -66,8 +70,8 @@ Subscription scanSubscription = rxBleClient.scanBleDevices(
         }
     );
 
-// When done, just unsubscribe.
-scanSubscription.unsubscribe();
+// When done, just dispose.
+scanSubscription.dispose();
 ```
 For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
 
@@ -76,8 +80,8 @@ On Android it is not always trivial to determine if a particular BLE operation h
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
-Subscription flowSubscription = rxBleClient.observeStateChanges()
-    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
+Disposable flowDisposable = rxBleClient.observeStateChanges()
+    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will dispose and thus end the scan
         switch (state) {
 
             case READY:
@@ -104,8 +108,8 @@ Subscription flowSubscription = rxBleClient.observeStateChanges()
     	}
     );
     
-// When done, just unsubscribe.
-flowSubscription.unsubscribe();
+// When done, just dispose.
+flowDisposable.dispose();
 ```
 
 ### Connection
@@ -115,7 +119,7 @@ For further BLE interactions the connection is required.
 String macAddress = "AA:BB:CC:DD:EE:FF";
 RxBleDevice device = rxBleClient.getBleDevice(macAddress);
 
-Subscription subscription = device.establishConnection(false) // <-- autoConnect flag
+Disposable disposable = device.establishConnection(false) // <-- autoConnect flag
     .subscribe(
         rxBleConnection -> {
             // All GATT operations are done through the rxBleConnection.
@@ -125,8 +129,8 @@ Subscription subscription = device.establishConnection(false) // <-- autoConnect
         }
     );
 
-// When done... unsubscribe and forget about connection teardown :)
-subscription.unsubscribe();
+// When done... dispose and forget about connection teardown :)
+disposable.dispose();
 ```
 
 #### Auto connect
@@ -275,9 +279,9 @@ From different interfaces, you can obtain different `Observable`s which exhibit 
 There are three types of `Observable`s that you may encounter.
 1. Single value, completing — i.e. `RxBleConnection.readCharacteristic()`, `RxBleConnection.writeCharacteristic()`, etc.
 2. Multiple values, not completing - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
-3. Single value, not completing — these usually are meant for auto cleanup upon unsubscribing i.e. `setupNotification()` / `setupIndication()` — when you will unsubscribe the notification / indication will be disabled 
+3. Single value, not completing — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
 
-`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should unsubscribe from it which will cause disconnection and cleanup of resources. 
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources. 
 
 The below table contains an overview of used `Observable` patterns
 
@@ -302,7 +306,7 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined | cold |
 | LongWriteOperationBuilder | build() | Single | true | cold |
 
-\* this `Observable` when unsubscribed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
+\* this `Observable` when disposed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
 \** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
