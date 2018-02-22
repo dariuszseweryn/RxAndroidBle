@@ -4,23 +4,27 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.os.DeadObjectException;
-
 import android.support.annotation.RestrictTo;
+
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.eventlog.OperationDescription;
+import com.polidea.rxandroidble.eventlog.OperationEvent;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.QueueOperation;
+import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-
 import rx.Emitter;
 import rx.Observable;
 import rx.Observer;
@@ -31,6 +35,7 @@ import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
+import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
 import static rx.Observable.just;
 
 public class DisconnectOperation extends QueueOperation<Void> {
@@ -42,6 +47,7 @@ public class DisconnectOperation extends QueueOperation<Void> {
     private final Scheduler bluetoothInteractionScheduler;
     private final TimeoutConfiguration timeoutConfiguration;
     private final ConnectionStateChangeListener connectionStateChangeListener;
+    private final OperationEventLogger eventLogger;
 
     @Inject
     DisconnectOperation(
@@ -51,7 +57,8 @@ public class DisconnectOperation extends QueueOperation<Void> {
             BluetoothManager bluetoothManager,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(DeviceModule.DISCONNECT_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
-            ConnectionStateChangeListener connectionStateChangeListener) {
+            ConnectionStateChangeListener connectionStateChangeListener,
+            OperationEventLogger eventLogger) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
         this.macAddress = macAddress;
@@ -59,10 +66,19 @@ public class DisconnectOperation extends QueueOperation<Void> {
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutConfiguration = timeoutConfiguration;
         this.connectionStateChangeListener = connectionStateChangeListener;
+        this.eventLogger = eventLogger;
+    }
+
+    @Override
+    public void onOperationEnqueued() {
+        eventLogger.onOperationEnqueued(new OperationEvent(operationIdentifierHash(this), macAddress, getClass().getSimpleName(),
+                new OperationDescription(new OperationAttribute(OperationExtras.TIMEOUT, timeoutConfiguration.toString())))
+        );
     }
 
     @Override
     protected void protectedRun(final Emitter<Void> emitter, final QueueReleaseInterface queueReleaseInterface) {
+        eventLogger.onOperationStarted(new OperationEvent(operationIdentifierHash(this), macAddress, getClass().getSimpleName()));
         connectionStateChangeListener.onConnectionStateChange(DISCONNECTING);
         final BluetoothGatt bluetoothGatt = bluetoothGattProvider.getBluetoothGatt();
 
@@ -101,6 +117,7 @@ public class DisconnectOperation extends QueueOperation<Void> {
             final Emitter<Void> emitter,
             final QueueReleaseInterface queueReleaseInterface
     ) {
+        eventLogger.onOperationFinished(new OperationEvent(operationIdentifierHash(this), macAddress, getClass().getSimpleName()));
         connectionStateChangeListener.onConnectionStateChange(DISCONNECTED);
         queueReleaseInterface.release();
         emitter.onCompleted();

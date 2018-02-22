@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.operations.LegacyScanOperation;
@@ -48,6 +49,8 @@ class RxBleClientImpl extends RxBleClient {
     private final ScanPreconditionsVerifier scanPreconditionVerifier;
     private final Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ClientComponent.ClientComponentFinalizer clientComponentFinalizer;
+    private final OperationEventLogger eventLogger;
+    private final Scheduler callbackScheduler;
     private final Scheduler bluetoothInteractionScheduler;
     private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
@@ -67,7 +70,9 @@ class RxBleClientImpl extends RxBleClient {
                     ScanPreconditionsVerifier scanPreconditionVerifier,
                     Func1<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
-                    ClientComponent.ClientComponentFinalizer clientComponentFinalizer) {
+                    ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
+                    OperationEventLogger eventLogger,
+                    @Named(ClientComponent.NamedSchedulers.BLUETOOTH_CALLBACKS) Scheduler callbackScheduler) {
         this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -80,6 +85,8 @@ class RxBleClientImpl extends RxBleClient {
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.clientComponentFinalizer = clientComponentFinalizer;
+        this.eventLogger = eventLogger;
+        this.callbackScheduler = callbackScheduler;
     }
 
     @Override
@@ -175,7 +182,7 @@ class RxBleClientImpl extends RxBleClient {
     private Observable<RxBleScanResult> createScanOperationApi18(@Nullable final UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
         final LegacyScanOperation
-                scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
+                scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil, eventLogger, callbackScheduler);
         return operationQueue.queue(scanOperation)
                 .doOnUnsubscribe(new Action0() {
                     @Override

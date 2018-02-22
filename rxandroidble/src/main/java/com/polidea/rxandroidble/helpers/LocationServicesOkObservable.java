@@ -4,14 +4,13 @@ package com.polidea.rxandroidble.helpers;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import bleshadow.javax.inject.Named;
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.DaggerClientComponent;
 
 import java.util.UUID;
 
 import bleshadow.javax.inject.Inject;
-
+import bleshadow.javax.inject.Named;
 import rx.Emitter;
 import rx.Observable;
 import rx.Subscription;
@@ -29,7 +28,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
     public static LocationServicesOkObservable createInstance(@NonNull final Context context) {
         return DaggerClientComponent
                 .builder()
-                .clientModule(new ClientComponent.ClientModule(context))
+                .clientModule(new ClientComponent.ClientModule(context, null))
                 .build()
                 .locationServicesOkObservable();
     }

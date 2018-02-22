@@ -2,17 +2,23 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.eventlog.OperationDescription;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
+import com.polidea.rxandroidble.utils.BytePrinter;
 
 import java.util.UUID;
 
 import bleshadow.javax.inject.Named;
-
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -24,8 +30,8 @@ public class CharacteristicWriteOperation extends SingleResponseOperation<byte[]
     CharacteristicWriteOperation(RxBleGattCallback rxBleGattCallback, BluetoothGatt bluetoothGatt,
                                  @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
                                  BluetoothGattCharacteristic bluetoothGattCharacteristic,
-                                 byte[] data) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_WRITE, timeoutConfiguration);
+                                 byte[] data, OperationEventLogger eventLogger) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.CHARACTERISTIC_WRITE, timeoutConfiguration, eventLogger);
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.data = data;
     }
@@ -52,5 +58,20 @@ public class CharacteristicWriteOperation extends SingleResponseOperation<byte[]
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         bluetoothGattCharacteristic.setValue(data);
         return bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
+    }
+
+    @NonNull
+    @Override
+    protected OperationDescription createOperationDescription() {
+        return new OperationDescription(
+                new OperationAttribute(OperationExtras.UUID, bluetoothGattCharacteristic.getUuid().toString()),
+                new OperationAttribute(OperationExtras.DATA, BytePrinter.toPrettyFormattedHexString(data))
+        );
+    }
+
+    @Nullable
+    @Override
+    protected String createOperationResultDescription(byte[] result) {
+        return BytePrinter.toPrettyFormattedHexString(result);
     }
 }

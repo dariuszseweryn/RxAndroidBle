@@ -18,14 +18,16 @@ import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class ScanActivity extends AppCompatActivity {
 
@@ -48,7 +50,6 @@ public class ScanActivity extends AppCompatActivity {
 
     @OnClick(R.id.scan_toggle_btn)
     public void onScanToggleClick() {
-
         if (isScanning()) {
             scanSubscription.unsubscribe();
         } else {
@@ -61,6 +62,7 @@ public class ScanActivity extends AppCompatActivity {
                             // add custom filters if needed
                             .build()
             )
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnUnsubscribe(this::clearSubscription)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
@@ -158,7 +160,7 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void onScanFailure(Throwable throwable) {
-
+        Log.w("EXCEPTION", "onScanFailure", throwable);
         if (throwable instanceof BleScanException) {
             handleBleScanException((BleScanException) throwable);
         }

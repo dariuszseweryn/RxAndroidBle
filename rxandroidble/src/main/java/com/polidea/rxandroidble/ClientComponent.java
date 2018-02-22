@@ -12,6 +12,8 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 
+import com.polidea.rxandroidble.eventlog.HollowEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;
@@ -35,13 +37,12 @@ import com.polidea.rxandroidble.scan.ScanResult;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import bleshadow.javax.inject.Named;
-import bleshadow.javax.inject.Provider;
-
 import bleshadow.dagger.Binds;
 import bleshadow.dagger.Component;
 import bleshadow.dagger.Module;
 import bleshadow.dagger.Provides;
+import bleshadow.javax.inject.Named;
+import bleshadow.javax.inject.Provider;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Func1;
@@ -104,14 +105,26 @@ public interface ClientComponent {
     class ClientModule {
 
         private final Context context;
+        @Nullable
+        private final OperationEventLogger logger;
 
-        public ClientModule(Context context) {
+        public ClientModule(Context context, @Nullable OperationEventLogger logger) {
             this.context = context;
+            this.logger = logger;
         }
 
         @Provides
         Context provideApplicationContext() {
             return context;
+        }
+
+        @Provides
+        OperationEventLogger provideOperationEventLogger() {
+            if (logger != null) {
+                return logger;
+            } else {
+                return new HollowEventLogger();
+            }
         }
 
         @Provides

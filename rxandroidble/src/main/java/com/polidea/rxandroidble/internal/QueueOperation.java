@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.operations.Operation;
-
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
 
@@ -93,5 +92,13 @@ public abstract class QueueOperation<T> implements Operation<T> {
     @Override
     public int compareTo(@NonNull Operation another) {
         return another.definedPriority().priority - definedPriority().priority;
+    }
+
+    /**
+     * A callback method that will be called just after the operationName had been enqueued.
+     */
+    @Override
+    public void onOperationEnqueued() {
+        // Nothing to be done by default
     }
 }

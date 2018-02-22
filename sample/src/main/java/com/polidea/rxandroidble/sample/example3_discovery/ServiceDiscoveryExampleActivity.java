@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Button;
 
 import com.polidea.rxandroidble.RxBleConnection;
@@ -92,6 +93,7 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        Log.w("ServiceDiscovery", "Connection error.", throwable);
     }
 
     private void updateUI() {

@@ -3,7 +3,15 @@ package com.polidea.rxandroidble.internal;
 
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
+import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.eventlog.OperationDescription;
+import com.polidea.rxandroidble.eventlog.OperationEvent;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
@@ -11,17 +19,22 @@ import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
-
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
+
 import java.util.concurrent.TimeUnit;
+
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscription;
+import rx.functions.Action1;
+
+import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
 
 /**
  * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.
+ *
  * @param <T> The type of emitted result.
  */
 public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
@@ -30,15 +43,56 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
     private final RxBleGattCallback rxBleGattCallback;
     private final BleGattOperationType operationType;
     private final TimeoutConfiguration timeoutConfiguration;
+    protected final OperationEventLogger eventLogger;
+    private OperationEvent operationEvent;
 
     public SingleResponseOperation(BluetoothGatt bluetoothGatt,
                                    RxBleGattCallback rxBleGattCallback,
                                    BleGattOperationType gattOperationType,
-                                   TimeoutConfiguration timeoutConfiguration) {
+                                   TimeoutConfiguration timeoutConfiguration,
+                                   OperationEventLogger eventLogger) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
         this.operationType = gattOperationType;
         this.timeoutConfiguration = timeoutConfiguration;
+        this.eventLogger = eventLogger;
+    }
+
+    @Override
+    @CallSuper
+    public void onOperationEnqueued() {
+        final String operationName = getClass().getSimpleName();
+        final String deviceAddress = bluetoothGatt.getDevice().getAddress();
+
+        if (eventLogger.isAttached()) {
+            final OperationDescription operationDescription = createOperationDescription();
+            operationDescription.attributes.add(new OperationAttribute(OperationExtras.TIMEOUT, timeoutConfiguration.toString()));
+            operationEvent = new OperationEvent(operationIdentifierHash(this), deviceAddress, operationName, operationDescription);
+            eventLogger.onOperationEnqueued(operationEvent);
+        }
+    }
+
+    /**
+     * Prepare operation description to be used in the log.
+     *
+     * @return Return a description object that will describe various parameters related with the operation, ie. timeout values, flags, etc.
+     * This will be used for logging.
+     */
+    @NonNull
+    protected OperationDescription createOperationDescription() {
+        return new OperationDescription();
+    }
+
+    /**
+     * Prepare a user readable description of the operation result. Keep in mind that this method will be executed only if the logging is
+     * enabled. Default implementation will use a toString method.
+     *
+     * @param result Result of the operation
+     * @return String representation of the result
+     */
+    @Nullable
+    protected String createOperationResultDescription(T result) {
+        return result.toString();
     }
 
     @Override
@@ -52,11 +106,45 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
                         timeoutFallbackProcedure(bluetoothGatt, rxBleGattCallback, timeoutConfiguration.timeoutScheduler),
                         timeoutConfiguration.timeoutScheduler
                 )
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        logOperationError(throwable);
+                    }
+                })
+                .doOnNext(new Action1<T>() {
+                    @Override
+                    public void call(T operationResult) {
+                        logOperationSuccess(operationResult);
+                    }
+                })
                 .subscribe(emitterWrapper);
 
         if (!startOperation(bluetoothGatt)) {
             subscription.unsubscribe();
-            emitterWrapper.onError(new BleGattCannotStartException(bluetoothGatt, operationType));
+            final BleGattCannotStartException cannotStartException = new BleGattCannotStartException(bluetoothGatt, operationType);
+            logOperationError(cannotStartException);
+            emitterWrapper.onError(cannotStartException);
+        } else {
+            logOperationStarted();
+        }
+    }
+
+    private void logOperationStarted() {
+        if (eventLogger.isAttached()) {
+            eventLogger.onOperationStarted(operationEvent);
+        }
+    }
+
+    private void logOperationSuccess(T operationResult) {
+        if (eventLogger.isAttached()) {
+            eventLogger.onOperationFinished(operationEvent, createOperationResultDescription(operationResult));
+        }
+    }
+
+    private void logOperationError(Throwable throwable) {
+        if (eventLogger.isAttached()) {
+            eventLogger.onOperationFailed(operationEvent, throwable.toString());
         }
     }
 
@@ -74,6 +162,7 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
 
     /**
      * A function that should call the passed {@link BluetoothGatt} and return `true` if the call has succeeded.
+     *
      * @param bluetoothGatt the {@link BluetoothGatt} to use
      * @return `true` if success, `false` otherwise
      */

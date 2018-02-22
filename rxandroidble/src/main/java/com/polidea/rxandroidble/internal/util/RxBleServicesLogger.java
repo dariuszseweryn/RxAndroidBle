@@ -42,7 +42,7 @@ public class RxBleServicesLogger {
         }
     }
 
-    private String prepareServicesDescription(RxBleDeviceServices rxBleDeviceServices, BluetoothDevice device) {
+    public String prepareServicesDescription(RxBleDeviceServices rxBleDeviceServices, BluetoothDevice device) {
         StringBuilder descriptionBuilder = new StringBuilder();
         appendDeviceHeader(device, descriptionBuilder);
         for (BluetoothGattService bluetoothGattService : rxBleDeviceServices.getBluetoothGattServices()) {

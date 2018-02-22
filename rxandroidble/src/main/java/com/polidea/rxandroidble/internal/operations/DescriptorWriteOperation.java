@@ -3,15 +3,21 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.eventlog.OperationDescription;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble.internal.util.ByteAssociation;
+import com.polidea.rxandroidble.utils.BytePrinter;
 
 import bleshadow.javax.inject.Named;
-
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -26,8 +32,9 @@ public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
                              @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
                              int bluetoothGattCharacteristicDefaultWriteType,
                              BluetoothGattDescriptor bluetoothGattDescriptor,
-                             byte[] data) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_WRITE, timeoutConfiguration);
+                             byte[] data,
+                             OperationEventLogger eventLogger) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.DESCRIPTOR_WRITE, timeoutConfiguration, eventLogger);
         this.bluetoothGattCharacteristicDefaultWriteType = bluetoothGattCharacteristicDefaultWriteType;
         this.bluetoothGattDescriptor = bluetoothGattDescriptor;
         this.data = data;
@@ -70,5 +77,21 @@ public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
         final boolean success = bluetoothGatt.writeDescriptor(bluetoothGattDescriptor);
         bluetoothGattCharacteristic.setWriteType(originalWriteType);
         return success;
+    }
+
+    @NonNull
+    @Override
+    protected OperationDescription createOperationDescription() {
+        return new OperationDescription(
+                new OperationAttribute(OperationExtras.UUID, bluetoothGattDescriptor.getUuid().toString()),
+                new OperationAttribute(OperationExtras.WRITE_TYPE, String.valueOf(bluetoothGattCharacteristicDefaultWriteType)),
+                new OperationAttribute(OperationExtras.DATA, BytePrinter.toPrettyFormattedHexString(data))
+        );
+    }
+
+    @Nullable
+    @Override
+    protected String createOperationResultDescription(byte[] result) {
+        return BytePrinter.toPrettyFormattedHexString(result);
     }
 }

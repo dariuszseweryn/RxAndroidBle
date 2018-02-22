@@ -114,6 +114,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
                 logOperationQueued(operation);
                 queue.add(entry);
+                operation.onOperationEnqueued();
             }
         }, Emitter.BackpressureMode.NONE);
     }

@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble.extensions
 
-import android.bluetooth.BluetoothGattService
-import com.polidea.rxandroidble.RxBleDeviceServices
 import com.polidea.rxandroidble.RxBleScanResult
 import rx.observers.TestSubscriber
 
@@ -36,16 +34,6 @@ class TestSubscriberExtension {
 
     static boolean assertReceivedOnNextNot(final TestSubscriber subscriber, List expectedList) {
         !subscriber.onNextEvents.equals(expectedList)
-    }
-
-    static boolean assertServices(final TestSubscriber<RxBleDeviceServices> subscriber, List<BluetoothGattService> services) {
-        assertAnyOnNext(subscriber, {
-            it.bluetoothGattServices == services
-        })
-    }
-
-    static public <T> void assertValues(final TestSubscriber<T> subscriber, List<T> values) {
-        subscriber.assertReceivedOnNext(values);
     }
 
     static boolean assertAllBatchesSmaller(final TestSubscriber<byte[]> subscriber, int maxBatchSize) {

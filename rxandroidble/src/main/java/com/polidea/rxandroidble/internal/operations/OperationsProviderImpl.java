@@ -8,6 +8,7 @@ import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
@@ -30,6 +31,7 @@ public class OperationsProviderImpl implements OperationsProvider {
     private final Scheduler bluetoothInteractionScheduler;
     private final Scheduler timeoutScheduler;
     private final Provider<ReadRssiOperation> rssiReadOperationProvider;
+    private final OperationEventLogger eventLogger;
 
     @Inject
     OperationsProviderImpl(
@@ -39,7 +41,8 @@ public class OperationsProviderImpl implements OperationsProvider {
             @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
-            Provider<ReadRssiOperation> rssiReadOperationProvider) {
+            Provider<ReadRssiOperation> rssiReadOperationProvider,
+            OperationEventLogger eventLogger) {
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGatt = bluetoothGatt;
         this.bleServicesLogger = bleServicesLogger;
@@ -47,6 +50,7 @@ public class OperationsProviderImpl implements OperationsProvider {
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.timeoutScheduler = timeoutScheduler;
         this.rssiReadOperationProvider = rssiReadOperationProvider;
+        this.eventLogger = eventLogger;
     }
 
     @Override
@@ -69,17 +73,17 @@ public class OperationsProviderImpl implements OperationsProvider {
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public MtuRequestOperation provideMtuChangeOperation(int requestedMtu) {
-        return new MtuRequestOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, requestedMtu);
+        return new MtuRequestOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, requestedMtu, eventLogger);
     }
 
     @Override
     public CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic) {
-        return new CharacteristicReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic);
+        return new CharacteristicReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic, eventLogger);
     }
 
     @Override
     public DescriptorReadOperation provideReadDescriptor(BluetoothGattDescriptor descriptor) {
-        return new DescriptorReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, descriptor);
+        return new DescriptorReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, descriptor, eventLogger);
     }
 
     @Override
@@ -90,18 +94,18 @@ public class OperationsProviderImpl implements OperationsProvider {
     @Override
     public ServiceDiscoveryOperation provideServiceDiscoveryOperation(long timeout, TimeUnit timeUnit) {
         return new ServiceDiscoveryOperation(rxBleGattCallback, bluetoothGatt, bleServicesLogger,
-                new TimeoutConfiguration(timeout, timeUnit, timeoutScheduler));
+                new TimeoutConfiguration(timeout, timeUnit, timeoutScheduler), eventLogger);
     }
 
     @Override
     public CharacteristicWriteOperation provideWriteCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data) {
-        return new CharacteristicWriteOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic, data);
+        return new CharacteristicWriteOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic, data, eventLogger);
     }
 
     @Override
     public DescriptorWriteOperation provideWriteDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
         return new DescriptorWriteOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
-                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT, bluetoothGattDescriptor, data);
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT, bluetoothGattDescriptor, data, eventLogger);
     }
 
     @Override
@@ -110,6 +114,6 @@ public class OperationsProviderImpl implements OperationsProvider {
                                                                                       long delay,
                                                                                       TimeUnit timeUnit) {
         return new ConnectionPriorityChangeOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
-                connectionPriority, delay, timeUnit, timeoutScheduler);
+                connectionPriority, delay, timeUnit, timeoutScheduler, eventLogger);
     }
 }

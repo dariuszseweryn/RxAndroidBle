@@ -70,6 +70,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                 });
                 logOperationQueued(operation);
                 queue.add(entry);
+                operation.onOperationEnqueued();
             }
         }, Emitter.BackpressureMode.NONE);
     }

@@ -3,8 +3,10 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleDeviceServices;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
@@ -31,10 +33,17 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             RxBleServicesLogger bleServicesLogger,
-            TimeoutConfiguration timeoutConfiguration) {
-        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeoutConfiguration);
+            TimeoutConfiguration timeoutConfiguration,
+            OperationEventLogger eventLogger) {
+        super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeoutConfiguration, eventLogger);
         this.bluetoothGatt = bluetoothGatt;
         this.bleServicesLogger = bleServicesLogger;
+    }
+
+    @Nullable
+    @Override
+    protected String createOperationResultDescription(RxBleDeviceServices result) {
+        return bleServicesLogger.prepareServicesDescription(result, bluetoothGatt.getDevice());
     }
 
     @Override

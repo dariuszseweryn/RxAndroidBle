@@ -6,20 +6,24 @@ import android.os.DeadObjectException;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.eventlog.OperationDescription;
+import com.polidea.rxandroidble.eventlog.OperationEvent;
+import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.BleConnectionCompat;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-
 import rx.Emitter;
 import rx.Observable;
 import rx.Subscription;
@@ -31,11 +35,13 @@ import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.CONNECTING;
+import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
 import static com.polidea.rxandroidble.internal.DeviceModule.CONNECT_TIMEOUT;
 import static com.polidea.rxandroidble.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 
 public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
+    private final String operationName = getClass().getSimpleName();
     private final BluetoothDevice bluetoothDevice;
     private final BleConnectionCompat connectionCompat;
     private final RxBleGattCallback rxBleGattCallback;
@@ -43,6 +49,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
     private final TimeoutConfiguration connectTimeout;
     private final boolean autoConnect;
     private final ConnectionStateChangeListener connectionStateChangedAction;
+    private final OperationEventLogger eventLogger;
 
     @Inject
     ConnectOperation(
@@ -52,7 +59,8 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
             BluetoothGattProvider bluetoothGattProvider,
             @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
             @Named(AUTO_CONNECT) boolean autoConnect,
-            ConnectionStateChangeListener connectionStateChangedAction) {
+            ConnectionStateChangeListener connectionStateChangedAction,
+            OperationEventLogger eventLogger) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;
         this.rxBleGattCallback = rxBleGattCallback;
@@ -60,10 +68,39 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
         this.connectTimeout = connectTimeout;
         this.autoConnect = autoConnect;
         this.connectionStateChangedAction = connectionStateChangedAction;
+        this.eventLogger = eventLogger;
+    }
+
+    @Override
+    public void onOperationEnqueued() {
+        final OperationDescription operationDescription = new OperationDescription(
+                new OperationAttribute(OperationExtras.MAC_ADDRESS, bluetoothDevice.getAddress()),
+                new OperationAttribute(OperationExtras.AUTOCONNECT, String.valueOf(autoConnect)),
+                new OperationAttribute(OperationExtras.TIMEOUT, connectTimeout.toString())
+        );
+        eventLogger.onOperationEnqueued(new OperationEvent(operationIdentifierHash(this),
+                bluetoothDevice.getAddress(), operationName, operationDescription));
+    }
+
+    private void notifyOperationFinished() {
+        eventLogger.onOperationFinished(
+                new OperationEvent(operationIdentifierHash(this), bluetoothDevice.getAddress(), operationName));
+    }
+
+    private void notifyOperationFailed(Throwable throwable) {
+        eventLogger.onOperationFailed(
+                new OperationEvent(operationIdentifierHash(this), bluetoothDevice.getAddress(), operationName),
+                throwable.toString());
+    }
+
+    private void notifyOperationStarted() {
+        eventLogger.onOperationStarted(
+                new OperationEvent(operationIdentifierHash(this), bluetoothDevice.getAddress(), operationName));
     }
 
     @Override
     protected void protectedRun(final Emitter<BluetoothGatt> emitter, final QueueReleaseInterface queueReleaseInterface) {
+        notifyOperationStarted();
         final Action0 queueReleaseAction = new Action0() {
             @Override
             public void call() {
@@ -75,6 +112,18 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
                 .doOnUnsubscribe(queueReleaseAction)
                 .doOnTerminate(queueReleaseAction)
+                .doOnNext(new Action1<BluetoothGatt>() {
+                    @Override
+                    public void call(BluetoothGatt bluetoothGatt) {
+                        notifyOperationFinished();
+                    }
+                })
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        notifyOperationFailed(throwable);
+                    }
+                })
                 .subscribe(emitter);
 
         emitter.setSubscription(subscription);

@@ -43,6 +43,7 @@ configurations.all {
 
 dependencies {
     implementation project(path: ':rxandroidble')
+    implementation project(path: ':stetho-module')
     implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
     implementation "com.android.support:design:$rootProject.ext.supportVersion"
     implementation 'com.jakewharton:butterknife:8.8.1'
