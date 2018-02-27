@@ -55,7 +55,8 @@ final class Presenter {
                                 rxBleDevice.establishConnection(false) // on click start connecting
                                         .flatMapSingle(rxBleConnection ->
                                                 getCharacteristic(characteristicUuid, rxBleConnection)
-                                                        .map(bluetoothGattCharacteristic -> Pair.create(rxBleConnection, bluetoothGattCharacteristic)))
+                                                        .map(bluetoothGattCharacteristic ->
+                                                                Pair.create(rxBleConnection, bluetoothGattCharacteristic)))
                         // TODO: [PU] 27.02.2018 Darek, do you have any ideas on how to do it better to keep your example's ideas?
                 )
                 .flatMap(connectionAndCharacteristic -> {
