@@ -29,6 +29,7 @@ import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableSource;
@@ -137,6 +138,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
+    @Deprecated
     public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, Single<? extends BluetoothGattCharacteristic>>() {
@@ -234,20 +236,6 @@ public class RxBleConnectionImpl implements RxBleConnection {
                 });
     }
 
-    @Deprecated
-    @Override
-    public Single<BluetoothGattCharacteristic> writeCharacteristic(
-            @NonNull final BluetoothGattCharacteristic bluetoothGattCharacteristic
-    ) {
-        return writeCharacteristic(bluetoothGattCharacteristic, bluetoothGattCharacteristic.getValue())
-                .map(new Function<byte[], BluetoothGattCharacteristic>() {
-                    @Override
-                    public BluetoothGattCharacteristic apply(byte[] bytes) {
-                        return bluetoothGattCharacteristic;
-                    }
-                });
-    }
-
     @Override
     public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         return illegalOperationChecker.checkAnyPropertyMatches(
@@ -259,7 +247,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public Single<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
-                                             @NonNull final UUID descriptorUuid) {
+                                         @NonNull final UUID descriptorUuid) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
                     @Override
@@ -289,7 +277,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeDescriptor(
+    public Completable writeDescriptor(
             @NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid, @NonNull final UUID descriptorUuid,
             @NonNull final byte[] data
     ) {
@@ -300,16 +288,16 @@ public class RxBleConnectionImpl implements RxBleConnection {
                         return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
                     }
                 })
-                .flatMap(new Function<BluetoothGattDescriptor, SingleSource<? extends byte[]>>() {
+                .flatMapCompletable(new Function<BluetoothGattDescriptor, CompletableSource>() {
                     @Override
-                    public SingleSource<? extends byte[]> apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
+                    public CompletableSource apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
                         return writeDescriptor(bluetoothGattDescriptor, data);
                     }
                 });
     }
 
     @Override
-    public Single<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor bluetoothGattDescriptor, @NonNull byte[] data) {
+    public Completable writeDescriptor(@NonNull BluetoothGattDescriptor bluetoothGattDescriptor, @NonNull byte[] data) {
         return descriptorWriter.writeDescriptor(bluetoothGattDescriptor, data);
     }
 

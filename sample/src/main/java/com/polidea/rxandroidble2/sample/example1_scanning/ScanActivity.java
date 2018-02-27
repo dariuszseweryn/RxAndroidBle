@@ -64,7 +64,7 @@ public class ScanActivity extends AppCompatActivity {
                             .build()
             )
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::clearSubscription)
+                    .doFinally(this::dispose)
                     .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
         }
 
@@ -166,7 +166,7 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
-    private void clearSubscription() {
+    private void dispose() {
         scanDisposable = null;
         resultsAdapter.clearScanResults();
         updateButtonUIState();

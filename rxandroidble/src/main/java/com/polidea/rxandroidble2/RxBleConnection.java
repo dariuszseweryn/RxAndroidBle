@@ -318,6 +318,7 @@ public interface RxBleConnection {
      * @return Observable emitting matching characteristic or error if hasn't been found.
      * @throws BleCharacteristicNotFoundException if characteristic with given UUID hasn't been found.
      */
+    @Deprecated
     Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull UUID characteristicUuid);
 
     /**
@@ -353,23 +354,6 @@ public interface RxBleConnection {
      * @throws BleGattException                   if write operation failed
      */
     Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull byte[] data);
-
-    /**
-     * Performs GATT write operation on a given characteristic. The value that will be transmitted is referenced
-     * by {@link BluetoothGattCharacteristic#getValue()} when this function is being called and reassigned at the time of internal execution
-     * by {@link BluetoothGattCharacteristic#setValue(byte[])}
-     * <p>
-     * @deprecated Use {@link #writeCharacteristic(BluetoothGattCharacteristic, byte[])} instead
-     *
-     * @param bluetoothGattCharacteristic Characteristic to write. Use {@link BluetoothGattCharacteristic#setValue(byte[])} to set value.
-     * @return Observable emitting characteristic after write or an error in case of failure.
-     * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
-     * @throws BleGattException            if write operation failed
-     * @see #getCharacteristic(UUID) to obtain the characteristic.
-     * @see #discoverServices() to obtain the characteristic.
-     */
-    @Deprecated
-    Single<BluetoothGattCharacteristic> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic);
 
     /**
      * Performs GATT write operation on a given characteristic.
@@ -425,24 +409,24 @@ public interface RxBleConnection {
      * @param serviceUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
      * @param characteristicUuid Requested {@link android.bluetooth.BluetoothGattCharacteristic} UUID
      * @param descriptorUuid Requested {@link android.bluetooth.BluetoothGattDescriptor} UUID
-     * @return Observable emitting the written descriptor value after write or an error in case of failure.
+     * @return Completable which completes after a successful write operation or an error in case of failure.
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
      */
-    Single<byte[]> writeDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid,
+    Completable writeDescriptor(@NonNull UUID serviceUuid, @NonNull UUID characteristicUuid,
                                        @NonNull UUID descriptorUuid, @NonNull byte[] data);
 
     /**
      * Performs GATT write operation on a given descriptor.
      *
      * @param descriptor Requested {@link android.bluetooth.BluetoothGattDescriptor}
-     * @return Observable emitting the written descriptor value after write or an error in case of failure.
+     * @return Completable which completes after a successful write operation or an error in case of failure.
      * @throws BleGattCannotStartException if write operation couldn't be started for internal reason.
      * @throws BleGattException            if write operation failed
      * @see #getCharacteristic(UUID) to obtain the characteristic.
      * @see #discoverServices() to obtain the characteristic.
      */
-    Single<byte[]> writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
+    Completable writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
 
 
     /**
