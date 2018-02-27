@@ -13,6 +13,7 @@ import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.observers.DisposableObserver;
 
 /**
  * An Observable that emits false if an attempt to scan with {@link com.polidea.rxandroidble2.RxBleClient#scanBleDevices(UUID...)}
@@ -42,7 +43,8 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
 
     @Override
     protected void subscribeActual(final Observer<? super Boolean> observer) {
-        // TODO: [PU] 26.02.2018 Talk more about it.
-        observer.onSubscribe(locationServicesOkObsImpl.subscribeWith(DisposableUtil.disposableObserver(observer)));
+        final DisposableObserver<? super Boolean> disposableObserver = DisposableUtil.disposableObserver(observer);
+        locationServicesOkObsImpl.subscribeWith(disposableObserver);
+        observer.onSubscribe(disposableObserver);
     }
 }
