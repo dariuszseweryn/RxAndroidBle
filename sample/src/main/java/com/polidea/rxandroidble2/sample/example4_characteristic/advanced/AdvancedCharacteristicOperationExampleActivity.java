@@ -142,7 +142,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
                     button.setEnabled(true);
                     return button;
                 },
-                aView -> RxView.clicks(aView).map(aVoid -> Boolean.TRUE), // some RxJava operators are not intended to use with nulls
+                aView -> RxView.clicks(aView).map(aVoid -> Boolean.TRUE),
                 aView -> aView.setEnabled(false)
         )
                 .subscribeOn(AndroidSchedulers.mainThread()) // RxView expects to be subscribed on the Main Thread
