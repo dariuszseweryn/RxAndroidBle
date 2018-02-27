@@ -25,6 +25,7 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.internal.functions.Functions;
@@ -251,24 +252,6 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<BluetoothGattCharacteristic> writeCharacteristic(
-            @NonNull final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-        return getCharacteristic(bluetoothGattCharacteristic.getUuid())
-                .map(new Function<BluetoothGattCharacteristic, Boolean>() {
-                    @Override
-                    public Boolean apply(BluetoothGattCharacteristic characteristic) {
-                        return characteristic.setValue(bluetoothGattCharacteristic.getValue());
-                    }
-                })
-                .flatMap(new Function<Boolean, SingleSource<? extends BluetoothGattCharacteristic>>() {
-                    @Override
-                    public SingleSource<? extends BluetoothGattCharacteristic> apply(Boolean ignored) {
-                        return Single.just(bluetoothGattCharacteristic);
-                    }
-                });
-    }
-
-    @Override
     public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
         bluetoothGattCharacteristic.setValue(data);
         return Single.just(data);
@@ -374,7 +357,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
+    public Completable writeDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
                                               @NonNull final UUID descriptorUuid, @NonNull final byte[] data) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
@@ -383,22 +366,21 @@ public class RxBleConnectionMock implements RxBleConnection {
                         return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
                     }
                 })
-                .map(new Function<BluetoothGattDescriptor, byte[]>() {
+                .doOnSuccess(new Consumer<BluetoothGattDescriptor>() {
                     @Override
-                    public byte[] apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
+                    public void accept(BluetoothGattDescriptor bluetoothGattDescriptor) throws Exception {
                         bluetoothGattDescriptor.setValue(data);
-                        return data;
                     }
-                });
+                })
+                .toCompletable();
     }
 
     @Override
-    public Single<byte[]> writeDescriptor(@NonNull final BluetoothGattDescriptor descriptor, @NonNull final byte[] data) {
-        return Single.fromCallable(new Callable<byte[]>() {
+    public Completable writeDescriptor(@NonNull final BluetoothGattDescriptor descriptor, @NonNull final byte[] data) {
+        return Completable.fromAction(new Action() {
             @Override
-            public byte[] call() throws Exception {
+            public void run() throws Exception {
                 descriptor.setValue(data);
-                return data;
             }
         });
     }
@@ -462,13 +444,12 @@ public class RxBleConnectionMock implements RxBleConnection {
         if (setupMode == NotificationSetupMode.DEFAULT) {
             final byte[] enableValue = isIndication ? ENABLE_INDICATION_VALUE : ENABLE_NOTIFICATION_VALUE;
             return getClientConfigurationDescriptor(bluetoothGattCharacteristicUUID)
-                    .flatMap(new Function<BluetoothGattDescriptor, Single<byte[]>>() {
+                    .flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
                         @Override
-                        public Single<byte[]> apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
+                        public Completable apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
                             return writeDescriptor(bluetoothGattDescriptor, enabled ? enableValue : DISABLE_NOTIFICATION_VALUE);
                         }
-                    })
-                    .toCompletable();
+                    });
         } else {
             return Completable.complete();
         }

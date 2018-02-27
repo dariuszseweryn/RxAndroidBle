@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.internal.util;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
+
 import java.util.Arrays;
 import java.util.UUID;
 

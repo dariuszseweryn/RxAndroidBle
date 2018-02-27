@@ -54,12 +54,12 @@ public class ConnectorImpl implements Connector {
                     }
                 });
                 final Observable<BluetoothGatt> connectedObservable = clientOperationQueue.queue(connectionComponent.connectOperation());
-                final Observable<RxBleConnection> disconnectedErrorSingle = connectionComponent.gattCallback().observeDisconnect();
+                final Observable<RxBleConnection> disconnectedErrorObservable = connectionComponent.gattCallback().observeDisconnect();
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
 
                 return Observable.merge(
                         newConnectionObservable.delaySubscription(connectedObservable),
-                        disconnectedErrorSingle
+                        disconnectedErrorObservable
                 )
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override

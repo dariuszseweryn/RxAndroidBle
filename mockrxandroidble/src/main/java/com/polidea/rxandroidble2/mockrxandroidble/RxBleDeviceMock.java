@@ -16,8 +16,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
-import io.reactivex.internal.functions.Functions;
+import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -64,18 +65,18 @@ public class RxBleDeviceMock implements RxBleDevice {
             public Observable<RxBleConnection> call() {
                 if (isConnected.compareAndSet(false, true)) {
                     return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
-                            .doOnSubscribe(Functions.actionConsumer(new Action() {
+                            .doOnSubscribe(new Consumer<Disposable>() {
                                 @Override
-                                public void run() throws Exception {
+                                public void accept(Disposable disposable) throws Exception {
                                     connectionStateBehaviorSubject.onNext(CONNECTING);
                                 }
-                            }))
-                            .doOnNext(Functions.actionConsumer(new Action() {
+                            })
+                            .doOnNext(new Consumer<RxBleConnection>() {
                                 @Override
-                                public void run() throws Exception {
+                                public void accept(RxBleConnection rxBleConnection) throws Exception {
                                     connectionStateBehaviorSubject.onNext(CONNECTED);
                                 }
-                            }))
+                            })
                             .doFinally(new Action() {
                                 @Override
                                 public void run() {

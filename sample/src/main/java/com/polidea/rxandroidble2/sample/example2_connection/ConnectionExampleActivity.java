@@ -48,7 +48,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
             connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::clearSubscription)
+                    .doFinally(this::dispose)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
     }
@@ -105,7 +105,7 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT).show();
     }
 
-    private void clearSubscription() {
+    private void dispose() {
         connectionDisposable = null;
         updateUI();
     }

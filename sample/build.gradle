@@ -42,6 +42,7 @@ dependencies {
     implementation "com.android.support:design:$rootProject.ext.supportVersion"
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    compile 'com.jakewharton.rxbinding2:rxbinding:2.1.1'
     implementation rootProject.ext.libs.rxjava
     implementation rootProject.ext.libs.rxandroid
     implementation 'com.trello.rxlifecycle2:rxlifecycle:2.2.1'

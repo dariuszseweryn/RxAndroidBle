@@ -42,6 +42,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
 
     @Override
     protected void subscribeActual(final Observer<? super Boolean> observer) {
+        // TODO: [PU] 26.02.2018 Talk more about it.
         observer.onSubscribe(locationServicesOkObsImpl.subscribeWith(DisposableUtil.disposableObserver(observer)));
     }
 }

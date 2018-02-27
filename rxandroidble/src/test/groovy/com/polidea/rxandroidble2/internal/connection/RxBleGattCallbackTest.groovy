@@ -242,7 +242,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
         testSubscriber.assertError({ it instanceof BleGattException && ((BleGattException) it).status == GATT_FAILURE })
 
         when:
-        def secondTestSubscriber = givenSubscription.call(objectUnderTest)
+        def secondTestSubscriber = givenSubscription.call(objectUnderTest).test()
         whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_SUCCESS)
 
         then:
@@ -250,12 +250,12 @@ class RxBleGattCallbackTest extends RoboSpecification {
 
         where:
         givenSubscription << [
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnCharacteristicRead().test() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnCharacteristicWrite().test() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorRead().test() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorWrite().test() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnRssiRead().test() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered().test() }
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnCharacteristicRead() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnCharacteristicWrite() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorRead() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorWrite() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnRssiRead() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered() }
         ]
         whenAction << [
                 { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },

@@ -4,6 +4,7 @@ Change Log
 Version 1.5.0-SNAPSHOT (RxJava2)
 * Introduced API in RxJava2
 * Removed deprecated establishConnection method
+* Removed deprecated writeCharacteristic method
 * Introduced BleDescriptorNotFoundException
 
 Version 1.5.0-SNAPSHOT

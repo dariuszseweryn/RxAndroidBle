@@ -7,8 +7,7 @@ import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
 
 import bleshadow.javax.inject.Inject;
-
-import io.reactivex.Single;
+import io.reactivex.Completable;
 
 @ConnectionScope
 class DescriptorWriter {
@@ -22,7 +21,8 @@ class DescriptorWriter {
         this.operationsProvider = operationsProvider;
     }
 
-    Single<byte[]> writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
-        return operationQueue.queue(operationsProvider.provideWriteDescriptor(bluetoothGattDescriptor, data)).firstOrError();
+    Completable writeDescriptor(BluetoothGattDescriptor bluetoothGattDescriptor, byte[] data) {
+        return operationQueue.queue(operationsProvider.provideWriteDescriptor(bluetoothGattDescriptor, data))
+                .ignoreElements();
     }
 }

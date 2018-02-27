@@ -188,7 +188,6 @@ class NotificationAndIndicationManager {
         }
 
         return descriptorWriter.writeDescriptor(descriptor, value)
-                .toCompletable()
                 .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
                     @Override
                     public CompletableSource apply(Throwable throwable) throws Exception {
