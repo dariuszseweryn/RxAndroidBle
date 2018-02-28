@@ -13,6 +13,11 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationFinished;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationQueued;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationRemoved;
+import static com.polidea.rxandroidble.internal.util.OperationLogger.logOperationStarted;
+
 public class ClientOperationQueueImpl implements ClientOperationQueue {
 
     private OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
@@ -27,7 +32,8 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                     try {
                         final FIFORunnableEntry<?> entry = queue.take();
                         final Operation<?> operation = entry.operation;
-                        log("STARTED", operation);
+                        final long startedAtTime = System.currentTimeMillis();
+                        logOperationStarted(operation);
 
                         /*
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
@@ -35,12 +41,10 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
                          * at appropriate time when the next operation should be able to start successfully.
                          */
                         final QueueSemaphore clientOperationSemaphore = new QueueSemaphore();
-
                         Subscription subscription = entry.run(clientOperationSemaphore, callbackScheduler);
                         entry.emitter.setSubscription(subscription);
-
                         clientOperationSemaphore.awaitRelease();
-                        log("FINISHED", operation);
+                        logOperationFinished(operation, startedAtTime, System.currentTimeMillis());
                     } catch (InterruptedException e) {
                         RxBleLog.e(e, "Error while processing client operation queue");
                     }
@@ -56,27 +60,17 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
             @Override
             public void call(Emitter<T> tEmitter) {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
-
                 tEmitter.setCancellation(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
                         if (queue.remove(entry)) {
-                            log("REMOVED", operation);
+                            logOperationRemoved(operation);
                         }
                     }
                 });
-
-                log("QUEUED", operation);
+                logOperationQueued(operation);
                 queue.add(entry);
             }
         }, Emitter.BackpressureMode.NONE);
-    }
-
-    @RestrictTo(RestrictTo.Scope.SUBCLASSES)
-    void log(String prefix, Operation operation) {
-
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
-            RxBleLog.d("%8s %s(%d)", prefix, operation.getClass().getSimpleName(), System.identityHashCode(operation));
-        }
     }
 }

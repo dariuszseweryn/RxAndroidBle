@@ -9,6 +9,7 @@ import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
+import com.polidea.rxandroidble.internal.util.RxBleServicesLogger
 
 import java.util.concurrent.TimeUnit
 import rx.Observable
@@ -24,6 +25,8 @@ public class OperationServicesDiscoverTest extends Specification {
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
 
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
+
+    RxBleServicesLogger mockRxBleServicesLogger = Mock RxBleServicesLogger
 
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
 
@@ -178,7 +181,7 @@ public class OperationServicesDiscoverTest extends Specification {
     }
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new ServiceDiscoveryOperation(mockGattCallback, mockBluetoothGatt,
+        objectUnderTest = new ServiceDiscoveryOperation(mockGattCallback, mockBluetoothGatt, mockRxBleServicesLogger,
                 new MockOperationTimeoutConfiguration(timeout.toInteger(), testScheduler))
     }
 

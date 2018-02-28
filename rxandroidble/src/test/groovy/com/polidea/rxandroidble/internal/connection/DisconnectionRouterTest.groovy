@@ -11,6 +11,7 @@ import com.polidea.rxandroidble.exceptions.BleGattException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper
 import org.robospock.RoboSpecification
+import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject
 import spock.lang.Unroll
@@ -224,5 +225,37 @@ class DisconnectionRouterTest extends RoboSpecification {
 
         and:
         valueTestSubscriber.assertNoValues()
+    }
+
+    @Unroll
+    def "should unsubscribe from adapterStateObservable if it emits STATE_OFF/STATE_TURNING_* or if .on*Exception() is called"() {
+
+        given:
+        createObjectUnderTest(true)
+
+        when:
+        disconnectionScenario.call(mockAdapterStateSubject, objectUnderTest)
+
+        then:
+        !mockAdapterStateSubject.hasObservers()
+
+        where:
+        disconnectionScenario << [
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_TURNING_ON)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_TURNING_OFF)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    mockAdapterStateSubject.onNext(STATE_OFF)
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    objectUnderTest.onGattConnectionStateException(new BleGattException(null, 0, BleGattOperationType.CHARACTERISTIC_WRITE))
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    objectUnderTest.onDisconnectedException(new BleDisconnectedException("test"))
+                },
+        ]
     }
 }

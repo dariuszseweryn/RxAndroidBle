@@ -9,6 +9,7 @@ import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.internal.util.RxBleServicesLogger;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -17,21 +18,34 @@ import java.util.concurrent.TimeoutException;
 
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.functions.Func1;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
+    private final BluetoothGatt bluetoothGatt;
+    private final RxBleServicesLogger bleServicesLogger;
+
     ServiceDiscoveryOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
+            RxBleServicesLogger bleServicesLogger,
             TimeoutConfiguration timeoutConfiguration) {
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeoutConfiguration);
+        this.bluetoothGatt = bluetoothGatt;
+        this.bleServicesLogger = bleServicesLogger;
     }
 
     @Override
     protected Observable<RxBleDeviceServices> getCallback(RxBleGattCallback rxBleGattCallback) {
-        return rxBleGattCallback.getOnServicesDiscovered();
+        return rxBleGattCallback.getOnServicesDiscovered()
+                .doOnNext(new Action1<RxBleDeviceServices>() {
+                    @Override
+                    public void call(RxBleDeviceServices rxBleDeviceServices) {
+                        bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice());
+                    }
+                });
     }
 
     @Override
