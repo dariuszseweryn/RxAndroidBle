@@ -20,6 +20,10 @@ public interface RxBleDevice {
      *
      * If you would like to have the initial state as well you can use observeConnectionStateChanges().startWith(getConnectionState())
      *
+     * NOTE: This is a convenience function for easy state changes monitoring of an individual peripheral that may be useful in the UI.
+     * It is not meant to be a trigger for reconnecting a particular device—for this purpose one should react on the errors emitted from
+     * {@link #establishConnection(boolean)}
+     *
      * @return observable that will emit {@link com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState} changes
      */
     Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges();
