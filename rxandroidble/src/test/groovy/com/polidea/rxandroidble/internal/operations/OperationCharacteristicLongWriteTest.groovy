@@ -6,11 +6,12 @@ import android.bluetooth.BluetoothGattCharacteristic
 import com.polidea.rxandroidble.RxBleConnection
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble.exceptions.BleGattOperationType
-import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble.internal.connection.NoRetryStrategy
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble.internal.util.ByteAssociation
 import com.polidea.rxandroidble.internal.util.MockOperationTimeoutConfiguration
 import rx.Observable
@@ -45,7 +46,9 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     PublishSubject<ByteAssociation<UUID>> onCharacteristicWriteSubject = PublishSubject.create()
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     CharacteristicLongWriteOperation objectUnderTest
-    @Shared Exception testException = new Exception("testException")
+    @Shared
+    Exception testException = new Exception("testException")
+    BleGattCharacteristicException bleGattCharacteristicException = Mock BleGattCharacteristicException
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
@@ -226,6 +229,26 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         1 * mockCharacteristic.setValue(_) >> true
     }
 
+    def "should call next BluetoothGatt.writeCharacteristic() after the previous RxBleGattCallback.onCharacteristicWrite() emits an error and operation is retried"() {
+        given:
+        RetryWriteOperation retryWriteOperation = givenWillRetryWriteOperation()
+        givenCharacteristicWriteOkButEventuallyFailsToWrite(1)
+        prepareObjectUnderTest(20, byteArray(60))
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        advanceTimeForWritesToComplete(2)
+
+        then:
+        2 * mockCharacteristic.setValue(_) >> true
+
+        when:
+        retryWriteOperation.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue(_) >> true
+    }
+
     def "should release QueueReleaseInterface after successful write"() {
 
         given:
@@ -378,6 +401,13 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         return trigger
     }
 
+    private RetryWriteOperation givenWillRetryWriteOperation() {
+        def retry = new RetryWriteOperation()
+        this.writeOperationRetryStrategy = retry
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        return retry
+    }
+
     class AcknowledgementTrigger implements RxBleConnection.WriteOperationAckStrategy {
 
         private final PublishSubject<Object> triggerSubject = PublishSubject.create()
@@ -396,6 +426,28 @@ public class OperationCharacteristicLongWriteTest extends Specification {
                 Observable<Boolean> call(Boolean o) {
                     return triggerSubject
                 }
+            })
+        }
+    }
+
+    class RetryWriteOperation implements RxBleConnection.WriteOperationRetryStrategy {
+
+        private final PublishSubject triggerSubject = PublishSubject.create()
+
+        public void triggerRetry() {
+            triggerSubject.with {
+                onNext(true)
+                onCompleted()
+            }
+        }
+
+        @Override
+        Observable<RxBleConnection.WriteOperationRetryStrategy.LongWriteFailure> call(
+                Observable<RxBleConnection.WriteOperationRetryStrategy.LongWriteFailure> longWriteFailureObservable) {
+            return longWriteFailureObservable.flatMap({ longWriteFailure ->
+                return triggerSubject.map({ aBoolean ->
+                    return longWriteFailure
+                })
             })
         }
     }
@@ -494,6 +546,26 @@ public class OperationCharacteristicLongWriteTest extends Specification {
                 int currentIndex = writeIndex.getAndIncrement()
                 if (currentIndex == failingWriteIndex) {
                     onCharacteristicWriteSubject.onError(testException)
+                } else {
+                    onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(uuid, returnBytes))
+                }
+            }, DEFAULT_WRITE_DELAY, TimeUnit.SECONDS)
+
+            true
+        }
+    }
+
+    private givenCharacteristicWriteOkButEventuallyFailsToWrite(int failingWriteIndex) {
+        AtomicInteger writeIndex = new AtomicInteger(0)
+
+        mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            UUID uuid = characteristic.getUuid()
+            byte[] returnBytes = new byte[0]
+
+            testScheduler.createWorker().schedule({
+                int currentIndex = writeIndex.getAndIncrement()
+                if (currentIndex == failingWriteIndex) {
+                    onCharacteristicWriteSubject.onError(bleGattCharacteristicException)
                 } else {
                     onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(uuid, returnBytes))
                 }
