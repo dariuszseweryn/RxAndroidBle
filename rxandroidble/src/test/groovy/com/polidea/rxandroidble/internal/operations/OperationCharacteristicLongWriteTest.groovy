@@ -246,7 +246,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         retryWriteOperation.triggerRetry()
 
         then:
-        1 * mockCharacteristic.setValue(_) >> true
+        testSubscriber.assertNoErrors()
     }
 
     def "should release QueueReleaseInterface after successful write"() {
