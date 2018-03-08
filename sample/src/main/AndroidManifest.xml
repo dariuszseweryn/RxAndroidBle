@@ -11,16 +11,16 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="com.polidea.rxandroidble2.sample.example1_scanning.ScanActivity"
-            android:label="@string/title_example1">
+            android:label="@string/title_example1"/>
+        <activity
+            android:name="com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity"
+            android:label="@string/title_example2">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity"
-            android:label="@string/title_example2"/>
         <activity
             android:name="com.polidea.rxandroidble2.sample.example3_discovery.ServiceDiscoveryExampleActivity"
             android:label="@string/title_example3"/>

@@ -43,8 +43,9 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
         if (isConnected()) {
-            triggerDisconnect();
+            // triggerDisconnect();
         } else {
+            triggerDisconnect();
             connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
                     .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -70,7 +71,8 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_example2);
         ButterKnife.bind(this);
-        String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
+        // String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
+        String macAddress = "54:6C:0E:7B:3E:98"; // TODO: Scanning seemed broken so: hardcoded!
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         // How to listen for connection state changes
@@ -87,6 +89,8 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     private void onConnectionFailure(Throwable throwable) {
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        // TODO: This is a very agressive reconnect. Possibly too agressive.
+        onConnectToggleClick();
     }
 
     @SuppressWarnings("unused")
