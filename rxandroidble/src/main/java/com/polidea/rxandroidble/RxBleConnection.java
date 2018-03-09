@@ -183,27 +183,27 @@ public interface RxBleConnection {
 
         class LongWriteFailure {
 
-            final int batchNumber;
+            final int batchIndex;
             final BleGattException cause;
 
             /**
              * Default constructor
              *
-             * @param batchNumber the batch number on which the write request failed
+             * @param batchIndex the zero-based batch index on which the write request failed
              * @param cause       the failed cause of the write request
              */
-            public LongWriteFailure(int batchNumber, BleGattException cause) {
-                this.batchNumber = batchNumber;
+            public LongWriteFailure(int batchIndex, BleGattException cause) {
+                this.batchIndex = batchIndex;
                 this.cause = cause;
             }
 
             /**
-             * Get the batch number of the failed write request
+             * Get the batch index of the failed write request
              *
-             * @return the batch number
+             * @return the zero-based batch index
              */
-            public int getBatchNumber() {
-                return batchNumber;
+            public int getBatchIndex() {
+                return batchIndex;
             }
 
             /**

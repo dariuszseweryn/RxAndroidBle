@@ -237,9 +237,9 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         if (!(throwable instanceof BleGattCharacteristicException || throwable instanceof BleGattCannotStartException)) {
                             return Observable.error(throwable);
                         }
-                        final int failedBatchNumber = calculateFailedBatchNumber(byteBuffer, batchSize);
+                        final int failedBatchIndex = calculateFailedBatchIndex(byteBuffer, batchSize);
                         WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
-                                failedBatchNumber,
+                                failedBatchIndex,
                                 (BleGattException) throwable
                         );
                         return Observable.just(longWriteFailure);
@@ -252,14 +252,14 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
                     public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
-                        final int newBufferPosition = longWriteFailure.getBatchNumber() * batchSize - batchSize;
+                        final int newBufferPosition = longWriteFailure.getBatchIndex() * batchSize - batchSize;
                         byteBuffer.position(newBufferPosition);
                     }
                 };
             }
 
-            private int calculateFailedBatchNumber(ByteBuffer byteBuffer, int batchSize) {
-                return (int) Math.ceil(byteBuffer.position() / (float) batchSize);
+            private int calculateFailedBatchIndex(ByteBuffer byteBuffer, int batchSize) {
+                return (int) Math.ceil(byteBuffer.position() / (float) batchSize) - 1;
             }
         };
     }
