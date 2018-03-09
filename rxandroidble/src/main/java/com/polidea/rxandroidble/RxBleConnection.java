@@ -14,7 +14,6 @@ import com.polidea.rxandroidble.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.Priority;
@@ -135,7 +134,7 @@ public interface RxBleConnection {
 
         /**
          * Setter for a retry strategy in case something goes wrong when writing data. If any {@link BleException} is raised,
-         * a {@link WriteOperationRetryStrategy.LongWriteFailure} object will be emitted.
+         * a {@link WriteOperationRetryStrategy.LongWriteFailure} object is emitted.
          * {@link WriteOperationRetryStrategy.LongWriteFailure} contains both the {@link BleException} and the batch number
          * for which the write request failed. The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the
          * writeOperationRetryStrategy will be used to retry the specified batch number write request.
@@ -185,7 +184,7 @@ public interface RxBleConnection {
         class LongWriteFailure {
 
             final int batchNumber;
-            final BleGattCharacteristicException cause;
+            final BleGattException cause;
 
             /**
              * Default constructor
@@ -193,7 +192,7 @@ public interface RxBleConnection {
              * @param batchNumber the batch number on which the write request failed
              * @param cause       the failed cause of the write request
              */
-            public LongWriteFailure(int batchNumber, BleGattCharacteristicException cause) {
+            public LongWriteFailure(int batchNumber, BleGattException cause) {
                 this.batchNumber = batchNumber;
                 this.cause = cause;
             }
@@ -210,9 +209,9 @@ public interface RxBleConnection {
             /**
              * Get the failed cause of the write request
              *
-             * @return a {@link BleException}
+             * @return a {@link BleGattException}
              */
-            public BleException getCause() {
+            public BleGattException getCause() {
                 return cause;
             }
         }

@@ -14,6 +14,7 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
@@ -233,13 +234,13 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 return new Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
                     @Override
                     public Observable<WriteOperationRetryStrategy.LongWriteFailure> call(Throwable throwable) {
-                        if (!(throwable instanceof BleGattCharacteristicException)) {
+                        if (!(throwable instanceof BleGattCharacteristicException || throwable instanceof BleGattCannotStartException)) {
                             return Observable.error(throwable);
                         }
                         final int failedBatchNumber = calculateFailedBatchNumber(byteBuffer, batchSize);
                         WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
                                 failedBatchNumber,
-                                (BleGattCharacteristicException) throwable
+                                (BleGattException) throwable
                         );
                         return Observable.just(longWriteFailure);
                     }
@@ -251,18 +252,14 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
                     public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
-                        final int newBufferPosition = longWriteFailure.getBatchNumber() * batchSize;
+                        final int newBufferPosition = longWriteFailure.getBatchNumber() * batchSize - batchSize;
                         byteBuffer.position(newBufferPosition);
                     }
                 };
             }
 
             private int calculateFailedBatchNumber(ByteBuffer byteBuffer, int batchSize) {
-                if (byteBuffer.hasRemaining()) {
-                    return (byteBuffer.position() / batchSize) - 1;
-                } else {
-                    return byteBuffer.position() / batchSize;
-                }
+                return byteBuffer.position() / batchSize;
             }
         };
     }
