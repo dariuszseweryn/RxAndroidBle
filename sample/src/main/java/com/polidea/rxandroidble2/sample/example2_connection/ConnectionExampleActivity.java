@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -43,15 +44,14 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
         if (isConnected()) {
-            // triggerDisconnect();
-        } else {
-            triggerDisconnect();
-            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
-                    .compose(bindUntilEvent(PAUSE))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::dispose)
-                    .subscribe(this::onConnectionReceived, this::onConnectionFailure);
+            Log.w("RX-BLE", "onConnectToggleClick is connected already");
         }
+        Log.w("RX-BLE", "onConnectToggleClick (re)connecting now");
+        connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
+                .compose(bindUntilEvent(PAUSE))
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(this::dispose)
+                .subscribe(this::onConnectionReceived, this::onConnectionFailure);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -87,19 +87,24 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void onConnectionFailure(Throwable throwable) {
+        Log.w("RX-BLE", "onConnectionFailure "+throwable);
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
-        // TODO: This is a very agressive reconnect. Possibly too agressive.
-        onConnectToggleClick();
+
+        triggerDisconnect();
     }
 
     @SuppressWarnings("unused")
     private void onConnectionReceived(RxBleConnection connection) {
+        Log.w("RX-BLE", "onConnectionReceived "+connection);
+
         //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show();
     }
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
+        Log.w("RX-BLE", "onConnectionStateChange "+newState.toString());
+
         connectionStateView.setText(newState.toString());
         updateUI();
     }
@@ -110,11 +115,16 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void dispose() {
+        Log.w("RX-BLE", "dispose ");
         connectionDisposable = null;
         updateUI();
+        // TODO: Thought reconnect after disposal might work, but no.
+        onConnectToggleClick();
     }
 
     private void triggerDisconnect() {
+        Log.w("RX-BLE", "triggerDisconnect ");
+
         if (connectionDisposable != null) {
             connectionDisposable.dispose();
         }
