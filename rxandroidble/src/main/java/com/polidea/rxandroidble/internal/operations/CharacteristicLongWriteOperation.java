@@ -259,7 +259,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             }
 
             private int calculateFailedBatchNumber(ByteBuffer byteBuffer, int batchSize) {
-                return byteBuffer.position() / batchSize;
+                return (int) Math.ceil(byteBuffer.position() / (float) batchSize);
             }
         };
     }

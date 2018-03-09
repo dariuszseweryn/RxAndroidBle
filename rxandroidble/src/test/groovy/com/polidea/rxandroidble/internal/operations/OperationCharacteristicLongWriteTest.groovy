@@ -363,6 +363,47 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         testSubscriber.assertCompleted()
     }
 
+    def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - last batch, uneven count"() {
+        given:
+        this.writeOperationRetryStrategy = givenWillRetryWriteOperation()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+
+        when:
+        writeOperationRetryStrategy.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue([0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
+        testSubscriber.assertCompleted()
+    }
+
     def "should release QueueReleaseInterface after successful write"() {
 
         given:
