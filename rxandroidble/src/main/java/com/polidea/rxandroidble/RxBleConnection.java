@@ -139,7 +139,7 @@ public interface RxBleConnection {
          * for which the write request failed. The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the
          * writeOperationRetryStrategy will be used to retry the specified batch number write request.
          * <br>
-         * If this is not specified - the next batch of bytes is written right after the failed one, and the failed one is just dropped.
+         * If this is not specified - if batch write fails, the long write operation is stopped and whole operation is interrupted.
          * <br>
          * It is expected that the Observable returned from the writeOperationRetryStrategy will emit exactly the same events as the source,
          * however you may delay them at your pace.
