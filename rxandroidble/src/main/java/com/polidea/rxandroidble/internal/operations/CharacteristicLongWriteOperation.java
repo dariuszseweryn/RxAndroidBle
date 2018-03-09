@@ -252,7 +252,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
                     @Override
                     public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
-                        final int newBufferPosition = longWriteFailure.getBatchIndex() * batchSize - batchSize;
+                        final int newBufferPosition = longWriteFailure.getBatchIndex() * batchSize;
                         byteBuffer.position(newBufferPosition);
                     }
                 };
