@@ -7,6 +7,7 @@ Version 1.5.0-SNAPSHOT
 * Improved Location Services status check (https://github.com/Polidea/RxAndroidBle/issues/327)
 * Added logger that prints out GATT server structure on a successful discovery. The log is generated when the logger is in a VERBOSE level (https://github.com/Polidea/RxAndroidBle/pull/355)
 * Enchanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
+* Added retry strategies for long write operations (https://github.com/Polidea/RxAndroidBle/pull/357)
 
 Version 1.4.3
 * Log informing that the underlying semaphore in a QueueSemaphore has been interrupted will be printed only when the situation was unexpected.(https://github.com/Polidea/RxAndroidBle/issues/317)
