@@ -10,6 +10,7 @@ import com.polidea.rxandroidble.RxBleCustomOperation;
 import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble.internal.connection.ImmediateSerializedBatchAckStrategy;
+import com.polidea.rxandroidble.internal.connection.NoRetryStrategy;
 import com.polidea.rxandroidble.internal.util.ObservableUtil;
 
 import java.util.HashMap;
@@ -283,6 +284,8 @@ public class RxBleConnectionMock implements RxBleConnection {
 
             private WriteOperationAckStrategy writeOperationAckStrategy = // default
                     new ImmediateSerializedBatchAckStrategy();
+            private WriteOperationRetryStrategy writeOperationRetryStrategy = // default
+                    new NoRetryStrategy();
 
             @Override
             public LongWriteOperationBuilder setBytes(@NonNull byte[] bytes) {
@@ -313,6 +316,13 @@ public class RxBleConnectionMock implements RxBleConnection {
             @Override
             public LongWriteOperationBuilder setMaxBatchSize(int maxBatchSize) {
                 this.maxBatchSize = maxBatchSize;
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setWriteOperationRetryStrategy(
+                    @NonNull WriteOperationRetryStrategy writeOperationRetryStrategy) {
+                this.writeOperationRetryStrategy = writeOperationRetryStrategy;
                 return this;
             }
 

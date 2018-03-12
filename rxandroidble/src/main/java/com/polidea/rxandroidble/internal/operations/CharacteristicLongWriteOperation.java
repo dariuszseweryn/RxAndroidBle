@@ -8,10 +8,13 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection.WriteOperationAckStrategy;
+import com.polidea.rxandroidble.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.QueueOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
@@ -25,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import bleshadow.javax.inject.Named;
-
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
@@ -43,6 +45,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
     private final PayloadSizeLimitProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
+    private final WriteOperationRetryStrategy writeOperationRetryStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
 
@@ -54,6 +57,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             PayloadSizeLimitProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,
+            WriteOperationRetryStrategy writeOperationRetryStrategy,
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
@@ -62,12 +66,13 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.batchSizeProvider = batchSizeProvider;
         this.writeOperationAckStrategy = writeOperationAckStrategy;
+        this.writeOperationRetryStrategy = writeOperationRetryStrategy;
         this.bytesToWrite = bytesToWrite;
     }
 
     @Override
     protected void protectedRun(final Emitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) throws Throwable {
-        int batchSize = batchSizeProvider.getPayloadSizeLimit();
+        final int batchSize = batchSizeProvider.getPayloadSizeLimit();
 
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
@@ -90,6 +95,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
+                .retryWhen(errorIsRetryableAndAccordingTo(writeOperationRetryStrategy, byteBuffer, batchSize))
                 .toCompletable()
                 .subscribe(
                         new Action0() {
@@ -206,6 +212,54 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         return !emitterWrapper.isWrappedEmitterUnsubscribed();
                     }
                 };
+            }
+        };
+    }
+
+    private static Func1<Observable<? extends Throwable>, Observable<?>> errorIsRetryableAndAccordingTo(
+            final WriteOperationRetryStrategy writeOperationRetryStrategy,
+            final ByteBuffer byteBuffer,
+            final int batchSize) {
+        return new Func1<Observable<? extends Throwable>, Observable<?>>() {
+            @Override
+            public Observable<?> call(Observable<? extends Throwable> emittedOnWriteFailure) {
+                return emittedOnWriteFailure
+                        .flatMap(toLongWriteFailureOrError())
+                        .doOnNext(repositionByteBufferForRetry())
+                        .compose(writeOperationRetryStrategy);
+            }
+
+            @NonNull
+            private Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>> toLongWriteFailureOrError() {
+                return new Func1<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
+                    @Override
+                    public Observable<WriteOperationRetryStrategy.LongWriteFailure> call(Throwable throwable) {
+                        if (!(throwable instanceof BleGattCharacteristicException || throwable instanceof BleGattCannotStartException)) {
+                            return Observable.error(throwable);
+                        }
+                        final int failedBatchIndex = calculateFailedBatchIndex(byteBuffer, batchSize);
+                        WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
+                                failedBatchIndex,
+                                (BleGattException) throwable
+                        );
+                        return Observable.just(longWriteFailure);
+                    }
+                };
+            }
+
+            @NonNull
+            private Action1<WriteOperationRetryStrategy.LongWriteFailure> repositionByteBufferForRetry() {
+                return new Action1<WriteOperationRetryStrategy.LongWriteFailure>() {
+                    @Override
+                    public void call(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
+                        final int newBufferPosition = longWriteFailure.getBatchIndex() * batchSize;
+                        byteBuffer.position(newBufferPosition);
+                    }
+                };
+            }
+
+            private int calculateFailedBatchIndex(ByteBuffer byteBuffer, int batchSize) {
+                return (int) Math.ceil(byteBuffer.position() / (float) batchSize) - 1;
             }
         };
     }

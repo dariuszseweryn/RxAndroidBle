@@ -23,6 +23,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     private Observable<BluetoothGattCharacteristic> writtenCharacteristicObservable;
     private PayloadSizeLimitProvider maxBatchSizeProvider;
     private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
+    private RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy = new NoRetryStrategy();
 
     private byte[] bytes;
 
@@ -64,6 +65,13 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
     }
 
     @Override
+    public RxBleConnection.LongWriteOperationBuilder setWriteOperationRetryStrategy(
+            @NonNull RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy) {
+        this.writeOperationRetryStrategy = writeOperationRetryStrategy;
+        return this;
+    }
+
+    @Override
     public RxBleConnection.LongWriteOperationBuilder setWriteOperationAckStrategy(
             @NonNull RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy) {
         this.writeOperationAckStrategy = writeOperationAckStrategy;
@@ -87,7 +95,7 @@ public final class LongWriteOperationBuilderImpl implements RxBleConnection.Long
             public Observable<byte[]> call(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
                 return operationQueue.queue(
                         operationsProvider.provideLongWriteOperation(bluetoothGattCharacteristic,
-                                writeOperationAckStrategy, maxBatchSizeProvider, bytes)
+                                writeOperationAckStrategy, writeOperationRetryStrategy, maxBatchSizeProvider, bytes)
                 );
             }
         });
