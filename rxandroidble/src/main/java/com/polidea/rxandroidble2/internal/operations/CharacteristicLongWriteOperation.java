@@ -35,7 +35,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observers.DisposableObserver;
 
-import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableEmitter;
+import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableObserverFromEmitter;
 
 public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
@@ -130,7 +130,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                     @Override
                     public void subscribe(ObservableEmitter<ByteAssociation<UUID>> emitter) throws Exception {
                         final DisposableObserver writeCallbackObserver = onCharacteristicWrite
-                                .subscribeWith(disposableEmitter(emitter));
+                                .subscribeWith(disposableObserverFromEmitter(emitter));
                         emitter.setDisposable(writeCallbackObserver);
 
                         /*

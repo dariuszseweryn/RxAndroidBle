@@ -20,7 +20,7 @@ class DummyOperationQueue implements ConnectionOperationQueue {
                 semaphore.awaitRelease()
                 def disposableObserver = operation
                         .run(semaphore)
-                        .subscribeWith(DisposableUtil.disposableEmitter(tEmitter))
+                        .subscribeWith(DisposableUtil.disposableObserverFromEmitter(tEmitter))
                 tEmitter.setDisposable(disposableObserver)
             }
         })
