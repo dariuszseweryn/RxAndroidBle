@@ -178,6 +178,15 @@ public interface RxBleConnection {
         Observable<byte[]> build();
     }
 
+    /**
+     * Retry strategy allows retrying a long write operation. There are two supported scenarios:
+     * - Once the failure happens you may re-emit the failure you've received, applying your own transformations like a delay or any other,
+     * aiming to postpone the retry procedure.
+     * - If that Observable calls {@code onComplete} or {@code onError} then {@code retry} will call
+     * {@code onCompleted} or {@code onError} on the child subscription. The emission will be forwarded as an operation result.
+     *
+     * For general documentation related to retrying please refer to http://reactivex.io/documentation/operators/retry.html
+     */
     interface WriteOperationRetryStrategy extends Observable.Transformer<WriteOperationRetryStrategy.LongWriteFailure,
             WriteOperationRetryStrategy.LongWriteFailure> {
 
