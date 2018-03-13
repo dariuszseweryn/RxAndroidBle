@@ -1,17 +1,17 @@
 package com.polidea.rxandroidble.internal.connection;
 
-import com.polidea.rxandroidble.RxBleConnection;
+import com.polidea.rxandroidble2.RxBleConnection;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class NoRetryStrategy implements RxBleConnection.WriteOperationRetryStrategy {
 
     @Override
-    public Observable<LongWriteFailure> call(Observable<LongWriteFailure> observable) {
-        return observable.flatMap(new Func1<LongWriteFailure, Observable<LongWriteFailure>>() {
+    public Observable<LongWriteFailure> apply(Observable<LongWriteFailure> observable) {
+        return observable.flatMap(new Function<LongWriteFailure, Observable<LongWriteFailure>>() {
             @Override
-            public Observable<LongWriteFailure> call(LongWriteFailure longWriteFailure) {
+            public Observable<LongWriteFailure> apply(LongWriteFailure longWriteFailure) {
                 return Observable.error(longWriteFailure.getCause());
             }
         });

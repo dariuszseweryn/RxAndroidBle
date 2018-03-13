@@ -1,7 +1,28 @@
-# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble%22%20AND%20a%3A%22rxandroidble%22)
+# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com/polidea/rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
 <p align="center">
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
+
+## RxJava2.X :tada: :confetti_ball: :tada:
+
+This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating from RxJava 1 you'll have to use new artifact:
+
+Was:
+```groovy
+compile "com.polidea.rxandroidble:rxandroidble:1.5.0"
+```
+
+Is:
+```groovy
+compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
+```
+
+At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
+
+Therefore, RxJava1 based version reaches state of a **feature freeze** from now on. We will support it in terms of bug fixes till **30th June 2018**, so please plan your migrations ahead of time.
+
+You can read more about differences [here](https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0).
+
 
 ## Introduction
 
@@ -41,7 +62,7 @@ context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 Scanning devices in the area is simple as that:
 
 ```java
-Subscription scanSubscription = rxBleClient.scanBleDevices(
+Disposable scanSubscription = rxBleClient.scanBleDevices(
         new ScanSettings.Builder()
             // .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // change if needed
             // .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES) // change if needed
@@ -57,8 +78,8 @@ Subscription scanSubscription = rxBleClient.scanBleDevices(
         }
     );
 
-// When done, just unsubscribe.
-scanSubscription.unsubscribe();
+// When done, just dispose.
+scanSubscription.dispose();
 ```
 For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
 
@@ -67,8 +88,8 @@ On Android it is not always trivial to determine if a particular BLE operation h
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
-Subscription flowSubscription = rxBleClient.observeStateChanges()
-    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will unsubscribe and thus end the scan
+Disposable flowDisposable = rxBleClient.observeStateChanges()
+    .switchMap(state -> { // switchMap makes sure that if the state will change the rxBleClient.scanBleDevices() will dispose and thus end the scan
         switch (state) {
 
             case READY:
@@ -95,8 +116,8 @@ Subscription flowSubscription = rxBleClient.observeStateChanges()
     	}
     );
     
-// When done, just unsubscribe.
-flowSubscription.unsubscribe();
+// When done, just dispose.
+flowDisposable.dispose();
 ```
 
 ### Connection
@@ -106,7 +127,7 @@ For further BLE interactions the connection is required.
 String macAddress = "AA:BB:CC:DD:EE:FF";
 RxBleDevice device = rxBleClient.getBleDevice(macAddress);
 
-Subscription subscription = device.establishConnection(false) // <-- autoConnect flag
+Disposable disposable = device.establishConnection(false) // <-- autoConnect flag
     .subscribe(
         rxBleConnection -> {
             // All GATT operations are done through the rxBleConnection.
@@ -116,8 +137,8 @@ Subscription subscription = device.establishConnection(false) // <-- autoConnect
         }
     );
 
-// When done... unsubscribe and forget about connection teardown :)
-subscription.unsubscribe();
+// When done... dispose and forget about connection teardown :)
+disposable.dispose();
 ```
 
 #### Auto connect
@@ -266,9 +287,9 @@ From different interfaces, you can obtain different `Observable`s which exhibit 
 There are three types of `Observable`s that you may encounter.
 1. Single value, completing — i.e. `RxBleConnection.readCharacteristic()`, `RxBleConnection.writeCharacteristic()`, etc.
 2. Multiple values, not completing - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
-3. Single value, not completing — these usually are meant for auto cleanup upon unsubscribing i.e. `setupNotification()` / `setupIndication()` — when you will unsubscribe the notification / indication will be disabled 
+3. Single value, not completing — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
 
-`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should unsubscribe from it which will cause disconnection and cleanup of resources. 
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources. 
 
 The below table contains an overview of used `Observable` patterns
 
@@ -293,7 +314,7 @@ The below table contains an overview of used `Observable` patterns
 | RxBleConnection | queue() | User defined | User defined | cold |
 | LongWriteOperationBuilder | build() | Single | true | cold |
 
-\* this `Observable` when unsubscribed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
+\* this `Observable` when disposed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
 \** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
 
 ### Helpers
@@ -322,15 +343,15 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.4.3"
+compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
 ```
 ### Maven
 
 ```xml
 <dependency>
-  <groupId>com.polidea.rxandroidble</groupId>
+  <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.4.3</version>
+  <version>1.5.0</version>
   <type>aar</type>
 </dependency>
 ```

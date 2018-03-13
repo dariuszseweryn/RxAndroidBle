@@ -8,6 +8,7 @@
 SLUG="Polidea/RxAndroidBle"
 JDK="oraclejdk8"
 BRANCH="master"
+# TODO [PU] Eventually branch name should be set to master and the RxJava 1.0 version should be moved to "master-rxjava1.X
 
 set -e
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
