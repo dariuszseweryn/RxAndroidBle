@@ -2,6 +2,13 @@ Change Log
 ==========
 
 Version 1.5.0-SNAPSHOT (RxJava2)
+* Added possibility to change default operation timeout (https://github.com/Polidea/RxAndroidBle/pull/321)
+* Fixed Dagger2 compatibility (https://github.com/Polidea/RxAndroidBle/pull/342 https://github.com/Polidea/RxAndroidBle/pull/348)
+* Fixed DisconnectionRouter leaking subscription to RxBleAdapterStateObservable (https://github.com/Polidea/RxAndroidBle/pull/353)
+* Improved Location Services status check (https://github.com/Polidea/RxAndroidBle/issues/327)
+* Added logger that prints out GATT server structure on a successful discovery. The log is generated when the logger is in a VERBOSE level (https://github.com/Polidea/RxAndroidBle/pull/355)
+* Enchanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
+* Added retry strategies for long write operations (https://github.com/Polidea/RxAndroidBle/pull/357)
 * Introduced API in RxJava2
 * Removed deprecated establishConnection method
 * Removed deprecated writeCharacteristic method
