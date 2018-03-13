@@ -15,7 +15,7 @@ class MockRxBleAdapterStateObservable {
         Observable.create(new ObservableOnSubscribe() {
             @Override
             void subscribe(@NonNull ObservableEmitter observableEmitter) throws Exception {
-                def subscription = relay.subscribeWith(DisposableUtil.disposableEmitter(observableEmitter))
+                def subscription = relay.subscribeWith(DisposableUtil.disposableObserverFromEmitter(observableEmitter))
                 observableEmitter.setDisposable(subscription)
             }
         })

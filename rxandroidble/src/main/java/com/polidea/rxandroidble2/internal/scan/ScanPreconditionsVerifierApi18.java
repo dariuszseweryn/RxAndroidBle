@@ -25,10 +25,11 @@ public class ScanPreconditionsVerifierApi18 implements ScanPreconditionsVerifier
             throw new BleScanException(BleScanException.BLUETOOTH_NOT_AVAILABLE);
         } else if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
             throw new BleScanException(BleScanException.BLUETOOTH_DISABLED);
-        } else if (!locationServicesStatus.isLocationPermissionOk()) {
-            throw new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING);
-        } else if (!locationServicesStatus.isLocationProviderOk()) {
-            throw new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED);
         }
+//        else if (!locationServicesStatus.isLocationPermissionOk()) {
+////            throw new BleScanException(BleScanException.LOCATION_PERMISSION_MISSING);
+//        } else if (!locationServicesStatus.isLocationProviderOk()) {
+////            throw new BleScanException(BleScanException.LOCATION_SERVICES_DISABLED);
+//        }
     }
 }

@@ -34,7 +34,7 @@ import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CON
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;
 import static com.polidea.rxandroidble2.internal.DeviceModule.CONNECT_TIMEOUT;
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
-import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableSingleEmitter;
+import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableSingleObserverFromEmitter;
 
 public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
@@ -76,7 +76,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                 .compose(wrapWithTimeoutWhenNotAutoconnecting())
                 // when there are no subscribers there is no point of continuing work -> next will be disconnect operation
                 .doFinally(queueReleaseAction)
-                .subscribeWith(disposableSingleEmitter(emitter));
+                .subscribeWith(disposableSingleObserverFromEmitter(emitter));
         emitter.setDisposable(disposableGattObserver);
 
         if (autoConnect) {
@@ -141,7 +141,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                         // disconnect may happen even if the connection was not established yet
                         .mergeWith(rxBleGattCallback.<BluetoothGatt>observeDisconnect().firstOrError())
                         .firstOrError()
-                        .subscribeWith(disposableSingleEmitter(emitter));
+                        .subscribeWith(disposableSingleObserverFromEmitter(emitter));
 
                 emitter.setDisposable(disposableGattObserver);
                 connectionStateChangedAction.onConnectionStateChange(CONNECTING);
