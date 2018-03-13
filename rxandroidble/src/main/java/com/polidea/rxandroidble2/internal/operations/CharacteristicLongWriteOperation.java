@@ -7,10 +7,13 @@ import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection.WriteOperationAckStrategy;
+import com.polidea.rxandroidble2.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.QueueOperation;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
@@ -31,6 +34,7 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observers.DisposableObserver;
@@ -46,6 +50,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
     private final PayloadSizeLimitProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
+    private final WriteOperationRetryStrategy writeOperationRetryStrategy;
     private final byte[] bytesToWrite;
     private byte[] tempBatchArray;
 
@@ -57,6 +62,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             PayloadSizeLimitProvider batchSizeProvider,
             WriteOperationAckStrategy writeOperationAckStrategy,
+            WriteOperationRetryStrategy writeOperationRetryStrategy,
             byte[] bytesToWrite) {
         this.bluetoothGatt = bluetoothGatt;
         this.rxBleGattCallback = rxBleGattCallback;
@@ -65,6 +71,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
         this.batchSizeProvider = batchSizeProvider;
         this.writeOperationAckStrategy = writeOperationAckStrategy;
+        this.writeOperationRetryStrategy = writeOperationRetryStrategy;
         this.bytesToWrite = bytesToWrite;
     }
 
@@ -93,6 +100,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
+                .retryWhen(errorIsRetryableAndAccordingTo(writeOperationRetryStrategy, byteBuffer, batchSize))
                 .subscribe(new Observer<ByteAssociation<UUID>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -219,6 +227,55 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         return !emitterWrapper.isWrappedEmitterUnsubscribed();
                     }
                 };
+            }
+        };
+    }
+
+    private static Function<Observable<Throwable>, ObservableSource<?>> errorIsRetryableAndAccordingTo(
+            final WriteOperationRetryStrategy writeOperationRetryStrategy,
+            final ByteBuffer byteBuffer,
+            final int batchSize) {
+        return new Function<Observable<Throwable>, ObservableSource<?>>() {
+
+            @Override
+            public ObservableSource<?> apply(Observable<Throwable> emittedOnWriteFailure) {
+                return emittedOnWriteFailure
+                        .flatMap(toLongWriteFailureOrError())
+                        .doOnNext(repositionByteBufferForRetry())
+                        .compose(writeOperationRetryStrategy);
+            }
+
+            @NonNull
+            private Function<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>> toLongWriteFailureOrError() {
+                return new Function<Throwable, Observable<WriteOperationRetryStrategy.LongWriteFailure>>() {
+                    @Override
+                    public Observable<WriteOperationRetryStrategy.LongWriteFailure> apply(Throwable throwable) {
+                        if (!(throwable instanceof BleGattCharacteristicException || throwable instanceof BleGattCannotStartException)) {
+                            return Observable.error(throwable);
+                        }
+                        final int failedBatchIndex = calculateFailedBatchIndex(byteBuffer, batchSize);
+                        WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
+                                failedBatchIndex,
+                                (BleGattException) throwable
+                        );
+                        return Observable.just(longWriteFailure);
+                    }
+                };
+            }
+
+            @NonNull
+            private Consumer<WriteOperationRetryStrategy.LongWriteFailure> repositionByteBufferForRetry() {
+                return new Consumer<WriteOperationRetryStrategy.LongWriteFailure>() {
+                    @Override
+                    public void accept(WriteOperationRetryStrategy.LongWriteFailure longWriteFailure) {
+                        final int newBufferPosition = longWriteFailure.getBatchIndex() * batchSize;
+                        byteBuffer.position(newBufferPosition);
+                    }
+                };
+            }
+
+            private int calculateFailedBatchIndex(ByteBuffer byteBuffer, int batchSize) {
+                return (int) Math.ceil(byteBuffer.position() / (float) batchSize) - 1;
             }
         };
     }

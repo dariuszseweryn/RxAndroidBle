@@ -12,6 +12,7 @@ import android.support.annotation.RequiresApi;
 import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException;
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
@@ -134,6 +135,23 @@ public interface RxBleConnection {
         LongWriteOperationBuilder setMaxBatchSize(@IntRange(from = 1, to = GATT_MTU_MAXIMUM - GATT_WRITE_MTU_OVERHEAD) int maxBatchSize);
 
         /**
+         * Setter for a retry strategy in case something goes wrong when writing data. If any {@link BleException} is raised,
+         * a {@link WriteOperationRetryStrategy.LongWriteFailure} object is emitted.
+         * {@link WriteOperationRetryStrategy.LongWriteFailure} contains both the {@link BleException} and the batch number
+         * for which the write request failed. The {@link WriteOperationRetryStrategy.LongWriteFailure} emitted by the
+         * writeOperationRetryStrategy will be used to retry the specified batch number write request.
+         * <br>
+         * If this is not specified - if batch write fails, the long write operation is stopped and whole operation is interrupted.
+         * <br>
+         * It is expected that the Observable returned from the writeOperationRetryStrategy will emit exactly the same events as the source,
+         * however you may delay them at your pace.
+         *
+         * @param writeOperationRetryStrategy the retry strategy
+         * @return the LongWriteOperationBuilder
+         */
+        LongWriteOperationBuilder setWriteOperationRetryStrategy(@NonNull WriteOperationRetryStrategy writeOperationRetryStrategy);
+
+        /**
          * Setter for a strategy used to mark batch write completed. Only after previous batch has finished, the next (if any left) can be
          * written.
          * If this is not specified - the next batch of bytes is written right after the previous one has finished.
@@ -160,6 +178,54 @@ public interface RxBleConnection {
          * @return the Observable which will enqueue the long write operation when subscribed.
          */
         Observable<byte[]> build();
+    }
+
+    /**
+     * Retry strategy allows retrying a long write operation. There are two supported scenarios:
+     * - Once the failure happens you may re-emit the failure you've received, applying your own transformations like a delay or any other,
+     * aiming to postpone the retry procedure.
+     * - If that Observable calls {@code onComplete} or {@code onError} then {@code retry} will call
+     * {@code onCompleted} or {@code onError} on the child subscription. The emission will be forwarded as an operation result.
+     *
+     * For general documentation related to retrying please refer to http://reactivex.io/documentation/operators/retry.html
+     */
+    interface WriteOperationRetryStrategy extends ObservableTransformer<WriteOperationRetryStrategy.LongWriteFailure,
+            WriteOperationRetryStrategy.LongWriteFailure> {
+
+        class LongWriteFailure {
+
+            final int batchIndex;
+            final BleGattException cause;
+
+            /**
+             * Default constructor
+             *
+             * @param batchIndex the zero-based batch index on which the write request failed
+             * @param cause       the failed cause of the write request
+             */
+            public LongWriteFailure(int batchIndex, BleGattException cause) {
+                this.batchIndex = batchIndex;
+                this.cause = cause;
+            }
+
+            /**
+             * Get the batch index of the failed write request
+             *
+             * @return the zero-based batch index
+             */
+            public int getBatchIndex() {
+                return batchIndex;
+            }
+
+            /**
+             * Get the failed cause of the write request
+             *
+             * @return a {@link BleGattException}
+             */
+            public BleGattException getCause() {
+                return cause;
+            }
+        }
     }
 
     interface WriteOperationAckStrategy extends ObservableTransformer<Boolean, Boolean> {
@@ -427,7 +493,6 @@ public interface RxBleConnection {
      * @see #discoverServices() to obtain the characteristic.
      */
     Completable writeDescriptor(@NonNull BluetoothGattDescriptor descriptor, @NonNull byte[] data);
-
 
     /**
      * Performs a GATT request connection priority operation, which requests a connection parameter

@@ -15,6 +15,7 @@ public interface OperationsProvider {
     CharacteristicLongWriteOperation provideLongWriteOperation(
             BluetoothGattCharacteristic bluetoothGattCharacteristic,
             RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy,
+            RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy,
             PayloadSizeLimitProvider maxBatchSizeProvider,
             byte[] bytes);
 

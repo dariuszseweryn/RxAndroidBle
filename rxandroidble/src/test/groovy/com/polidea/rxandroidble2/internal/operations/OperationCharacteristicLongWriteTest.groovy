@@ -1,14 +1,16 @@
 package com.polidea.rxandroidble2.internal.operations
-
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import com.polidea.rxandroidble.internal.connection.NoRetryStrategy
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOperation
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
@@ -38,6 +40,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     RxBleGattCallback mockCallback = Mock RxBleGattCallback
     BluetoothGattCharacteristic mockCharacteristic = Mock BluetoothGattCharacteristic
     RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy
+    RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy
     TestScheduler testScheduler = new TestScheduler()
     TestScheduler timeoutScheduler = new TestScheduler()
     Scheduler immediateScheduler = Schedulers.trampoline()
@@ -46,6 +49,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
     CharacteristicLongWriteOperation objectUnderTest
     @Shared
     Exception testException = new Exception("testException")
+    BleGattCharacteristicException bleGattCharacteristicException = Mock BleGattCharacteristicException
 
     def setup() {
         mockCharacteristic.getUuid() >> mockCharacteristicUUID
@@ -194,30 +198,205 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         1 * mockCharacteristic.setValue(_) >> true
     }
 
-    def "should call next BluetoothGatt.writeCharacteristic() after the previous RxBleGattCallback.onCharacteristicWrite() emits and operation is acknowledged"() {
+    def "should attempt to write next batch after the previous has completed and has been acknowledged - no retry strategy"() {
         given:
+        this.writeOperationRetryStrategy = new NoRetryStrategy()
         AcknowledgementTrigger writeAckTrigger = givenWillTriggerWriteAcknowledgement()
         givenEachCharacteristicWriteOkAfterDefaultDelay()
-        prepareObjectUnderTest(20, byteArray(60))
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
 
         when:
         objectUnderTest.run(mockQueueReleaseInterface).test()
         advanceTimeForWritesToComplete(1)
 
         then:
-        1 * mockCharacteristic.setValue(_) >> true
-
-        when:
-        advanceTimeForWrites(0)
-
-        then:
-        0 * mockCharacteristic.setValue(_) >> true
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
 
         when:
         writeAckTrigger.acknowledgeWrite()
 
         then:
-        1 * mockCharacteristic.setValue(_) >> true
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+    }
+
+    def "should not attempt to write next batch or rewrite after the previous has failed - no retry strategy"() {
+        given:
+        this.writeOperationRetryStrategy = new NoRetryStrategy()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+        testSubscriber.assertError(BleGattCannotStartException)
+    }
+
+    def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - first batch"() {
+        given:
+        this.writeOperationRetryStrategy = givenWillRetryWriteOperation()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+        testSubscriber.assertNoTerminalEvent()
+
+        when:
+        writeOperationRetryStrategy.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x3, 0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertCompleted()
+    }
+
+    def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - mid batch"() {
+        given:
+        this.writeOperationRetryStrategy = givenWillRetryWriteOperation()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+
+        when:
+        writeOperationRetryStrategy.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x3, 0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertCompleted()
+    }
+
+    def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - last batch"() {
+        given:
+        this.writeOperationRetryStrategy = givenWillRetryWriteOperation()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x3, 0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+
+        when:
+        writeOperationRetryStrategy.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue([0x3, 0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertCompleted()
+    }
+
+    def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - last batch, uneven count"() {
+        given:
+        this.writeOperationRetryStrategy = givenWillRetryWriteOperation()
+        this.writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
+
+        when:
+        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+
+        then:
+        1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x2, 0x2] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        then:
+        1 * mockCharacteristic.setValue([0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
+
+        when:
+        writeOperationRetryStrategy.triggerRetry()
+
+        then:
+        1 * mockCharacteristic.setValue([0x3] as byte[]) >> true
+        1 * mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(characteristic.getUuid(), [] as byte[]))
+            true
+        }
+
+        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
+        testSubscriber.assertCompleted()
     }
 
     def "should release QueueReleaseInterface after successful write"() {
@@ -362,12 +541,19 @@ public class OperationCharacteristicLongWriteTest extends Specification {
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
         writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()
+        writeOperationRetryStrategy = new NoRetryStrategy()
     }
 
     private AcknowledgementTrigger givenWillTriggerWriteAcknowledgement() {
         def trigger = new AcknowledgementTrigger()
         this.writeOperationAckStrategy = trigger
         return trigger
+    }
+
+    private RetryWriteOperation givenWillRetryWriteOperation() {
+        def retry = new RetryWriteOperation()
+        this.writeOperationRetryStrategy = retry
+        return retry
     }
 
     class AcknowledgementTrigger implements RxBleConnection.WriteOperationAckStrategy {
@@ -388,6 +574,28 @@ public class OperationCharacteristicLongWriteTest extends Specification {
                 Observable<Boolean> apply(Boolean o) {
                     return triggerSubject
                 }
+            })
+        }
+    }
+
+    class RetryWriteOperation implements RxBleConnection.WriteOperationRetryStrategy {
+
+        private final PublishSubject triggerSubject = PublishSubject.create()
+
+        public void triggerRetry() {
+            triggerSubject.with {
+                onNext(true)
+                onCompleted()
+            }
+        }
+
+        @Override
+        Observable<RxBleConnection.WriteOperationRetryStrategy.LongWriteFailure> apply(
+                Observable<RxBleConnection.WriteOperationRetryStrategy.LongWriteFailure> longWriteFailureObservable) {
+            return longWriteFailureObservable.flatMap({ longWriteFailure ->
+                return triggerSubject.map({ aBoolean ->
+                    return longWriteFailure
+                })
             })
         }
     }
@@ -495,6 +703,26 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         }
     }
 
+    private givenCharacteristicWriteOkButEventuallyFailsToWrite(int failingWriteIndex) {
+        AtomicInteger writeIndex = new AtomicInteger(0)
+
+        mockGatt.writeCharacteristic(mockCharacteristic) >> { BluetoothGattCharacteristic characteristic ->
+            UUID uuid = characteristic.getUuid()
+            byte[] returnBytes = new byte[0]
+
+            testScheduler.createWorker().schedule({
+                int currentIndex = writeIndex.getAndIncrement()
+                if (currentIndex == failingWriteIndex) {
+                    onCharacteristicWriteSubject.onError(bleGattCharacteristicException)
+                } else {
+                    onCharacteristicWriteSubject.onNext(new ByteAssociation<UUID>(uuid, returnBytes))
+                }
+            }, DEFAULT_WRITE_DELAY, TimeUnit.SECONDS)
+
+            true
+        }
+    }
+
     private givenCharacteristicWriteOkButEventuallyStalls(int failingWriteIndex) {
         AtomicInteger writeIndex = new AtomicInteger(0)
 
@@ -522,6 +750,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
                 mockCharacteristic,
                 { maxBatchSize },
                 writeOperationAckStrategy,
+                writeOperationRetryStrategy,
                 testData
         )
     }

@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.mockrxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.polidea.rxandroidble2.NotificationSetupMode;
 import com.polidea.rxandroidble2.RxBleConnection;
@@ -296,6 +297,13 @@ public class RxBleConnectionMock implements RxBleConnection {
             @Override
             public LongWriteOperationBuilder setMaxBatchSize(int maxBatchSize) {
                 this.maxBatchSize = maxBatchSize;
+                return this;
+            }
+
+            @Override
+            public LongWriteOperationBuilder setWriteOperationRetryStrategy(
+                    @NonNull WriteOperationRetryStrategy writeOperationRetryStrategy) {
+                Log.e("RxBleConnectionMock", "Mock does not support retry strategies. It will always default to no retry.");
                 return this;
             }
 
