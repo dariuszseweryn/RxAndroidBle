@@ -23,9 +23,7 @@ public class DisposableUtil {
 
             @Override
             public void onError(Throwable e) {
-                if (!emitter.isDisposed()) {
-                    emitter.onError(e);
-                }
+                emitter.tryOnError(e);
             }
         };
     }
@@ -35,16 +33,12 @@ public class DisposableUtil {
 
             @Override
             public void onNext(T t) {
-                if (!emitter.isDisposed()) {
-                    emitter.onNext(t);
-                }
+                emitter.onNext(t);
             }
 
             @Override
             public void onError(Throwable e) {
-                if (!emitter.isDisposed()) {
-                    emitter.onError(e);
-                }
+                emitter.tryOnError(e);
             }
 
             @Override
@@ -69,9 +63,7 @@ public class DisposableUtil {
 
             @Override
             public void onError(Throwable e) {
-                if (!emitter.isDisposed()) {
-                    emitter.onError(e);
-                }
+                emitter.tryOnError(e);
             }
         };
     }
