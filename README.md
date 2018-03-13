@@ -327,7 +327,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.4.3"
+compile "com.polidea.rxandroidble:rxandroidble:1.5.0"
 ```
 ### Maven
 
@@ -335,7 +335,7 @@ compile "com.polidea.rxandroidble:rxandroidble:1.4.3"
 <dependency>
   <groupId>com.polidea.rxandroidble</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.4.3</version>
+  <version>1.5.0</version>
   <type>aar</type>
 </dependency>
 ```
