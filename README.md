@@ -5,13 +5,21 @@
 
 ## RxJava2.X :tada: :confetti_ball: :tada:
 
-RxJava2.X finally reached a state where you can use the snapshot. Keep in mind that this is provided AS IS and may be subject to issues.
+This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating from RxJava 1 you'll have to use new artifact:
 
-We'll be happy to hear your feedback if you'd see any issues.
+Was:
+```groovy
+compile "com.polidea.rxandroidble:rxandroidble:1.5.0"
+```
 
-Come and chat with us on Gitter https://gitter.im/RxBLELibraries/RxAndroidBle
+Is:
+```groovy
+compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
+```
 
-At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 apply.
+At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
+
+Therefore, RxJava1 based version reaches state of a **feature freeze** from now on. We will support it in terms of bug fixes till **30th June 2018**, so please plan your migrations ahead of time.
 
 You can read more about differences [here](https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0).
 
