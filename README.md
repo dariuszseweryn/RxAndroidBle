@@ -3,6 +3,11 @@
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
 
+## Migration!
+Please be aware that you are on a RxJava1 branch. Migration to RxJava2 is suggested, which can be found [here](https://github.com/Polidea/RxAndroidBle). 
+
+RxJava1 based branch will not receive new features. Bug fixes and support fill be provided till 30th June 2018.
+
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
