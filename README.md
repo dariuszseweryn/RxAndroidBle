@@ -335,7 +335,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble2:1.5.0"
+compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
 ```
 ### Maven
 
