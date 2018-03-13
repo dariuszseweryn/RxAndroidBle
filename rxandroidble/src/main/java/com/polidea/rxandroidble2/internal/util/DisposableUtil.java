@@ -16,9 +16,7 @@ public class DisposableUtil {
 
             @Override
             public void onSuccess(T t) {
-                if (!emitter.isDisposed()) {
-                    emitter.onSuccess(t);
-                }
+                emitter.onSuccess(t);
             }
 
             @Override
@@ -43,9 +41,7 @@ public class DisposableUtil {
 
             @Override
             public void onComplete() {
-                if (!emitter.isDisposed()) {
-                    emitter.onComplete();
-                }
+                emitter.onComplete();
             }
         };
     }
@@ -55,10 +51,8 @@ public class DisposableUtil {
 
             @Override
             public void onSuccess(T t) {
-                if (!emitter.isDisposed()) {
-                    emitter.onNext(t);
-                    emitter.onComplete();
-                }
+                emitter.onNext(t);
+                emitter.onComplete();
             }
 
             @Override

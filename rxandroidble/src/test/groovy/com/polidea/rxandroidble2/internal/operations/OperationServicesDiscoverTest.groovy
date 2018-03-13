@@ -11,6 +11,9 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble2.internal.util.RxBleServicesLogger
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
+import io.reactivex.ObservableOnSubscribe
+import io.reactivex.annotations.NonNull
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
@@ -32,6 +35,25 @@ public class OperationServicesDiscoverTest extends Specification {
     def setup() {
         mockGattCallback.getOnServicesDiscovered() >> onServicesDiscoveredPublishSubject
         prepareObjectUnderTest()
+    }
+
+    def "sdox"() {
+        expect:
+        PublishSubject<Boolean> subject = PublishSubject.create()
+        def disposable = Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            void subscribe(@NonNull ObservableEmitter emitter) throws Exception {
+//                subject.subscribe(DisposableUtil.disposableObserverFromEmitter(emitter))
+                emitter.onNext(true)
+                emitter.onComplete()
+//                emitter.onError(new RuntimeException("Aha!"))
+            }
+        })
+        .firstOrError()
+                .test()
+        disposable.dispose()
+//        subject.onError(new RuntimeException("Aha!"))
+        disposable.assertNoErrors()
     }
 
     def "should call BluetoothGatt.discoverServices() exactly once when run()"() {
@@ -126,7 +148,7 @@ public class OperationServicesDiscoverTest extends Specification {
 
         and:
         testSubscriber.assertError {
-            ((BleGattCallbackTimeoutException)it).getBleGattOperationType() == BleGattOperationType.SERVICE_DISCOVERY
+            ((BleGattCallbackTimeoutException) it).getBleGattOperationType() == BleGattOperationType.SERVICE_DISCOVERY
         }
     }
 
