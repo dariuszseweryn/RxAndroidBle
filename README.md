@@ -155,7 +155,7 @@ Be careful not to overuse the autoConnect flag. On the other side it has negativ
 #### Read
 ```java
 device.establishConnection(false)
-    .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
+    .flatMapSingle(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID))
     .subscribe(
         characteristicValue -> {
             // Read characteristic value.
@@ -168,7 +168,7 @@ device.establishConnection(false)
 #### Write
 ```java
 device.establishConnection(false)
-    .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
+    .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, bytesToWrite))
     .subscribe(
         characteristicValue -> {
             // Characteristic value confirmed.
@@ -181,7 +181,7 @@ device.establishConnection(false)
 #### Multiple reads
 ```java
 device.establishConnection(false)
-    .flatMap(rxBleConnection -> Observable.combineLatest(
+    .flatMap(rxBleConnection -> Single.zip(
         rxBleConnection.readCharacteristic(firstUUID),
         rxBleConnection.readCharacteristic(secondUUID),
         YourModelCombiningTwoValues::new
@@ -202,6 +202,7 @@ device.establishConnection(false)
         .setCharacteristicUuid(uuid) // required or the .setCharacteristic()
         // .setCharacteristic() alternative if you have a specific BluetoothGattCharacteristic
         .setBytes(byteArray)
+        // .setWriteOperationRetryStrategy(retryStrategy) // if you'd like to retry batch write operations on failure, provide your own retry strategy
         // .setMaxBatchSize(maxBatchSize) // optional -> default 20 or current MTU
         // .setWriteOperationAckStrategy(ackStrategy) // optional to postpone writing next batch
         .build()
@@ -219,7 +220,7 @@ device.establishConnection(false)
 
 ```java
 device.establishConnection(false)
-    .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
+    .flatMapSingle(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
         .doOnNext(bytes -> {
             // Process read data.
         })
