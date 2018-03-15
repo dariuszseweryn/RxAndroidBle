@@ -1,7 +1,8 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble2.exceptions.BleGattException;
+import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import bleshadow.javax.inject.Inject;
@@ -25,7 +26,8 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
                 .retry(new Predicate<Throwable>() {
                     @Override
                     public boolean test(Throwable throwable) throws Exception {
-                        return !(throwable instanceof BleDisconnectedException);
+                        return throwable instanceof BleGattException
+                                && ((BleGattException) throwable).getBleGattOperationType() == BleGattOperationType.ON_MTU_CHANGED;
                     }
                 });
         this.currentMtu = initialValue;
