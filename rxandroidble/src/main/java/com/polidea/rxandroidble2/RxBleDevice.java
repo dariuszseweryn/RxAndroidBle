@@ -6,6 +6,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
@@ -103,6 +104,8 @@ public interface RxBleDevice {
      *                                         the code proxied from the Android system.
      * @throws BleGattCallbackTimeoutException emitted when an internal timeout for connection has been reached. The operation will
      *                                         timeout in direct mode (autoConnect = false) after 35 seconds.
+     * @throws BleAlreadyConnectedException    Error emitted when the connection to a specified device is already established or is being
+     *                                         established. In order to share the connection, share #establishConnection emissions.
      */
     Observable<RxBleConnection> establishConnection(boolean autoConnect, @NonNull Timeout operationTimeout);
 
