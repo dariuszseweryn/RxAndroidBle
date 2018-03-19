@@ -7,13 +7,13 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.jakewharton.rx.ReplayingShare;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.util.HexString;
-import com.polidea.rxandroidble2.utils.ConnectionSharingAdapter;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
@@ -67,7 +67,7 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                 .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
                 .compose(bindUntilEvent(PAUSE))
-                .compose(new ConnectionSharingAdapter());
+                .compose(ReplayingShare.instance());
     }
 
     @OnClick(R.id.connect)
