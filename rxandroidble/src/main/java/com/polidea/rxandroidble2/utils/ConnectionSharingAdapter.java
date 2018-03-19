@@ -31,8 +31,12 @@ import io.reactivex.functions.Action;
  * .subscribe();
  * </pre>
  *
+ * @deprecated As of RxAndroidBLE 1.6.0, the connection sharing adapter is deprecated. Consider implementing your own way of maintaining the
+ * connection state or use ReplayingShare (http://github.com/JakeWharton/RxReplayingShare)
+ *
  * @see com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException
  */
+@Deprecated
 public class ConnectionSharingAdapter implements ObservableTransformer<RxBleConnection, RxBleConnection> {
 
     private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
