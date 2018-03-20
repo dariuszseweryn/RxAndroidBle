@@ -419,4 +419,5 @@ Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELi
 
 ## Maintained by
 
+
 [![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
