@@ -1,7 +1,12 @@
 package com.polidea.rxandroidble2
 
+import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanFilter
+import android.bluetooth.le.ScanSettings
+import android.os.Build
+import android.support.annotation.RequiresApi
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 
 class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
@@ -68,6 +73,17 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
     void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
 
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    public int startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, PendingIntent callbackIntent) {
+    return 0
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    public void stopLeScan(PendingIntent callbackIntent) {
+
+    }
+
 
     @Override
     Set<BluetoothDevice> getBondedDevices() {

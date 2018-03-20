@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
@@ -119,6 +120,11 @@ public abstract class RxBleClient {
      * @param scanFilters Filtering settings
      */
     public abstract Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters);
+
+    /**
+     * Returns a background scanner instance that can be used to handle background scans, even if your process is stopped.
+     */
+    public abstract BackgroundScanner getBackgroundScanner();
 
     /**
      * Returns an observable emitting state _changes_ of the RxBleClient environment which may be helpful in deciding if particular
