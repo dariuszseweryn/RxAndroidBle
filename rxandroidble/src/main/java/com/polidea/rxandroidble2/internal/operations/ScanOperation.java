@@ -44,11 +44,11 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
             boolean startLeScanStatus = startScan(rxBleAdapterWrapper, scanCallback);
 
             if (!startLeScanStatus) {
-                emitter.onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+                emitter.tryOnError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
             }
         } catch (Throwable throwable) {
             RxBleLog.e(throwable, "Error while calling the start scan function");
-            emitter.onError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+            emitter.tryOnError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
         } finally {
             queueReleaseInterface.release();
         }

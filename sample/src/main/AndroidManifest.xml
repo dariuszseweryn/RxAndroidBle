@@ -31,5 +31,7 @@
             android:name=".example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity"
             android:label="@string/title_example4"/>
         <activity android:name="com.polidea.rxandroidble2.sample.DeviceActivity"/>
+
+        <service android:name=".DeviceService"/>
     </application>
 </manifest>

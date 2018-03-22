@@ -62,7 +62,7 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
 
                         @Override
                         public void onError(Throwable e) {
-                            operationResultObserver.onError(e);
+                            operationResultObserver.tryOnError(e);
                         }
 
                         @Override

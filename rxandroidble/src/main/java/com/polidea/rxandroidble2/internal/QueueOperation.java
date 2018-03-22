@@ -40,9 +40,9 @@ public abstract class QueueOperation<T> implements Operation<T> {
                         try {
                             protectedRun(emitter, queueReleaseInterface);
                         } catch (DeadObjectException deadObjectException) {
-                            emitter.onError(provideException(deadObjectException));
+                            emitter.tryOnError(provideException(deadObjectException));
                         } catch (Throwable throwable) {
-                            emitter.onError(throwable);
+                            emitter.tryOnError(throwable);
                         }
                     }
                 }

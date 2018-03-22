@@ -23,7 +23,7 @@ public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable
 
     private final AtomicBoolean isEmitterCanceled = new AtomicBoolean(false);
 
-    private final Emitter<T> emitter;
+    private final ObservableEmitter<T> emitter;
 
     private final QueueReleaseInterface queueReleaseInterface;
 
@@ -42,7 +42,7 @@ public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable
     @Override
     public void onError(Throwable e) {
         queueReleaseInterface.release();
-        emitter.onError(e);
+        emitter.tryOnError(e);
     }
 
     @Override

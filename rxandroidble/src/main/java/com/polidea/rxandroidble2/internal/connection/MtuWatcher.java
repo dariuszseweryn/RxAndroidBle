@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2.internal.connection;
 
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
@@ -43,7 +42,7 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
         mtuObservable.subscribe(this, new Consumer<Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
-                RxBleLog.d(throwable, "An error received when listening to MTU changes.");
+                // ignoring, this is expected when the connection is lost.
             }
         });
     }

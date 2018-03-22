@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.internal.operations
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import com.polidea.rxandroidble.internal.connection.NoRetryStrategy
+import com.polidea.rxandroidble2.internal.connection.NoRetryStrategy
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException
@@ -10,7 +10,6 @@ import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
-import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOperation
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration

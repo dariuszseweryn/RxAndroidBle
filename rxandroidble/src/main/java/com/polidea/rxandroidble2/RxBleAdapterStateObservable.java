@@ -6,9 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import bleshadow.javax.inject.Inject;
-
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposables;
@@ -40,6 +40,8 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
     }
 
+    private static final String TAG = "AdapterStateObs";
+
     @NonNull
     private final Context context;
 
@@ -65,7 +67,11 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         observer.onSubscribe(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                context.unregisterReceiver(receiver);
+                try {
+                    context.unregisterReceiver(receiver);
+                } catch (IllegalArgumentException exception) {
+                    Log.d(TAG, "The receiver is already not registered.");
+                }
             }
         }));
     }

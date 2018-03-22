@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.internal.connection;
+package com.polidea.rxandroidble2.internal.connection;
 
 import com.polidea.rxandroidble2.RxBleConnection;
 

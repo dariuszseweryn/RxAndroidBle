@@ -59,7 +59,7 @@ public class ScanActivity extends AppCompatActivity {
                             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
                             .build(),
                     new ScanFilter.Builder()
-                            .setDeviceAddress("B4:99:4C:34:DC:8B")
+//                            .setDeviceAddress("B4:99:4C:34:DC:8B")
                             // add custom filters if needed
                             .build()
             )

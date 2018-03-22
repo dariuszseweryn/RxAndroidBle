@@ -89,7 +89,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
     private synchronized void flushQueue() {
         while (!queue.isEmpty()) {
             final FIFORunnableEntry<?> entryToFinish = queue.takeNow();
-            entryToFinish.operationResultObserver.onError(disconnectionException);
+            entryToFinish.operationResultObserver.tryOnError(disconnectionException);
         }
     }
 
