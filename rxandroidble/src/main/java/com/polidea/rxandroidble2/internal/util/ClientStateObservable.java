@@ -16,6 +16,7 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
+import io.reactivex.disposables.Disposables;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
@@ -120,6 +121,7 @@ public class ClientStateObservable extends Observable<RxBleClient.State> {
     @Override
     protected void subscribeActual(Observer<? super RxBleClient.State> observer) {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
+            observer.onSubscribe(Disposables.empty());
             observer.onComplete();
             return;
         }

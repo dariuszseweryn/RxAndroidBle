@@ -44,7 +44,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
     @Override
     protected void subscribeActual(final Observer<? super Boolean> observer) {
         final DisposableObserver<? super Boolean> disposableObserver = DisposableUtil.disposableObserver(observer);
-        locationServicesOkObsImpl.subscribeWith(disposableObserver);
         observer.onSubscribe(disposableObserver);
+        locationServicesOkObsImpl.subscribeWith(disposableObserver);
     }
 }

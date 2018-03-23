@@ -63,7 +63,6 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
                 }
             }
         };
-        context.registerReceiver(receiver, createFilter());
         observer.onSubscribe(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -74,6 +73,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
                 }
             }
         }));
+        context.registerReceiver(receiver, createFilter());
     }
 
     private static BleAdapterState mapToBleAdapterState(int state) {

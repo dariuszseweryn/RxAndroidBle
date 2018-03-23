@@ -32,7 +32,6 @@ public class LocationServicesOkObservableApi23 extends Observable<Boolean> {
     protected void subscribeActual(final Observer<? super Boolean> observer) {
         final boolean locationProviderOk = locationServicesStatus.isLocationProviderOk();
         final AtomicBoolean locationProviderOkAtomicBoolean = new AtomicBoolean(locationProviderOk);
-        observer.onNext(locationProviderOk);
         final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -44,12 +43,13 @@ public class LocationServicesOkObservableApi23 extends Observable<Boolean> {
                 }
             }
         };
-        context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
         observer.onSubscribe(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 context.unregisterReceiver(broadcastReceiver);
             }
         }));
+        observer.onNext(locationProviderOk);
+        context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
     }
 }
