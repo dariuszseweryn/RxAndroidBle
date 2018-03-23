@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.sample.example2_connection;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.DeviceService;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
@@ -47,21 +45,12 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            final Intent intent = new Intent(this, DeviceService.class);
-            startService(intent);
-//            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
-//                    .compose(bindUntilEvent(PAUSE))
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .doFinally(this::dispose)
-//                    .subscribe(this::onConnectionReceived, this::onConnectionFailure);
+            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
+                    .compose(bindUntilEvent(PAUSE))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(this::dispose)
+                    .subscribe(this::onConnectionReceived, this::onConnectionFailure);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        final Intent intent = new Intent(this, DeviceService.class);
-        stopService(intent);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -122,8 +111,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     }
 
     private void triggerDisconnect() {
-        final Intent intent = new Intent(this, DeviceService.class);
-        stopService(intent);
 
         if (connectionDisposable != null) {
             connectionDisposable.dispose();
