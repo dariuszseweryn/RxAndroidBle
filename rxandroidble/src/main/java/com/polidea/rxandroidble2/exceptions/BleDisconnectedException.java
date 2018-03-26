@@ -2,6 +2,9 @@ package com.polidea.rxandroidble2.exceptions;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
+
+import com.polidea.rxandroidble2.utils.GattStatusParser;
 
 /**
  * Exception emitted when the BLE link has been disconnected either when the connection was already established
@@ -12,26 +15,58 @@ import android.support.annotation.Nullable;
  */
 public class BleDisconnectedException extends BleException {
 
+    /**
+     * Set when the state is not available, for example when the adapter has been switched off.
+     */
+    public static final int UNKNOWN_STATUS = -1;
+
+    public static class BleAdapterDisabledException extends BleException {
+        // Disconnection related to disabled Bluetooth adapter
+    }
+
     @SuppressWarnings("WeakerAccess")
     @NonNull
     public final String bluetoothDeviceAddress;
+    public final int state;
 
+    public static BleDisconnectedException adapterDisabled(String macAddress) {
+        return new BleDisconnectedException(new BleDisconnectedException.BleAdapterDisabledException(), macAddress, UNKNOWN_STATUS);
+    }
+
+    /**
+     * @deprecated In general, there's no place in a public API that requires you to instantiate this exception directly.
+     * If you use it anyway, please switch to {@link #BleDisconnectedException(Throwable, String, int)}
+     */
     @Deprecated
-    public BleDisconnectedException() {
-        bluetoothDeviceAddress = "";
-    }
-
     public BleDisconnectedException(Throwable throwable, @NonNull String bluetoothDeviceAddress) {
-        super(createMessage(bluetoothDeviceAddress), throwable);
-        this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+        this(throwable, bluetoothDeviceAddress, UNKNOWN_STATUS);
     }
 
+    /**
+     * @deprecated In general, there's no place in a public API that requires you to instantiate this exception directly.
+     * If you use it anyway, please switch to {@link #BleDisconnectedException(String, int)} or don't use it.
+     */
+    @Deprecated
     public BleDisconnectedException(@NonNull String bluetoothDeviceAddress) {
-        super(createMessage(bluetoothDeviceAddress));
-        this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+        this(bluetoothDeviceAddress, UNKNOWN_STATUS);
     }
 
-    private static String createMessage(@Nullable String bluetoothDeviceAddress) {
-        return "Disconnected from " + bluetoothDeviceAddress;
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public BleDisconnectedException(Throwable throwable, @NonNull String bluetoothDeviceAddress, int status) {
+        super(createMessage(bluetoothDeviceAddress, status), throwable);
+        this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+        this.state = status;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public BleDisconnectedException(@NonNull String bluetoothDeviceAddress, int status) {
+        super(createMessage(bluetoothDeviceAddress, status));
+        this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+        this.state = status;
+    }
+
+    private static String createMessage(@Nullable String bluetoothDeviceAddress, int status) {
+        final String gattCallbackStatusDescription = GattStatusParser.getGattCallbackStatusDescription(status);
+        return "Disconnected from " + bluetoothDeviceAddress + " with status " + status + " (" + gattCallbackStatusDescription + ")";
     }
 }

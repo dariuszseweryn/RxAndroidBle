@@ -156,6 +156,6 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
     public void onConnectionUnsubscribed() {
         disconnectionThrowableSubscription.dispose();
         disconnectionThrowableSubscription = null;
-        terminate(new BleDisconnectedException(deviceMacAddress));
+        terminate(new BleDisconnectedException(deviceMacAddress, BleDisconnectedException.UNKNOWN_STATUS));
     }
 }

@@ -127,7 +127,8 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress(),
+                BleDisconnectedException.UNKNOWN_STATUS);
     }
 
     @NonNull

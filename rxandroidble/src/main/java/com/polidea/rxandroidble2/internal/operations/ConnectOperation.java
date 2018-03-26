@@ -176,6 +176,6 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, bluetoothDevice.getAddress());
+        return new BleDisconnectedException(deadObjectException, bluetoothDevice.getAddress(), BleDisconnectedException.UNKNOWN_STATUS);
     }
 }

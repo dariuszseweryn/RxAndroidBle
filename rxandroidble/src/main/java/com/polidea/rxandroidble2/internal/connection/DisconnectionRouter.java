@@ -54,7 +54,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .map(new Function<Boolean, BleException>() {
                     @Override
                     public BleException apply(Boolean isAdapterUsable) {
-                        return new BleDisconnectedException(macAddress); // TODO: Introduce BleDisabledException?
+                        return BleDisconnectedException.adapterDisabled(macAddress);
                     }
                 })
                 .firstElement()
