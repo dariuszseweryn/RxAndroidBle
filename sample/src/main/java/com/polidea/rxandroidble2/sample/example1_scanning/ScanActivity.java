@@ -137,6 +137,7 @@ public class ScanActivity extends AppCompatActivity {
 
     private void configureResultList() {
         recyclerView.setHasFixedSize(true);
+        recyclerView.setItemAnimator(null);
         LinearLayoutManager recyclerLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(recyclerLayoutManager);
         resultsAdapter = new ScanResultsAdapter();
