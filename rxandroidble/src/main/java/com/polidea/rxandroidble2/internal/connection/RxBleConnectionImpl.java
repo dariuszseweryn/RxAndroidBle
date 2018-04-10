@@ -15,6 +15,7 @@ import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.QueueOperation;
 import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
@@ -308,6 +309,11 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     public <T> Observable<T> queue(@NonNull final RxBleCustomOperation<T> operation) {
+        return queue(operation, Priority.NORMAL);
+    }
+
+    @Override
+    public <T> Observable<T> queue(@NonNull final RxBleCustomOperation<T> operation, @NonNull final Priority priority) {
         return operationQueue.queue(new QueueOperation<T>() {
             @Override
             @SuppressWarnings("ConstantConditions")
@@ -349,6 +355,11 @@ public class RxBleConnectionImpl implements RxBleConnection {
             @Override
             protected BleException provideException(DeadObjectException deadObjectException) {
                 return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+            }
+
+            @Override
+            public Priority definedPriority(){
+                return priority;
             }
         });
     }
