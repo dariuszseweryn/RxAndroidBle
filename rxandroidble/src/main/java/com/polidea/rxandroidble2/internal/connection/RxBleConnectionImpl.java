@@ -358,7 +358,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
             }
 
             @Override
-            public Priority definedPriority(){
+            public Priority definedPriority() {
                 return priority;
             }
         });
