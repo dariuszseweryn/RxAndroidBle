@@ -12,6 +12,7 @@ import com.polidea.rxandroidble.exceptions.*
 import com.polidea.rxandroidble.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble.internal.operations.ReadRssiOperation
 import com.polidea.rxandroidble.internal.util.ByteAssociation
+import com.polidea.rxandroidble.internal.util.RxBleServicesLogger
 import rx.Completable
 
 import java.util.concurrent.TimeUnit
@@ -45,7 +46,8 @@ class RxBleConnectionTest extends Specification {
     def testScheduler = new TestScheduler()
     def illegalOperationChecker = Mock IllegalOperationChecker
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
-    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, timeoutConfig, testScheduler,
+    def mockServicesLogger = Mock RxBleServicesLogger
+    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, mockServicesLogger, timeoutConfig, testScheduler,
             testScheduler, { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager
     def descriptorWriterMock = Mock DescriptorWriter
