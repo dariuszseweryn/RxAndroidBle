@@ -41,8 +41,12 @@ public abstract class QueueOperation<T> implements Operation<T> {
                             protectedRun(emitter, queueReleaseInterface);
                         } catch (DeadObjectException deadObjectException) {
                             emitter.tryOnError(provideException(deadObjectException));
+                            RxBleLog.w(deadObjectException,"QueueOperation terminated with exception");
+                            queueReleaseInterface.release();
                         } catch (Throwable throwable) {
                             emitter.tryOnError(throwable);
+                            RxBleLog.w(throwable,"QueueOperation terminated with exception");
+                            queueReleaseInterface.release();
                         }
                     }
                 }
