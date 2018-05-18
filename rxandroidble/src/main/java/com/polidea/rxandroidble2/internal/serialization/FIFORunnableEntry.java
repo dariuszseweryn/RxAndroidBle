@@ -71,8 +71,9 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
                         }
                     });
         } else {
-            RxBleLog.d("FIFORunnableEntry", "Operation was about to be run but "
+            RxBleLog.d("FIFORunnableEntry - Operation was about to be run but "
                     + "the observer was already disposed: " + operation);
+            semaphore.release();
         }
     }
 }
