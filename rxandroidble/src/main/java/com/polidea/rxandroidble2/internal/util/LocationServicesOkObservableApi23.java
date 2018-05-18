@@ -43,13 +43,14 @@ public class LocationServicesOkObservableApi23 extends Observable<Boolean> {
                 }
             }
         };
+        observer.onNext(locationProviderOk);
+        context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
+
         observer.onSubscribe(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 context.unregisterReceiver(broadcastReceiver);
             }
         }));
-        observer.onNext(locationProviderOk);
-        context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
     }
 }
