@@ -195,7 +195,6 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     @Unroll
     def "should notify about value change and stay subscribed"() {
         given:
-        println("Values: " + changeNotificationsAndExpectedValues + " mode: " + mode + " ack: " + ack)
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.fromIterable(changeNotificationsAndExpectedValues.collect {
             new CharacteristicChangedEvent(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID, it)
