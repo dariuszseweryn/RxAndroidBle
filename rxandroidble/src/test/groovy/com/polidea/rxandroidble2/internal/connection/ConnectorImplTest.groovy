@@ -58,6 +58,7 @@ public class ConnectorImplTest extends Specification {
 
         then:
         1 * mockConnectionComponentBuilder.connectionModule({ ConnectionModule cm ->
+            System.out.println("CM: " + cm)
             connectionModuleAtomicReference.set(cm)
             true
         }) >> mockConnectionComponentBuilder
@@ -75,7 +76,7 @@ public class ConnectorImplTest extends Specification {
     def "should call ConnectionSubscriptionAware according to prepareConnection() subscription"() {
 
         given:
-        clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
+        clientOperationQueueMock.queue(mockConnect) >> Observable.never()
 
         when:
         def disposable = objectUnderTest.prepareConnection(defaultConnectionSetup).subscribe()
