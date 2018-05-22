@@ -271,8 +271,8 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
-        testSubscriber.assertCompleted()
+        testSubscriber.assertValuesEquals([[0x1, 0x1, 0x2, 0x2, 0x3, 0x3]] as byte[][])
+        testSubscriber.assertComplete()
     }
 
     def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - mid batch"() {
@@ -312,8 +312,8 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
-        testSubscriber.assertCompleted()
+        testSubscriber.assertValuesEquals([[0x1, 0x1, 0x2, 0x2, 0x3, 0x3]] as byte[][])
+        testSubscriber.assertComplete()
     }
 
     def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - last batch"() {
@@ -353,8 +353,8 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
-        testSubscriber.assertCompleted()
+        testSubscriber.assertValuesEquals([[0x1, 0x1, 0x2, 0x2, 0x3, 0x3]] as byte[][])
+        testSubscriber.assertComplete()
     }
 
     def "attempt to rewrite the failed batch if the strategy has emitted the LongWriteFailure - last batch, uneven count"() {
@@ -394,8 +394,8 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
-        testSubscriber.assertCompleted()
+        testSubscriber.assertValuesEquals([[0x1, 0x1, 0x2, 0x2, 0x3]] as byte[][])
+        testSubscriber.assertComplete()
     }
 
     def "should release QueueReleaseInterface after successful write"() {
@@ -605,6 +605,14 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             bytes[i] = i
         }
         return bytes
+    }
+
+    private static byte[] byteArrayOf(int... values) {
+        byte[] array = new byte[values.length]
+        for (int i = 0; i < values.length; i++) {
+            array[i] = (byte) values[i]
+        }
+        return array
     }
 
     private static byte[] subSequence(byte[] bytes, int startIndex, int endIndexNotIncluded) {
