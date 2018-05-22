@@ -58,7 +58,6 @@ public class ConnectorImplTest extends Specification {
 
         then:
         1 * mockConnectionComponentBuilder.connectionModule({ ConnectionModule cm ->
-            System.out.println("CM: " + cm)
             connectionModuleAtomicReference.set(cm)
             true
         }) >> mockConnectionComponentBuilder
