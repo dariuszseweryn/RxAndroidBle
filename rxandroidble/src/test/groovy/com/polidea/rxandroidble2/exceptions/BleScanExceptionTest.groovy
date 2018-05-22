@@ -18,6 +18,6 @@ class BleScanExceptionTest extends Specification {
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble.exceptions.BleScanException: Bluetooth disabled (code 1)"
+                "com.polidea.rxandroidble2.exceptions.BleScanException: Bluetooth disabled (code 1)"
     }
 }

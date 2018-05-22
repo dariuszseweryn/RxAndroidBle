@@ -7,6 +7,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
+import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 
@@ -15,6 +16,7 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
 
     private Integer currentMtu;
     private final Observable<Integer> mtuObservable;
+    private final SerialDisposable serialSubscription = new SerialDisposable();
 
     @Inject
     MtuWatcher(
@@ -24,7 +26,7 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
         this.mtuObservable = rxBleGattCallback.getOnMtuChanged()
                 .retry(new Predicate<Throwable>() {
                     @Override
-                    public boolean test(Throwable throwable) throws Exception {
+                    public boolean test(Throwable throwable) {
                         return throwable instanceof BleGattException
                                 && ((BleGattException) throwable).getBleGattOperationType() == BleGattOperationType.ON_MTU_CHANGED;
                     }
@@ -39,17 +41,17 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
 
     @Override
     public void onConnectionSubscribed() {
-        mtuObservable.subscribe(this, new Consumer<Throwable>() {
+        serialSubscription.set(mtuObservable.subscribe(this, new Consumer<Throwable>() {
             @Override
-            public void accept(Throwable throwable) throws Exception {
+            public void accept(Throwable throwable) {
                 // ignoring, this is expected when the connection is lost.
             }
-        });
+        }));
     }
 
     @Override
     public void onConnectionUnsubscribed() {
-        // Not required
+        serialSubscription.dispose();
     }
 
     @Override

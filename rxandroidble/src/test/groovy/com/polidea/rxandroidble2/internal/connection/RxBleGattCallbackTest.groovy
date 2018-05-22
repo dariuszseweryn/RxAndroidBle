@@ -233,7 +233,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
     def "should transmit error on proper callback when status != BluetoothGatt.GATT_SUCCESS, subsequent calls to callbacks will work normally"() {
 
         given:
-        def testSubscriber = givenSubscription.call(objectUnderTest)
+        def testSubscriber = givenSubscription.call(objectUnderTest).test()
 
         when:
         whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_FAILURE)
