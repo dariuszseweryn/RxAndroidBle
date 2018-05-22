@@ -9,7 +9,6 @@ import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySet
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
 import io.reactivex.Completable
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
@@ -380,7 +379,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
-        def emittedObservableSubscriber
+        def emittedObservableSubscriber = null
         def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
                 .doOnNext { emittedObservableSubscriber = it.test() }
                 .test()
@@ -415,7 +414,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         [mode, ack] << [MODES, ACK_VALUES].combinations()
     }
 
-    public mockCharacteristicWithValue(Map characteristicData) {
+    def mockCharacteristicWithValue(Map characteristicData) {
         def characteristic = Mock BluetoothGattCharacteristic
         characteristic.getValue() >> characteristicData['value']
         characteristic.getUuid() >> characteristicData['uuid']
@@ -423,14 +422,14 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         characteristic
     }
 
-    public mockDescriptorAndAttachToCharacteristic(BluetoothGattCharacteristic characteristic) {
+    def mockDescriptorAndAttachToCharacteristic(BluetoothGattCharacteristic characteristic) {
         def descriptor = Spy(BluetoothGattDescriptor, constructorArgs: [NotificationAndIndicationManager.CLIENT_CHARACTERISTIC_CONFIG_UUID, 0])
         descriptor.getCharacteristic() >> characteristic
         characteristic.getDescriptor(NotificationAndIndicationManager.CLIENT_CHARACTERISTIC_CONFIG_UUID) >> descriptor
         descriptor
     }
 
-    public shouldSetupCharacteristicNotificationCorrectly(UUID characteristicUUID, int instanceId) {
+    def shouldSetupCharacteristicNotificationCorrectly(UUID characteristicUUID, int instanceId) {
         def characteristic = mockCharacteristicWithValue(uuid: characteristicUUID, instanceId: instanceId, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         descriptorWriterMock.writeDescriptor(descriptor, _) >> Completable.complete()

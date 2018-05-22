@@ -13,7 +13,7 @@ import spock.lang.Unroll
 
 import java.util.concurrent.atomic.AtomicReference
 
-public class ConnectorImplTest extends Specification {
+class ConnectorImplTest extends Specification {
 
     ConnectionComponent.Builder mockConnectionComponentBuilder = Mock ConnectionComponent.Builder
     ConnectionComponent mockConnectionComponent = Mock ConnectionComponent

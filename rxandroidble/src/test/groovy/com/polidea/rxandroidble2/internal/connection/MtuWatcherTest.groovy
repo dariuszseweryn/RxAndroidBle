@@ -7,7 +7,7 @@ import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class MtuWatcherTest extends Specification {
+class MtuWatcherTest extends Specification {
 
     PublishSubject<Observable<Integer>> onMtuChangedObservablePublishSubject = PublishSubject.create()
 
