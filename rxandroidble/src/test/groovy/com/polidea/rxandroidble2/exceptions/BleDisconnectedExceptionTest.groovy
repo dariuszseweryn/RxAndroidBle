@@ -16,6 +16,6 @@ class BleDisconnectedExceptionTest extends Specification {
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble.exceptions.BleDisconnectedException: Disconnected from myBluetoothAddress"
+                "com.polidea.rxandroidble2.exceptions.BleDisconnectedException: Disconnected from myBluetoothAddress"
     }
 }
