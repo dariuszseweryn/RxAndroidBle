@@ -46,6 +46,23 @@ class LocationServicesOkObservableApi23Test extends RoboSpecification {
         1 * contextMock.unregisterReceiver(registeredReceiver)
     }
 
+    def "should register and unregister broadcast listeners in correct order if unsubscribed on the first emission"() {
+        given:
+        mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOkResult
+
+        when:
+        objectUnderTest.take(1).test()
+
+        then:
+        1 * contextMock.registerReceiver(_, _)
+
+        then:
+        1 * contextMock.unregisterReceiver(_)
+
+        where:
+        isLocationProviderOkResult << [true, false]
+    }
+
     def "should emit what LocationServicesStatus.isLocationProviderOk() returns on subscribe and on next broadcasts"() {
 
         given:
