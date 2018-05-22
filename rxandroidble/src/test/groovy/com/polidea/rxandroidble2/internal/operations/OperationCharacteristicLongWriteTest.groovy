@@ -225,7 +225,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
@@ -240,12 +240,12 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
         1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
-        testSubscriber.assertNoTerminalEvent()
+        testSubscriber.assertNotTerminated()
 
         when:
         writeOperationRetryStrategy.triggerRetry()
@@ -271,7 +271,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
         testSubscriber.assertCompleted()
     }
 
@@ -282,7 +282,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
@@ -312,7 +312,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
         testSubscriber.assertCompleted()
     }
 
@@ -323,7 +323,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
@@ -353,7 +353,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
+        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3, 0x3] as byte[])
         testSubscriber.assertCompleted()
     }
 
@@ -364,7 +364,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         prepareObjectUnderTest(2, [0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
 
         when:
-        objectUnderTest.run(mockQueueReleaseInterface).subscribe(testSubscriber)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
@@ -394,7 +394,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
             true
         }
 
-        testSubscriber.assertValueEquals([0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
+        testSubscriber.assertValuesEquals([0x1, 0x1, 0x2, 0x2, 0x3] as byte[])
         testSubscriber.assertCompleted()
     }
 
@@ -584,7 +584,7 @@ public class OperationCharacteristicLongWriteTest extends Specification {
         public void triggerRetry() {
             triggerSubject.with {
                 onNext(true)
-                onCompleted()
+                onComplete()
             }
         }
 
