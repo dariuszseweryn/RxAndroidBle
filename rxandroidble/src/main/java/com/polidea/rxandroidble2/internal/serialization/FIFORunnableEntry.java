@@ -37,7 +37,7 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
     public void run(QueueSemaphore semaphore, Scheduler subscribeScheduler) {
 
         if (operationResultObserver.isDisposed()) {
-            RxBleLog.d("Operation was about to be run but the observer was already disposed: " + operation);
+            RxBleLog.d("The operation was about to be run but the observer had been already disposed: " + operation);
             semaphore.release();
             return;
         }
