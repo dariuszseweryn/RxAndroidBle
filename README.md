@@ -338,7 +338,7 @@ RxAndroidBle already provides all the necessary bluetooth permissions for you. R
 ```
 ## More examples
 
-Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
+Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample).
 
 ## Download
 ### Gradle
