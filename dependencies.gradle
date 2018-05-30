@@ -1,6 +1,6 @@
 ext {
     supportVersion = '27.1.0'
-    rxJavaVersion = '2.1.11'
+    rxJavaVersion = '2.1.14'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     shadowPluginVersion = '2.0.2'
