@@ -12,8 +12,8 @@ import java.util.List;
 public interface BackgroundScanner {
 
     /**
-     * Submits a scan request that will survive even if your process gets killed by the system. You can use this API to maintain a
-     * background scan without a need to keep your application foreground and active. The system will manage the scan for you wand
+     * Submits a scan request that will work even if your process gets killed by the system. You can use this API to maintain a
+     * background scan without a need to keep your application foreground and active. The system will manage the scan for you and
      * will wake your process up once a result is available.
      * <p>
      * When the PendingIntent is delivered, the Intent passed to the receiver or activity

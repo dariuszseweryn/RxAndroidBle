@@ -10,6 +10,7 @@ import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.polidea.rxandroidble2.exceptions.BleScanException;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
@@ -55,9 +56,9 @@ public class BackgroundScannerImpl implements BackgroundScanner {
         final android.bluetooth.le.ScanSettings nativeScanSettings = scanObjectsConverter.toNativeSettings(scanSettings);
         final int scanStartResult = rxBleAdapterWrapper.startLeScan(nativeScanFilters, nativeScanSettings, callbackIntent);
 
-        if (scanStartResult != 0) {
+        if (scanStartResult != NO_ERROR) {
             final BleScanException bleScanException = new BleScanException(scanStartResult);
-            Log.w(TAG, "Failed to start scan", bleScanException);
+            RxBleLog.w(TAG, "Failed to start scan", bleScanException);
             throw bleScanException;
         }
     }
