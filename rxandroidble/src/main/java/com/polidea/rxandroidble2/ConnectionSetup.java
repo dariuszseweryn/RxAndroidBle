@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionSetup {
 
     public static final int DEFAULT_OPERATION_TIMEOUT = 30;
-    public static final int DEFAULT_CONNECT_TIMEOUT = 35;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 35;
     /**
      * Flag related with
      * {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
@@ -52,7 +52,7 @@ public class ConnectionSetup {
         private boolean autoConnect = false;
         private boolean suppressOperationCheck = false;
         private Timeout operationTimeout = new Timeout(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS);
-        private Timeout connectTimeout = new Timeout(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS);
+        private Timeout connectTimeout = new Timeout(DEFAULT_CONNECTION_TIMEOUT, TimeUnit.SECONDS);
 
         /**
          * Autoconnect concept may be misleading at first glance. In cases when the BLE device is available and it is advertising constantly
