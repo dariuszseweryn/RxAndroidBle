@@ -37,14 +37,14 @@ public class ConnectionSetup {
      * Timeout in seconds after which the connection will be considered as broken. Eventually the connection will be
      * canceled and removed from queue.
      */
-    public final Timeout connectTimeout;
+    public final Timeout connectionTimeout;
 
     private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, Timeout operationTimeout,
-                            Timeout connectTimeout) {
+                            Timeout connectionTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
         this.operationTimeout = operationTimeout;
-        this.connectTimeout = connectTimeout;
+        this.connectionTimeout = connectionTimeout;
     }
 
     public static class Builder {

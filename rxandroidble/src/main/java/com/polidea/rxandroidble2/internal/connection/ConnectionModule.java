@@ -30,7 +30,7 @@ public class ConnectionModule {
         this.autoConnect = connectionSetup.autoConnect;
         this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
         this.operationTimeout = connectionSetup.operationTimeout;
-        this.connectTimeout = connectionSetup.connectTimeout;
+        this.connectTimeout = connectionSetup.connectionTimeout;
     }
 
     @ConnectionScope
