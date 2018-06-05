@@ -134,8 +134,7 @@ public interface RxBleDevice {
      *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
      *                         only and may leave Android's BLE stack in an inconsistent state.
      * @param connectTimeout   Timeout configuration after which the connection will be considered as broken. Eventually the connection
-     *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's connection
-     *                         only and may leave Android's BLE stack in an inconsistent state.
+     *                         attempt will be disconnected and then closed when the connection subscription is released.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
