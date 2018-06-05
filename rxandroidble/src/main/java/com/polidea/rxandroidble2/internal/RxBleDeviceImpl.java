@@ -74,7 +74,7 @@ class RxBleDeviceImpl implements RxBleDevice {
         ConnectionSetup options = new ConnectionSetup.Builder()
           .setAutoConnect(autoConnect)
           .setOperationTimeout(operationTimeout)
-          .setConnectTimeout(connectTimeout)
+          .setConnectionTimeout(connectTimeout)
           .setSuppressIllegalOperationCheck(true)
           .build();
         return establishConnection(options);
