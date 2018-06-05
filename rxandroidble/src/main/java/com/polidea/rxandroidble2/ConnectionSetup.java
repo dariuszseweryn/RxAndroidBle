@@ -101,7 +101,7 @@ public class ConnectionSetup {
          *                         only and may leave Android's BLE stack in an inconsistent state.
          * @return this builder instance
          */
-        public Builder setConnectTimeout(Timeout connectTimeout) {
+        public Builder setConnectionTimeout(Timeout connectTimeout) {
             this.connectTimeout = connectTimeout;
             return this;
         }
