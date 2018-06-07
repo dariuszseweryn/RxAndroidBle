@@ -17,7 +17,6 @@ ext {
             spock              : ['org.spockframework:spock-core:1.1-groovy-2.4',
                                   'cglib:cglib-nodep:3.2.6',
                                   'org.objenesis:objenesis:2.6'],
-            robospock          : 'org.robospock:robospock:1.0.1',
             robolectric        : 'org.robolectric:robolectric:3.8',
             electricspock      : 'com.github.hkhc:electricspock:0.9',
             dagger             : "com.google.dagger:dagger:$daggerVersion",
