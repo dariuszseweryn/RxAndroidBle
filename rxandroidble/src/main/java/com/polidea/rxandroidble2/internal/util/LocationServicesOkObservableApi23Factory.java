@@ -39,6 +39,8 @@ public class LocationServicesOkObservableApi23Factory {
                         emitter.onNext(newValue);
                     }
                 };
+                emitter.onNext(initialValue);
+                context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
                 emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
@@ -48,10 +50,6 @@ public class LocationServicesOkObservableApi23Factory {
                         }
                     }
                 });
-                if (!emitter.isDisposed()) {
-                    context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
-                    emitter.onNext(initialValue);
-                }
             }
         }).distinctUntilChanged();
     }
