@@ -26,7 +26,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueueImpl;
-import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23;
+import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23Factory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi23;
@@ -163,11 +163,11 @@ public interface ClientComponent {
         @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
         Observable<Boolean> provideLocationServicesOkObservable(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
-                Provider<LocationServicesOkObservableApi23> locationServicesOkObservableApi23Provider
+                LocationServicesOkObservableApi23Factory locationServicesOkObservableApi23Factory
         ) {
             return deviceSdk < Build.VERSION_CODES.M
                     ? ObservableUtil.justOnNext(true) // there is no need for one before Marshmallow
-                    : locationServicesOkObservableApi23Provider.get();
+                    : locationServicesOkObservableApi23Factory.get();
         }
 
         @Provides

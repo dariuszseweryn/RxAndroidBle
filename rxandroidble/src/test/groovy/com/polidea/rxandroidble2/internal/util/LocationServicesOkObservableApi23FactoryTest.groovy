@@ -8,10 +8,10 @@ import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
 
 @Config(manifest = Config.NONE)
-class LocationServicesOkObservableApi23Test extends ElectricSpecification {
+class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
-    def objectUnderTest = new LocationServicesOkObservableApi23(contextMock, mockLocationServicesStatus)
+    def objectUnderTest = new LocationServicesOkObservableApi23Factory(contextMock, mockLocationServicesStatus)
     BroadcastReceiver registeredReceiver
 
     def setup() {
@@ -24,7 +24,7 @@ class LocationServicesOkObservableApi23Test extends ElectricSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >> true
 
         when:
-        objectUnderTest.subscribe()
+        objectUnderTest.get().subscribe()
 
         then:
         1 * contextMock.registerReceiver(!null, {
@@ -37,7 +37,7 @@ class LocationServicesOkObservableApi23Test extends ElectricSpecification {
         given:
         mockLocationServicesStatus.isLocationProviderOk() >> true
         shouldCaptureRegisteredReceiver()
-        def disposable = objectUnderTest.test()
+        def disposable = objectUnderTest.get().test()
 
         when:
         disposable.dispose()
@@ -46,12 +46,12 @@ class LocationServicesOkObservableApi23Test extends ElectricSpecification {
         1 * contextMock.unregisterReceiver(registeredReceiver)
     }
 
-    def "should register and unregister broadcast listeners in correct order if unsubscribed on the first emission"() {
+    def "should still register and unregister in correct order"() {
         given:
         mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOkResult
 
         when:
-        objectUnderTest.take(1).test()
+        objectUnderTest.get().take(1).test()
 
         then:
         1 * contextMock.registerReceiver(_, _)
@@ -70,7 +70,7 @@ class LocationServicesOkObservableApi23Test extends ElectricSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >>> [true, false, true]
 
         when:
-        def testObserver = objectUnderTest.test()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(true)
@@ -95,7 +95,7 @@ class LocationServicesOkObservableApi23Test extends ElectricSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >>> [false, false, true, true, false, false]
 
         when:
-        def testObserver = objectUnderTest.test()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(false)
