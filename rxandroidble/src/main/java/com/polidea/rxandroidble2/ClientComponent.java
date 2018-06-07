@@ -14,6 +14,7 @@ import android.support.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
+import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
@@ -30,6 +31,7 @@ import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi23;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
+import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanResult;
 
 import java.util.concurrent.ExecutorService;
@@ -106,6 +108,11 @@ public interface ClientComponent {
 
         public ClientModule(Context context) {
             this.context = context;
+        }
+
+        @Provides
+        BackgroundScanner provideBackgroundScanner(BackgroundScannerImpl backgroundScannerImpl) {
+            return backgroundScannerImpl;
         }
 
         @Provides

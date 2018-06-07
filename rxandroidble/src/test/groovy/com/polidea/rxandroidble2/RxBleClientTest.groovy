@@ -9,6 +9,7 @@ import com.polidea.rxandroidble2.internal.scan.*
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable
 import com.polidea.rxandroidble2.internal.util.UUIDUtil
+import com.polidea.rxandroidble2.scan.BackgroundScanner
 import com.polidea.rxandroidble2.scan.ScanSettings
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
@@ -24,6 +25,7 @@ import static com.polidea.rxandroidble2.exceptions.BleScanException.*
 @SuppressWarnings("GrDeprecatedAPIUsage")
 class RxBleClientTest extends Specification {
 
+    BackgroundScanner backgroundScanner = Mock(BackgroundScanner)
     DummyOperationQueue dummyQueue = new DummyOperationQueue()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
@@ -80,7 +82,8 @@ class RxBleClientTest extends Specification {
                 mockScanPreconditionVerifier,
                 mockMapper,
                 new TestScheduler(),
-                Mock(ClientComponent.ClientComponentFinalizer)
+                Mock(ClientComponent.ClientComponentFinalizer),
+                backgroundScanner
         )
     }
 
@@ -475,6 +478,11 @@ class RxBleClientTest extends Specification {
 
         then:
         1 * mockLazyClientStateObservable.get() >> Mock(ClientStateObservable)
+    }
+
+    def "should provide injected background scanner"() {
+        expect:
+        backgroundScanner == objectUnderTest.getBackgroundScanner()
     }
 
     def waitForThreadsToCompleteWork() {

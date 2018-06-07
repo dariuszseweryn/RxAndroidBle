@@ -1,13 +1,12 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
-import android.util.Log;
-
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.internal.DeviceModule;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
 import java.util.LinkedList;
@@ -62,14 +61,14 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .subscribe(new Consumer<BleException>() {
                     @Override
                     public void accept(BleException exception) throws Exception {
-                        Log.d(TAG, "An exception received, indicating that the adapter has became unusable.");
+                        RxBleLog.d(TAG, "An exception received, indicating that the adapter has became unusable.");
                         exceptionOccurred = exception;
                         notifySubscribersAboutException();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        Log.w(TAG, "Failed to monitor adapter state.", throwable);
+                        RxBleLog.w(TAG, "Failed to monitor adapter state.", throwable);
                     }
                 });
     }

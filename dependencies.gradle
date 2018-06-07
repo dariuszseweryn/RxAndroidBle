@@ -13,11 +13,13 @@ ext {
             rxandroid          : 'io.reactivex.rxjava2:rxandroid:2.0.2',
             rxrelay            : 'com.jakewharton.rxrelay2:rxrelay:2.0.0',
             junit              : 'junit:junit:4.12',
-            groovy             : 'org.codehaus.groovy:groovy:2.4.12:grooid',
+            groovy             : 'org.codehaus.groovy:groovy:2.4.13',
             spock              : ['org.spockframework:spock-core:1.1-groovy-2.4',
                                   'cglib:cglib-nodep:3.2.6',
                                   'org.objenesis:objenesis:2.6'],
             robospock          : 'org.robospock:robospock:1.0.1',
+            robolectric        : 'org.robolectric:robolectric:3.8',
+            electricspock      : 'com.github.hkhc:electricspock:0.9',
             dagger             : "com.google.dagger:dagger:$daggerVersion",
             dagger_compiler    : "com.google.dagger:dagger-compiler:$daggerVersion"
     ]

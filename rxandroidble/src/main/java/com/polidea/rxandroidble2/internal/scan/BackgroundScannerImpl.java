@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.util.Log;
 
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -47,11 +46,11 @@ public class BackgroundScannerImpl implements BackgroundScanner {
     @Override
     public void scanBleDeviceInBackground(@NonNull PendingIntent callbackIntent, ScanSettings scanSettings, ScanFilter... scanFilters) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            Log.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
+            RxBleLog.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
             return;
         }
 
-        Log.i(TAG, "Requesting pending intent based scan.");
+        RxBleLog.i(TAG, "Requesting pending intent based scan.");
         final List<android.bluetooth.le.ScanFilter> nativeScanFilters = scanObjectsConverter.toNativeFilters(scanFilters);
         final android.bluetooth.le.ScanSettings nativeScanSettings = scanObjectsConverter.toNativeSettings(scanSettings);
         final int scanStartResult = rxBleAdapterWrapper.startLeScan(nativeScanFilters, nativeScanSettings, callbackIntent);
@@ -67,11 +66,11 @@ public class BackgroundScannerImpl implements BackgroundScanner {
     @Override
     public void stopBackgroundBleScan(@NonNull PendingIntent callbackIntent) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            Log.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
+            RxBleLog.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
             return;
         }
 
-        Log.i(TAG, "Stopping pending intent based scan.");
+        RxBleLog.i(TAG, "Stopping pending intent based scan.");
         rxBleAdapterWrapper.stopLeScan(callbackIntent);
     }
 

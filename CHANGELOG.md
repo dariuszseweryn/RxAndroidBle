@@ -1,6 +1,6 @@
 Change Log
 ==========
-Version 1.7.0
+Version 1.7.0-SNAPSHOT
 * Introduced a new API that allows for background scanning in modern Android OS versions (https://github.com/Polidea/RxAndroidBle/issues/369)
 
 

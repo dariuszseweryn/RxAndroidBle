@@ -9,7 +9,6 @@ import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble2.internal.operations.LegacyScanOperation;
 import com.polidea.rxandroidble2.internal.operations.Operation;
-import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
@@ -75,7 +74,7 @@ class RxBleClientImpl extends RxBleClient {
                     Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
-                    BackgroundScannerImpl backgroundScanner) {
+                    BackgroundScanner backgroundScanner) {
         this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;

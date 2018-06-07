@@ -5,17 +5,18 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
+import android.os.Build
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
+import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
-import org.robospock.RoboSpecification
 
 import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_ALL_MATCHES
 
-@Config(manifest = Config.NONE)
-class BackgroundScannerTest extends RoboSpecification {
+@Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
+class BackgroundScannerTest extends ElectricSpecification {
     public static final int SUCCESS_CODE = 0
     BackgroundScannerImpl objectUnderTest
     RxBleAdapterWrapper adapterWrapper
