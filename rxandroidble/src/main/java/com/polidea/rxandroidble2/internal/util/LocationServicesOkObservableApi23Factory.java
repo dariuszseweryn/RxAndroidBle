@@ -44,10 +44,7 @@ public class LocationServicesOkObservableApi23Factory {
                 emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
-                        try {
-                            context.unregisterReceiver(broadcastReceiver);
-                        } catch (IllegalStateException ignored) {
-                        }
+                        context.unregisterReceiver(broadcastReceiver);
                     }
                 });
             }
