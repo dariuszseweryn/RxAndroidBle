@@ -10,6 +10,7 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
+import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
@@ -337,6 +338,11 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters) {
         return Observable.error(new RuntimeException("not implemented")); // TODO [DS]
+    }
+
+    @Override
+    public BackgroundScanner getBackgroundScanner() {
+        throw new UnsupportedOperationException("Background scanning API is not supported by the mock.");
     }
 
     @Override

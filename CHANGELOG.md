@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.7.0-SNAPSHOT
+* Introduced a new API that allows for background scanning in modern Android OS versions (https://github.com/Polidea/RxAndroidBle/issues/369)
+
 
 Version 1.6.0
 * Deprecated ConnectionSharingAdapter (https://github.com/Polidea/RxAndroidBle/pull/397)

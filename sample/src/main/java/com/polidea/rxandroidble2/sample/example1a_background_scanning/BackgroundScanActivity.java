@@ -1,80 +1,66 @@
-package com.polidea.rxandroidble2.sample.example1_scanning;
+package com.polidea.rxandroidble2.sample.example1a_background_scanning;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity;
 import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 
-public class ScanActivity extends AppCompatActivity {
+public class BackgroundScanActivity extends AppCompatActivity {
 
-    @BindView(R.id.scan_toggle_btn)
-    Button scanToggleButton;
-    @BindView(R.id.scan_results)
-    RecyclerView recyclerView;
+    private static final int SCAN_REQUEST_CODE = 42;
     private RxBleClient rxBleClient;
-    private Disposable scanDisposable;
-    private ScanResultsAdapter resultsAdapter;
+    private PendingIntent callbackIntent;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_example1);
+        setContentView(R.layout.activity_example1a);
         ButterKnife.bind(this);
         rxBleClient = SampleApplication.getRxBleClient(this);
-        configureResultList();
+        callbackIntent = PendingIntent.getBroadcast(this, SCAN_REQUEST_CODE,
+                new Intent(this, ScanReceiver.class), 0);
     }
 
-    @OnClick(R.id.background_scan_btn)
-    public void onBackgroundScanRequested() {
-        startActivity(new Intent(this, BackgroundScanActivity.class));
-    }
+    @OnClick(R.id.scan_start_btn)
+    public void onScanStartClick() {
 
-    @OnClick(R.id.scan_toggle_btn)
-    public void onScanToggleClick() {
-
-        if (isScanning()) {
-            scanDisposable.dispose();
-        } else {
-            scanDisposable = rxBleClient.scanBleDevices(
+        try {
+            rxBleClient.getBackgroundScanner().scanBleDeviceInBackground(
+                    callbackIntent,
                     new ScanSettings.Builder()
                             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
                             .build(),
                     new ScanFilter.Builder()
-//                            .setDeviceAddress("B4:99:4C:34:DC:8B")
+                            .setDeviceAddress("5C:31:3E:BF:F7:34")
                             // add custom filters if needed
                             .build()
-            )
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::dispose)
-                    .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
+            );
+        } catch (BleScanException scanException) {
+            Log.w("BackgroundScanActivity", "Failed to start background scan", scanException);
+            handleBleScanException(scanException);
         }
+    }
 
-        updateButtonUIState();
+    @OnClick(R.id.scan_stop_btn)
+    public void onScanStopClick() {
+        rxBleClient.getBackgroundScanner().stopBackgroundBleScan(callbackIntent);
     }
 
     private void handleBleScanException(BleScanException bleScanException) {
@@ -127,59 +113,5 @@ public class ScanActivity extends AppCompatActivity {
 
     private long secondsTill(Date retryDateSuggestion) {
         return TimeUnit.MILLISECONDS.toSeconds(retryDateSuggestion.getTime() - System.currentTimeMillis());
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (isScanning()) {
-            /*
-             * Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
-             */
-            scanDisposable.dispose();
-        }
-    }
-
-    private void configureResultList() {
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setItemAnimator(null);
-        LinearLayoutManager recyclerLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(recyclerLayoutManager);
-        resultsAdapter = new ScanResultsAdapter();
-        recyclerView.setAdapter(resultsAdapter);
-        resultsAdapter.setOnAdapterItemClickListener(view -> {
-            final int childAdapterPosition = recyclerView.getChildAdapterPosition(view);
-            final ScanResult itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition);
-            onAdapterItemClick(itemAtPosition);
-        });
-    }
-
-    private boolean isScanning() {
-        return scanDisposable != null;
-    }
-
-    private void onAdapterItemClick(ScanResult scanResults) {
-        final String macAddress = scanResults.getBleDevice().getMacAddress();
-        final Intent intent = new Intent(this, DeviceActivity.class);
-        intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
-        startActivity(intent);
-    }
-
-    private void onScanFailure(Throwable throwable) {
-
-        if (throwable instanceof BleScanException) {
-            handleBleScanException((BleScanException) throwable);
-        }
-    }
-
-    private void dispose() {
-        scanDisposable = null;
-        resultsAdapter.clearScanResults();
-        updateButtonUIState();
-    }
-
-    private void updateButtonUIState() {
-        scanToggleButton.setText(isScanning() ? R.string.stop_scan : R.string.start_scan);
     }
 }

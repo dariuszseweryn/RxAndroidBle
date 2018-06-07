@@ -7,18 +7,18 @@ import com.polidea.rxandroidble2.NotificationSetupMode
 import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
+import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
-import org.robospock.RoboSpecification
 import spock.lang.Unroll
 
 import static io.reactivex.Observable.just
 
 @Config(manifest = Config.NONE)
-class NotificationAndIndicationManagerTest extends RoboSpecification {
+class NotificationAndIndicationManagerTest extends ElectricSpecification {
 
     public static final CHARACTERISTIC_UUID = UUID.fromString("f301f518-5414-471c-8a7b-2ef6d1b7373d")
     public static final CHARACTERISTIC_INSTANCE_ID = 1
