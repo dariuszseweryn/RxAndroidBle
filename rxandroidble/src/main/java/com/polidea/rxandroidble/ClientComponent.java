@@ -119,6 +119,7 @@ public interface ClientComponent {
         }
 
         @Provides
+        @ClientScope
         OperationEventLogger provideOperationEventLogger() {
             if (logger != null) {
                 return logger;

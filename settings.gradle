@@ -1,3 +1,3 @@
-include ':rxandroidble', ':mockrxandroidble', ':sample', ':dagger-compiler-shadow', ':dagger-library-shadow', ':stetho-module'
+include ':rxandroidble', ':mockrxandroidble', ':sample', ':dagger-compiler-shadow', ':dagger-library-shadow'
 
 rootProject.name = 'rxandroidble-parent'
