@@ -36,17 +36,15 @@ public abstract class QueueOperation<T> implements Operation<T> {
         return Observable.create(
                 new ObservableOnSubscribe<T>() {
                     @Override
-                    public void subscribe(ObservableEmitter<T> emitter) throws Exception {
+                    public void subscribe(ObservableEmitter<T> emitter) {
                         try {
                             protectedRun(emitter, queueReleaseInterface);
                         } catch (DeadObjectException deadObjectException) {
                             emitter.tryOnError(provideException(deadObjectException));
-                            RxBleLog.w(deadObjectException,"QueueOperation terminated with exception");
-                            queueReleaseInterface.release();
+                            RxBleLog.e(deadObjectException, "QueueOperation terminated with exception");
                         } catch (Throwable throwable) {
                             emitter.tryOnError(throwable);
-                            RxBleLog.w(throwable,"QueueOperation terminated with exception");
-                            queueReleaseInterface.release();
+                            RxBleLog.e(throwable, "QueueOperation terminated with exception");
                         }
                     }
                 }
