@@ -3,7 +3,7 @@ package com.polidea.rxandroidble.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.Nullable;
 
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble.internal.SingleResponseOperation;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;

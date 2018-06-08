@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.eventlog;
+package com.polidea.rxandroidble.internal.eventlog;
 
 public class OperationExtras {
 

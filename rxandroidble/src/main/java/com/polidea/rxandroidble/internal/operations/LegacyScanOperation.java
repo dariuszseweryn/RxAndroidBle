@@ -4,11 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
 import com.polidea.rxandroidble.ClientComponent;
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.internal.util.UUIDUtil;

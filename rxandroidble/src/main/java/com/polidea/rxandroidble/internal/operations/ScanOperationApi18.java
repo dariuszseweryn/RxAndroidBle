@@ -6,11 +6,11 @@ import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
 
 import com.polidea.rxandroidble.ClientComponent;
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.internal.scan.EmulatedScanFilterMatcher;
 import com.polidea.rxandroidble.internal.scan.InternalScanResultCreator;
 import com.polidea.rxandroidble.internal.scan.RxBleInternalScanResult;
@@ -21,7 +21,7 @@ import rx.Emitter;
 import rx.Scheduler;
 import rx.functions.Action0;
 
-import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
+import static com.polidea.rxandroidble.internal.eventlog.OperationEvent.operationIdentifierHash;
 
 public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, BluetoothAdapter.LeScanCallback> {
 

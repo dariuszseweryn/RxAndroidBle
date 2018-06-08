@@ -7,11 +7,11 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattCallbackTimeoutException;
@@ -30,7 +30,7 @@ import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action1;
 
-import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
+import static com.polidea.rxandroidble.internal.eventlog.OperationEvent.operationIdentifierHash;
 
 /**
  * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.

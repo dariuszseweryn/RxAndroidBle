@@ -9,11 +9,11 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.ClientComponent;
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.scan.AndroidScanObjectsConverter;
@@ -31,7 +31,7 @@ import rx.Emitter;
 import rx.Scheduler;
 import rx.functions.Action0;
 
-import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
+import static com.polidea.rxandroidble.internal.eventlog.OperationEvent.operationIdentifierHash;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {

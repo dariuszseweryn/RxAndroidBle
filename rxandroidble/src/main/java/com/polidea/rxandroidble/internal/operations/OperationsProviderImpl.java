@@ -8,7 +8,7 @@ import android.support.annotation.RequiresApi;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;

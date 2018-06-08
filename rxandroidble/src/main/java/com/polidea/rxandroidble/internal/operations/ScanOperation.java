@@ -2,11 +2,11 @@ package com.polidea.rxandroidble.internal.operations;
 
 import android.os.DeadObjectException;
 
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.QueueOperation;

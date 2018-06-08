@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.eventlog;
+package com.polidea.rxandroidble.internal.eventlog;
 
 import com.polidea.rxandroidble.internal.operations.Operation;
 import com.polidea.rxandroidble.utils.BytePrinter;

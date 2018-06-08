@@ -12,8 +12,8 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 
-import com.polidea.rxandroidble.eventlog.HollowEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.HollowEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble.internal.DeviceComponent;
 import com.polidea.rxandroidble.internal.scan.InternalToExternalScanResultConverter;

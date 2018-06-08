@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble.eventlog;
+package com.polidea.rxandroidble.internal.eventlog;
 
 import java.util.ArrayList;
 import java.util.Arrays;

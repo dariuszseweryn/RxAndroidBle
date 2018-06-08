@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.polidea.rxandroidble.RxBleAdapterStateObservable.BleAdapterState;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble.internal.operations.LegacyScanOperation;

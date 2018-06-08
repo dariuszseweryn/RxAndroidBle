@@ -6,7 +6,7 @@ import android.support.annotation.RequiresApi;
 import android.support.annotation.RestrictTo;
 
 import com.polidea.rxandroidble.ClientComponent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
 import com.polidea.rxandroidble.internal.operations.ScanOperationApi21;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble.scan.ScanFilter;

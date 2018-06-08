@@ -8,11 +8,11 @@ import android.support.annotation.RestrictTo;
 
 import com.polidea.rxandroidble.ClientComponent;
 import com.polidea.rxandroidble.RxBleConnection;
-import com.polidea.rxandroidble.eventlog.OperationAttribute;
-import com.polidea.rxandroidble.eventlog.OperationDescription;
-import com.polidea.rxandroidble.eventlog.OperationEvent;
-import com.polidea.rxandroidble.eventlog.OperationEventLogger;
-import com.polidea.rxandroidble.eventlog.OperationExtras;
+import com.polidea.rxandroidble.internal.eventlog.OperationAttribute;
+import com.polidea.rxandroidble.internal.eventlog.OperationDescription;
+import com.polidea.rxandroidble.internal.eventlog.OperationEvent;
+import com.polidea.rxandroidble.internal.eventlog.OperationEventLogger;
+import com.polidea.rxandroidble.internal.eventlog.OperationExtras;
 import com.polidea.rxandroidble.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.internal.DeviceModule;
@@ -35,7 +35,7 @@ import rx.functions.Func1;
 
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 import static com.polidea.rxandroidble.RxBleConnection.RxBleConnectionState.DISCONNECTING;
-import static com.polidea.rxandroidble.eventlog.OperationEvent.operationIdentifierHash;
+import static com.polidea.rxandroidble.internal.eventlog.OperationEvent.operationIdentifierHash;
 import static rx.Observable.just;
 
 public class DisconnectOperation extends QueueOperation<Void> {
