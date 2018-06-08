@@ -35,6 +35,15 @@ public class BleDisconnectedException extends BleException {
 
     /**
      * @deprecated In general, there's no place in a public API that requires you to instantiate this exception directly.
+     * If you use it anyway, please switch to {@link #BleDisconnectedException(String, int)}
+     */
+    @Deprecated
+    public BleDisconnectedException() {
+        this("", UNKNOWN_STATUS);
+    }
+
+    /**
+     * @deprecated In general, there's no place in a public API that requires you to instantiate this exception directly.
      * If you use it anyway, please switch to {@link #BleDisconnectedException(Throwable, String, int)}
      */
     @Deprecated
