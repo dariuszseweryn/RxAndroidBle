@@ -93,6 +93,7 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
 
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress(),
+                BleDisconnectedException.UNKNOWN_STATUS);
     }
 }

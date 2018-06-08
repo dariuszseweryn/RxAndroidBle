@@ -18,7 +18,6 @@ import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 
 public class ConnectorImpl implements Connector {
 
@@ -46,16 +45,9 @@ public class ConnectorImpl implements Connector {
                         .build();
 
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
-                return enqueueConnectOperation(connectionComponent)
-                        .flatMap(new Function<BluetoothGatt, ObservableSource<RxBleConnection>>() {
-                            @Override
-                            public ObservableSource<RxBleConnection> apply(BluetoothGatt bluetoothGatt) throws Exception {
-                                return Observable.merge(
-                                        obtainRxBleConnection(connectionComponent),
-                                        observeDisconnections(connectionComponent)
-                                );
-                            }
-                        })
+                return obtainRxBleConnection(connectionComponent)
+                        .delaySubscription(enqueueConnectOperation(connectionComponent))
+                        .mergeWith(observeDisconnections(connectionComponent))
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {

@@ -9,12 +9,12 @@ This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating f
 
 Was:
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:1.5.0"
+compile "com.polidea.rxandroidble:rxandroidble:x.y.z"
 ```
 
 Is:
 ```groovy
-compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
+compile "com.polidea.rxandroidble2:rxandroidble:x.y.z"
 ```
 
 At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
@@ -338,13 +338,13 @@ RxAndroidBle already provides all the necessary bluetooth permissions for you. R
 ```
 ## More examples
 
-Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble/sample).
+Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample).
 
 ## Download
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
+compile "com.polidea.rxandroidble2:rxandroidble:1.6.0"
 ```
 ### Maven
 
@@ -352,7 +352,7 @@ compile "com.polidea.rxandroidble2:rxandroidble:1.5.0"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.5.0</version>
+  <version>1.6.0</version>
   <type>aar</type>
 </dependency>
 ```
@@ -385,6 +385,10 @@ Unfortunately it is not under active development—PRs are welcomed though. ;)
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
 
 When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible. Please also make sure your code compiles by running ```./gradlew clean checkstyle test```.
+
+## FAQ
+If you encounter seemingly incorrect behaviour in your application that is regarding this library please check the below list of Frequently Asked Questions:
+- [UndeliverableException](https://github.com/Polidea/RxAndroidBle/wiki/FAQ:-UndeliverableException)
 
 ## Support
 * non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)

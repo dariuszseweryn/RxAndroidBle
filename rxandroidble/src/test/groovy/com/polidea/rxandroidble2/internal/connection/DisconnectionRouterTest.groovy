@@ -6,13 +6,13 @@ import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
+import hkhc.electricspock.ElectricSpecification
 import io.reactivex.subjects.PublishSubject
-import org.robospock.RoboSpecification
 import spock.lang.Unroll
 
 import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
 
-class DisconnectionRouterTest extends RoboSpecification {
+class DisconnectionRouterTest extends ElectricSpecification {
 
     String mockMacAddress = "1234"
     PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject = PublishSubject.create()

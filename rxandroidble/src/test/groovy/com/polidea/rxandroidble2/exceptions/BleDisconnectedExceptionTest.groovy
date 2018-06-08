@@ -9,13 +9,25 @@ class BleDisconnectedExceptionTest extends Specification {
 
     BleDisconnectedException objectUnderTest
 
-    def "toString should include message"() {
+    def "toString should include message with unknown status"() {
 
         when:
         objectUnderTest = new BleDisconnectedException("myBluetoothAddress")
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble.exceptions.BleDisconnectedException: Disconnected from myBluetoothAddress"
+                "com.polidea.rxandroidble2.exceptions.BleDisconnectedException: Disconnected from myBluetoothAddress with status -1 (UNKNOWN)"
+    }
+
+    def "toString should include message with status"() {
+        given:
+        def expectedStatus = 0x81
+
+        when:
+        objectUnderTest = new BleDisconnectedException("myBluetoothAddress", expectedStatus)
+
+        then:
+        assert objectUnderTest.toString() ==
+                "com.polidea.rxandroidble2.exceptions.BleDisconnectedException: Disconnected from myBluetoothAddress with status $expectedStatus (GATT_INTERNAL_ERROR)"
     }
 }

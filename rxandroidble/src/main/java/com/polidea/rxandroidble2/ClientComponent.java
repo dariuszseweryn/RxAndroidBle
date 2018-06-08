@@ -14,6 +14,7 @@ import android.support.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
+import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
@@ -25,11 +26,12 @@ import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueueImpl;
-import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23;
+import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23Factory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi23;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
+import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanResult;
 
 import java.util.concurrent.ExecutorService;
@@ -109,6 +111,11 @@ public interface ClientComponent {
         }
 
         @Provides
+        BackgroundScanner provideBackgroundScanner(BackgroundScannerImpl backgroundScannerImpl) {
+            return backgroundScannerImpl;
+        }
+
+        @Provides
         Context provideApplicationContext() {
             return context;
         }
@@ -156,11 +163,11 @@ public interface ClientComponent {
         @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
         Observable<Boolean> provideLocationServicesOkObservable(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
-                Provider<LocationServicesOkObservableApi23> locationServicesOkObservableApi23Provider
+                LocationServicesOkObservableApi23Factory locationServicesOkObservableApi23Factory
         ) {
             return deviceSdk < Build.VERSION_CODES.M
                     ? ObservableUtil.justOnNext(true) // there is no need for one before Marshmallow
-                    : locationServicesOkObservableApi23Provider.get();
+                    : locationServicesOkObservableApi23Factory.get();
         }
 
         @Provides

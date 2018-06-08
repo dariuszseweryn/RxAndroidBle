@@ -10,6 +10,7 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
@@ -466,6 +467,11 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public <T> Observable<T> queue(@NonNull RxBleCustomOperation<T> operation) {
+        throw new UnsupportedOperationException("Mock does not support queuing custom operation.");
+    }
+
+    @Override
+    public <T> Observable<T> queue(@NonNull RxBleCustomOperation<T> operation, Priority priority) {
         throw new UnsupportedOperationException("Mock does not support queuing custom operation.");
     }
 }

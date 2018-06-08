@@ -1,11 +1,13 @@
 package com.polidea.rxandroidble2.internal.connection
 
+import com.polidea.rxandroidble2.exceptions.BleGattException
+import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class MtuWatcherTest extends Specification {
+class MtuWatcherTest extends Specification {
 
     PublishSubject<Observable<Integer>> onMtuChangedObservablePublishSubject = PublishSubject.create()
 
@@ -52,7 +54,7 @@ public class MtuWatcherTest extends Specification {
         given:
         setupObjectUnderTest(10)
         objectUnderTest.onConnectionSubscribed()
-        onMtuChangedObservablePublishSubject.onNext(Observable.error(new Throwable("test")))
+        onMtuChangedObservablePublishSubject.onNext(Observable.error(new BleGattException(null, 0, BleGattOperationType.ON_MTU_CHANGED)))
         onMtuChangedObservablePublishSubject.onNext(Observable.just(newMtu))
 
         expect:
@@ -62,7 +64,7 @@ public class MtuWatcherTest extends Specification {
         newMtu << [60, 900]
     }
 
-    def "should subscribe from RxBleGattCallback.getOnMtuChanged() accordingly"() {
+    def "should subscribe to RxBleGattCallback.getOnMtuChanged() accordingly"() {
 
         given:
         setupObjectUnderTest(10)

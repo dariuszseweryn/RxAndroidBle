@@ -9,22 +9,25 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello Bluetooth World!"/>
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/background_scan_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/scan_in_background"/>
+        <Button
+            android:id="@+id/scan_start_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_scan"/>
 
-    <Button
-        android:id="@+id/scan_toggle_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_scan"/>
+        <Button
+            android:id="@+id/scan_stop_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stop_scan"/>
+    </LinearLayout>
+
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/scan_results"

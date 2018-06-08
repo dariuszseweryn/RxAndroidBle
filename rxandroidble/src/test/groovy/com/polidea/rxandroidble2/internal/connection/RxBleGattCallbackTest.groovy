@@ -2,10 +2,10 @@ package com.polidea.rxandroidble2.internal.connection
 
 import android.bluetooth.*
 import com.polidea.rxandroidble2.exceptions.*
+import hkhc.electricspock.ElectricSpecification
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import org.robospock.RoboSpecification
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -14,7 +14,7 @@ import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.*
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
-class RxBleGattCallbackTest extends RoboSpecification {
+class RxBleGattCallbackTest extends ElectricSpecification {
 
     DisconnectionRouter mockDisconnectionRouter
     PublishSubject mockDisconnectionSubject
@@ -233,7 +233,7 @@ class RxBleGattCallbackTest extends RoboSpecification {
     def "should transmit error on proper callback when status != BluetoothGatt.GATT_SUCCESS, subsequent calls to callbacks will work normally"() {
 
         given:
-        def testSubscriber = givenSubscription.call(objectUnderTest)
+        def testSubscriber = givenSubscription.call(objectUnderTest).test()
 
         when:
         whenAction.call(objectUnderTest.getBluetoothGattCallback(), GATT_FAILURE)

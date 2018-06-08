@@ -18,6 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <receiver android:name="com.polidea.rxandroidble2.sample.example1a_background_scanning.ScanReceiver"/>
+        <activity
+            android:name="com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity"
+            android:label="@string/title_example1">
+        </activity>
         <activity
             android:name="com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity"
             android:label="@string/title_example2"/>

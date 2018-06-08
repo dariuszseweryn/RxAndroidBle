@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.extensions
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.RxBleScanResult
+import io.reactivex.observers.BaseTestConsumer
 import io.reactivex.observers.TestObserver
 import io.reactivex.subscribers.TestSubscriber
 
@@ -66,15 +67,17 @@ class TestSubscriberExtension {
         return onNextEvents.get(size - 1).length == lastBatchSize
     }
 
-    static boolean assertValuesEquals(final TestSubscriber<byte[]> subscriber, byte[]... values) {
-        List<List<byte[]>> onNextEvents = subscriber.values()
+    static boolean assertValuesEquals(final BaseTestConsumer<byte[], ? extends BaseTestConsumer> consumer, byte[]... values) {
+        List<List<byte[]>> onNextEvents = consumer.values()
         def size = onNextEvents.size()
         if (size != values.length) {
             throw new IllegalArgumentException(String.format("onNext length (%d) does not match values length (%d)", size, values.length))
         }
         for (int i = 0; i < size; i++) {
             if (!(values[i] == onNextEvents[i])) {
-                throw new IllegalArgumentException(String.format("onNext[%d] (%s) != value[%d] (%s)", i, Arrays.toString(values()[i]), i, Arrays.toString(values[i])))
+                throw new IllegalArgumentException(
+                        String.format("onNext[%d] (%s) != value[%d] (%s)", i, Arrays.toString(values()[i]), i, Arrays.toString(values[i]))
+                )
             }
         }
         true

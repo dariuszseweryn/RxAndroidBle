@@ -4,14 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
-import org.robospock.RoboSpecification
 
 @Config(manifest = Config.NONE)
-class LocationServicesOkObservableApi23Test extends RoboSpecification {
+class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
-    def objectUnderTest = new LocationServicesOkObservableApi23(contextMock, mockLocationServicesStatus)
+    def objectUnderTest = new LocationServicesOkObservableApi23Factory(contextMock, mockLocationServicesStatus)
     BroadcastReceiver registeredReceiver
 
     def setup() {
@@ -24,7 +24,7 @@ class LocationServicesOkObservableApi23Test extends RoboSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >> true
 
         when:
-        objectUnderTest.subscribe()
+        objectUnderTest.get().subscribe()
 
         then:
         1 * contextMock.registerReceiver(!null, {
@@ -37,13 +37,30 @@ class LocationServicesOkObservableApi23Test extends RoboSpecification {
         given:
         mockLocationServicesStatus.isLocationProviderOk() >> true
         shouldCaptureRegisteredReceiver()
-        def disposable = objectUnderTest.test()
+        def disposable = objectUnderTest.get().test()
 
         when:
         disposable.dispose()
 
         then:
         1 * contextMock.unregisterReceiver(registeredReceiver)
+    }
+
+    def "should still register and unregister in correct order"() {
+        given:
+        mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOkResult
+
+        when:
+        objectUnderTest.get().take(1).test()
+
+        then:
+        1 * contextMock.registerReceiver(_, _)
+
+        then:
+        1 * contextMock.unregisterReceiver(_)
+
+        where:
+        isLocationProviderOkResult << [true, false]
     }
 
     def "should emit what LocationServicesStatus.isLocationProviderOk() returns on subscribe and on next broadcasts"() {
@@ -53,7 +70,7 @@ class LocationServicesOkObservableApi23Test extends RoboSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >>> [true, false, true]
 
         when:
-        def testObserver = objectUnderTest.test()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(true)
@@ -78,7 +95,7 @@ class LocationServicesOkObservableApi23Test extends RoboSpecification {
         mockLocationServicesStatus.isLocationProviderOk() >>> [false, false, true, true, false, false]
 
         when:
-        def testObserver = objectUnderTest.test()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(false)

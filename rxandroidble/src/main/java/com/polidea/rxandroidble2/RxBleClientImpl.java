@@ -19,6 +19,7 @@ import com.polidea.rxandroidble2.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble2.internal.util.UUIDUtil;
+import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
@@ -30,10 +31,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import bleshadow.dagger.Lazy;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-
-import bleshadow.dagger.Lazy;
 import io.reactivex.Maybe;
 import io.reactivex.MaybeSource;
 import io.reactivex.Observable;
@@ -45,6 +45,7 @@ import io.reactivex.functions.Predicate;
 
 class RxBleClientImpl extends RxBleClient {
 
+    public static final String TAG = "RxBleClient";
     private final ClientOperationQueue operationQueue;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
@@ -58,6 +59,7 @@ class RxBleClientImpl extends RxBleClient {
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
     private final LocationServicesStatus locationServicesStatus;
     private final Lazy<ClientStateObservable> lazyClientStateObservable;
+    private final BackgroundScanner backgroundScanner;
 
     @Inject
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -71,7 +73,8 @@ class RxBleClientImpl extends RxBleClient {
                     ScanPreconditionsVerifier scanPreconditionVerifier,
                     Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
-                    ClientComponent.ClientComponentFinalizer clientComponentFinalizer) {
+                    ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
+                    BackgroundScanner backgroundScanner) {
         this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -84,6 +87,7 @@ class RxBleClientImpl extends RxBleClient {
         this.internalToExternalScanResultMapFunction = internalToExternalScanResultMapFunction;
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.clientComponentFinalizer = clientComponentFinalizer;
+        this.backgroundScanner = backgroundScanner;
     }
 
     @Override
@@ -127,6 +131,10 @@ class RxBleClientImpl extends RxBleClient {
         });
     }
 
+    @Override
+    public BackgroundScanner getBackgroundScanner() {
+        return backgroundScanner;
+    }
 
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
         return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
