@@ -20,17 +20,13 @@ public class BleDisconnectedException extends BleException {
      */
     public static final int UNKNOWN_STATUS = -1;
 
-    public static class BleAdapterDisabledException extends BleException {
-        // Disconnection related to disabled Bluetooth adapter
-    }
-
     @SuppressWarnings("WeakerAccess")
     @NonNull
     public final String bluetoothDeviceAddress;
     public final int state;
 
     public static BleDisconnectedException adapterDisabled(String macAddress) {
-        return new BleDisconnectedException(new BleDisconnectedException.BleAdapterDisabledException(), macAddress, UNKNOWN_STATUS);
+        return new BleDisconnectedException(new BleAdapterDisabledException(), macAddress, UNKNOWN_STATUS);
     }
 
     /**
