@@ -9,7 +9,7 @@ import com.polidea.rxandroidble2.internal.DeviceModule;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
 
 import bleshadow.javax.inject.Inject;
@@ -30,7 +30,7 @@ import io.reactivex.functions.Predicate;
 class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRouterOutput {
 
     private static final String TAG = "DisconnectionRouter";
-    private final Queue<ObservableEmitter<BleException>> exceptionEmitters = new LinkedList<>();
+    private final Queue<ObservableEmitter<BleException>> exceptionEmitters = new ConcurrentLinkedQueue<>();
     private BleException exceptionOccurred;
     private Disposable adapterMonitoringDisposable;
 
@@ -60,14 +60,14 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .firstElement()
                 .subscribe(new Consumer<BleException>() {
                     @Override
-                    public void accept(BleException exception) throws Exception {
+                    public void accept(BleException exception) {
                         RxBleLog.d(TAG, "An exception received, indicating that the adapter has became unusable.");
                         exceptionOccurred = exception;
                         notifySubscribersAboutException();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
-                    public void accept(Throwable throwable) throws Exception {
+                    public void accept(Throwable throwable) {
                         RxBleLog.w(TAG, "Failed to monitor adapter state.", throwable);
                     }
                 });
@@ -107,7 +107,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
         onExceptionOccurred(disconnectedGattException);
     }
 
-    private void onExceptionOccurred(BleException exception) {
+    private synchronized void onExceptionOccurred(BleException exception) {
         if (exceptionOccurred == null) {
             exceptionOccurred = exception;
             notifySubscribersAboutException();
@@ -133,12 +133,14 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
     public Observable<BleException> asValueOnlyObservable() {
         return Observable.create(new ObservableOnSubscribe<BleException>() {
             @Override
-            public void subscribe(final ObservableEmitter<BleException> emitter) throws Exception {
-                if (exceptionOccurred != null) {
-                    emitter.onNext(exceptionOccurred);
-                    emitter.onComplete();
-                } else {
-                    storeEmitterToBeNotifiedInTheFuture(emitter);
+            public void subscribe(final ObservableEmitter<BleException> emitter) {
+                synchronized (DisconnectionRouter.this) {
+                    if (exceptionOccurred != null) {
+                        emitter.onNext(exceptionOccurred);
+                        emitter.onComplete();
+                    } else {
+                        storeEmitterToBeNotifiedInTheFuture(emitter);
+                    }
                 }
             }
         });
@@ -148,7 +150,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
         exceptionEmitters.add(emitter);
         emitter.setCancellable(new Cancellable() {
             @Override
-            public void cancel() throws Exception {
+            public void cancel() {
                 exceptionEmitters.remove(emitter);
             }
         });
