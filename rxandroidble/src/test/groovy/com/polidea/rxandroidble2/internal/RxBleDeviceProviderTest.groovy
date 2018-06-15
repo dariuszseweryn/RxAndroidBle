@@ -42,7 +42,7 @@ class RxBleDeviceProviderTest extends Specification {
 
         @Override
         io.reactivex.Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeoutSetup,
-                                                        Timeout connectTimeoutSetup) {
+                                                        Timeout connectingTimeoutSetup) {
             establishConnection(autoConnect)
         }
 

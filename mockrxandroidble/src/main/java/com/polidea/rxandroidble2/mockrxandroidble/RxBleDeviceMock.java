@@ -98,7 +98,7 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeout,
-                                                           Timeout connectionTimeout) {
+                                                           Timeout connectingTimeout) {
         return establishConnection(autoConnect);
     }
 

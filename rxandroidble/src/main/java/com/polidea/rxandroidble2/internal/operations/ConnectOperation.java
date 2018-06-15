@@ -32,7 +32,7 @@ import io.reactivex.observers.DisposableSingleObserver;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;
-import static com.polidea.rxandroidble2.internal.DeviceModule.CONNECT_TIMEOUT;
+import static com.polidea.rxandroidble2.internal.DeviceModule.CONNECTING_TIMEOUT;
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
 import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableSingleObserverFromEmitter;
 
@@ -42,7 +42,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
     private final BleConnectionCompat connectionCompat;
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGattProvider bluetoothGattProvider;
-    private final TimeoutConfiguration connectTimeout;
+    private final TimeoutConfiguration connectingTimeout;
     private final boolean autoConnect;
     private final ConnectionStateChangeListener connectionStateChangedAction;
 
@@ -52,14 +52,14 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
             BleConnectionCompat connectionCompat,
             RxBleGattCallback rxBleGattCallback,
             BluetoothGattProvider bluetoothGattProvider,
-            @Named(CONNECT_TIMEOUT) TimeoutConfiguration connectTimeout,
+            @Named(CONNECTING_TIMEOUT) TimeoutConfiguration connectingTimeout,
             @Named(AUTO_CONNECT) boolean autoConnect,
             ConnectionStateChangeListener connectionStateChangedAction) {
         this.bluetoothDevice = bluetoothDevice;
         this.connectionCompat = connectionCompat;
         this.rxBleGattCallback = rxBleGattCallback;
         this.bluetoothGattProvider = bluetoothGattProvider;
-        this.connectTimeout = connectTimeout;
+        this.connectingTimeout = connectingTimeout;
         this.autoConnect = autoConnect;
         this.connectionStateChangedAction = connectionStateChangedAction;
     }
@@ -92,7 +92,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                 return autoConnect
                         ? bluetoothGattSingle
                         : bluetoothGattSingle
-                        .timeout(connectTimeout.timeout, connectTimeout.timeoutTimeUnit, connectTimeout.timeoutScheduler,
+                        .timeout(connectingTimeout.timeout, connectingTimeout.timeoutTimeUnit, connectingTimeout.timeoutScheduler,
                                 prepareConnectionTimeoutError());
             }
         };

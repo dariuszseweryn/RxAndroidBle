@@ -70,11 +70,11 @@ class RxBleDeviceImpl implements RxBleDevice {
     @Override
     public Observable<RxBleConnection> establishConnection(final boolean autoConnect,
                                                            final Timeout operationTimeout,
-                                                           final Timeout connectTimeout) {
+                                                           final Timeout connectingTimeout) {
         ConnectionSetup options = new ConnectionSetup.Builder()
           .setAutoConnect(autoConnect)
           .setOperationTimeout(operationTimeout)
-          .setConnectingTimeout(connectTimeout)
+          .setConnectingTimeout(connectingTimeout)
           .setSuppressIllegalOperationCheck(true)
           .build();
         return establishConnection(options);

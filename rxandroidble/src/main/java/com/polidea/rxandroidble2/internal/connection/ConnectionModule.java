@@ -20,17 +20,17 @@ import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.
 public class ConnectionModule {
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
-    public static final String CONNECT_TIMEOUT = "connect-timeout";
+    public static final String CONNECTING_TIMEOUT = "connecting-timeout";
     final boolean autoConnect;
     final boolean suppressOperationCheck;
     private final Timeout operationTimeout;
-    private final Timeout connectTimeout;
+    private final Timeout connectingTimeout;
 
     ConnectionModule(ConnectionSetup connectionSetup) {
         this.autoConnect = connectionSetup.autoConnect;
         this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
         this.operationTimeout = connectionSetup.operationTimeout;
-        this.connectTimeout = connectionSetup.connectionTimeout;
+        this.connectingTimeout = connectionSetup.connectingTimeout;
     }
 
     @ConnectionScope
@@ -46,9 +46,9 @@ public class ConnectionModule {
     }
 
     @Provides
-    @Named(CONNECT_TIMEOUT)
-    TimeoutConfiguration providesConnectTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
-        return new TimeoutConfiguration(connectTimeout.timeout, connectTimeout.timeUnit, timeoutScheduler);
+    @Named(CONNECTING_TIMEOUT)
+    TimeoutConfiguration providesConnectingTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
+        return new TimeoutConfiguration(connectingTimeout.timeout, connectingTimeout.timeUnit, timeoutScheduler);
     }
 
     @Provides

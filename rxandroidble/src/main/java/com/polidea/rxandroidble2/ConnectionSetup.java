@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionSetup {
     /** Durations after which Android would timeout internally (in direct mode) */
     public static final int DEFAULT_OPERATION_TIMEOUT = 30;
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 35;
+    public static final int DEFAULT_CONNECTING_TIMEOUT = 35;
     /**
      * Flag related with
      * {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
@@ -37,14 +37,14 @@ public class ConnectionSetup {
      * Timeout in seconds after which the connection will be considered as broken. Eventually the connection will be
      * canceled and removed from queue.
      */
-    public final Timeout connectionTimeout;
+    public final Timeout connectingTimeout;
 
     private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, Timeout operationTimeout,
-                            Timeout connectionTimeout) {
+                            Timeout connectingTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
         this.operationTimeout = operationTimeout;
-        this.connectionTimeout = connectionTimeout;
+        this.connectingTimeout = connectingTimeout;
     }
 
     public static class Builder {
@@ -52,7 +52,7 @@ public class ConnectionSetup {
         private boolean autoConnect = false;
         private boolean suppressOperationCheck = false;
         private Timeout operationTimeout = new Timeout(DEFAULT_OPERATION_TIMEOUT, TimeUnit.SECONDS);
-        private Timeout connectTimeout = new Timeout(DEFAULT_CONNECTION_TIMEOUT, TimeUnit.SECONDS);
+        private Timeout connectingTimeout = new Timeout(DEFAULT_CONNECTING_TIMEOUT, TimeUnit.SECONDS);
 
         /**
          * Autoconnect concept may be misleading at first glance. In cases when the BLE device is available and it is advertising constantly
@@ -96,18 +96,18 @@ public class ConnectionSetup {
         }
 
         /**
-         * @param connectTimeout Timeout after which the connection will be considered as broken. Eventually the connection
+         * @param connectingTimeout Timeout after which the connection will be considered as broken. Eventually the connection
          *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's connection
          *                         only and may leave Android's BLE stack in an inconsistent state.
          * @return this builder instance
          */
-        public Builder setConnectingTimeout(Timeout connectTimeout) {
-            this.connectTimeout = connectTimeout;
+        public Builder setConnectingTimeout(Timeout connectingTimeout) {
+            this.connectingTimeout = connectingTimeout;
             return this;
         }
 
         public ConnectionSetup build() {
-            return new ConnectionSetup(autoConnect, suppressOperationCheck, operationTimeout, connectTimeout);
+            return new ConnectionSetup(autoConnect, suppressOperationCheck, operationTimeout, connectingTimeout);
         }
     }
 }

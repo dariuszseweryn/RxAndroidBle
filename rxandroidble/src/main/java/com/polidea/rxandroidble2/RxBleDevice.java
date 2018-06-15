@@ -133,7 +133,7 @@ public interface RxBleDevice {
      * @param operationTimeout Timeout configuration after which the operation will be considered as broken. Eventually the operation
      *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
      *                         only and may leave Android's BLE stack in an inconsistent state.
-     * @param connectTimeout   Timeout configuration after which the connection will be considered as broken. Eventually the connection
+     * @param connectingTimeout   Timeout configuration after which the connection will be considered as broken. Eventually the connection
      *                         attempt will be disconnected and then closed when the connection subscription is released.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
@@ -149,7 +149,7 @@ public interface RxBleDevice {
      *                                         established. In order to share the connection, share #establishConnection emissions.
      */
     Observable<RxBleConnection> establishConnection(boolean autoConnect, @NonNull Timeout operationTimeout,
-                                                    @NonNull Timeout connectTimeout);
+                                                    @NonNull Timeout connectingTimeout);
 
     /**
      * Name of the device. Name is optional and it's up to the device vendor if will be provided.
