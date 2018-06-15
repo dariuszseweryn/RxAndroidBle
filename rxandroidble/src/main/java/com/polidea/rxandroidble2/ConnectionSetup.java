@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * Container for various connection parameters.
  */
 public class ConnectionSetup {
-
+    /** Durations after which Android would timeout internally (in direct mode) */
     public static final int DEFAULT_OPERATION_TIMEOUT = 30;
     public static final int DEFAULT_CONNECTION_TIMEOUT = 35;
     /**
