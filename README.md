@@ -388,6 +388,7 @@ When submitting code, please make every effort to follow existing conventions an
 
 ## FAQ
 If you encounter seemingly incorrect behaviour in your application that is regarding this library please check the below list of Frequently Asked Questions:
+- [Cannot connect](https://github.com/Polidea/RxAndroidBle/wiki/FAQ:-Cannot-connect)
 - [UndeliverableException](https://github.com/Polidea/RxAndroidBle/wiki/FAQ:-UndeliverableException)
 
 ## Support
