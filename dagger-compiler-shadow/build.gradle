@@ -9,6 +9,9 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.proxyco'
 
 def buildSrcDir = '../gradle'
 apply from: "${buildSrcDir}/shadow.gradle"
