@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2.internal;
 import android.bluetooth.BluetoothDevice;
 
 import com.jakewharton.rxrelay2.BehaviorRelay;
-import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ClientComponent.NamedSchedulers;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.internal.connection.ConnectionComponent;
@@ -44,12 +43,6 @@ public class DeviceModule {
     @Named(MAC_ADDRESS)
     String provideMacAddress() {
         return macAddress;
-    }
-
-    @Provides
-    @Named(CONNECT_TIMEOUT)
-    static TimeoutConfiguration providesConnectTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
-        return new TimeoutConfiguration(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS, timeoutScheduler);
     }
 
     @Provides
