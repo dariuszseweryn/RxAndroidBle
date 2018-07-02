@@ -275,8 +275,12 @@ public interface RxBleConnection {
      *
      * Timeouts after specified amount of time.
      *
+     * The cache can be cleared to perform a new Gatt Discover and maybe find a service previously hidden
+     *
      * @param timeout multiplier of TimeUnit after which the discovery will timeout in case of no return values
      * @param timeUnit TimeUnit for the timeout
+     * @param clearCache Flag to ask the cache clearing (Warning, this functionnality can alter the good working of your app
+     *                   You should have strong knowledge of how it works)
      * @return Observable emitting result a GATT service discovery.
      * @throws BleGattCannotStartException with {@link BleGattOperationType#SERVICE_DISCOVERY} type, when it wasn't possible to start
      *                                     the discovery for internal reasons.

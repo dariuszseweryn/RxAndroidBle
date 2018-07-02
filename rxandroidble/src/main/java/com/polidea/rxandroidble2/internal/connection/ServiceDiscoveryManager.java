@@ -47,28 +47,31 @@ class ServiceDiscoveryManager {
     }
 
     Single<RxBleDeviceServices> getDiscoverServicesSingle(final long timeout, final TimeUnit timeoutTimeUnit) {
-        if (hasCachedResults) {
-            // optimisation to decrease the number of allocations
-            return deviceServicesObservable;
-        } else {
-            return deviceServicesObservable.doOnSubscribe(
-                    new Consumer<Disposable>() {
-                        @Override
-                        public void accept(Disposable disposable) throws Exception {
-                            timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
-                        }
-                    });
-        }
+        return getDiscoverServicesSingle(timeout, timeoutTimeUnit, false);
     }
 
     Single<RxBleDeviceServices> getDiscoverServicesSingle(final long timeout, final TimeUnit timeoutTimeUnit, Boolean clearCache) {
-        if (hasCachedResults) {
+        if (clearCache) {
+            hasCachedResults = false;
+            this.deviceServicesObservable = getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout())
+                    .doOnSuccess(Functions.actionConsumer(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            hasCachedResults = true;
+                        }
+                    }))
+                    .doOnError(Functions.actionConsumer(new Action() {
+                        @Override
+                        public void run() {
+                            reset();
+                        }
+                    }))
+                    .cache();
+        }
+        if (hasCachedResults && !clearCache) {
             // optimisation to decrease the number of allocations
             return deviceServicesObservable;
         } else {
-            if (clearCache) {
-                reset();
-            }
             return deviceServicesObservable.doOnSubscribe(
                     new Consumer<Disposable>() {
                         @Override
