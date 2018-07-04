@@ -42,10 +42,10 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
         } else {
             connectionDisposable = bleDevice.establishConnection(false)
                     .compose(bindUntilEvent(PAUSE))
-                    .observeOn(AndroidSchedulers.mainThread())
                     .doFinally(this::clearSubscription)
                     .flatMap(rxBleConnection -> // Set desired interval.
                             Observable.interval(2, SECONDS).flatMapSingle(sequence -> rxBleConnection.readRssi()))
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::updateRssi, this::onConnectionFailure);
         }
     }
