@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.polidea.rxandroidble.utils.GattStatusParser;
+
 /**
  * Exception emitted when the BLE link has been interrupted as a result of an error. The exception contains
  * detailed explanation of the error source (type of operation) and the code proxied from
@@ -65,9 +67,10 @@ public class BleGattException extends BleException {
                     getMacAddress(gatt), bleGattOperationType);
         }
 
+        final String statusDescription = GattStatusParser.getGattCallbackStatusDescription(status);
         final String link
                 = "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h";
-        return String.format("GATT exception from MAC address %s, status %d, type %s. (Look up status 0x%02x here %s)",
-                getMacAddress(gatt), status, bleGattOperationType, status, link);
+        return String.format("GATT exception from MAC address %s, status %d (%s), type %s. (Look up status 0x%02x here %s)",
+                getMacAddress(gatt), status, statusDescription, bleGattOperationType, status, link);
     }
 }
