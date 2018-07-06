@@ -14,7 +14,9 @@ import com.polidea.rxandroidble.internal.operations.TimeoutConfiguration;
 
 import com.polidea.rxandroidble.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble.internal.util.QueueReleasingEmitterWrapper;
+
 import java.util.concurrent.TimeUnit;
+
 import rx.Emitter;
 import rx.Observable;
 import rx.Scheduler;
@@ -22,6 +24,7 @@ import rx.Subscription;
 
 /**
  * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.
+ *
  * @param <T> The type of emitted result.
  */
 public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
@@ -74,6 +77,7 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
 
     /**
      * A function that should call the passed {@link BluetoothGatt} and return `true` if the call has succeeded.
+     *
      * @param bluetoothGatt the {@link BluetoothGatt} to use
      * @return `true` if success, `false` otherwise
      */
@@ -89,6 +93,7 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
 
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress());
+        return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress(),
+                BleDisconnectedException.UNKNOWN_STATUS);
     }
 }

@@ -160,6 +160,6 @@ public class DisconnectOperation extends QueueOperation<Void> {
 
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
-        return new BleDisconnectedException(deadObjectException, macAddress);
+        return new BleDisconnectedException(deadObjectException, macAddress, BleDisconnectedException.UNKNOWN_STATUS);
     }
 }

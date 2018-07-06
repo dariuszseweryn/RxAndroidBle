@@ -8,6 +8,7 @@ import com.polidea.rxandroidble.exceptions.BleException;
 import com.polidea.rxandroidble.exceptions.BleGattException;
 import com.polidea.rxandroidble.internal.DeviceModule;
 import com.polidea.rxandroidble.internal.util.RxBleAdapterWrapper;
+
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import rx.Observable;
@@ -45,7 +46,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .map(new Func1<Boolean, BleException>() {
                     @Override
                     public BleException call(Boolean isAdapterUsable) {
-                        return new BleDisconnectedException(macAddress); // TODO: Introduce BleDisabledException?
+                        return BleDisconnectedException.adapterDisabled(macAddress);
                     }
                 });
 
