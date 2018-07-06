@@ -25,6 +25,7 @@ public class BleDisconnectedException extends BleException {
     public final String bluetoothDeviceAddress;
     public final int state;
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static BleDisconnectedException adapterDisabled(String macAddress) {
         return new BleDisconnectedException(new BleAdapterDisabledException(), macAddress, UNKNOWN_STATUS);
     }
