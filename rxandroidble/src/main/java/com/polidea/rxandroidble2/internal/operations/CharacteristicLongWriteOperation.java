@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.QueueOperation;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
@@ -38,6 +39,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observers.DisposableObserver;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableObserverFromEmitter;
 
@@ -133,12 +135,20 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
     @NonNull
     private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
+        final AtomicInteger batchIndex = new AtomicInteger(0);
         final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
         return Observable.create(
                 new ObservableOnSubscribe<ByteAssociation<UUID>>() {
                     @Override
                     public void subscribe(ObservableEmitter<ByteAssociation<UUID>> emitter) throws Exception {
+                        RxBleLog.d("Long write batch #%d - start", batchIndex.get());
                         final DisposableObserver writeCallbackObserver = onCharacteristicWrite
+                                .doOnNext(new Consumer<ByteAssociation<UUID>>() {
+                                    @Override
+                                    public void accept(ByteAssociation<UUID> uuidByteAssociation) {
+                                        RxBleLog.d("Long write batch #%d - end", batchIndex.getAndIncrement());
+                                    }
+                                })
                                 .subscribeWith(disposableObserverFromEmitter(emitter));
                         emitter.setDisposable(writeCallbackObserver);
 
@@ -172,6 +182,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     private void writeData(byte[] bytesBatch) {
+        RxBleLog.d("Writing next batch");
         bluetoothGattCharacteristic.setValue(bytesBatch);
         final boolean success = bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
         if (!success) {
