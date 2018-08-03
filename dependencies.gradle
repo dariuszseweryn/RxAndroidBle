@@ -1,6 +1,6 @@
 ext {
     supportVersion = '27.1.0'
-    rxJavaVersion = '2.1.14'
+    rxJavaVersion = '2.2.0'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     shadowPluginVersion = '2.0.2'
@@ -15,7 +15,7 @@ ext {
             junit              : 'junit:junit:4.12',
             groovy             : 'org.codehaus.groovy:groovy:2.4.13',
             spock              : ['org.spockframework:spock-core:1.1-groovy-2.4',
-                                  'cglib:cglib-nodep:3.2.6',
+                                  'cglib:cglib-nodep:3.2.7',
                                   'org.objenesis:objenesis:2.6'],
             robolectric        : 'org.robolectric:robolectric:3.8',
             electricspock      : 'com.github.hkhc:electricspock:0.9',
