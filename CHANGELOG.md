@@ -1,8 +1,11 @@
 Change Log
 ==========
-Version 1.7.0-SNAPSHOT
+Version 1.7.0
 * Introduced a new API that allows for background scanning in modern Android OS versions (https://github.com/Polidea/RxAndroidBle/issues/369)
-
+* Fixed LocationServicesOkObservable (https://github.com/Polidea/RxAndroidBle/pull/438)
+* Added GATT status code to `BleDisconnectionException` (https://github.com/Polidea/RxAndroidBle/pull/405)
+* Fixed possible concurrent access to `DisconnectionRouter` (https://github.com/Polidea/RxAndroidBle/pull/442)
+* Fixed race condition in `CharacteristicLongWriteOperation` (https://github.com/Polidea/RxAndroidBle/pull/465) 
 
 Version 1.6.0
 * Deprecated ConnectionSharingAdapter (https://github.com/Polidea/RxAndroidBle/pull/397)
