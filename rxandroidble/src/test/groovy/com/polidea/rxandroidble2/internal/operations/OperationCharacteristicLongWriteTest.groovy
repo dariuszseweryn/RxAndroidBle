@@ -12,11 +12,13 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
+import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
 import io.reactivex.Scheduler
 import io.reactivex.annotations.NonNull
 import io.reactivex.functions.Function
+import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
@@ -539,6 +541,32 @@ class OperationCharacteristicLongWriteTest extends Specification {
                 }
         ]
     }
+
+    ////////////////////// Testing repetition logic implementation
+
+    def "should emit repeat until ByteBuffer is empty"() {
+
+        given:
+        PublishSubject completionSubject = PublishSubject.create()
+        QueueReleasingEmitterWrapper mockQueueReleasingEmitterWrapper = Mock(QueueReleasingEmitterWrapper)
+        mockQueueReleasingEmitterWrapper.isWrappedEmitterUnsubscribed() >> false
+        Observable repetitionObservable = CharacteristicLongWriteOperation
+                .bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
+                        new ImmediateSerializedBatchAckStrategy(),
+                        ByteBuffer.allocate(0),
+                        mockQueueReleasingEmitterWrapper
+                )
+                .apply(completionSubject)
+        TestObserver testObserver = repetitionObservable.test()
+
+        when:
+        completionSubject.onNext(new Object())
+
+        then:
+        testObserver.assertNoValues()
+    }
+
+    ////////////////////// Helpers
 
     private void givenWillWriteNextBatchImmediatelyAfterPrevious() {
         writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy()

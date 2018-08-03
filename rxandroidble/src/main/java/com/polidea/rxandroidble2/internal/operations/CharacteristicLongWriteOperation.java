@@ -39,7 +39,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observers.DisposableObserver;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableObserverFromEmitter;
 
@@ -78,8 +77,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     @Override
-    protected void protectedRun(final ObservableEmitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface)
-            throws Throwable {
+    protected void protectedRun(final ObservableEmitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) {
         int batchSize = batchSizeProvider.getPayloadSizeLimit();
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
@@ -135,20 +133,12 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
     @NonNull
     private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
-        final AtomicInteger batchIndex = new AtomicInteger(0);
         final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
         return Observable.create(
                 new ObservableOnSubscribe<ByteAssociation<UUID>>() {
                     @Override
-                    public void subscribe(ObservableEmitter<ByteAssociation<UUID>> emitter) throws Exception {
-                        RxBleLog.d("Long write batch #%d - start", batchIndex.get());
+                    public void subscribe(ObservableEmitter<ByteAssociation<UUID>> emitter) {
                         final DisposableObserver writeCallbackObserver = onCharacteristicWrite
-                                .doOnNext(new Consumer<ByteAssociation<UUID>>() {
-                                    @Override
-                                    public void accept(ByteAssociation<UUID> uuidByteAssociation) {
-                                        RxBleLog.d("Long write batch #%d - end", batchIndex.getAndIncrement());
-                                    }
-                                })
                                 .subscribeWith(disposableObserverFromEmitter(emitter));
                         emitter.setDisposable(writeCallbackObserver);
 
@@ -201,22 +191,22 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         };
     }
 
-    private static Function<Observable<?>, ObservableSource<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
+    static Function<Observable<?>, ObservableSource<?>> bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
             final WriteOperationAckStrategy writeOperationAckStrategy,
             final ByteBuffer byteBuffer,
             final QueueReleasingEmitterWrapper<byte[]> emitterWrapper) {
         return new Function<Observable<?>, ObservableSource<?>>() {
 
             @Override
-            public ObservableSource<?> apply(Observable<?> emittingOnBatchWriteFinished) throws Exception {
+            public ObservableSource<?> apply(Observable<?> emittingOnBatchWriteFinished) {
                 return emittingOnBatchWriteFinished
                         .takeWhile(notUnsubscribed(emitterWrapper))
                         .map(bufferIsNotEmpty(byteBuffer))
                         .compose(writeOperationAckStrategy)
-                        .takeUntil(new Predicate<Boolean>() {
+                        .takeWhile(new Predicate<Boolean>() {
                             @Override
-                            public boolean test(Boolean hasRemaining) throws Exception {
-                                return !hasRemaining;
+                            public boolean test(Boolean hasRemaining) {
+                                return hasRemaining;
                             }
                         });
             }
@@ -225,7 +215,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
             private Function<Object, Boolean> bufferIsNotEmpty(final ByteBuffer byteBuffer) {
                 return new Function<Object, Boolean>() {
                     @Override
-                    public Boolean apply(Object emittedFromActStrategy) throws Exception {
+                    public Boolean apply(Object emittedFromActStrategy) {
                         return byteBuffer.hasRemaining();
                     }
                 };
