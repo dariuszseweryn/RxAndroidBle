@@ -285,38 +285,28 @@ Every error you may encounter is provided via onError callback. Each public meth
 
 ### Observable behaviour
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
-There are three types of `Observable`s that you may encounter.
-1. Single value, completing — i.e. `RxBleConnection.readCharacteristic()`, `RxBleConnection.writeCharacteristic()`, etc.
-2. Multiple values, not completing - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
-3. Single value, not completing — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
+There are two types of `Observable`s that you may encounter.
+1. Multiple values - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
+2. One value — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
 
 `RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources. 
 
 The below table contains an overview of used `Observable` patterns
 
-| Interface | Function | Number of values | Completes | [Hot/Cold](https://medium.com/@benlesh/hot-vs-cold-observables-f8094ed53339)
-| --- | --- | --- | --- | --- |
-| RxBleClient | scanBleDevices()* | Infinite | false | cold |
-| RxBleClient | observeStateChanges() | Infinite** | false** | hot |
-| RxBleDevice | observeConnectionStateChanges() | Infinite | false | hot |
-| RxBleDevice | establishConnection()* | Single | false | cold |
-| RxBleConnection | discoverServices() | Single | true | cold |
-| RxBleConnection | setupNotification()* | Single | false | cold |
-| RxBleConnection | setupNotification() emitted Observable | Infinite | false | hot |
-| RxBleConnection | setupIndication()* | Single | false | cold |
-| RxBleConnection | setupIndication() emitted Observable | Infinite | false | hot |
-| RxBleConnection | getCharacteristic() | Single | true | cold |
-| RxBleConnection | readCharacteristic() | Single | true | cold |
-| RxBleConnection | writeCharacteristic() | Single | true | cold |
-| RxBleConnection | readDescriptor() | Single | true | cold |
-| RxBleConnection | writeDescriptor() | Single | true | cold |
-| RxBleConnection | readRssi() | Single | true | cold |
-| RxBleConnection | requestMtu() | Single | true | cold |
-| RxBleConnection | queue() | User defined | User defined | cold |
-| LongWriteOperationBuilder | build() | Single | true | cold |
+| Interface | Function | Number of values | [Hot/Cold](https://medium.com/@benlesh/hot-vs-cold-observables-f8094ed53339)
+| --- | --- | --- | --- |
+| RxBleClient | scanBleDevices()* | Infinite | cold |
+| RxBleClient | observeStateChanges() | Infinite** | hot |
+| RxBleDevice | observeConnectionStateChanges() | Infinite | hot |
+| RxBleDevice | establishConnection()* | One | cold |
+| RxBleConnection | setupNotification()* | One | cold |
+| RxBleConnection | setupNotification() emitted Observable | Infinite** | hot |
+| RxBleConnection | setupIndication()* | One | cold |
+| RxBleConnection | setupIndication() emitted Observable | Infinite** | hot |
+| RxBleConnection | queue() | User defined | cold |
 
 \* this `Observable` when disposed closes/cleans up internal resources (i.e. finishes scan, closes a connection, disables notifications)<br>
-\** this `Observable` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime.
+\** this `Observable` may complete i.e. `observeStateChanges()` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime. i.e.2 Observables emitted from `setupNotification` / `setupIndication` may complete when the parent Observable is disposed.
 
 ### Helpers
 We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
