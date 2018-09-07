@@ -377,8 +377,7 @@ When submitting code, please make every effort to follow existing conventions an
 Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELibraries/RxAndroidBle)
 
 ## Maintainers
-* Dariusz Seweryn (dariusz.seweryn@polidea.com)
-* Paweł Urban (pawel.urban@polidea.com)
+* Dariusz Seweryn (github: dariuszseweryn)
 
 ## [Contributors](https://github.com/Polidea/RxAndroidBle/graphs/contributors), thank you!
 
