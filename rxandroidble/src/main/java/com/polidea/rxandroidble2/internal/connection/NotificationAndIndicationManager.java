@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -28,6 +29,7 @@ import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
@@ -70,7 +72,7 @@ class NotificationAndIndicationManager {
     ) {
         return Observable.defer(new Callable<ObservableSource<Observable<byte[]>>>() {
             @Override
-            public ObservableSource<Observable<byte[]>> call() throws Exception {
+            public ObservableSource<Observable<byte[]>> call() {
                 synchronized (activeNotificationObservableMap) {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
@@ -91,20 +93,21 @@ class NotificationAndIndicationManager {
                     final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
-                            .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
                             .andThen(ObservableUtil.justOnNext(
                                     observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
                             ))
+                            .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
                             .doFinally(new Action() {
+                                @SuppressLint("CheckResult")
                                 @Override
                                 public void run() {
                                     notificationCompletedSubject.onComplete();
                                     synchronized (activeNotificationObservableMap) {
                                         activeNotificationObservableMap.remove(id);
                                     }
-                                    // teardown the notification
+                                    // teardown the notification — subscription and result are ignored
                                     setCharacteristicNotification(bluetoothGatt, characteristic, false)
-                                            .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
+                                            .compose(teardownModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
                                             .subscribe(
                                                     Functions.EMPTY_ACTION,
                                                     Functions.emptyConsumer()
@@ -138,17 +141,47 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static CompletableTransformer setupModeTransformer(final DescriptorWriter descriptorWriter,
+    private static ObservableTransformer<Observable<byte[]>, Observable<byte[]>> setupModeTransformer(
+            final DescriptorWriter descriptorWriter,
+            final BluetoothGattCharacteristic characteristic,
+            final byte[] value,
+            final NotificationSetupMode mode
+    ) {
+        return new ObservableTransformer<Observable<byte[]>, Observable<byte[]>>() {
+            @Override
+            public ObservableSource<Observable<byte[]>> apply(final Observable<Observable<byte[]>> upstream) {
+                switch (mode) {
+
+                    case COMPAT:
+                        return upstream;
+                    case QUICK_SETUP:
+                        return upstream.map(new Function<Observable<byte[]>, Observable<byte[]>>() {
+                            @Override
+                            public Observable<byte[]> apply(Observable<byte[]> observable) {
+                                Completable dscWrtCache = writeClientCharacteristicConfig(characteristic, descriptorWriter, value).cache();
+                                return observable.mergeWith(dscWrtCache); // TODO take until parent unsubscribed?
+                            }
+                        });
+                    case DEFAULT:
+                    default:
+                        return writeClientCharacteristicConfig(characteristic, descriptorWriter, value).andThen(upstream);
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private static CompletableTransformer teardownModeTransformer(final DescriptorWriter descriptorWriter,
                                                                final BluetoothGattCharacteristic characteristic,
                                                                final byte[] value,
                                                                final NotificationSetupMode mode) {
         return new CompletableTransformer() {
             @Override
             public Completable apply(Completable completable) {
-                if (mode == NotificationSetupMode.DEFAULT) {
-                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
-                } else { // NotificationSetupMode.COMPAT
+                if (mode == NotificationSetupMode.COMPAT) {
                     return completable;
+                } else {
+                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
                 }
             }
         };
@@ -190,7 +223,7 @@ class NotificationAndIndicationManager {
         return descriptorWriter.writeDescriptor(descriptor, value)
                 .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
                     @Override
-                    public CompletableSource apply(Throwable throwable) throws Exception {
+                    public CompletableSource apply(Throwable throwable) {
                         return Completable.error(new BleCannotSetCharacteristicNotificationException(
                                 bluetoothGattCharacteristic,
                                 BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
