@@ -163,25 +163,49 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
-        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.empty()
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
-        def testExceptionCause = new RuntimeException()
-        def descriptorWriteSubject = PublishSubject.create()
-        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteSubject.ignoreElements()
-        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.DEFAULT, ack)
-                .flatMap({ it })
-                .test()
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult.ignoreElements()
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+        notificationObservable.test()
+        def testExceptionCause = new RuntimeException("test")
 
         when:
-        descriptorWriteSubject.onError(testExceptionCause)
+        descriptorWriteResult.onError(testExceptionCause)
 
         then:
-        testSubscriber.assertError {
+        parentTestObserver.assertError {
             Throwable e ->
                 e instanceof BleCannotSetCharacteristicNotificationException &&
                         e.getReason() == BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR &&
                         e.getCause() == testExceptionCause
         }
+
+        where:
+        ack << ACK_VALUES
+    }
+
+    @Unroll
+    def "should complete the emitted io.reactivex.Observable<byte> when an error happens while writing CCC in QUICK_SETUP mode ack:#ack"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult.ignoreElements()
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+        def childTestObserver = notificationObservable.test()
+        def testExceptionCause = new RuntimeException("test")
+
+        when:
+        descriptorWriteResult.onError(testExceptionCause)
+
+        then:
+        childTestObserver.assertComplete()
 
         where:
         ack << ACK_VALUES

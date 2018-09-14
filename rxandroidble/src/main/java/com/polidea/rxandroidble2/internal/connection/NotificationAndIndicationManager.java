@@ -155,13 +155,20 @@ class NotificationAndIndicationManager {
                     case COMPAT:
                         return upstream;
                     case QUICK_SETUP:
-                        return upstream.map(new Function<Observable<byte[]>, Observable<byte[]>>() {
-                            @Override
-                            public Observable<byte[]> apply(Observable<byte[]> observable) {
-                                Completable dscWrtCache = writeClientCharacteristicConfig(characteristic, descriptorWriter, value).cache();
-                                return observable.mergeWith(dscWrtCache); // TODO take until parent unsubscribed?
-                            }
-                        });
+                        final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
+                                .toObservable()
+                                .cache()
+                                .publish()
+                                .autoConnect(2)
+                                .ignoreElements();
+                        return upstream
+                                .mergeWith(publishedWriteCCCDesc)
+                                .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
+                                    @Override
+                                    public Observable<byte[]> apply(Observable<byte[]> observable) {
+                                        return observable.mergeWith(publishedWriteCCCDesc.onErrorComplete());
+                                    }
+                                });
                     case DEFAULT:
                     default:
                         return writeClientCharacteristicConfig(characteristic, descriptorWriter, value).andThen(upstream);
@@ -172,9 +179,9 @@ class NotificationAndIndicationManager {
 
     @NonNull
     private static CompletableTransformer teardownModeTransformer(final DescriptorWriter descriptorWriter,
-                                                               final BluetoothGattCharacteristic characteristic,
-                                                               final byte[] value,
-                                                               final NotificationSetupMode mode) {
+                                                                  final BluetoothGattCharacteristic characteristic,
+                                                                  final byte[] value,
+                                                                  final NotificationSetupMode mode) {
         return new CompletableTransformer() {
             @Override
             public Completable apply(Completable completable) {

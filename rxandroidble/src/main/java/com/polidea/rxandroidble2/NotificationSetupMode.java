@@ -15,8 +15,8 @@ public enum NotificationSetupMode {
      * Configures notifications according to the standard but in contrast to the {@link #DEFAULT} mode the `Observable<byte[]>` is emitted
      * before the CLIENT_CHARACTERISTIC_CONFIG is written. The CLIENT_CHARACTERISTIC_CONFIG is scheduled for write when the emitted
      * `Observable<byte[]>` is subscribed for the first time and any potential error connected with the descriptor write will be emitted
-     * there instead of the parent Observable<Observable<byte[]>> as in {@link #DEFAULT} case. This mode may be useful for devices that
-     * start to notify right after CLIENT_CHARACTERISTIC_CONFIG write
+     * on the parent Observable<Observable<byte[]>> as in {@link #DEFAULT} case and `Observable<byte[]>` will complete. This mode may be
+     * useful for devices that start to notify right after CLIENT_CHARACTERISTIC_CONFIG write
      */
     QUICK_SETUP
 }
