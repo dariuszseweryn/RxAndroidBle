@@ -214,6 +214,32 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
     }
 
     @Unroll
+    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.Observable<byte> is made in QUICK_SETUP mode ack:#ack"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult
+        objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).subscribe(testSubscriber)
+        def notificationObservable = testSubscriber.onNextEvents.get(0)
+        def childTestSubscriber = new TestSubscriber<>()
+
+        expect:
+        !descriptorWriteResult.hasObservers()
+
+        when:
+        notificationObservable.subscribe(childTestSubscriber)
+
+        then:
+        descriptorWriteResult.hasObservers()
+
+        where:
+        ack << ACK_VALUES
+    }
+
+    @Unroll
     def "should proxy RxBleGattCallback.observeDisconnect() if happened before .subscribe()"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
@@ -257,7 +283,7 @@ class NotificationAndIndicationManagerTest extends RoboSpecification {
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
         bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
-        
+
         when:
         objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).subscribe(testSubscriber)
 
