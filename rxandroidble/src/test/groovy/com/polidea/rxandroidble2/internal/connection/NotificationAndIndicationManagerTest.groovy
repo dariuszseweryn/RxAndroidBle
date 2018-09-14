@@ -212,6 +212,31 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
+    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.Observable<byte> is made in QUICK_SETUP mode ack:#ack"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult.ignoreElements()
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+
+        expect:
+        !descriptorWriteResult.hasObservers()
+
+        when:
+        notificationObservable.subscribe()
+
+        then:
+        descriptorWriteResult.hasObservers()
+
+        where:
+        ack << ACK_VALUES
+    }
+
+    @Unroll
     def "should proxy RxBleGattCallback.observeDisconnect() if happened before .subscribe()"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
