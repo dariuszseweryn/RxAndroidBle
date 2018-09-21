@@ -41,6 +41,7 @@ class BackgroundScannerTest extends ElectricSpecification {
         def pendingIntent = Mock(PendingIntent)
         def settings = Mock(ScanSettings)
         def scanFilter = emptyFilters()
+        adapterWrapper.isBluetoothEnabled() >> true
         1 * adapterWrapper.startLeScan(_, _, _) >> errorCode
 
         when:
@@ -54,11 +55,46 @@ class BackgroundScannerTest extends ElectricSpecification {
         errorCode << [ScanCallback.SCAN_FAILED_ALREADY_STARTED, ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED]
     }
 
+    def "should throw BleScanException if bluetooth is OFF while calling `.scanBleDeviceInBackground()`"() {
+        given:
+        def pendingIntent = Mock(PendingIntent)
+        def settings = Mock(ScanSettings)
+        def scanFilter = emptyFilters()
+        adapterWrapper.isBluetoothEnabled() >> false
+
+        when:
+        objectUnderTest.scanBleDeviceInBackground(pendingIntent, settings, scanFilter)
+
+        then:
+        def scanException = thrown(BleScanException)
+
+        and:
+        scanException.reason == BleScanException.BLUETOOTH_DISABLED
+    }
+
+    def "should throw BleScanException if bluetooth is OFF while calling `.stopBackgroundBleScan()`"() {
+        given:
+        def pendingIntent = Mock(PendingIntent)
+        def settings = Mock(ScanSettings)
+        def scanFilter = emptyFilters()
+        adapterWrapper.isBluetoothEnabled() >> false
+
+        when:
+        objectUnderTest.stopBackgroundBleScan(pendingIntent)
+
+        then:
+        def scanException = thrown(BleScanException)
+
+        and:
+        scanException.reason == BleScanException.BLUETOOTH_DISABLED
+    }
+
     def "should pass callback intent to a wrapper"() {
         given:
         def pendingIntent = Mock(PendingIntent)
         def settings = Mock(ScanSettings)
         def scanFilter = emptyFilters()
+        adapterWrapper.isBluetoothEnabled() >> true
 
         when:
         objectUnderTest.scanBleDeviceInBackground(pendingIntent, settings, scanFilter)
@@ -78,6 +114,7 @@ class BackgroundScannerTest extends ElectricSpecification {
         def scanFilter = emptyFilters()
         def nativeFilters = [Mock(android.bluetooth.le.ScanFilter)]
         def nativeSettings = Mock(android.bluetooth.le.ScanSettings)
+        adapterWrapper.isBluetoothEnabled() >> true
 
         when:
         objectUnderTest.scanBleDeviceInBackground(pendingIntent, settings, scanFilter)
@@ -92,6 +129,7 @@ class BackgroundScannerTest extends ElectricSpecification {
     def "should pass callback intent when stopping scan"() {
         given:
         def pendingIntent = Mock(PendingIntent)
+        adapterWrapper.isBluetoothEnabled() >> true
 
         when:
         objectUnderTest.stopBackgroundBleScan(pendingIntent)
