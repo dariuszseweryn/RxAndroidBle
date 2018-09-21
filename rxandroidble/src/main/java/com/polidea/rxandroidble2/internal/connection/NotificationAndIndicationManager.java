@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble2.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -93,10 +94,17 @@ class NotificationAndIndicationManager {
                     final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
-                            .andThen(ObservableUtil.justOnNext(
-                                    observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
-                            ))
+                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
+                            .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
+                                @Override
+                                public Observable<byte[]> apply(Observable<byte[]> observable) {
+                                    return Observable.amb(Arrays.asList(
+                                            notificationCompletedSubject.cast(byte[].class),
+                                            observable.takeUntil(notificationCompletedSubject)
+                                    ));
+                                }
+                            })
                             .doFinally(new Action() {
                                 @SuppressLint("CheckResult")
                                 @Override
@@ -157,7 +165,6 @@ class NotificationAndIndicationManager {
                     case QUICK_SETUP:
                         final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
                                 .toObservable()
-                                .cache()
                                 .publish()
                                 .autoConnect(2)
                                 .ignoreElements();

@@ -212,7 +212,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.Observable<byte> is made in QUICK_SETUP mode ack:#ack"() {
+    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.Observable<byte[]> is made in QUICK_SETUP mode ack:#ack"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -234,6 +234,79 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
 
         where:
         ack << ACK_VALUES
+    }
+
+    @Unroll
+    def "should not subscribe to DescriptorWriter.writeDescriptor() after subscription to the parent io.reactivex.Observable<Observable<byte[]>> was unsubscribed in QUICK_SETUP mode ack:#ack"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult.ignoreElements()
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+        parentTestObserver.dispose()
+
+        when:
+        notificationObservable.subscribe()
+
+        then:
+        !descriptorWriteResult.hasObservers()
+
+        where:
+        ack << ACK_VALUES
+    }
+
+    @Unroll
+    def "should not subscribe to DescriptorWriter.writeDescriptor() twice in QUICK_SETUP mode when more than one subscription is made to the child io.reactivex.Observable<byte[]> ack:#ack"() {
+        given:
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<byte[]> descriptorWriteResult = PublishSubject.create()
+        Completable descriptorWriteCompletable = descriptorWriteResult.publish().autoConnect(2).ignoreElements()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteCompletable
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+
+        when:
+        notificationObservable.subscribe()
+        notificationObservable.subscribe()
+
+        then:
+        !descriptorWriteResult.hasObservers()
+
+        where:
+        ack << ACK_VALUES
+    }
+
+    @Unroll
+    def "should not subscribe again to DescriptorWriter.writeDescriptor() if first subscription finished with '#result' in QUICK_SETUP mode ack:#ack"() {
+        given:
+        def completableForResultGetter = { if (it == "complete") Completable.complete() else Completable.error(new RuntimeException("Test")) }
+        def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
+        def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
+        bluetoothGattMock.setCharacteristicNotification(characteristic, true) >> true
+        rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
+        PublishSubject<Completable> descriptorWriteResult = PublishSubject.create()
+        descriptorWriterMock.writeDescriptor(descriptor, _) >> descriptorWriteResult.take(1).flatMapCompletable({ it })
+        def parentTestObserver = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, NotificationSetupMode.QUICK_SETUP, ack).test()
+        def notificationObservable = parentTestObserver.values().get(0)
+        def disposable = notificationObservable.subscribe()
+        descriptorWriteResult.onNext(completableForResultGetter(result))
+        disposable.dispose()
+
+        when:
+        notificationObservable.subscribe()
+
+        then:
+        !descriptorWriteResult.hasObservers()
+
+        where:
+        [ack, result] << [ACK_VALUES, ["complete", "error"]].combinations()
     }
 
     @Unroll
@@ -480,10 +553,8 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
-        def emittedObservableSubscriber = null
-        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack)
-                .doOnNext { emittedObservableSubscriber = it.test() }
-                .test()
+        def testSubscriber = objectUnderTest.setupServerInitiatedCharacteristicRead(characteristic, mode, ack).test()
+        def emittedObservableSubscriber = testSubscriber.values().get(0).test()
 
         when:
         testSubscriber.dispose()
