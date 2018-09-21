@@ -98,7 +98,8 @@ public class UUIDUtil {
                     break;
 
                 default:
-                    buffer.position(buffer.position() + length - 1);
+                    int nextSafePosition = Math.min(buffer.position() + length, buffer.limit()) - 1;
+                    buffer.position(nextSafePosition);
                     break;
             }
         }
