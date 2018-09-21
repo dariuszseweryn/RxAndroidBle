@@ -83,10 +83,17 @@ class NotificationAndIndicationManager {
                     final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
-                            .andThen(ObservableUtil.justOnNext(
-                                    observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
-                            ))
+                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
+                            .map(new Func1<Observable<byte[]>, Observable<byte[]>>() {
+                                @Override
+                                public Observable<byte[]> call(Observable<byte[]> observable) {
+                                    return Observable.amb(
+                                            notificationCompletedSubject.cast(byte[].class),
+                                            observable.takeUntil(notificationCompletedSubject)
+                                    );
+                                }
+                            })
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
@@ -146,7 +153,6 @@ class NotificationAndIndicationManager {
                     case QUICK_SETUP:
                         final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
                                 .toObservable()
-                                .cache()
                                 .publish()
                                 .autoConnect(2)
                                 .toCompletable();
