@@ -83,10 +83,17 @@ class NotificationAndIndicationManager {
                     final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
 
                     final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
+                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
                             .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
-                            .andThen(ObservableUtil.justOnNext(
-                                    observeOnCharacteristicChangeCallbacks(gattCallback, id).takeUntil(notificationCompletedSubject)
-                            ))
+                            .map(new Func1<Observable<byte[]>, Observable<byte[]>>() {
+                                @Override
+                                public Observable<byte[]> call(Observable<byte[]> observable) {
+                                    return Observable.amb(
+                                            notificationCompletedSubject.cast(byte[].class),
+                                            observable.takeUntil(notificationCompletedSubject)
+                                    );
+                                }
+                            })
                             .doOnUnsubscribe(new Action0() {
                                 @Override
                                 public void call() {
@@ -94,9 +101,9 @@ class NotificationAndIndicationManager {
                                     synchronized (activeNotificationObservableMap) {
                                         activeNotificationObservableMap.remove(id);
                                     }
-                                    // teardown the notification
+                                    // teardown the notification - subscription and result are ignored
                                     setCharacteristicNotification(bluetoothGatt, characteristic, false)
-                                            .compose(setupModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
+                                            .compose(teardownModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
                                             .subscribe(
                                                     Actions.empty(),
                                                     Actions.<Throwable>toAction1(Actions.empty())
@@ -130,17 +137,53 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static Completable.Transformer setupModeTransformer(final DescriptorWriter descriptorWriter,
-                                                                final BluetoothGattCharacteristic characteristic,
-                                                                final byte[] value,
-                                                                final NotificationSetupMode mode) {
+    private static Observable.Transformer<Observable<byte[]>, Observable<byte[]>> setupModeTransformer(
+            final DescriptorWriter descriptorWriter,
+            final BluetoothGattCharacteristic characteristic,
+            final byte[] value,
+            final NotificationSetupMode mode
+    ) {
+        return new Observable.Transformer<Observable<byte[]>, Observable<byte[]>>() {
+            @Override
+            public Observable<Observable<byte[]>> call(Observable<Observable<byte[]>> observableObservable) {
+                switch (mode) {
+
+                    case COMPAT:
+                        return observableObservable;
+                    case QUICK_SETUP:
+                        final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
+                                .toObservable()
+                                .publish()
+                                .autoConnect(2)
+                                .toCompletable();
+                        return observableObservable
+                                .mergeWith(publishedWriteCCCDesc.<Observable<byte[]>>toObservable())
+                                .map(new Func1<Observable<byte[]>, Observable<byte[]>>() {
+                                    @Override
+                                    public Observable<byte[]> call(Observable<byte[]> observable) {
+                                        return observable.mergeWith(publishedWriteCCCDesc.onErrorComplete().<byte[]>toObservable());
+                                    }
+                                });
+                    case DEFAULT:
+                    default:
+                        return writeClientCharacteristicConfig(characteristic, descriptorWriter, value).andThen(observableObservable);
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private static Completable.Transformer teardownModeTransformer(final DescriptorWriter descriptorWriter,
+                                                                   final BluetoothGattCharacteristic characteristic,
+                                                                   final byte[] value,
+                                                                   final NotificationSetupMode mode) {
         return new Completable.Transformer() {
             @Override
             public Completable call(Completable completable) {
-                if (mode == NotificationSetupMode.DEFAULT) {
-                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
-                } else { // NotificationSetupMode.COMPAT
+                if (mode == NotificationSetupMode.COMPAT) {
                     return completable;
+                } else { // NotificationSetupMode.DEFAULT || NotificationSetupMode.QUICK_SETUP
+                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
                 }
             }
         };
