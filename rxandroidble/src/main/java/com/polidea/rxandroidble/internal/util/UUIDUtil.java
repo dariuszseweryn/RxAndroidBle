@@ -66,7 +66,7 @@ public class UUIDUtil {
         ByteBuffer buffer = ByteBuffer.wrap(scanResult).order(ByteOrder.LITTLE_ENDIAN);
 
         while (buffer.remaining() > 2) {
-            byte length = buffer.get();
+            int length = buffer.get() & 0xFF; // convert to unsigned
             if (length == 0) break;
 
             byte type = buffer.get();
@@ -85,6 +85,7 @@ public class UUIDUtil {
                         uuids.add(UUID.fromString(String.format(UUID_BASE_FORMAT, buffer.getInt())));
                         length -= 4;
                     }
+                    break;
 
                 case DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL: // Partial list of 128-bit UUIDs
                 case DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE: // Complete list of 128-bit UUIDs
@@ -97,7 +98,8 @@ public class UUIDUtil {
                     break;
 
                 default:
-                    buffer.position(buffer.position() + length - 1);
+                    int safeLengthToProceed = Math.min(length - 1, buffer.remaining());
+                    buffer.position(buffer.position() + safeLengthToProceed);
                     break;
             }
         }
