@@ -49,6 +49,10 @@ public class BackgroundScannerImpl implements BackgroundScanner {
             RxBleLog.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
             return;
         }
+        if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+            RxBleLog.w(TAG, "PendingIntent based scanning is available only when Bluetooth is ON.");
+            throw new BleScanException(BleScanException.BLUETOOTH_DISABLED);
+        }
 
         RxBleLog.i(TAG, "Requesting pending intent based scan.");
         final List<android.bluetooth.le.ScanFilter> nativeScanFilters = scanObjectsConverter.toNativeFilters(scanFilters);
@@ -67,6 +71,10 @@ public class BackgroundScannerImpl implements BackgroundScanner {
     public void stopBackgroundBleScan(@NonNull PendingIntent callbackIntent) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             RxBleLog.w(TAG, "PendingIntent based scanning is available for Android O and higher only.");
+            return;
+        }
+        if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
+            RxBleLog.w(TAG, "PendingIntent based scanning is available only when Bluetooth is ON.");
             return;
         }
 
