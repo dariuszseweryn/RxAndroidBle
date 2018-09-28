@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.7.1
+* Fixed possible `IllegalArgumentException` while parsing UUIDs from advertisements (https://github.com/Polidea/RxAndroidBle/pull/485)
+* Fixed `NullPointerException` when calling `BackgroundScanner` start / stop scan while `BluetoothAdapter` was not turned ON (https://github.com/Polidea/RxAndroidBle/pull/487)
+
 Version 1.7.0
 * Introduced a new API that allows for background scanning in modern Android OS versions (https://github.com/Polidea/RxAndroidBle/issues/369)
 * Fixed LocationServicesOkObservable (https://github.com/Polidea/RxAndroidBle/pull/438)
@@ -19,7 +23,7 @@ Version 1.5.0
 * Fixed DisconnectionRouter leaking subscription to RxBleAdapterStateObservable (https://github.com/Polidea/RxAndroidBle/pull/353)
 * Improved Location Services status check (https://github.com/Polidea/RxAndroidBle/issues/327)
 * Added logger that prints out GATT server structure on a successful discovery. The log is generated when the logger is in a VERBOSE level (https://github.com/Polidea/RxAndroidBle/pull/355)
-* Enchanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
+* Enhanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
 * Added retry strategies for long write operations (https://github.com/Polidea/RxAndroidBle/pull/357)
 * Introduced API in RxJava2
 * Removed deprecated establishConnection method
@@ -32,7 +36,7 @@ Version 1.5.0 (RxJava1)
 * Fixed DisconnectionRouter leaking subscription to RxBleAdapterStateObservable (https://github.com/Polidea/RxAndroidBle/pull/353)
 * Improved Location Services status check (https://github.com/Polidea/RxAndroidBle/issues/327)
 * Added logger that prints out GATT server structure on a successful discovery. The log is generated when the logger is in a VERBOSE level (https://github.com/Polidea/RxAndroidBle/pull/355)
-* Enchanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
+* Enhanced operation logger so it displays how long the operation performed. (https://github.com/Polidea/RxAndroidBle/pull/356)
 * Added retry strategies for long write operations (https://github.com/Polidea/RxAndroidBle/pull/357)
 
 Version 1.4.3 (RxJava1)
