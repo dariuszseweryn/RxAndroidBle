@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.7.0
+* Added `QUICK_SETUP` mode for setting notifications/indications (https://github.com/Polidea/RxAndroidBle/pull/479)
+* Fixed possible `IllegalArgumentException` while parsing UUIDs from advertisements (https://github.com/Polidea/RxAndroidBle/pull/486) 
+
 Version 1.6.0
 * Added GATT status codes to BleDisconnectedException (https://github.com/Polidea/RxAndroidBle/pull/456)
 
