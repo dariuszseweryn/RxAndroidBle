@@ -75,7 +75,7 @@ public class BackgroundScannerImpl implements BackgroundScanner {
         }
         if (!rxBleAdapterWrapper.isBluetoothEnabled()) {
             RxBleLog.w(TAG, "PendingIntent based scanning is available only when Bluetooth is ON.");
-            throw new BleScanException(BleScanException.BLUETOOTH_DISABLED); // TODO or maybe just return?
+            return;
         }
 
         RxBleLog.i(TAG, "Stopping pending intent based scan.");

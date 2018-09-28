@@ -72,21 +72,28 @@ class BackgroundScannerTest extends ElectricSpecification {
         scanException.reason == BleScanException.BLUETOOTH_DISABLED
     }
 
-    def "should throw BleScanException if bluetooth is OFF while calling `.stopBackgroundBleScan()`"() {
+    def "should not throw if bluetooth is OFF while calling `.stopBackgroundBleScan()`"() {
         given:
         def pendingIntent = Mock(PendingIntent)
-        def settings = Mock(ScanSettings)
-        def scanFilter = emptyFilters()
         adapterWrapper.isBluetoothEnabled() >> false
 
         when:
         objectUnderTest.stopBackgroundBleScan(pendingIntent)
 
         then:
-        def scanException = thrown(BleScanException)
+        noExceptionThrown()
+    }
 
-        and:
-        scanException.reason == BleScanException.BLUETOOTH_DISABLED
+    def "should not call RxBleAdapterWrapper.stopLeScan() if bluetooth is OFF while calling `.stopBackgroundBleScan()`"() {
+        given:
+        def pendingIntent = Mock(PendingIntent)
+        adapterWrapper.isBluetoothEnabled() >> false
+
+        when:
+        objectUnderTest.stopBackgroundBleScan(pendingIntent)
+
+        then:
+        0 * adapterWrapper.stopLeScan(pendingIntent)
     }
 
     def "should pass callback intent to a wrapper"() {
