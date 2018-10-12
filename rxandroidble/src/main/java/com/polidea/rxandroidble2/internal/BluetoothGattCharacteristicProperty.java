@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal;
 
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

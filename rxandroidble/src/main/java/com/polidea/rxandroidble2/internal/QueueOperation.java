@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal;
 
 import android.os.DeadObjectException;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.internal.operations.Operation;

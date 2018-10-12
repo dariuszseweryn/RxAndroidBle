@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.scan;
 
 import android.os.ParcelUuid;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.SparseArray;
 
 import java.util.List;

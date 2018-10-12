@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2;
 
 import android.bluetooth.BluetoothGatt;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;

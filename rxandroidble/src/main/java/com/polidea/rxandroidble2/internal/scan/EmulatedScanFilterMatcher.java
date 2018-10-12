@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 
 public class EmulatedScanFilterMatcher {

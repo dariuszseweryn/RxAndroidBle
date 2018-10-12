@@ -2,8 +2,8 @@ package com.polidea.rxandroidble2.exceptions;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.utils.GattStatusParser;
 

@@ -1,8 +1,8 @@
 package com.polidea.rxandroidble2.exceptions;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.utils.GattStatusParser;
 

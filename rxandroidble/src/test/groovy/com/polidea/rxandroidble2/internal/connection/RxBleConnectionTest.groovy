@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection
 
 import android.bluetooth.*
-import android.support.annotation.NonNull
+import androidx.annotation.NonNull
 import com.polidea.rxandroidble2.*
 import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException

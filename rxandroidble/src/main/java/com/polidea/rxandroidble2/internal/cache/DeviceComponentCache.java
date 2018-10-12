@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.cache;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.ClientScope;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
