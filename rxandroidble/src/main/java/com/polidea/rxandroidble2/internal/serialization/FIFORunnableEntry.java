@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.serialization;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.Operation;

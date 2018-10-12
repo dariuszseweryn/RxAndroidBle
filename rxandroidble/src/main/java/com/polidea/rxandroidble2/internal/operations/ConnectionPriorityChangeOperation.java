@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;

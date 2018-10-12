@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
-import android.support.annotation.RestrictTo;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.RxBleConnection;
 

@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.sample.example5_rssi_periodic;
 
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 import android.widget.TextView;
 

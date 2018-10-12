@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal;
 
 import android.bluetooth.BluetoothDevice;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.jakewharton.rxrelay2.BehaviorRelay;
 import com.polidea.rxandroidble2.ConnectionSetup;

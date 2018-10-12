@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.design.widget.Snackbar;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;

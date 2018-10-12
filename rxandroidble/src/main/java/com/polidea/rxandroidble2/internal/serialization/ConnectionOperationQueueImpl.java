@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.serialization;
 
-import android.support.annotation.RestrictTo;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;

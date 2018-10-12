@@ -3,7 +3,7 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.DeadObjectException;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection.WriteOperationAckStrategy;

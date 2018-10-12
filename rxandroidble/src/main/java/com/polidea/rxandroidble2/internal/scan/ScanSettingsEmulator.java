@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
-import android.support.annotation.IntRange;
+import androidx.annotation.IntRange;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.internal.RxBleLog;

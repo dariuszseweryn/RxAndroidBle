@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.util.Arrays;
 
 /**

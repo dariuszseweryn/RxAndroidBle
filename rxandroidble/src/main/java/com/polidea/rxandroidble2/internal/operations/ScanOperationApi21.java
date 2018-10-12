@@ -4,9 +4,9 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleLog;
