@@ -9,12 +9,12 @@ This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating f
 
 Was:
 ```groovy
-compile "com.polidea.rxandroidble:rxandroidble:x.y.z"
+implementation "com.polidea.rxandroidble:rxandroidble:x.y.z"
 ```
 
 Is:
 ```groovy
-compile "com.polidea.rxandroidble2:rxandroidble:x.y.z"
+implementation "com.polidea.rxandroidble2:rxandroidble:x.y.z"
 ```
 
 At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
@@ -334,7 +334,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble2:rxandroidble:1.7.1"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.7.1"
 ```
 ### Maven
 

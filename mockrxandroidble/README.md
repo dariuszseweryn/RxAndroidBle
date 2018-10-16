@@ -48,7 +48,7 @@ Get MockRxAndroidBle via Maven:
 or via Gradle
 
 ```groovy
-compile "com.polidea.rxandroidble2:mockclient:1.7.1"
+implementation "com.polidea.rxandroidble2:mockclient:1.7.1"
 ```
 
 ### License
