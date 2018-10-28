@@ -2,6 +2,7 @@ package com.polidea.rxandroidble2.sample.example1_scanning;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,7 @@ import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity;
+import com.polidea.rxandroidble2.sample.util.LocationPermission;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
@@ -38,6 +40,7 @@ public class ScanActivity extends AppCompatActivity {
     private RxBleClient rxBleClient;
     private Disposable scanDisposable;
     private ScanResultsAdapter resultsAdapter;
+    private boolean hasClickedScan;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,22 +62,41 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanDisposable.dispose();
         } else {
-            scanDisposable = rxBleClient.scanBleDevices(
-                    new ScanSettings.Builder()
-                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                            .build(),
-                    new ScanFilter.Builder()
-//                            .setDeviceAddress("B4:99:4C:34:DC:8B")
-                            // add custom filters if needed
-                            .build()
-            )
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::dispose)
-                    .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
+            if (LocationPermission.checkLocationPermissionGranted(this)) {
+                scanBleDevices();
+            } else {
+                hasClickedScan = true;
+                LocationPermission.requestLocationPermission(this);
+            }
         }
 
         updateButtonUIState();
+    }
+
+    private void scanBleDevices() {
+        scanDisposable = rxBleClient.scanBleDevices(
+                new ScanSettings.Builder()
+                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                        .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                        .build(),
+                new ScanFilter.Builder()
+//                            .setDeviceAddress("B4:99:4C:34:DC:8B")
+                        // add custom filters if needed
+                        .build()
+        )
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(this::dispose)
+                .subscribe(resultsAdapter::addScanResult, this::onScanFailure);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
+            @NonNull final int[] grantResults) {
+        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults) &&
+                hasClickedScan) {
+            hasClickedScan = false;
+            scanBleDevices();
+        }
     }
 
     private void handleBleScanException(BleScanException bleScanException) {

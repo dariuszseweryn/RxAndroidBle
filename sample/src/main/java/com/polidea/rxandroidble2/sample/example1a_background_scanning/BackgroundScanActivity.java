@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.sample.example1a_background_scanning;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,6 +12,7 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
+import com.polidea.rxandroidble2.sample.util.LocationPermission;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
@@ -26,6 +28,7 @@ public class BackgroundScanActivity extends AppCompatActivity {
     private static final int SCAN_REQUEST_CODE = 42;
     private RxBleClient rxBleClient;
     private PendingIntent callbackIntent;
+    private boolean hasClickedScan;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,7 +42,15 @@ public class BackgroundScanActivity extends AppCompatActivity {
 
     @OnClick(R.id.scan_start_btn)
     public void onScanStartClick() {
+        hasClickedScan = true;
+        if (LocationPermission.checkLocationPermissionGranted(this)) {
+            scanBleDeviceInBackground();
+        } else {
+            LocationPermission.requestLocationPermission(this);
+        }
+    }
 
+    private void scanBleDeviceInBackground() {
         try {
             rxBleClient.getBackgroundScanner().scanBleDeviceInBackground(
                     callbackIntent,
@@ -55,6 +66,16 @@ public class BackgroundScanActivity extends AppCompatActivity {
         } catch (BleScanException scanException) {
             Log.w("BackgroundScanActivity", "Failed to start background scan", scanException);
             handleBleScanException(scanException);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
+            @NonNull final int[] grantResults) {
+        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults) &&
+                hasClickedScan) {
+            hasClickedScan = false;
+            scanBleDeviceInBackground();
         }
     }
 
