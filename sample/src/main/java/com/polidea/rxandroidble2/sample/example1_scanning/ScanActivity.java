@@ -110,7 +110,7 @@ public class ScanActivity extends AppCompatActivity {
                 text = "Enable bluetooth and try again";
                 break;
             case BleScanException.LOCATION_PERMISSION_MISSING:
-                text = "On Android 6.0 location permission is required. Implement Runtime Permissions";
+                text = "On Android 6.0 location permission is required. Please enable it in phone settings";
                 break;
             case BleScanException.LOCATION_SERVICES_DISABLED:
                 text = "Location services needs to be enabled on Android 6.0";
