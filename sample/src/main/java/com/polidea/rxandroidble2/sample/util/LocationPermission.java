@@ -18,8 +18,11 @@ public class LocationPermission {
     }
 
     public static void requestLocationPermission(final Activity activity) {
-        ActivityCompat.requestPermissions(activity, new String[]{permission.ACCESS_COARSE_LOCATION},
-                REQUEST_PERMISSION_COARSE_LOCATION);
+        ActivityCompat.requestPermissions(
+                activity,
+                new String[]{permission.ACCESS_COARSE_LOCATION},
+                REQUEST_PERMISSION_COARSE_LOCATION
+        );
     }
 
     public static boolean isRequestLocationPermissionGranted(final int requestCode, final String[] permissions,
