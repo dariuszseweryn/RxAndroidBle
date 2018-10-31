@@ -19,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
 import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
@@ -31,10 +32,11 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
     private String macAddress;
+    private Disposable connectionDisposable;
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        bleDevice.establishConnection(false)
+        connectionDisposable = bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
@@ -96,5 +98,14 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
     private void updateUI() {
         connectButton.setEnabled(!isConnected());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (connectionDisposable != null) {
+            connectionDisposable.dispose();
+        }
     }
 }
