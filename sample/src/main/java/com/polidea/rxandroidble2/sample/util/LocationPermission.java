@@ -10,6 +10,10 @@ import android.support.v4.content.ContextCompat;
 
 public class LocationPermission {
 
+    private LocationPermission() {
+        // Utility class
+    }
+
     private static int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
 
     public static boolean checkLocationPermissionGranted(final Context context) {
