@@ -18,6 +18,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class ScanExceptionHandler {
 
+    private ScanExceptionHandler() {
+        // Utility class
+    }
+
     /**
      * Mapping of exception reasons to error string resource ids.
      */
