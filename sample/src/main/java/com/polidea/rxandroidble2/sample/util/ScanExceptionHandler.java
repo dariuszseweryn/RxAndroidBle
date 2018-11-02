@@ -26,32 +26,32 @@ public class ScanExceptionHandler {
      * Mapping of exception reasons to error string resource ids.
      */
     @SuppressLint("UseSparseArrays")
-    private final static Map<Integer, Integer> errorMessages = new HashMap<>();
+    private static final Map<Integer, Integer> ERROR_MESSAGES = new HashMap<>();
 
     /*
       Add new mappings here.
      */
     static {
-        errorMessages.put(BleScanException.BLUETOOTH_NOT_AVAILABLE, R.string.error_bluetooth_not_available);
-        errorMessages.put(BleScanException.BLUETOOTH_DISABLED, R.string.error_bluetooth_disabled);
-        errorMessages.put(BleScanException.LOCATION_PERMISSION_MISSING, R.string.error_location_permission_missing);
-        errorMessages.put(BleScanException.LOCATION_SERVICES_DISABLED, R.string.error_location_services_disabled);
-        errorMessages.put(BleScanException.SCAN_FAILED_ALREADY_STARTED, R.string.error_scan_failed_already_started);
-        errorMessages.put(
+        ERROR_MESSAGES.put(BleScanException.BLUETOOTH_NOT_AVAILABLE, R.string.error_bluetooth_not_available);
+        ERROR_MESSAGES.put(BleScanException.BLUETOOTH_DISABLED, R.string.error_bluetooth_disabled);
+        ERROR_MESSAGES.put(BleScanException.LOCATION_PERMISSION_MISSING, R.string.error_location_permission_missing);
+        ERROR_MESSAGES.put(BleScanException.LOCATION_SERVICES_DISABLED, R.string.error_location_services_disabled);
+        ERROR_MESSAGES.put(BleScanException.SCAN_FAILED_ALREADY_STARTED, R.string.error_scan_failed_already_started);
+        ERROR_MESSAGES.put(
                 BleScanException.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED,
                 R.string.error_scan_failed_application_registration_failed
         );
-        errorMessages.put(
+        ERROR_MESSAGES.put(
                 BleScanException.SCAN_FAILED_FEATURE_UNSUPPORTED,
                 R.string.error_scan_failed_feature_unsupported
         );
-        errorMessages.put(BleScanException.SCAN_FAILED_INTERNAL_ERROR, R.string.error_scan_failed_internal_error);
-        errorMessages.put(
+        ERROR_MESSAGES.put(BleScanException.SCAN_FAILED_INTERNAL_ERROR, R.string.error_scan_failed_internal_error);
+        ERROR_MESSAGES.put(
                 BleScanException.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES,
                 R.string.error_scan_failed_out_of_hardware_resources
         );
-        errorMessages.put(BleScanException.BLUETOOTH_CANNOT_START, R.string.error_bluetooth_cannot_start);
-        errorMessages.put(BleScanException.UNKNOWN_ERROR_CODE, R.string.error_bluetooth_cannot_start);
+        ERROR_MESSAGES.put(BleScanException.BLUETOOTH_CANNOT_START, R.string.error_bluetooth_cannot_start);
+        ERROR_MESSAGES.put(BleScanException.UNKNOWN_ERROR_CODE, R.string.error_unknown_error);
     }
 
     /**
@@ -69,12 +69,12 @@ public class ScanExceptionHandler {
             text = getUndocumentedScanThrottleErrorMessage(context, exception.getRetryDateSuggestion());
         } else {
             // Handle all other possible errors
-            final Integer resId = errorMessages.get(reason);
+            final Integer resId = ERROR_MESSAGES.get(reason);
             if (resId != null) {
                 text = context.getString(resId);
             } else {
                 // unknown error - return default message
-                text = context.getString(R.string.error_bluetooth_cannot_start);
+                text = context.getString(R.string.error_unknown_error);
             }
         }
 

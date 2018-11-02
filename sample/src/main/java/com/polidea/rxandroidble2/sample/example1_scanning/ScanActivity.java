@@ -87,8 +87,8 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
             @NonNull final int[] grantResults) {
-        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults) &&
-                hasClickedScan) {
+        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults)
+                && hasClickedScan) {
             hasClickedScan = false;
             scanBleDevices();
         }
