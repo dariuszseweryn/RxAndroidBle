@@ -14,7 +14,7 @@ public class LocationPermission {
         // Utility class
     }
 
-    private static int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
+    private static final int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
 
     public static boolean checkLocationPermissionGranted(final Context context) {
         return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) ==
