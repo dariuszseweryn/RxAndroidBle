@@ -117,7 +117,7 @@ public abstract class RxBleClient {
      * This function works on Android 4.3 in compatibility (emulated) mode.
      *
      * @param scanSettings Scan settings
-     * @param scanFilters Filtering settings
+     * @param scanFilters Filtering settings. ScanResult will be emitted if <i>any</i> of the passed scan filters will match.
      */
     public abstract Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters);
 
