@@ -17,8 +17,8 @@ public class LocationPermission {
     private static final int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
 
     public static boolean checkLocationPermissionGranted(final Context context) {
-        return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     public static void requestLocationPermission(final Activity activity) {
@@ -33,8 +33,8 @@ public class LocationPermission {
             final int[] grantResults) {
         if (requestCode == REQUEST_PERMISSION_COARSE_LOCATION) {
             for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION) &&
-                        grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                     return true;
                 }
             }

@@ -41,4 +41,5 @@
     <string name="error_undocumented_scan_throttle">Android 7+ does not allow more scans.</string>
     <string name="error_undocumented_scan_throttle_retry">Try in %d seconds</string>
     <string name="error_bluetooth_cannot_start">Unable to start scanning</string>
+    <string name="error_unknown_error">Unknown error</string>
 </resources>
