@@ -134,6 +134,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         super.onPause();
 
         triggerDisconnect();
-        compositeDisposable.dispose();
+        compositeDisposable.clear();
     }
 }
