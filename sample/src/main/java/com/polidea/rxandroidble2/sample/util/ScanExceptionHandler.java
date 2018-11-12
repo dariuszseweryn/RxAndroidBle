@@ -74,6 +74,7 @@ public class ScanExceptionHandler {
                 text = context.getString(resId);
             } else {
                 // unknown error - return default message
+                Log.w("Scanning", String.format("No message found for reason=%d. Consider adding one.", reason));
                 text = context.getString(R.string.error_unknown_error);
             }
         }
