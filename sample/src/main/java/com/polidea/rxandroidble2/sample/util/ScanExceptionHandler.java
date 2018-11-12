@@ -79,7 +79,7 @@ public class ScanExceptionHandler {
             }
         }
 
-        Log.w("EXCEPTION", text, exception);
+        Log.w("Scanning", text, exception);
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
