@@ -218,6 +218,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     @Override
     protected void onPause() {
         super.onPause();
-        compositeDisposable.dispose();
+        compositeDisposable.clear();
     }
 }
