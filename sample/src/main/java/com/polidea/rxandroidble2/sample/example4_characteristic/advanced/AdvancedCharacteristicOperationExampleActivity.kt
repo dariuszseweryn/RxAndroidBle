@@ -7,23 +7,19 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.jakewharton.rxbinding2.view.RxView
-import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.util.HexString
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
-
-import java.util.UUID
-
-import butterknife.BindView
-import butterknife.ButterKnife
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.util.UUID
 
 /**
  * This activity allows for connecting to a device and interact with a given characteristic.
@@ -118,7 +114,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
         super.onResume()
         activityFlowDisposable = presenterEventObservable!!
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(Consumer<PresenterEvent> { this.handleEvent(it) })
+            .subscribe { this.handleEvent(it) }
     }
 
     override fun onPause() {
@@ -223,12 +219,11 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
          * @param textResId the text resource id
          * @return the transformer
          */
-        private fun onSubscribeSetText(button: Button?, @StringRes textResId: Int): ObservableTransformer<Boolean, Boolean> {
-            return { booleanObservable ->
+        private fun onSubscribeSetText(button: Button?, @StringRes textResId: Int): ObservableTransformer<Boolean, Boolean> =
+            ObservableTransformer { booleanObservable ->
                 booleanObservable
-                    .doOnSubscribe({ disposable -> button!!.setText(textResId) })
+                    .doOnSubscribe { button!!.setText(textResId) }
                     .subscribeOn(AndroidSchedulers.mainThread())
             }
-        }
     }
 }
