@@ -1,21 +1,17 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import android.support.v4.util.Pair
-
 import com.polidea.rxandroidble2.NotificationSetupMode
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-
-import java.util.UUID
-
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
-
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import java.util.Arrays.asList
+import java.util.UUID
 
 /**
  * Presenter class for [AdvancedCharacteristicOperationExampleActivity]. Prepares the logic for the activity using passed
@@ -112,15 +108,9 @@ internal object Presenter {
                 )
                     .flatMap<PresenterEvent> { isIndication ->
                         if (isIndication) { // if indication was clicked
-                            return@Observable.amb(
-                                asList(
-                                    enableNotifyClicksObservable,
-                                    enableIndicateClicksObservable
-                                )
-                            )
-                                .flatMap connection !!
-                            // we setup indications
-                            .setupIndication(characteristicUuid, notificationSetupMode)
+                            connection!!
+                                // we setup indications
+                                .setupIndication(characteristicUuid, notificationSetupMode)
                                 // use a convenience transformer for tearing down the notifications
                                 .compose(
                                     takeUntil<Observable<ByteArray>>(
@@ -131,14 +121,8 @@ internal object Presenter {
                                 // and wrap the emissions with a convenience function
                                 .compose(transformToNotificationPresenterEvent(Type.INDICATE))
                         } else { // if notification was clicked
-                            return@Observable.amb(
-                                asList(
-                                    enableNotifyClicksObservable,
-                                    enableIndicateClicksObservable
-                                )
-                            )
-                                .flatMap connection !!
-                            .setupNotification(characteristicUuid, notificationSetupMode)
+                            connection!!
+                                .setupNotification(characteristicUuid, notificationSetupMode)
                                 .compose(takeUntil<Observable<ByteArray>>(enablingNotifyClicks, disableNotifyClicks))
                                 .compose(transformToNotificationPresenterEvent(Type.NOTIFY))
                         }
@@ -199,9 +183,9 @@ internal object Presenter {
     private fun <T> takeUntil(
         beforeEmission: Observable<*>,
         afterEmission: Observable<*>
-    ): ObservableTransformer<T, T> {
-        return { observable ->
-            observable.publish({ publishedObservable ->
+    ): ObservableTransformer<T, T> =
+        ObservableTransformer { observable ->
+            observable.publish { publishedObservable ->
                 val afterEmissionTakeUntil = publishedObservable
                     .take(1)
                     .ignoreElements()
@@ -212,11 +196,9 @@ internal object Presenter {
                         publishedObservable.takeUntil(beforeEmission)
                     )
                 )
-                    .takeUntil<*>(afterEmissionTakeUntil)
+                    .takeUntil(afterEmissionTakeUntil)
             }
-            )
         }
-    }
 
     /**
      * A convenience function creating a transformer that will wrap the emissions in either [ResultEvent] or [ErrorEvent]
@@ -225,12 +207,12 @@ internal object Presenter {
      * @param type the type to wrap with
      * @return transformer that will emit an observable that will be emitting ResultEvent or ErrorEvent with a given type
      */
-    private fun transformToPresenterEvent(type: Type): ObservableTransformer<ByteArray, PresenterEvent> {
-        return { observable ->
-            observable.map({ writtenBytes -> ResultEvent(writtenBytes, type) })
-                .onErrorReturn({ throwable -> ErrorEvent(throwable, type) })
+    private fun transformToPresenterEvent(type: Type): ObservableTransformer<ByteArray, PresenterEvent> =
+        ObservableTransformer { observable ->
+            observable
+                .map { writtenBytes -> ResultEvent(writtenBytes, type) as PresenterEvent }
+                .onErrorReturn { throwable -> ErrorEvent(throwable, type) }
         }
-    }
 
     /**
      * A convenience function creating a transformer that will wrap the emissions in either [ResultEvent] or [ErrorEvent]
@@ -239,17 +221,15 @@ internal object Presenter {
      * @param type the type to wrap with
      * @return the transformer
      */
-    private fun transformToNotificationPresenterEvent(type: Type): ObservableTransformer<Observable<ByteArray>, PresenterEvent> {
-        return { observableObservable ->
+    private fun transformToNotificationPresenterEvent(type: Type): ObservableTransformer<Observable<ByteArray>, PresenterEvent> =
+        ObservableTransformer { observableObservable ->
             observableObservable
-                .flatMap({ observable ->
+                .flatMap { observable ->
                     observable
-                        .map({ bytes -> ResultEvent(bytes, type) })
+                        .map { bytes -> ResultEvent(bytes, type) as PresenterEvent }
                 }
-                )
-                .onErrorReturn({ throwable -> ErrorEvent(throwable, type) })
+                .onErrorReturn { throwable -> ErrorEvent(throwable, type) }
         }
-    }
 
     /**
      * A convenience function creating a transformer that will repeat the source observable whenever it will complete
@@ -257,7 +237,8 @@ internal object Presenter {
      * @param <T> the type of the transformed observable
      * @return transformer that will emit observable that will never complete (source will be subscribed again)
     </T> */
-    private fun <T> repeatAfterCompleted(): ObservableTransformer<T, T> {
-        return { observable -> observable.repeatWhen({ completedNotification -> completedNotification }) }
-    }
-}// not instantiable
+    private fun <T> repeatAfterCompleted(): ObservableTransformer<T, T> =
+        ObservableTransformer { observable ->
+            observable.repeatWhen { completedNotification -> completedNotification }
+        }
+}
