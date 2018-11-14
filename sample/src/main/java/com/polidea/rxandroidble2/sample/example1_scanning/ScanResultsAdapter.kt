@@ -5,25 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.polidea.rxandroidble2.scan.ScanResult
 import java.util.ArrayList
 import java.util.Collections
-
-import butterknife.BindView
-import butterknife.ButterKnife
 import java.util.Locale
 
 internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder>() {
     private val data = ArrayList<ScanResult>()
-    private var onAdapterItemClickListener: OnAdapterItemClickListener? = null
+    private var mOnAdapterItemClickListener: OnAdapterItemClickListener? = null
     private val onClickListener = View.OnClickListener { v ->
-        if (onAdapterItemClickListener != null) {
-            onAdapterItemClickListener!!.onAdapterViewClick(v)
-        }
+        mOnAdapterItemClickListener?.invoke(v)
     }
 
-    internal class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         @BindView(android.R.id.text1)
         var line1: TextView? = null
@@ -79,13 +75,14 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
     }
 
     fun setOnAdapterItemClickListener(onAdapterItemClickListener: OnAdapterItemClickListener) {
-        this.onAdapterItemClickListener = onAdapterItemClickListener
+        this.mOnAdapterItemClickListener = onAdapterItemClickListener
     }
 
     companion object {
 
-        private val SORTING_COMPARATOR =
-            { lhs, rhs -> lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress()) }
+        private val SORTING_COMPARATOR = { lhs: ScanResult, rhs: ScanResult ->
+            lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress())
+        }
     }
 }
 
