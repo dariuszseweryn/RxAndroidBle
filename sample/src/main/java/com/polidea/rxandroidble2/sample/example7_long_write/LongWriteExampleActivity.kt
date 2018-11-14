@@ -39,8 +39,8 @@ class LongWriteExampleActivity : RxAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rxBleClient = SampleApplication.getRxBleClient(this)
-        disposable = rxBleClient!!.getBleDevice(DUMMY_DEVICE_ADDRESS) // get our assumed device
+        val rxBleClient = SampleApplication.rxBleClient
+        disposable = rxBleClient.getBleDevice(DUMMY_DEVICE_ADDRESS) // get our assumed device
             .establishConnection(false) // establish the connection
             .flatMap({ rxBleConnection ->
                 Observable.combineLatest<Observable<ByteArray>, Observable<ByteArray>, Pair<Observable<ByteArray>, Observable<ByteArray>>>(

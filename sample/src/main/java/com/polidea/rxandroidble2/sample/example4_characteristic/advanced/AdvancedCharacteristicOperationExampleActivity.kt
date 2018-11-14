@@ -77,7 +77,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
         ButterKnife.bind(this)
         val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
         val characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
-        val bleDevice = SampleApplication.getRxBleClient(this)!!.getBleDevice(macAddress)
+        val bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
 
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 

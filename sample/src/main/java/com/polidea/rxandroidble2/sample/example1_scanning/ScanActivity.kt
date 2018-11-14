@@ -31,7 +31,7 @@ class ScanActivity : AppCompatActivity() {
     internal var scanToggleButton: Button? = null
     @BindView(R.id.scan_results)
     internal var recyclerView: RecyclerView? = null
-    private var rxBleClient: RxBleClient? = null
+    private val rxBleClient = SampleApplication.rxBleClient
     private var scanDisposable: Disposable? = null
     private var resultsAdapter: ScanResultsAdapter? = null
     private var hasClickedScan: Boolean = false
@@ -43,7 +43,6 @@ class ScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example1)
         ButterKnife.bind(this)
-        rxBleClient = SampleApplication.getRxBleClient(this)
         configureResultList()
     }
 

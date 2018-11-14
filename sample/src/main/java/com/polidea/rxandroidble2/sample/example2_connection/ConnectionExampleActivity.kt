@@ -80,7 +80,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
         ButterKnife.bind(this)
         val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
         title = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.getRxBleClient(this)!!.getBleDevice(macAddress)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
         // How to listen for connection state changes
         val disposable = bleDevice!!.observeConnectionStateChanges()
             .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))

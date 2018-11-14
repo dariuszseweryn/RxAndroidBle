@@ -19,7 +19,7 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 
 class BackgroundScanActivity : AppCompatActivity() {
-    private var rxBleClient: RxBleClient? = null
+    private val rxBleClient = SampleApplication.rxBleClient
     private var callbackIntent: PendingIntent? = null
     private var hasClickedScan: Boolean = false
 
@@ -27,7 +27,6 @@ class BackgroundScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example1a)
         ButterKnife.bind(this)
-        rxBleClient = SampleApplication.getRxBleClient(this)
         callbackIntent = PendingIntent.getBroadcast(
             this, SCAN_REQUEST_CODE,
             Intent(this, ScanReceiver::class.java), 0

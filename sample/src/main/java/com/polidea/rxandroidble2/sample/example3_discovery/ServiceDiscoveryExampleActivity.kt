@@ -59,7 +59,7 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
         macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
 
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.getRxBleClient(this)!!.getBleDevice(macAddress!!)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
         configureResultList()
     }
 
