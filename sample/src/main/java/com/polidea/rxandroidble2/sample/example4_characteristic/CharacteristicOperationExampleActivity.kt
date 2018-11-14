@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 
@@ -21,6 +22,7 @@ import java.util.UUID
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.polidea.rxandroidble2.RxBleDeviceServices
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -83,7 +85,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
             triggerDisconnect()
         } else {
             val connectionDisposable = connectionObservable!!
-                .flatMapSingle<RxBleDeviceServices>(Function<RxBleConnection, SingleSource<out RxBleDeviceServices>> { it.discoverServices() })
+                .flatMapSingle<RxBleDeviceServices> { it.discoverServices() }
                 .flatMapSingle<BluetoothGattCharacteristic> { rxBleDeviceServices ->
                     rxBleDeviceServices.getCharacteristic(
                         characteristicUuid!!
@@ -96,8 +98,8 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                         updateUI(characteristic)
                         Log.i(javaClass.simpleName, "Hey, connection has been established!")
                     },
-                    Consumer<Throwable> { this.onConnectionFailure(it) },
-                    Action { this.onConnectionFinished() }
+                    { onConnectionFailure(it) },
+                    { onConnectionFinished() }
                 )
 
             compositeDisposable.add(connectionDisposable)
@@ -116,7 +118,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     readOutputView!!.text = String(bytes)
                     readHexOutputView!!.text = HexString.bytesToHex(bytes)
                     writeInput!!.text = HexString.bytesToHex(bytes)
-                }, Consumer<Throwable> { this.onReadFailure(it) })
+                }, { onReadFailure(it) })
 
             compositeDisposable.add(disposable)
         }
@@ -131,8 +133,8 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMap { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid!!, inputBytes) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    { bytes -> onWriteSuccess() },
-                    Consumer<Throwable> { this.onWriteFailure(it) }
+                    { onWriteSuccess() },
+                    { onWriteFailure(it) }
                 )
 
             compositeDisposable.add(disposable)
@@ -149,8 +151,8 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMap { notificationObservable -> notificationObservable }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    Consumer<ByteArray> { this.onNotificationReceived(it) },
-                    Consumer<Throwable> { this.onNotificationSetupFailure(it) })
+                     { this.onNotificationReceived(it) },
+                     { this.onNotificationSetupFailure(it) })
 
             compositeDisposable.add(disposable)
         }
@@ -224,6 +226,6 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     companion object {
 
-        val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
+        const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
     }
 }
