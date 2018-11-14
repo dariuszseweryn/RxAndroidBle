@@ -8,24 +8,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
-import com.polidea.rxandroidble2.RxBleDeviceServices
-import com.polidea.rxandroidble2.sample.R
-
-import java.util.ArrayList
-import java.util.UUID
-
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.polidea.rxandroidble2.RxBleDeviceServices
+import com.polidea.rxandroidble2.sample.R
+import java.util.ArrayList
+import java.util.UUID
 
 internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAdapter.ViewHolder>() {
 
     private val data = ArrayList<AdapterItem>()
     private var onAdapterItemClickListener: OnAdapterItemClickListener? = null
     private val onClickListener = View.OnClickListener { v ->
-        if (onAdapterItemClickListener != null) {
-            onAdapterItemClickListener!!.onAdapterViewClick(v)
-        }
+        onAdapterItemClickListener?.invoke(v)
     }
 
     internal class AdapterItem(val type: Int, val description: String, val uuid: UUID) {
@@ -46,11 +41,6 @@ internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAd
         init {
             ButterKnife.bind(this, itemView)
         }
-    }
-
-    internal interface OnAdapterItemClickListener {
-
-        fun onAdapterViewClick(view: View)
     }
 
     override fun getItemCount(): Int {
@@ -136,3 +126,5 @@ internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAd
         return characteristic.properties and (BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0
     }
 }
+
+internal typealias OnAdapterItemClickListener = (View) -> Unit

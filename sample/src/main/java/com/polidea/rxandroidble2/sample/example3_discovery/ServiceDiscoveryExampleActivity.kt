@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import android.widget.Button
 
 import com.polidea.rxandroidble2.RxBleConnection
@@ -18,6 +19,7 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.polidea.rxandroidble2.RxBleDeviceServices
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 
@@ -40,14 +42,15 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
         connectionDisposable = bleDevice!!.establishConnection(false)
-            .flatMapSingle<RxBleDeviceServices>(Function<RxBleConnection, SingleSource<out RxBleDeviceServices>> { it.discoverServices() })
+            .flatMapSingle<RxBleDeviceServices> { it.discoverServices() }
             .take(1) // Disconnect automatically after discovery
             .compose<RxBleDeviceServices>(bindUntilEvent<RxBleDeviceServices>(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally(Action { this.updateUI() })
+            .doFinally { this.updateUI() }
             .subscribe(
-                Consumer<RxBleDeviceServices> { adapter!!.swapScanResult(it) },
-                Consumer<Throwable> { this.onConnectionFailure(it) })
+                { adapter!!.swapScanResult(it) },
+                { this.onConnectionFailure(it) }
+            )
 
         updateUI()
     }
