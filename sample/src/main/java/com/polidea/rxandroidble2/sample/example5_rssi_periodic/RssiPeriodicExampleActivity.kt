@@ -2,25 +2,24 @@ package com.polidea.rxandroidble2.sample.example5_rssi_periodic
 
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
-
+import butterknife.BindView
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
+import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
+import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
-
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-
-import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
-import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import java.util.concurrent.TimeUnit.SECONDS
 
 class RssiPeriodicExampleActivity : RxAppCompatActivity() {
@@ -46,15 +45,15 @@ class RssiPeriodicExampleActivity : RxAppCompatActivity() {
         } else {
             connectionDisposable = bleDevice!!.establishConnection(false)
                 .compose(bindUntilEvent(PAUSE))
-                .doFinally(Action { this.clearSubscription() })
+                .doFinally { clearSubscription() }
                 .flatMap { rxBleConnection ->
                     // Set desired interval.
                     Observable.interval(2, SECONDS).flatMapSingle { sequence -> rxBleConnection.readRssi() }
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    Consumer<Int> { this.updateRssi(it) },
-                    Consumer<Throwable> { this.onConnectionFailure(it) })
+                    { updateRssi(it) },
+                    { onConnectionFailure(it) })
         }
     }
 
@@ -74,7 +73,7 @@ class RssiPeriodicExampleActivity : RxAppCompatActivity() {
         stateDisposable = bleDevice!!.observeConnectionStateChanges()
             .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(Consumer<RxBleConnectionState> { this.onConnectionStateChange(it) })
+            .subscribe { onConnectionStateChange(it) }
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
