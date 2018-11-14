@@ -13,6 +13,8 @@ import java.util.UUID
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
+import io.reactivex.functions.Function3
 
 /**
  * For the sake of this example lets assume that we have a Bluetooth Device that is retrieved by:
@@ -86,7 +88,7 @@ class LongWriteExampleActivity : RxAppCompatActivity() {
                             booleanObservable, /* previous batch of data was sent - we do not care if value emitted from
                                             the booleanObservable is TRUE or FALSE. But the value will be TRUE unless the previously sent
                                             data batch was the final one */
-                            { callback0, callback1, aBoolean -> aBoolean } // value of the returned Boolean is not important
+                            Function3 { _, _, aBoolean -> aBoolean } // value of the returned Boolean is not important
                         )
                     }
                     .build()
