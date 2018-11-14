@@ -6,12 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 
-import com.polidea.rxandroidble2.RxBleDevice
-
 import com.polidea.rxandroidble2.scan.ScanResult
 import java.util.ArrayList
 import java.util.Collections
-import java.util.Comparator
 
 import butterknife.BindView
 import butterknife.ButterKnife
@@ -36,11 +33,6 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
         init {
             ButterKnife.bind(this, itemView)
         }
-    }
-
-    internal interface OnAdapterItemClickListener {
-
-        fun onAdapterViewClick(view: View)
     }
 
     fun addScanResult(bleScanResult: ScanResult) {
@@ -96,3 +88,5 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
             { lhs, rhs -> lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress()) }
     }
 }
+
+internal typealias OnAdapterItemClickListener = (View) -> Unit

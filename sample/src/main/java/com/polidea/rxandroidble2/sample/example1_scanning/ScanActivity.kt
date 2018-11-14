@@ -5,23 +5,21 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import android.widget.Button
-
-import com.polidea.rxandroidble2.RxBleClient
+import butterknife.BindView
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity
-import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler
 import com.polidea.rxandroidble2.sample.util.LocationPermission
+import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanResult
 import com.polidea.rxandroidble2.scan.ScanSettings
-
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 
@@ -69,7 +67,7 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun scanBleDevices() {
-        scanDisposable = rxBleClient!!.scanBleDevices(
+        scanDisposable = rxBleClient.scanBleDevices(
             ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
@@ -80,10 +78,11 @@ class ScanActivity : AppCompatActivity() {
                 .build()
         )
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally(Action { this.dispose() })
+            .doFinally { dispose() }
             .subscribe(
-                Consumer<ScanResult> { resultsAdapter!!.addScanResult(it) },
-                Consumer<Throwable> { this.onScanFailure(it) })
+                { resultsAdapter!!.addScanResult(it) },
+                { this.onScanFailure(it) }
+            )
     }
 
     override fun onRequestPermissionsResult(
@@ -119,10 +118,10 @@ class ScanActivity : AppCompatActivity() {
         recyclerView!!.layoutManager = recyclerLayoutManager
         resultsAdapter = ScanResultsAdapter()
         recyclerView!!.adapter = resultsAdapter
-        resultsAdapter!!.setOnAdapterItemClickListener { view ->
-            val childAdapterPosition = recyclerView!!.getChildAdapterPosition(view)
-            val itemAtPosition = resultsAdapter!!.getItemAtPosition(childAdapterPosition)
-            onAdapterItemClick(itemAtPosition)
+        resultsAdapter!!.setOnAdapterItemClickListener { view: View ->
+                val childAdapterPosition = recyclerView!!.getChildAdapterPosition(view)
+                val itemAtPosition = resultsAdapter!!.getItemAtPosition(childAdapterPosition)
+                onAdapterItemClick(itemAtPosition)
         }
     }
 
