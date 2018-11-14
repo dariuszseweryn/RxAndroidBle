@@ -5,26 +5,25 @@ import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.SwitchCompat
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-
+import butterknife.BindView
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
+import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
+import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
-
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
-
-import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
-import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 
 class ConnectionExampleActivity : RxAppCompatActivity() {
 
@@ -53,10 +52,11 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
             connectionDisposable = bleDevice!!.establishConnection(autoConnectToggleSwitch!!.isChecked)
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(Action { this.dispose() })
+                .doFinally { this.dispose() }
                 .subscribe(
-                    Consumer<RxBleConnection> { this.onConnectionReceived(it) },
-                    Consumer<Throwable> { this.onConnectionFailure(it) })
+                    { this.onConnectionReceived(it) },
+                    { this.onConnectionFailure(it) }
+                )
         }
     }
 
@@ -68,8 +68,8 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
             .take(1) // Disconnect automatically after discovery
             .compose(bindUntilEvent(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally(Action { this.updateUI() })
-            .subscribe(Consumer<Int> { this.onMtuReceived(it) }, Consumer<Throwable> { this.onConnectionFailure(it) })
+            .doFinally { this.updateUI() }
+            .subscribe({ this.onMtuReceived(it) }, { this.onConnectionFailure(it) })
 
         compositeDisposable.add(disposable)
     }
@@ -85,7 +85,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
         val disposable = bleDevice!!.observeConnectionStateChanges()
             .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(Consumer<RxBleConnectionState> { this.onConnectionStateChange(it) })
+            .subscribe { this.onConnectionStateChange(it) }
 
         compositeDisposable.add(disposable)
     }

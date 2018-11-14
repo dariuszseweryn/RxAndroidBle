@@ -45,7 +45,7 @@ class BackgroundScanActivity : AppCompatActivity() {
 
     private fun scanBleDeviceInBackground() {
         try {
-            rxBleClient!!.backgroundScanner.scanBleDeviceInBackground(
+            rxBleClient.backgroundScanner.scanBleDeviceInBackground(
                 callbackIntent!!,
                 ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -79,7 +79,7 @@ class BackgroundScanActivity : AppCompatActivity() {
 
     @OnClick(R.id.scan_stop_btn)
     fun onScanStopClick() {
-        rxBleClient!!.backgroundScanner.stopBackgroundBleScan(callbackIntent!!)
+        rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent!!)
     }
 
     companion object {
