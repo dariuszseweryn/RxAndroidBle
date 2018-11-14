@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 buildscript {
     repositories {
@@ -39,6 +40,7 @@ configurations.all {
 
 dependencies {
     implementation project(path: ':rxandroidble')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
     implementation "com.android.support:design:$rootProject.ext.supportVersion"
     implementation 'com.jakewharton:butterknife:8.8.1'
