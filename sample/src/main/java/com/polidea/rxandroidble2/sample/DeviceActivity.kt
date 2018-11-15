@@ -1,16 +1,22 @@
 package com.polidea.rxandroidble2.sample
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity
 import com.polidea.rxandroidble2.sample.example3_discovery.ServiceDiscoveryExampleActivity
 
-import butterknife.ButterKnife
-import butterknife.OnClick
+internal fun Context.newDeviceActivity(): Intent = Intent(this, DeviceActivity::class.java)
 
 class DeviceActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_MAC_ADDRESS = "extra_mac_address"
+    }
+
     private var macAddress: String? = null
 
     @OnClick(R.id.connect)
@@ -34,10 +40,5 @@ class DeviceActivity : AppCompatActivity() {
         macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
 
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
-    }
-
-    companion object {
-
-        val EXTRA_MAC_ADDRESS = "extra_mac_address"
     }
 }

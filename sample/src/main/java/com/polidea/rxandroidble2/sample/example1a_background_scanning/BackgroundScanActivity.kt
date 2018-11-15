@@ -1,77 +1,75 @@
 package com.polidea.rxandroidble2.sample.example1a_background_scanning
 
-import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-
-import com.polidea.rxandroidble2.RxBleClient
+import android.widget.Toast
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler
-import com.polidea.rxandroidble2.sample.util.LocationPermission
+import com.polidea.rxandroidble2.sample.util.checkLocationPermissionGranted
+import com.polidea.rxandroidble2.sample.util.handleException
+import com.polidea.rxandroidble2.sample.util.isRequestLocationPermissionGranted
+import com.polidea.rxandroidble2.sample.util.requestLocationPermission
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
 
-import butterknife.ButterKnife
-import butterknife.OnClick
+private const val SCAN_REQUEST_CODE = 42
+
+internal fun Context.newBackgroundScanActivity(): Intent = Intent(this, BackgroundScanActivity::class.java)
 
 class BackgroundScanActivity : AppCompatActivity() {
-    private val rxBleClient = SampleApplication.rxBleClient
-    private var callbackIntent: PendingIntent? = null
-    private var hasClickedScan: Boolean = false
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
+    private val rxBleClient = SampleApplication.rxBleClient
+    private val callbackIntent = newScanReceiverPendingIntent(SCAN_REQUEST_CODE)
+    private var hasClickedScan = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example1a)
         ButterKnife.bind(this)
-        callbackIntent = PendingIntent.getBroadcast(
-            this, SCAN_REQUEST_CODE,
-            Intent(this, ScanReceiver::class.java), 0
-        )
     }
 
     @OnClick(R.id.scan_start_btn)
     fun onScanStartClick() {
-        hasClickedScan = true
-        if (LocationPermission.checkLocationPermissionGranted(this)) {
+        if (checkLocationPermissionGranted()) {
             scanBleDeviceInBackground()
         } else {
-            LocationPermission.requestLocationPermission(this)
+            hasClickedScan = true
+            requestLocationPermission()
         }
     }
 
     private fun scanBleDeviceInBackground() {
         try {
-            rxBleClient.backgroundScanner.scanBleDeviceInBackground(
-                callbackIntent!!,
-                ScanSettings.Builder()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val scanSettings = ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                    .build(),
-                ScanFilter.Builder()
-                    .setDeviceAddress("5C:31:3E:BF:F7:34")
+                    .build()
+
+                val scanFilter = ScanFilter.Builder()
+//                    .setDeviceAddress("5C:31:3E:BF:F7:34")
                     // add custom filters if needed
                     .build()
-            )
+
+                rxBleClient.backgroundScanner.scanBleDeviceInBackground(callbackIntent, scanSettings, scanFilter)
+            } else {
+                Toast.makeText(this, "Background scanning requires at least API 26", Toast.LENGTH_SHORT).show()
+            }
         } catch (scanException: BleScanException) {
             Log.w("BackgroundScanActivity", "Failed to start background scan", scanException)
-            ScanExceptionHandler.handleException(this, scanException)
+            handleException(scanException)
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (LocationPermission.isRequestLocationPermissionGranted(
-                requestCode,
-                permissions,
-                grantResults
-            ) && hasClickedScan
-        ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (isRequestLocationPermissionGranted(requestCode, permissions, grantResults) && hasClickedScan) {
             hasClickedScan = false
             scanBleDeviceInBackground()
         }
@@ -79,11 +77,10 @@ class BackgroundScanActivity : AppCompatActivity() {
 
     @OnClick(R.id.scan_stop_btn)
     fun onScanStopClick() {
-        rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent!!)
-    }
-
-    companion object {
-
-        private val SCAN_REQUEST_CODE = 42
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent)
+        } else {
+            Toast.makeText(this, "Background scanning requires at least API 26", Toast.LENGTH_SHORT).show()
+        }
     }
 }

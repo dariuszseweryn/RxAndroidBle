@@ -1,16 +1,19 @@
 package com.polidea.rxandroidble2.sample.example1a_background_scanning
 
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.util.Log
-
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.scan.BackgroundScanner
-import com.polidea.rxandroidble2.scan.ScanResult
+
+internal fun Context.newScanReceiverPendingIntent(requestCode: Int): PendingIntent =
+    Intent(this, ScanReceiver::class.java).let { intent ->
+        PendingIntent.getBroadcast(this, requestCode, intent, 0)
+    }
 
 class ScanReceiver : BroadcastReceiver() {
 
