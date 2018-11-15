@@ -8,16 +8,13 @@ import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 
+private const val REQUEST_PERMISSION_COARSE_LOCATION = 9358
+
 object LocationPermission {
 
-    private val REQUEST_PERMISSION_COARSE_LOCATION = 9358
-
-    fun checkLocationPermissionGranted(context: Context): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    fun checkLocationPermissionGranted(context: Context): Boolean =
+        ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
 
     fun requestLocationPermission(activity: Activity) {
         ActivityCompat.requestPermissions(
@@ -28,16 +25,20 @@ object LocationPermission {
     }
 
     fun isRequestLocationPermissionGranted(
-        requestCode: Int, permissions: Array<String>,
+        requestCode: Int,
+        permissions: Array<String>,
         grantResults: IntArray
     ): Boolean {
         if (requestCode == REQUEST_PERMISSION_COARSE_LOCATION) {
-            for (i in permissions.indices) {
-                if (permissions[i] == Manifest.permission.ACCESS_COARSE_LOCATION && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+            permissions.forEachIndexed { index, permission ->
+                if (
+                    permission == Manifest.permission.ACCESS_COARSE_LOCATION &&
+                    grantResults[index] == PackageManager.PERMISSION_GRANTED
+                ) {
                     return true
                 }
             }
         }
         return false
     }
-}// Utility class
+}

@@ -12,7 +12,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * Helper class to show BleScanException error messages as toasts.
+ * Helper object to show BleScanException error messages as toasts.
  */
 object ScanExceptionHandler {
 
@@ -71,22 +71,19 @@ object ScanExceptionHandler {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
     }
 
-    private fun getUndocumentedScanThrottleErrorMessage(context: Activity, retryDate: Date?): String {
-        val stringBuilder = StringBuilder(context.getString(R.string.error_undocumented_scan_throttle))
-
-        if (retryDate != null) {
-            val retryText = String.format(
-                Locale.getDefault(),
-                context.getString(R.string.error_undocumented_scan_throttle_retry),
-                secondsTill(retryDate)
-            )
-            stringBuilder.append(retryText)
+    private fun getUndocumentedScanThrottleErrorMessage(context: Activity, retryDate: Date?): String =
+        with(StringBuilder(context.getString(R.string.error_undocumented_scan_throttle))) {
+            if (retryDate != null) {
+                val retryText = String.format(
+                    Locale.getDefault(),
+                    context.getString(R.string.error_undocumented_scan_throttle_retry),
+                    secondsTill(retryDate)
+                )
+                append(retryText)
+            }
+            toString()
         }
 
-        return stringBuilder.toString()
-    }
-
-    private fun secondsTill(retryDateSuggestion: Date): Long {
-        return TimeUnit.MILLISECONDS.toSeconds(retryDateSuggestion.time - System.currentTimeMillis())
-    }
-}// Utility class
+    private fun secondsTill(retryDateSuggestion: Date): Long =
+        TimeUnit.MILLISECONDS.toSeconds(retryDateSuggestion.time - System.currentTimeMillis())
+}
