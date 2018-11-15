@@ -7,29 +7,25 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-
-import com.jakewharton.rx.ReplayingShare
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.sample.DeviceActivity
-import com.polidea.rxandroidble2.sample.R
-import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.HexString
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
-
-import java.util.UUID
-
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.jakewharton.rx.ReplayingShare
+import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.RxBleDeviceServices
+import com.polidea.rxandroidble2.sample.DeviceActivity
+import com.polidea.rxandroidble2.sample.R
+import com.polidea.rxandroidble2.sample.SampleApplication
+import com.polidea.rxandroidble2.sample.util.bytesToHex
+import com.polidea.rxandroidble2.sample.util.hexToBytes
+import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
-
-import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
+import java.util.UUID
 
 class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
     @BindView(R.id.connect)
@@ -56,7 +52,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
         get() = bleDevice!!.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
 
     private val inputBytes: ByteArray
-        get() = HexString.hexToBytes(writeInput!!.text.toString())
+        get() = writeInput!!.text.toString().hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,8 +112,8 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ bytes ->
                     readOutputView!!.text = String(bytes)
-                    readHexOutputView!!.text = HexString.bytesToHex(bytes)
-                    writeInput!!.text = HexString.bytesToHex(bytes)
+                    readHexOutputView!!.text = bytes.bytesToHex()
+                    writeInput!!.text = bytes.bytesToHex()
                 }, { onReadFailure(it) })
 
             compositeDisposable.add(disposable)
@@ -151,8 +147,8 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMap { notificationObservable -> notificationObservable }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                     { this.onNotificationReceived(it) },
-                     { this.onNotificationSetupFailure(it) })
+                    { this.onNotificationReceived(it) },
+                    { this.onNotificationSetupFailure(it) })
 
             compositeDisposable.add(disposable)
         }
@@ -185,7 +181,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     private fun onNotificationReceived(bytes: ByteArray) {
 
-        Snackbar.make(findViewById<View>(R.id.main), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_SHORT)
+        Snackbar.make(findViewById<View>(R.id.main), "Change: " + bytes.bytesToHex(), Snackbar.LENGTH_SHORT)
             .show()
     }
 

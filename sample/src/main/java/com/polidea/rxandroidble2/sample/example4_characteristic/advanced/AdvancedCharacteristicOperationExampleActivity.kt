@@ -13,7 +13,8 @@ import com.jakewharton.rxbinding2.view.RxView
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.HexString
+import com.polidea.rxandroidble2.sample.util.bytesToHex
+import com.polidea.rxandroidble2.sample.util.hexToBytes
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
@@ -65,7 +66,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
     private var presenterEventObservable: Observable<PresenterEvent>? = null
 
     private val inputBytes: ByteArray
-        get() = HexString.hexToBytes(writeInput!!.text.toString())
+        get() = writeInput!!.text.toString().hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,15 +159,15 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     val updateReadValue = presenterEvent.result
                     val stringValue = String(updateReadValue)
                     readOutputView!!.text = stringValue
-                    val hexValueText = HexString.bytesToHex(updateReadValue)
+                    val hexValueText = updateReadValue.bytesToHex()
                     readHexOutputView!!.text = hexValueText
                     writeInput!!.text = hexValueText
                 }
                 Type.WRITE -> showNotification("Write success")
-                Type.NOTIFY -> showNotification("Notification: " + HexString.bytesToHex(presenterEvent.result))
-                Type.INDICATE -> showNotification("Indication: " + HexString.bytesToHex(presenterEvent.result))
+                Type.NOTIFY -> showNotification("Notification: " + presenterEvent.result.bytesToHex())
+                Type.INDICATE -> showNotification("Indication: " + presenterEvent.result.bytesToHex())
                 else // added because Checkstyle is complaining
-                -> showNotification("Indication: " + HexString.bytesToHex(presenterEvent.result))
+                -> showNotification("Indication: " + presenterEvent.result.bytesToHex())
             }
         }
         if (presenterEvent is ErrorEvent) {
