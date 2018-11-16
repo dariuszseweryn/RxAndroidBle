@@ -28,87 +28,89 @@ import io.reactivex.disposables.Disposable
 class ConnectionExampleActivity : RxAppCompatActivity() {
 
     @BindView(R.id.connection_state)
-    internal var connectionStateView: TextView? = null
+    internal lateinit var connectionStateView: TextView
+
     @BindView(R.id.connect_toggle)
-    internal var connectButton: Button? = null
+    internal lateinit var connectButton: Button
+
     @BindView(R.id.newMtu)
-    internal var textMtu: EditText? = null
+    internal lateinit var textMtu: EditText
+
     @BindView(R.id.set_mtu)
-    internal var setMtuButton: Button? = null
+    internal lateinit var setMtuButton: Button
+
     @BindView(R.id.autoconnect)
-    internal var autoConnectToggleSwitch: SwitchCompat? = null
-    private var bleDevice: RxBleDevice? = null
+    internal lateinit var autoConnectToggleSwitch: SwitchCompat
+
+    private lateinit var bleDevice: RxBleDevice
+
     private var connectionDisposable: Disposable? = null
+
     private val compositeDisposable = CompositeDisposable()
 
     private val isConnected: Boolean
-        get() = bleDevice!!.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
+        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_example2)
+        ButterKnife.bind(this)
+
+        val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
+        title = getString(R.string.mac_address, macAddress)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
+
+        // How to listen for connection state changes
+        bleDevice.observeConnectionStateChanges()
+            .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { this.onConnectionStateChange(it) }
+            .also { compositeDisposable.add(it) }
+    }
 
     @OnClick(R.id.connect_toggle)
     fun onConnectToggleClick() {
         if (isConnected) {
             triggerDisconnect()
         } else {
-            connectionDisposable = bleDevice!!.establishConnection(autoConnectToggleSwitch!!.isChecked)
+            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked)
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doFinally { this.dispose() }
-                .subscribe(
-                    { this.onConnectionReceived(it) },
-                    { this.onConnectionFailure(it) }
-                )
+                .doFinally { dispose() }
+                .subscribe({ onConnectionReceived(it) }, { onConnectionFailure(it) })
         }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     fun onSetMtu() {
-        val disposable = bleDevice!!.establishConnection(false)
+        val disposable = bleDevice.establishConnection(false)
             .flatMapSingle { rxBleConnection -> rxBleConnection.requestMtu(72) }
             .take(1) // Disconnect automatically after discovery
             .compose(bindUntilEvent(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally { this.updateUI() }
-            .subscribe({ this.onMtuReceived(it) }, { this.onConnectionFailure(it) })
-
-        compositeDisposable.add(disposable)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_example2)
-        ButterKnife.bind(this)
-        val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
-        title = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
-        // How to listen for connection state changes
-        val disposable = bleDevice!!.observeConnectionStateChanges()
-            .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { this.onConnectionStateChange(it) }
+            .doFinally { updateUI() }
+            .subscribe({ onMtuReceived(it) }, { onConnectionFailure(it) })
 
         compositeDisposable.add(disposable)
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-
         Snackbar.make(findViewById<View>(android.R.id.content), "Connection error: $throwable", Snackbar.LENGTH_SHORT)
             .show()
     }
 
     private fun onConnectionReceived(connection: RxBleConnection) {
-
         Snackbar.make(findViewById<View>(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun onConnectionStateChange(newState: RxBleConnection.RxBleConnectionState) {
-        connectionStateView!!.text = newState.toString()
+        connectionStateView.text = newState.toString()
         updateUI()
     }
 
-    private fun onMtuReceived(mtu: Int?) {
-
-        Snackbar.make(findViewById<View>(android.R.id.content), "MTU received: " + mtu!!, Snackbar.LENGTH_SHORT)
+    private fun onMtuReceived(mtu: Int) {
+        Snackbar.make(findViewById<View>(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT)
             .show()
     }
 
@@ -118,21 +120,16 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun triggerDisconnect() {
-
-        if (connectionDisposable != null) {
-            connectionDisposable!!.dispose()
-        }
+        connectionDisposable?.dispose()
     }
 
     private fun updateUI() {
-        val connected = isConnected
-        connectButton!!.setText(if (connected) R.string.disconnect else R.string.connect)
-        autoConnectToggleSwitch!!.isEnabled = !connected
+        connectButton.setText(if (isConnected) R.string.disconnect else R.string.connect)
+        autoConnectToggleSwitch.isEnabled = !isConnected
     }
 
     override fun onPause() {
         super.onPause()
-
         triggerDisconnect()
         compositeDisposable.clear()
     }
