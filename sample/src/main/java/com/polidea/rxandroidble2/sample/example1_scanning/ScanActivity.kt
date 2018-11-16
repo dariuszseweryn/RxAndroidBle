@@ -29,11 +29,16 @@ class ScanActivity : AppCompatActivity() {
 
     @BindView(R.id.scan_toggle_btn)
     internal lateinit var scanToggleButton: Button
+
     @BindView(R.id.scan_results)
     internal lateinit var recyclerView: RecyclerView
+
     private val rxBleClient = SampleApplication.rxBleClient
+
     private var scanDisposable: Disposable? = null
+
     private var resultsAdapter = ScanResultsAdapter()
+
     private var hasClickedScan = false
 
     private val isScanning: Boolean
@@ -108,9 +113,9 @@ class ScanActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@ScanActivity)
             adapter = resultsAdapter
         }
-        resultsAdapter.setOnAdapterItemClickListener { view: View ->
+        resultsAdapter.onAdapterItemClickListener = View.OnClickListener { view: View ->
             val childAdapterPosition = recyclerView.getChildAdapterPosition(view)
-            val itemAtPosition = resultsAdapter.getItemAtPosition(childAdapterPosition)
+            val itemAtPosition = resultsAdapter.itemAtPosition(childAdapterPosition)
             onAdapterItemClick(itemAtPosition)
         }
     }

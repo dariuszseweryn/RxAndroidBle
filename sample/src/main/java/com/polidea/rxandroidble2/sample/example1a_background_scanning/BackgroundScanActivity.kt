@@ -26,7 +26,9 @@ internal fun Context.newBackgroundScanActivity(): Intent = Intent(this, Backgrou
 class BackgroundScanActivity : AppCompatActivity() {
 
     private val rxBleClient = SampleApplication.rxBleClient
+
     private val callbackIntent = newScanReceiverPendingIntent(SCAN_REQUEST_CODE)
+
     private var hasClickedScan = false
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -8,23 +8,19 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.polidea.rxandroidble2.scan.ScanResult
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Locale
 
 internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder>() {
-    private val data = ArrayList<ScanResult>()
-    private var mOnAdapterItemClickListener: OnAdapterItemClickListener? = null
-    private val onClickListener = View.OnClickListener { v ->
-        mOnAdapterItemClickListener?.invoke(v)
-    }
+
+    private val data = mutableListOf<ScanResult>()
+
+    var onAdapterItemClickListener: View.OnClickListener? = null
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
         @BindView(android.R.id.text1)
-        var line1: TextView? = null
+        lateinit var line1: TextView
+
         @BindView(android.R.id.text2)
-        var line2: TextView? = null
+        lateinit var line2: TextView
 
         init {
             ButterKnife.bind(this, itemView)
@@ -32,20 +28,17 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
     }
 
     fun addScanResult(bleScanResult: ScanResult) {
-        // Not the best way to ensure distinct devices, just for sake on the demo.
-
-        for (i in data.indices) {
-
-            if (data[i].bleDevice == bleScanResult.bleDevice) {
-                data[i] = bleScanResult
-                notifyItemChanged(i)
-                return
+        // Not the best way to ensure distinct devices, just for the sake of the demo.
+        data.withIndex()
+            .firstOrNull { it.value.bleDevice == bleScanResult.bleDevice }
+            ?.let { data[it.index] = bleScanResult }
+            ?: run {
+                with(data) {
+                    add(bleScanResult)
+                    sortBy { it.bleDevice.macAddress }
+                }
+                notifyDataSetChanged()
             }
-        }
-
-        data.add(bleScanResult)
-        Collections.sort(data, SORTING_COMPARATOR)
-        notifyDataSetChanged()
     }
 
     fun clearScanResults() {
@@ -53,37 +46,22 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
         notifyDataSetChanged()
     }
 
-    fun getItemAtPosition(childAdapterPosition: Int): ScanResult {
-        return data[childAdapterPosition]
-    }
+    fun itemAtPosition(childAdapterPosition: Int): ScanResult = data[childAdapterPosition]
 
-    override fun getItemCount(): Int {
-        return data.size
-    }
+    override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val rxBleScanResult = data[position]
-        val bleDevice = rxBleScanResult.bleDevice
-        holder.line1!!.text = String.format(Locale.getDefault(), "%s (%s)", bleDevice.macAddress, bleDevice.name)
-        holder.line2!!.text = String.format(Locale.getDefault(), "RSSI: %d", rxBleScanResult.rssi)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(android.R.layout.two_line_list_item, parent, false)
-        itemView.setOnClickListener(onClickListener)
-        return ViewHolder(itemView)
-    }
-
-    fun setOnAdapterItemClickListener(onAdapterItemClickListener: OnAdapterItemClickListener) {
-        this.mOnAdapterItemClickListener = onAdapterItemClickListener
-    }
-
-    companion object {
-
-        private val SORTING_COMPARATOR = { lhs: ScanResult, rhs: ScanResult ->
-            lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress())
+        with(data[position]) {
+            holder.line1.text = String.format("%s (%s)", bleDevice.macAddress, bleDevice.name)
+            holder.line2.text = String.format("RSSI: %d", rssi)
         }
     }
-}
 
-internal typealias OnAdapterItemClickListener = (View) -> Unit
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        LayoutInflater.from(parent.context)
+            .inflate(android.R.layout.two_line_list_item, parent, false)
+            .run {
+                setOnClickListener(onAdapterItemClickListener)
+                ViewHolder(this)
+            }
+}
