@@ -10,7 +10,6 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.example1a_background_scanning.newBackgroundScanActivity
@@ -122,10 +121,7 @@ class ScanActivity : AppCompatActivity() {
 
     private fun onAdapterItemClick(scanResult: ScanResult) {
         val macAddress = scanResult.bleDevice.macAddress
-        newDeviceActivity().let {
-            it.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress)
-            startActivity(it)
-        }
+        startActivity(newDeviceActivity(macAddress))
     }
 
     private fun onScanFailure(throwable: Throwable) {

@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example3_discovery
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -7,23 +8,27 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.Button
-
+import butterknife.BindView
+import butterknife.ButterKnife
+import butterknife.OnClick
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
+import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity
+import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
-
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import com.polidea.rxandroidble2.RxBleDeviceServices
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 
-import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
+private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
+
+internal fun Context.newServiceDiscoveryExampleActivity(macAddress: String) =
+    Intent(this, ServiceDiscoveryExampleActivity::class.java).apply {
+        putExtra(EXTRA_MAC_ADDRESS, macAddress)
+    }
 
 class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
 
@@ -39,6 +44,17 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     private val isConnected: Boolean
         get() = bleDevice!!.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_example3)
+        ButterKnife.bind(this)
+        macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
+
+        supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
+        configureResultList()
+    }
+
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
         connectionDisposable = bleDevice!!.establishConnection(false)
@@ -53,17 +69,6 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
             )
 
         updateUI()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_example3)
-        ButterKnife.bind(this)
-        macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
-
-        supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
-        configureResultList()
     }
 
     private fun configureResultList() {

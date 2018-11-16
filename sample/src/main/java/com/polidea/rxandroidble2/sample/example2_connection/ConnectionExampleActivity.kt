@@ -1,6 +1,8 @@
 package com.polidea.rxandroidble2.sample.example2_connection
 
 import android.annotation.TargetApi
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -24,6 +26,13 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+
+private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
+
+internal fun Context.newConnectionExampleActivity(macAddress: String) =
+    Intent(this, ConnectionExampleActivity::class.java).apply {
+        putExtra(EXTRA_MAC_ADDRESS, macAddress)
+    }
 
 class ConnectionExampleActivity : RxAppCompatActivity() {
 
@@ -56,7 +65,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
         setContentView(R.layout.activity_example2)
         ButterKnife.bind(this)
 
-        val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
+        val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         title = getString(R.string.mac_address, macAddress)
         bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
 
@@ -77,7 +86,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally { dispose() }
-                .subscribe({ onConnectionReceived(it) }, { onConnectionFailure(it) })
+                .subscribe({ onConnectionReceived() }, { onConnectionFailure(it) })
         }
     }
 
@@ -100,7 +109,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
             .show()
     }
 
-    private fun onConnectionReceived(connection: RxBleConnection) {
+    private fun onConnectionReceived() {
         Snackbar.make(findViewById<View>(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show()
     }
 
@@ -110,7 +119,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onMtuReceived(mtu: Int) {
-        Snackbar.make(findViewById<View>(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT)
+        Snackbar.make(findViewById<View>(android.R.id.content), "MTU received: $mtu", Snackbar.LENGTH_SHORT)
             .show()
     }
 
