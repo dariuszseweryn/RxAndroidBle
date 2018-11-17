@@ -77,7 +77,7 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
         recyclerView!!.layoutManager = recyclerLayoutManager
         adapter = DiscoveryResultsAdapter()
         recyclerView!!.adapter = adapter
-        adapter!!.setOnAdapterItemClickListener { view ->
+        adapter!!.onAdapterItemClickListener = View.OnClickListener { view ->
             val childAdapterPosition = recyclerView!!.getChildAdapterPosition(view)
             val itemAtPosition = adapter!!.getItem(childAdapterPosition)
             onAdapterItemClick(itemAtPosition)
