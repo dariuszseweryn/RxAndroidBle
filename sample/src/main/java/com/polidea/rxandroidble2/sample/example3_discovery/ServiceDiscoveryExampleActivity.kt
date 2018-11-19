@@ -13,11 +13,9 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.RxBleDeviceServices
-import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity
+import com.polidea.rxandroidble2.sample.example4_characteristic.newCharacteristicOperationExampleActivity
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -33,88 +31,83 @@ internal fun Context.newServiceDiscoveryExampleActivity(macAddress: String) =
 class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
 
     @BindView(R.id.connect)
-    internal var connectButton: Button? = null
+    lateinit var connectButton: Button
+
     @BindView(R.id.scan_results)
-    internal var recyclerView: RecyclerView? = null
-    private var adapter: DiscoveryResultsAdapter? = null
-    private var bleDevice: RxBleDevice? = null
-    private var macAddress: String? = null
+    lateinit var recyclerView: RecyclerView
+
+    private var resultsAdapter = DiscoveryResultsAdapter()
+
+    private lateinit var bleDevice: RxBleDevice
+
+    private lateinit var macAddress: String
+
     private var connectionDisposable: Disposable? = null
 
     private val isConnected: Boolean
-        get() = bleDevice!!.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
+        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example3)
         ButterKnife.bind(this)
-        macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
 
+        macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
         configureResultList()
     }
 
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
-        connectionDisposable = bleDevice!!.establishConnection(false)
-            .flatMapSingle<RxBleDeviceServices> { it.discoverServices() }
+        connectionDisposable = bleDevice.establishConnection(false)
+            .flatMapSingle { it.discoverServices() }
             .take(1) // Disconnect automatically after discovery
-            .compose<RxBleDeviceServices>(bindUntilEvent<RxBleDeviceServices>(PAUSE))
+            .compose(bindUntilEvent(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally { this.updateUI() }
+            .doFinally { updateUI() }
             .subscribe(
-                { adapter!!.swapScanResult(it) },
-                { this.onConnectionFailure(it) }
+                { resultsAdapter.swapScanResult(it) },
+                { onConnectionFailure(it) }
             )
-
         updateUI()
     }
 
     private fun configureResultList() {
-        recyclerView!!.setHasFixedSize(true)
-        val recyclerLayoutManager = LinearLayoutManager(this)
-        recyclerView!!.layoutManager = recyclerLayoutManager
-        adapter = DiscoveryResultsAdapter()
-        recyclerView!!.adapter = adapter
-        adapter!!.onAdapterItemClickListener = View.OnClickListener { view ->
-            val childAdapterPosition = recyclerView!!.getChildAdapterPosition(view)
-            val itemAtPosition = adapter!!.getItem(childAdapterPosition)
+        with(recyclerView) {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(this@ServiceDiscoveryExampleActivity)
+            adapter = resultsAdapter
+        }
+        resultsAdapter.onAdapterItemClickListener = View.OnClickListener { view ->
+            val childAdapterPosition = recyclerView.getChildAdapterPosition(view)
+            val itemAtPosition = resultsAdapter.getItem(childAdapterPosition)
             onAdapterItemClick(itemAtPosition)
         }
     }
 
     private fun onAdapterItemClick(item: DiscoveryResultsAdapter.AdapterItem) {
-
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
-            val intent = Intent(this, CharacteristicOperationExampleActivity::class.java)
+            startActivity(newCharacteristicOperationExampleActivity(macAddress, item.uuid))
             // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
-            // final Intent intent = new Intent(this, AdvancedCharacteristicOperationExampleActivity.class);
-            intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress)
-            intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid)
-            startActivity(intent)
+//            startActivity(newAdvancedCharacteristicOperationExampleActivity(macAddress, item.uuid))
         } else {
-
             Snackbar.make(findViewById<View>(android.R.id.content), R.string.not_clickable, Snackbar.LENGTH_SHORT)
                 .show()
         }
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-
         Snackbar.make(findViewById<View>(android.R.id.content), "Connection error: $throwable", Snackbar.LENGTH_SHORT)
             .show()
     }
 
     private fun updateUI() {
-        connectButton!!.isEnabled = !isConnected
+        connectButton.isEnabled = !isConnected
     }
 
     override fun onPause() {
         super.onPause()
-
-        if (connectionDisposable != null) {
-            connectionDisposable!!.dispose()
-        }
+        connectionDisposable?.dispose()
     }
 }

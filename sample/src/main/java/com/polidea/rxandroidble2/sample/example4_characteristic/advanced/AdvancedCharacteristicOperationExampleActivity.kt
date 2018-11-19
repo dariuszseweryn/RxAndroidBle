@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
@@ -10,7 +12,6 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.jakewharton.rxbinding2.view.RxView
-import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.util.bytesToHex
@@ -21,6 +22,16 @@ import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.util.UUID
+
+private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
+
+private const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
+
+internal fun Context.newAdvancedCharacteristicOperationExampleActivity(macAddress: String, uuid: UUID) =
+    Intent(this, AdvancedCharacteristicOperationExampleActivity::class.java).apply {
+        putExtra(EXTRA_MAC_ADDRESS, macAddress)
+        putExtra(EXTRA_CHARACTERISTIC_UUID, uuid)
+    }
 
 /**
  * This activity allows for connecting to a device and interact with a given characteristic.
@@ -72,7 +83,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example4_advanced)
         ButterKnife.bind(this)
-        val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
+        val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         val characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
         val bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
 

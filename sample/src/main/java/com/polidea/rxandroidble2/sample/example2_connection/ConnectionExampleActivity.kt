@@ -71,9 +71,9 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
 
         // How to listen for connection state changes
         bleDevice.observeConnectionStateChanges()
-            .compose<RxBleConnectionState>(bindUntilEvent<RxBleConnectionState>(DESTROY))
+            .compose(bindUntilEvent(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { this.onConnectionStateChange(it) }
+            .subscribe { onConnectionStateChange(it) }
             .also { compositeDisposable.add(it) }
     }
 

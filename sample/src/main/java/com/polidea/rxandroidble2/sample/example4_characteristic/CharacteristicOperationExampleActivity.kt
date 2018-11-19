@@ -1,6 +1,8 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.util.Log
@@ -26,6 +28,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import java.util.UUID
+
+private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
+
+private const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
+
+internal fun Context.newCharacteristicOperationExampleActivity(macAddress: String, uuid: UUID) =
+        Intent(this, CharacteristicOperationExampleActivity::class.java).apply {
+            putExtra(EXTRA_MAC_ADDRESS, macAddress)
+            putExtra(EXTRA_CHARACTERISTIC_UUID, uuid)
+        }
 
 class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
     @BindView(R.id.connect)
@@ -58,7 +70,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example4)
         ButterKnife.bind(this)
-        val macAddress = intent.getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS)
+        val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
         bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
         connectionObservable = prepareConnectionObservable()
@@ -218,10 +230,5 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
     override fun onPause() {
         super.onPause()
         compositeDisposable.clear()
-    }
-
-    companion object {
-
-        const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
     }
 }
