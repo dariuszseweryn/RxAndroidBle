@@ -7,6 +7,7 @@ import android.support.v4.util.Pair
 import com.polidea.rxandroidble2.NotificationSetupMode
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
+import com.polidea.rxandroidble2.sample.util.hasProperty
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
@@ -57,17 +58,17 @@ internal object Presenter {
             .flatMap { connectionAndCharacteristic ->
                 val characteristic = connectionAndCharacteristic.second
                 val connection = connectionAndCharacteristic.first
-                val readObservable = if (!hasProperty(characteristic!!, BluetoothGattCharacteristic.PROPERTY_READ))
+                val readObservable = if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ))
                     Observable.empty()
                 else
                     readClicks // else use the readClicks observable from the activity
                         // every click is requesting a read operation from the peripheral
-                        .flatMapSingle { ignoredClick -> connection!!.readCharacteristic(characteristic) }
+                        .flatMapSingle { connection!!.readCharacteristic(characteristic) }
                         .compose(transformToPresenterEvent(Type.READ))// if the characteristic is not readable return an empty (dummy) observable
                 // convenience method to wrap reads
 
                 val writeObservable = // basically the same logic as in the reads
-                    if (!hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE))
+                    if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE))
                         Observable.empty()
                     else
                         writeClicks // with exception that clicks emit byte[] to write
@@ -85,7 +86,7 @@ internal object Presenter {
                                  * this is needed because only one of them may be active at the same time and we need to differentiate
                                  * the clicks
                                  */
-                val enableNotifyClicksObservable = if (!hasProperty(characteristic, PROPERTY_NOTIFY))
+                val enableNotifyClicksObservable = if (!characteristic.hasProperty(PROPERTY_NOTIFY))
                     Observable.never()
                 else
                     enableNotifyClicks.take(1).map { aBoolean -> java.lang.Boolean.FALSE }/*
@@ -94,7 +95,7 @@ internal object Presenter {
                                          * the behaviour of Observable that first emits or terminates and it will be checking both
                                          * notifyClicks and indicateClicks
                                          */// only the first click to enableNotifyClicks is taken to account
-                val enableIndicateClicksObservable = if (!hasProperty(characteristic, PROPERTY_INDICATE))
+                val enableIndicateClicksObservable = if (!characteristic.hasProperty(PROPERTY_INDICATE))
                     Observable.never()
                 else
                     enableIndicateClicks.take(1).map { aBoolean -> java.lang.Boolean.TRUE }
@@ -135,10 +136,8 @@ internal object Presenter {
                     // at the beginning inform the activity about whether compat mode is being used
                     .startWith(
                         CompatibilityModeEvent(
-                            hasProperty(
-                                characteristic,
-                                PROPERTY_NOTIFY or PROPERTY_INDICATE
-                            ) && notificationSetupMode == NotificationSetupMode.COMPAT
+                            characteristic.hasProperty(PROPERTY_NOTIFY or PROPERTY_INDICATE)
+                                    && notificationSetupMode == NotificationSetupMode.COMPAT
                         )
                     )
 
@@ -164,10 +163,6 @@ internal object Presenter {
         return rxBleConnection
             .discoverServices() // when connected discover services
             .flatMap { services -> services.getCharacteristic(characteristicUuid) }
-    }
-
-    private fun hasProperty(characteristic: BluetoothGattCharacteristic, property: Int): Boolean {
-        return characteristic.properties and property > 0
     }
 
     /**

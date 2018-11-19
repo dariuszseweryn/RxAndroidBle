@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.SwitchCompat
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -15,11 +14,10 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState
 import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
+import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
@@ -105,12 +103,11 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-        Snackbar.make(findViewById<View>(android.R.id.content), "Connection error: $throwable", Snackbar.LENGTH_SHORT)
-            .show()
+        showSnackbarShort(R.id.content, "Connection error: $throwable")
     }
 
     private fun onConnectionReceived() {
-        Snackbar.make(findViewById<View>(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.content, "Connection received")
     }
 
     private fun onConnectionStateChange(newState: RxBleConnection.RxBleConnectionState) {
@@ -119,7 +116,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onMtuReceived(mtu: Int) {
-        Snackbar.make(findViewById<View>(android.R.id.content), "MTU received: $mtu", Snackbar.LENGTH_SHORT)
+        Snackbar.make(findViewById(android.R.id.content), "MTU received: $mtu", Snackbar.LENGTH_SHORT)
             .show()
     }
 

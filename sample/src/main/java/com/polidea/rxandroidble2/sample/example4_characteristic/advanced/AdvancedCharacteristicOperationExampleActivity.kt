@@ -14,7 +14,7 @@ import butterknife.ButterKnife
 import com.jakewharton.rxbinding2.view.RxView
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.bytesToHex
+import com.polidea.rxandroidble2.sample.util.toHex
 import com.polidea.rxandroidble2.sample.util.hexToBytes
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
@@ -170,15 +170,15 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     val updateReadValue = presenterEvent.result
                     val stringValue = String(updateReadValue)
                     readOutputView!!.text = stringValue
-                    val hexValueText = updateReadValue.bytesToHex()
+                    val hexValueText = updateReadValue.toHex()
                     readHexOutputView!!.text = hexValueText
                     writeInput!!.text = hexValueText
                 }
                 Type.WRITE -> showNotification("Write success")
-                Type.NOTIFY -> showNotification("Notification: " + presenterEvent.result.bytesToHex())
-                Type.INDICATE -> showNotification("Indication: " + presenterEvent.result.bytesToHex())
+                Type.NOTIFY -> showNotification("Notification: " + presenterEvent.result.toHex())
+                Type.INDICATE -> showNotification("Indication: " + presenterEvent.result.toHex())
                 else // added because Checkstyle is complaining
-                -> showNotification("Indication: " + presenterEvent.result.bytesToHex())
+                -> showNotification("Indication: " + presenterEvent.result.toHex())
             }
         }
         if (presenterEvent is ErrorEvent) {

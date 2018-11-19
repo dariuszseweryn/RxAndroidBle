@@ -4,9 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import butterknife.BindView
@@ -15,12 +13,12 @@ import butterknife.OnClick
 import com.jakewharton.rx.ReplayingShare
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.RxBleDeviceServices
-import com.polidea.rxandroidble2.sample.DeviceActivity
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.bytesToHex
+import com.polidea.rxandroidble2.sample.util.hasProperty
 import com.polidea.rxandroidble2.sample.util.hexToBytes
+import com.polidea.rxandroidble2.sample.util.showSnackbarShort
+import com.polidea.rxandroidble2.sample.util.toHex
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
@@ -34,73 +32,79 @@ private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 private const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
 
 internal fun Context.newCharacteristicOperationExampleActivity(macAddress: String, uuid: UUID) =
-        Intent(this, CharacteristicOperationExampleActivity::class.java).apply {
-            putExtra(EXTRA_MAC_ADDRESS, macAddress)
-            putExtra(EXTRA_CHARACTERISTIC_UUID, uuid)
-        }
+    Intent(this, CharacteristicOperationExampleActivity::class.java).apply {
+        putExtra(EXTRA_MAC_ADDRESS, macAddress)
+        putExtra(EXTRA_CHARACTERISTIC_UUID, uuid)
+    }
 
 class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
+
     @BindView(R.id.connect)
-    internal var connectButton: Button? = null
+    lateinit var connectButton: Button
+
     @BindView(R.id.read_output)
-    internal var readOutputView: TextView? = null
+    lateinit var readOutputView: TextView
+
     @BindView(R.id.read_hex_output)
-    internal var readHexOutputView: TextView? = null
+    lateinit var readHexOutputView: TextView
+
     @BindView(R.id.write_input)
-    internal var writeInput: TextView? = null
+    lateinit var writeInput: TextView
+
     @BindView(R.id.read)
-    internal var readButton: Button? = null
+    lateinit var readButton: Button
+
     @BindView(R.id.write)
-    internal var writeButton: Button? = null
+    lateinit var writeButton: Button
+
     @BindView(R.id.notify)
-    internal var notifyButton: Button? = null
-    private var characteristicUuid: UUID? = null
+    lateinit var notifyButton: Button
+
+    private lateinit var characteristicUuid: UUID
+
     private val disconnectTriggerSubject = PublishSubject.create<Boolean>()
-    private var connectionObservable: Observable<RxBleConnection>? = null
-    private var bleDevice: RxBleDevice? = null
+
+    private lateinit var connectionObservable: Observable<RxBleConnection>
+
+    private lateinit var bleDevice: RxBleDevice
+
     private val compositeDisposable = CompositeDisposable()
 
     private val isConnected: Boolean
-        get() = bleDevice!!.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
+        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
 
     private val inputBytes: ByteArray
-        get() = writeInput!!.text.toString().hexToBytes()
+        get() = writeInput.text.toString().hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example4)
         ButterKnife.bind(this)
+
         val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
         bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
         connectionObservable = prepareConnectionObservable()
-
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
     }
 
-    private fun prepareConnectionObservable(): Observable<RxBleConnection> {
-        return bleDevice!!
+    private fun prepareConnectionObservable(): Observable<RxBleConnection> =
+        bleDevice
             .establishConnection(false)
             .takeUntil(disconnectTriggerSubject)
             .compose(bindUntilEvent(PAUSE))
             .compose(ReplayingShare.instance())
-    }
 
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
-
         if (isConnected) {
             triggerDisconnect()
         } else {
-            val connectionDisposable = connectionObservable!!
-                .flatMapSingle<RxBleDeviceServices> { it.discoverServices() }
-                .flatMapSingle<BluetoothGattCharacteristic> { rxBleDeviceServices ->
-                    rxBleDeviceServices.getCharacteristic(
-                        characteristicUuid!!
-                    )
-                }
+            connectionObservable
+                .flatMapSingle { it.discoverServices() }
+                .flatMapSingle { rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { disposable -> connectButton!!.setText(R.string.connecting) }
+                .doOnSubscribe { disposable -> connectButton.setText(R.string.connecting) }
                 .subscribe(
                     { characteristic ->
                         updateUI(characteristic)
@@ -109,66 +113,53 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     { onConnectionFailure(it) },
                     { onConnectionFinished() }
                 )
-
-            compositeDisposable.add(connectionDisposable)
+                .also { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.read)
     fun onReadClick() {
-
         if (isConnected) {
-            val disposable = connectionObservable!!
+            connectionObservable
                 .firstOrError()
-                .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid!!) }
+                .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ bytes ->
-                    readOutputView!!.text = String(bytes)
-                    readHexOutputView!!.text = bytes.bytesToHex()
-                    writeInput!!.text = bytes.bytesToHex()
+                    readOutputView.text = String(bytes)
+                    readHexOutputView.text = bytes.toHex()
+                    writeInput.text = bytes.toHex()
                 }, { onReadFailure(it) })
-
-            compositeDisposable.add(disposable)
+                .also { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.write)
     fun onWriteClick() {
-
         if (isConnected) {
-            val disposable = connectionObservable!!
+            connectionObservable
                 .firstOrError()
-                .flatMap { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid!!, inputBytes) }
+                .flatMap { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, inputBytes) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { onWriteSuccess() },
-                    { onWriteFailure(it) }
-                )
-
-            compositeDisposable.add(disposable)
+                .subscribe({ onWriteSuccess() }, { onWriteFailure(it) })
+                .also { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.notify)
     fun onNotifyClick() {
-
         if (isConnected) {
-            val disposable = connectionObservable!!
-                .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid!!) }
-                .doOnNext { notificationObservable -> runOnUiThread { this.notificationHasBeenSetUp() } }
-                .flatMap { notificationObservable -> notificationObservable }
+            connectionObservable
+                .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid) }
+                .doOnNext { runOnUiThread { notificationHasBeenSetUp() } }
+                .flatMap { it }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { this.onNotificationReceived(it) },
-                    { this.onNotificationSetupFailure(it) })
-
-            compositeDisposable.add(disposable)
+                .subscribe({ onNotificationReceived(it) }, { onNotificationSetupFailure(it) })
+                .also { compositeDisposable.add(it) }
         }
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Connection error: $throwable", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Connection error: $throwable")
         updateUI(null)
     }
 
@@ -177,34 +168,27 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onReadFailure(throwable: Throwable) {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Read error: $throwable", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Read error: $throwable")
     }
 
     private fun onWriteSuccess() {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Write success", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Write success")
     }
 
     private fun onWriteFailure(throwable: Throwable) {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Write error: $throwable", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Write error: $throwable")
     }
 
     private fun onNotificationReceived(bytes: ByteArray) {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Change: " + bytes.bytesToHex(), Snackbar.LENGTH_SHORT)
-            .show()
+        showSnackbarShort(R.id.main, "Change: ${bytes.toHex()}")
     }
 
     private fun onNotificationSetupFailure(throwable: Throwable) {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Notifications error: $throwable", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Notifications error: $throwable")
     }
 
     private fun notificationHasBeenSetUp() {
-
-        Snackbar.make(findViewById<View>(R.id.main), "Notifications has been set up", Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, "Notifications has been set up")
     }
 
     private fun triggerDisconnect() {
@@ -217,14 +201,10 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
      * @param characteristic a nullable [BluetoothGattCharacteristic]. If it is null then UI is assuming a disconnected state.
      */
     private fun updateUI(characteristic: BluetoothGattCharacteristic?) {
-        connectButton!!.setText(if (characteristic != null) R.string.disconnect else R.string.connect)
-        readButton!!.isEnabled = hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_READ)
-        writeButton!!.isEnabled = hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)
-        notifyButton!!.isEnabled = hasProperty(characteristic, BluetoothGattCharacteristic.PROPERTY_NOTIFY)
-    }
-
-    private fun hasProperty(characteristic: BluetoothGattCharacteristic?, property: Int): Boolean {
-        return characteristic != null && characteristic.properties and property > 0
+        connectButton.setText(if (characteristic != null) R.string.disconnect else R.string.connect)
+        readButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)
+        writeButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)
+        notifyButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_NOTIFY)
     }
 
     override fun onPause() {

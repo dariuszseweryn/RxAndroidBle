@@ -7,19 +7,19 @@ class HexStringTest {
 
     @Test
     fun `bytes to hex`() {
-        val hex = byteArrayOf(0, 0, 0).bytesToHex()
+        val hex = byteArrayOf(0, 0, 0).toHex()
         assertThat(hex).isEqualTo("000000")
 
-        val hex1 = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()).bytesToHex()
+        val hex1 = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()).toHex()
         assertThat(hex1).isEqualTo("FFFFFFFF")
 
-        val hex2 = byteArrayOf(0xF0.toByte(), 0x01.toByte(), 0x10.toByte(), 0x0F.toByte()).bytesToHex()
+        val hex2 = byteArrayOf(0xF0.toByte(), 0x01.toByte(), 0x10.toByte(), 0x0F.toByte()).toHex()
         assertThat(hex2).isEqualTo("F001100F")
 
-        val hex3 = byteArrayOf(0xAC.toByte(), 0x83.toByte(), 0x1D.toByte(), 0xB5.toByte()).bytesToHex()
+        val hex3 = byteArrayOf(0xAC.toByte(), 0x83.toByte(), 0x1D.toByte(), 0xB5.toByte()).toHex()
         assertThat(hex3).isEqualTo("AC831DB5")
 
-        val hex4 = byteArrayOf(0x01.toByte(), 0x00.toByte(), 0xB4.toByte(), 0x10.toByte()).bytesToHex()
+        val hex4 = byteArrayOf(0x01.toByte(), 0x00.toByte(), 0xB4.toByte(), 0x10.toByte()).toHex()
         assertThat(hex4).isEqualTo("0100B410")
     }
 

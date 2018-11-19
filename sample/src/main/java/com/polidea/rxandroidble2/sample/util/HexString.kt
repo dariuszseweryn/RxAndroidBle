@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.sample.util
 
 private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
 
-internal fun ByteArray.bytesToHex(): String =
+internal fun ByteArray.toHex(): String =
     CharArray(size * 2).let { hexChars ->
         for (j in indices) {
             val v = this[j].toInt() and 0xFF
