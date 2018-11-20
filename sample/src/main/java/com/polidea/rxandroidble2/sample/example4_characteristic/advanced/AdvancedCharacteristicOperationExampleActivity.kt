@@ -112,7 +112,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
         val sharedNotifyButtonClicks = notifyButton.activatedClicksObservable().share()
         val sharedIndicateButtonClicks = indicateButton.activatedClicksObservable().share()
 
-        presenterEventObservable = Presenter.prepareActivityLogic(
+        presenterEventObservable = prepareActivityLogic(
             bleDevice,
             characteristicUuid,
             sharedConnectButtonClicks.compose(connectButton.onSubscribeSetText(R.string.connect)),
