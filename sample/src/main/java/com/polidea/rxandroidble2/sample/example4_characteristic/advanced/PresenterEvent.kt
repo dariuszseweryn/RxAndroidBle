@@ -7,6 +7,7 @@ internal sealed class PresenterEvent
 
 internal data class InfoEvent(val infoText: String) : PresenterEvent()
 
+// Can't be a data class because of the ByteArray
 internal class ResultEvent(val result: ByteArray, val type: Type) : PresenterEvent()
 
 internal data class ErrorEvent(val error: Throwable, val type: Type) : PresenterEvent()
