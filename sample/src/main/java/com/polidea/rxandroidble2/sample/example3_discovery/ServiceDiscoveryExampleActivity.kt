@@ -31,10 +31,10 @@ internal fun Context.newServiceDiscoveryExampleActivity(macAddress: String) =
 class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
 
     @BindView(R.id.connect)
-    lateinit var connectButton: Button
+    internal lateinit var connectButton: Button
 
     @BindView(R.id.scan_results)
-    lateinit var recyclerView: RecyclerView
+    internal lateinit var recyclerView: RecyclerView
 
     private var resultsAdapter = DiscoveryResultsAdapter()
 

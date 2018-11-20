@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.annotation.StringRes
-import android.support.design.widget.Snackbar
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -14,14 +13,17 @@ import butterknife.ButterKnife
 import com.jakewharton.rxbinding2.view.RxView
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
-import com.polidea.rxandroidble2.sample.util.toHex
 import com.polidea.rxandroidble2.sample.util.hexToBytes
+import com.polidea.rxandroidble2.sample.util.showSnackbarShort
+import com.polidea.rxandroidble2.sample.util.toHex
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.util.UUID
+
+private val TAG = AdvancedCharacteristicOperationExampleActivity::class.java.simpleName
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 
@@ -56,33 +58,44 @@ internal fun Context.newAdvancedCharacteristicOperationExampleActivity(macAddres
 class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     @BindView(R.id.connect)
-    internal var connectButton: Button? = null
+    internal lateinit var connectButton: Button
+
     @BindView(R.id.read_output)
-    internal var readOutputView: TextView? = null
+    internal lateinit var readOutputView: TextView
+
     @BindView(R.id.read_hex_output)
-    internal var readHexOutputView: TextView? = null
+    internal lateinit var readHexOutputView: TextView
+
     @BindView(R.id.write_input)
-    internal var writeInput: TextView? = null
+    internal lateinit var writeInput: TextView
+
     @BindView(R.id.compat_only_warning)
-    internal var compatOnlyWarningTextView: TextView? = null
+    internal lateinit var compatOnlyWarningTextView: TextView
+
     @BindView(R.id.read)
-    internal var readButton: Button? = null
+    internal lateinit var readButton: Button
+
     @BindView(R.id.write)
-    internal var writeButton: Button? = null
+    internal lateinit var writeButton: Button
+
     @BindView(R.id.notify)
-    internal var notifyButton: Button? = null
+    internal lateinit var notifyButton: Button
+
     @BindView(R.id.indicate)
-    internal var indicateButton: Button? = null
+    internal lateinit var indicateButton: Button
+
     private var activityFlowDisposable: Disposable? = null
-    private var presenterEventObservable: Observable<PresenterEvent>? = null
+
+    private lateinit var presenterEventObservable: Observable<PresenterEvent>
 
     private val inputBytes: ByteArray
-        get() = writeInput!!.text.toString().hexToBytes()
+        get() = writeInput.text.toString().hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example4_advanced)
         ButterKnife.bind(this)
+
         val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         val characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
         val bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
@@ -94,148 +107,129 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
          * is established and disconnecting after the connection is being made we need to share the same activatedClicksObservable.
          * It would be perfectly fine to use three different buttons and pass those observables to the Presenter.
          */
-        val sharedConnectButtonClicks = activatedClicksObservable(connectButton).share()
+        val sharedConnectButtonClicks = connectButton.activatedClicksObservable().share()
         // same goes for setting up notifications and indications below
-        val sharedNotifyButtonClicks = activatedClicksObservable(notifyButton).share()
-        val sharedIndicateButtonClicks = activatedClicksObservable(indicateButton).share()
+        val sharedNotifyButtonClicks = notifyButton.activatedClicksObservable().share()
+        val sharedIndicateButtonClicks = indicateButton.activatedClicksObservable().share()
 
         presenterEventObservable = Presenter.prepareActivityLogic(
             bleDevice,
             characteristicUuid,
-            sharedConnectButtonClicks.compose(onSubscribeSetText(connectButton, R.string.connect)),
-            sharedConnectButtonClicks.compose(onSubscribeSetText(connectButton, R.string.connecting)),
-            sharedConnectButtonClicks.compose(onSubscribeSetText(connectButton, R.string.disconnect)),
-            activatedClicksObservable(readButton),
+            sharedConnectButtonClicks.compose(connectButton.onSubscribeSetText(R.string.connect)),
+            sharedConnectButtonClicks.compose(connectButton.onSubscribeSetText(R.string.connecting)),
+            sharedConnectButtonClicks.compose(connectButton.onSubscribeSetText(R.string.disconnect)),
+            readButton.activatedClicksObservable(),
             /*
                  * Write button clicks are then mapped to byte[] from the editText. If there is a problem parsing input then a notification
                  * is shown and we wait for another click to write to try to parse again.
                  */
-            activatedClicksObservable(writeButton).map { aBoolean -> inputBytes }
+            writeButton.activatedClicksObservable().map { inputBytes }
                 .doOnError { throwable -> showNotification("Could not parse input: $throwable") }
-                .retryWhen { errorNotificationHandler -> errorNotificationHandler },
-            sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.setup_notification)),
-            sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.setting_notification)),
-            sharedNotifyButtonClicks.compose(onSubscribeSetText(notifyButton, R.string.teardown_notification)),
-            sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.setup_indication)),
-            sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.setting_indication)),
-            sharedIndicateButtonClicks.compose(onSubscribeSetText(indicateButton, R.string.teardown_indication))
+                .retryWhen { it },
+            sharedNotifyButtonClicks.compose(notifyButton.onSubscribeSetText(R.string.setup_notification)),
+            sharedNotifyButtonClicks.compose(notifyButton.onSubscribeSetText(R.string.setting_notification)),
+            sharedNotifyButtonClicks.compose(notifyButton.onSubscribeSetText(R.string.teardown_notification)),
+            sharedIndicateButtonClicks.compose(indicateButton.onSubscribeSetText(R.string.setup_indication)),
+            sharedIndicateButtonClicks.compose(indicateButton.onSubscribeSetText(R.string.setting_indication)),
+            sharedIndicateButtonClicks.compose(indicateButton.onSubscribeSetText(R.string.teardown_indication))
         )
     }
 
     override fun onResume() {
         super.onResume()
-        activityFlowDisposable = presenterEventObservable!!
+        activityFlowDisposable = presenterEventObservable
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { this.handleEvent(it) }
+            .subscribe { it.handleEvent() }
     }
 
     override fun onPause() {
         super.onPause()
-        activityFlowDisposable!!.dispose()
+        activityFlowDisposable?.dispose()
         activityFlowDisposable = null
     }
 
     private fun showNotification(text: String) {
-        Snackbar.make(findViewById(R.id.main), text, Snackbar.LENGTH_SHORT).show()
+        showSnackbarShort(R.id.main, text)
     }
 
-    private fun handleEvent(presenterEvent: PresenterEvent) {
-        Log.i(TAG, presenterEvent.toString())
-        if (presenterEvent is InfoEvent) {
-            val infoText = presenterEvent.infoText
-            showNotification(infoText)
-        }
-        if (presenterEvent is CompatibilityModeEvent) {
-            val isCompatibility = presenterEvent.show
-            compatOnlyWarningTextView!!.visibility = if (isCompatibility) View.VISIBLE else View.INVISIBLE
-            if (isCompatibility) {
-                /*
-                All characteristics that have PROPERTY_NOTIFY or PROPERTY_INDICATE should contain
-                a Client Characteristic Config Descriptor. The RxAndroidBle supports compatibility mode
-                for setting the notifications / indications because it is not possible to fix the firmware
-                in some third party peripherals. If you have possibility - inform the developer
-                of the firmware that it is an error so they can fix.
-                */
-                Log.e(
-                    TAG, "THIS PERIPHERAL CHARACTERISTIC HAS PROPERTY_NOTIFY OR PROPERTY_INDICATE "
-                            + "BUT DOES NOT HAVE CLIENT CHARACTERISTIC CONFIG DESCRIPTOR WHICH VIOLATES "
-                            + "BLUETOOTH SPECIFICATION - CONTACT THE FIRMWARE DEVELOPER TO FIX IF POSSIBLE"
-                )
-            }
-        }
-        if (presenterEvent is ResultEvent) {
-            when (presenterEvent.type) {
-
-                Type.READ -> {
-                    val updateReadValue = presenterEvent.result
-                    val stringValue = String(updateReadValue)
-                    readOutputView!!.text = stringValue
-                    val hexValueText = updateReadValue.toHex()
-                    readHexOutputView!!.text = hexValueText
-                    writeInput!!.text = hexValueText
+    private fun PresenterEvent.handleEvent() {
+        Log.i(TAG, toString())
+        when (this) {
+            is InfoEvent -> showNotification(infoText)
+            is CompatibilityModeEvent -> {
+                val isCompatibility = show
+                compatOnlyWarningTextView.visibility = if (isCompatibility) View.VISIBLE else View.INVISIBLE
+                if (isCompatibility) {
+                    /*
+                    All characteristics that have PROPERTY_NOTIFY or PROPERTY_INDICATE should contain
+                    a Client Characteristic Config Descriptor. The RxAndroidBle supports compatibility mode
+                    for setting the notifications / indications because it is not possible to fix the firmware
+                    in some third party peripherals. If you have possibility - inform the developer
+                    of the firmware that it is an error so they can fix.
+                    */
+                    Log.e(
+                        TAG, "THIS PERIPHERAL CHARACTERISTIC HAS PROPERTY_NOTIFY OR PROPERTY_INDICATE "
+                                + "BUT DOES NOT HAVE CLIENT CHARACTERISTIC CONFIG DESCRIPTOR WHICH VIOLATES "
+                                + "BLUETOOTH SPECIFICATION - CONTACT THE FIRMWARE DEVELOPER TO FIX IF POSSIBLE"
+                    )
                 }
-                Type.WRITE -> showNotification("Write success")
-                Type.NOTIFY -> showNotification("Notification: " + presenterEvent.result.toHex())
-                Type.INDICATE -> showNotification("Indication: " + presenterEvent.result.toHex())
-                else // added because Checkstyle is complaining
-                -> showNotification("Indication: " + presenterEvent.result.toHex())
+            }
+            is ResultEvent -> {
+                when (type) {
+                    Type.READ -> {
+                        readOutputView.text = String(result)
+                        readHexOutputView.text = result.toHex()
+                        writeInput.text = result.toHex()
+                    }
+                    Type.WRITE -> showNotification("Write success")
+                    Type.NOTIFY -> showNotification("Notification: ${result.toHex()}")
+                    Type.INDICATE -> showNotification("Indication: ${result.toHex()}")
+                }
+            }
+            is ErrorEvent -> {
+                @Suppress("ReplaceSingleLineLet")
+                when (type) {
+                    Type.READ -> "Read error: $error"
+                    Type.WRITE -> "Write error: $error"
+                    Type.NOTIFY -> "Notifications error: $error"
+                    Type.INDICATE -> "Indications error: $error"
+                }.let { showNotification(it) }
             }
         }
-        if (presenterEvent is ErrorEvent) {
-            val throwable = presenterEvent.error
-            val notificationText: String
-            when (presenterEvent.type) {
-
-                Type.READ -> notificationText = "Read error: $throwable"
-                Type.WRITE -> notificationText = "Write error: $throwable"
-                Type.NOTIFY -> notificationText = "Notifications error: $throwable"
-                Type.INDICATE -> notificationText = "Indications error: $throwable"
-                else // added because Checkstyle is complaining
-                -> notificationText = "Indications error: $throwable"
-            }
-            showNotification(notificationText)
-        }
-    }
-
-    companion object {
-
-        private val TAG = AdvancedCharacteristicOperationExampleActivity::class.java.simpleName
-        val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
-
-        /**
-         * Function that returns an observable that emits [Boolean.TRUE] every time the button is being clicked. It enables the button
-         * whenever the returned Observable is being subscribed and disables it when un-subscribed. Takes care of making interactions with
-         * the button on the proper thread.
-         *
-         * @param button the button to wrap into an Observable
-         * @return the observable
-         */
-        private fun activatedClicksObservable(button: Button?): Observable<Boolean> {
-            return Observable.using<Boolean, Button>(
-                {
-                    button!!.isEnabled = true
-                    button
-                },
-                { aView -> RxView.clicks(aView).map { aVoid -> java.lang.Boolean.TRUE } },
-                { aView -> aView.isEnabled = false }
-            )
-                .subscribeOn(AndroidSchedulers.mainThread()) // RxView expects to be subscribed on the Main Thread
-                .unsubscribeOn(AndroidSchedulers.mainThread())
-        }
-
-        /**
-         * Function that returns a [io.reactivex.ObservableTransformer] which will on subscribe
-         * set a text on a button using a proper thread
-         *
-         * @param button the button to set text on
-         * @param textResId the text resource id
-         * @return the transformer
-         */
-        private fun onSubscribeSetText(button: Button?, @StringRes textResId: Int): ObservableTransformer<Boolean, Boolean> =
-            ObservableTransformer { booleanObservable ->
-                booleanObservable
-                    .doOnSubscribe { button!!.setText(textResId) }
-                    .subscribeOn(AndroidSchedulers.mainThread())
-            }
     }
 }
+
+/**
+ * Function that returns an observable that emits [Boolean.TRUE] every time the button is being clicked. It enables the button
+ * whenever the returned Observable is being subscribed and disables it when un-subscribed. Takes care of making interactions with
+ * the button on the proper thread.
+ *
+ * @param button the button to wrap into an Observable
+ * @return the observable
+ */
+private fun Button.activatedClicksObservable(): Observable<Boolean> =
+    Observable.using<Boolean, Button>(
+        {
+            isEnabled = true
+            this
+        },
+        { RxView.clicks(it).map { true } },
+        { it.isEnabled = false }
+    )
+        .subscribeOn(AndroidSchedulers.mainThread()) // RxView expects to be subscribed on the Main Thread
+        .unsubscribeOn(AndroidSchedulers.mainThread())
+
+/**
+ * Function that returns a [io.reactivex.ObservableTransformer] which will on subscribe
+ * set a text on a button using a proper thread
+ *
+ * @param button the button to set text on
+ * @param textResId the text resource id
+ * @return the transformer
+ */
+private fun Button.onSubscribeSetText(@StringRes textResId: Int): ObservableTransformer<Boolean, Boolean> =
+    ObservableTransformer {
+        it
+            .doOnSubscribe { setText(textResId) }
+            .subscribeOn(AndroidSchedulers.mainThread())
+    }

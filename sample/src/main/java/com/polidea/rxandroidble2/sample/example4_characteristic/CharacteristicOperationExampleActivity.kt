@@ -40,25 +40,25 @@ internal fun Context.newCharacteristicOperationExampleActivity(macAddress: Strin
 class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     @BindView(R.id.connect)
-    lateinit var connectButton: Button
+    internal lateinit var connectButton: Button
 
     @BindView(R.id.read_output)
-    lateinit var readOutputView: TextView
+    internal lateinit var readOutputView: TextView
 
     @BindView(R.id.read_hex_output)
-    lateinit var readHexOutputView: TextView
+    internal lateinit var readHexOutputView: TextView
 
     @BindView(R.id.write_input)
-    lateinit var writeInput: TextView
+    internal lateinit var writeInput: TextView
 
     @BindView(R.id.read)
-    lateinit var readButton: Button
+    internal lateinit var readButton: Button
 
     @BindView(R.id.write)
-    lateinit var writeButton: Button
+    internal lateinit var writeButton: Button
 
     @BindView(R.id.notify)
-    lateinit var notifyButton: Button
+    internal lateinit var notifyButton: Button
 
     private lateinit var characteristicUuid: UUID
 

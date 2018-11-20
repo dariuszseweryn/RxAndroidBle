@@ -9,9 +9,9 @@ internal data class InfoEvent(val infoText: String) : PresenterEvent()
 
 internal class ResultEvent(val result: ByteArray, val type: Type) : PresenterEvent()
 
-internal class ErrorEvent(val error: Throwable, val type: Type) : PresenterEvent()
+internal data class ErrorEvent(val error: Throwable, val type: Type) : PresenterEvent()
 
-internal class CompatibilityModeEvent(val show: Boolean) : PresenterEvent()
+internal data class CompatibilityModeEvent(val show: Boolean) : PresenterEvent()
 
 internal enum class Type {
     READ, WRITE, NOTIFY, INDICATE
