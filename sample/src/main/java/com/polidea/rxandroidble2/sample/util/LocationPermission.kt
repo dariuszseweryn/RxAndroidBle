@@ -10,11 +10,11 @@ import android.support.v4.content.ContextCompat
 
 private const val REQUEST_PERMISSION_COARSE_LOCATION = 9358
 
-fun Context.checkLocationPermissionGranted(): Boolean =
+internal fun Context.checkLocationPermissionGranted(): Boolean =
     ContextCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
-fun Activity.requestLocationPermission() {
+internal fun Activity.requestLocationPermission() {
     ActivityCompat.requestPermissions(
         this,
         arrayOf(permission.ACCESS_COARSE_LOCATION),
@@ -22,7 +22,7 @@ fun Activity.requestLocationPermission() {
     )
 }
 
-fun isRequestLocationPermissionGranted(
+internal fun isRequestLocationPermissionGranted(
     requestCode: Int,
     permissions: Array<String>,
     grantResults: IntArray
