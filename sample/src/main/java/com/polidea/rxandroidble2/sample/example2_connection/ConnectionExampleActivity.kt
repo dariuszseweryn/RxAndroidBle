@@ -17,6 +17,7 @@ import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
+import com.polidea.rxandroidble2.sample.util.isConnected
 import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
@@ -55,9 +56,6 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
 
     private val compositeDisposable = CompositeDisposable()
 
-    private val isConnected: Boolean
-        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example2)
@@ -72,12 +70,12 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
             .compose(bindUntilEvent(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { onConnectionStateChange(it) }
-            .also { compositeDisposable.add(it) }
+            .let { compositeDisposable.add(it) }
     }
 
     @OnClick(R.id.connect_toggle)
     fun onConnectToggleClick() {
-        if (isConnected) {
+        if (bleDevice.isConnected) {
             triggerDisconnect()
         } else {
             connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked)
@@ -130,8 +128,8 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun updateUI() {
-        connectButton.setText(if (isConnected) R.string.disconnect else R.string.connect)
-        autoConnectToggleSwitch.isEnabled = !isConnected
+        connectButton.setText(if (bleDevice.isConnected) R.string.disconnect else R.string.connect)
+        autoConnectToggleSwitch.isEnabled = !bleDevice.isConnected
     }
 
     override fun onPause() {

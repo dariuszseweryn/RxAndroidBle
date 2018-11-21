@@ -11,11 +11,11 @@ import android.widget.Button
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
-import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.example4_characteristic.newCharacteristicOperationExampleActivity
+import com.polidea.rxandroidble2.sample.util.isConnected
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -43,9 +43,6 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     private lateinit var macAddress: String
 
     private var connectionDisposable: Disposable? = null
-
-    private val isConnected: Boolean
-        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,7 +100,7 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     }
 
     private fun updateUI() {
-        connectButton.isEnabled = !isConnected
+        connectButton.isEnabled = !bleDevice.isConnected
     }
 
     override fun onPause() {

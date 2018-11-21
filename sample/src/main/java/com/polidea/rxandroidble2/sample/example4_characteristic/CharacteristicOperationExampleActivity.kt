@@ -17,6 +17,7 @@ import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.util.hasProperty
 import com.polidea.rxandroidble2.sample.util.hexToBytes
+import com.polidea.rxandroidble2.sample.util.isConnected
 import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.polidea.rxandroidble2.sample.util.toHex
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
@@ -70,9 +71,6 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     private val compositeDisposable = CompositeDisposable()
 
-    private val isConnected: Boolean
-        get() = bleDevice.connectionState == RxBleConnection.RxBleConnectionState.CONNECTED
-
     private val inputBytes: ByteArray
         get() = writeInput.text.toString().hexToBytes()
 
@@ -97,7 +95,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
-        if (isConnected) {
+        if (bleDevice.isConnected) {
             triggerDisconnect()
         } else {
             connectionObservable
@@ -113,13 +111,13 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     { onConnectionFailure(it) },
                     { onConnectionFinished() }
                 )
-                .also { compositeDisposable.add(it) }
+                .let { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.read)
     fun onReadClick() {
-        if (isConnected) {
+        if (bleDevice.isConnected) {
             connectionObservable
                 .firstOrError()
                 .flatMap { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid) }
@@ -129,32 +127,32 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     readHexOutputView.text = bytes.toHex()
                     writeInput.text = bytes.toHex()
                 }, { onReadFailure(it) })
-                .also { compositeDisposable.add(it) }
+                .let { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.write)
     fun onWriteClick() {
-        if (isConnected) {
+        if (bleDevice.isConnected) {
             connectionObservable
                 .firstOrError()
                 .flatMap { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, inputBytes) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ onWriteSuccess() }, { onWriteFailure(it) })
-                .also { compositeDisposable.add(it) }
+                .let { compositeDisposable.add(it) }
         }
     }
 
     @OnClick(R.id.notify)
     fun onNotifyClick() {
-        if (isConnected) {
+        if (bleDevice.isConnected) {
             connectionObservable
                 .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid) }
                 .doOnNext { runOnUiThread { notificationHasBeenSetUp() } }
                 .flatMap { it }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ onNotificationReceived(it) }, { onNotificationSetupFailure(it) })
-                .also { compositeDisposable.add(it) }
+                .let { compositeDisposable.add(it) }
         }
     }
 
