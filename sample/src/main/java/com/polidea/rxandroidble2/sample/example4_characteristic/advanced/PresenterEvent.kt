@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced
 
+import com.polidea.rxandroidble2.sample.util.toHex
+
 /**
  * A dummy sealed class hierarchy to indicate what events may be emitted by the [Presenter].
  */
@@ -8,7 +10,10 @@ internal sealed class PresenterEvent
 internal data class InfoEvent(val infoText: String) : PresenterEvent()
 
 // Can't be a data class because of the ByteArray
-internal class ResultEvent(val result: ByteArray, val type: Type) : PresenterEvent()
+internal class ResultEvent(val result: ByteArray, val type: Type) : PresenterEvent() {
+
+    override fun toString(): String = "ResultEvent(result=${result.toHex()}, type=$type)"
+}
 
 internal data class ErrorEvent(val error: Throwable, val type: Type) : PresenterEvent()
 
