@@ -102,9 +102,4 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     private fun updateUI() {
         connectButton.isEnabled = !bleDevice.isConnected
     }
-
-    override fun onPause() {
-        super.onPause()
-        connectionDisposable?.dispose()
-    }
 }

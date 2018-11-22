@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example2_connection
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
@@ -23,7 +24,6 @@ import com.trello.rxlifecycle2.android.ActivityEvent.DESTROY
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
@@ -54,8 +54,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
 
     private var connectionDisposable: Disposable? = null
 
-    private val compositeDisposable = CompositeDisposable()
-
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example2)
@@ -70,7 +69,6 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
             .compose(bindUntilEvent(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { onConnectionStateChange(it) }
-            .let { compositeDisposable.add(it) }
     }
 
     @OnClick(R.id.connect_toggle)
@@ -86,18 +84,17 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
         }
     }
 
+    @SuppressLint("CheckResult")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     fun onSetMtu() {
-        val disposable = bleDevice.establishConnection(false)
+        bleDevice.establishConnection(false)
             .flatMapSingle { rxBleConnection -> rxBleConnection.requestMtu(72) }
             .take(1) // Disconnect automatically after discovery
             .compose(bindUntilEvent(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally { updateUI() }
             .subscribe({ onMtuReceived(it) }, { onConnectionFailure(it) })
-
-        compositeDisposable.add(disposable)
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
@@ -130,11 +127,5 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     private fun updateUI() {
         connectButton.setText(if (bleDevice.isConnected) R.string.disconnect else R.string.connect)
         autoConnectToggleSwitch.isEnabled = !bleDevice.isConnected
-    }
-
-    override fun onPause() {
-        super.onPause()
-        triggerDisconnect()
-        compositeDisposable.clear()
     }
 }

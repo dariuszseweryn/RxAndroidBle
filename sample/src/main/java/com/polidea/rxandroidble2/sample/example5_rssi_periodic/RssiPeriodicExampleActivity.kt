@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example5_rssi_periodic
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -44,8 +45,7 @@ class RssiPeriodicExampleActivity : RxAppCompatActivity() {
 
     private var connectionDisposable: Disposable? = null
 
-    private var stateDisposable: Disposable? = null
-
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example5)
@@ -60,7 +60,6 @@ class RssiPeriodicExampleActivity : RxAppCompatActivity() {
             .compose(bindUntilEvent(DESTROY))
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { onConnectionStateChange(it) }
-            .let { stateDisposable = it }
     }
 
     @OnClick(R.id.connect_toggle)
@@ -105,11 +104,5 @@ class RssiPeriodicExampleActivity : RxAppCompatActivity() {
 
     private fun updateUI() {
         connectButton.setText(if (bleDevice.isConnected) R.string.disconnect else R.string.connect)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        triggerDisconnect()
-        stateDisposable?.dispose()
     }
 }

@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.content.Intent
@@ -24,7 +25,6 @@ import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import java.util.UUID
 
@@ -69,8 +69,6 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     private lateinit var bleDevice: RxBleDevice
 
-    private val compositeDisposable = CompositeDisposable()
-
     private val inputBytes: ByteArray
         get() = writeInput.text.toString().hexToBytes()
 
@@ -93,6 +91,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
             .compose(bindUntilEvent(PAUSE))
             .compose(ReplayingShare.instance())
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
         if (bleDevice.isConnected) {
@@ -111,10 +110,10 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     { onConnectionFailure(it) },
                     { onConnectionFinished() }
                 )
-                .let { compositeDisposable.add(it) }
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.read)
     fun onReadClick() {
         if (bleDevice.isConnected) {
@@ -127,10 +126,10 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                     readHexOutputView.text = bytes.toHex()
                     writeInput.text = bytes.toHex()
                 }, { onReadFailure(it) })
-                .let { compositeDisposable.add(it) }
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.write)
     fun onWriteClick() {
         if (bleDevice.isConnected) {
@@ -139,10 +138,10 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMap { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, inputBytes) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ onWriteSuccess() }, { onWriteFailure(it) })
-                .let { compositeDisposable.add(it) }
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.notify)
     fun onNotifyClick() {
         if (bleDevice.isConnected) {
@@ -152,7 +151,6 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMap { it }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ onNotificationReceived(it) }, { onNotificationSetupFailure(it) })
-                .let { compositeDisposable.add(it) }
         }
     }
 
@@ -203,10 +201,5 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
         readButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)
         writeButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)
         notifyButton.isEnabled = characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_NOTIFY)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        compositeDisposable.clear()
     }
 }
