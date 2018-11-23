@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.widget.SwitchCompat
 import android.widget.Button
 import android.widget.EditText
@@ -111,8 +110,7 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onMtuReceived(mtu: Int) {
-        Snackbar.make(findViewById(android.R.id.content), "MTU received: $mtu", Snackbar.LENGTH_SHORT)
-            .show()
+        showSnackbarShort(R.id.content, "MTU received: $mtu")
     }
 
     private fun dispose() {

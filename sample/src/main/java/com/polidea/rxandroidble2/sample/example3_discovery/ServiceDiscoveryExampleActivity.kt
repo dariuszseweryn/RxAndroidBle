@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2.sample.example3_discovery
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
@@ -16,6 +15,7 @@ import com.polidea.rxandroidble2.sample.R
 import com.polidea.rxandroidble2.sample.SampleApplication
 import com.polidea.rxandroidble2.sample.example4_characteristic.newCharacteristicOperationExampleActivity
 import com.polidea.rxandroidble2.sample.util.isConnected
+import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -77,26 +77,26 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
             adapter = resultsAdapter
         }
         resultsAdapter.onAdapterItemClickListener = View.OnClickListener { view ->
-            val childAdapterPosition = recyclerView.getChildAdapterPosition(view)
-            val itemAtPosition = resultsAdapter.getItem(childAdapterPosition)
-            onAdapterItemClick(itemAtPosition)
+            recyclerView.getChildAdapterPosition(view).let {
+                val itemAtPosition = resultsAdapter.getItem(it)
+                onAdapterItemClick(itemAtPosition)
+            }
         }
     }
 
     private fun onAdapterItemClick(item: DiscoveryResultsAdapter.AdapterItem) {
-        if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
-            startActivity(newCharacteristicOperationExampleActivity(macAddress, item.uuid))
-            // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
+        when (item.type) {
+            DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC -> {
+                startActivity(newCharacteristicOperationExampleActivity(macAddress, item.uuid))
+                // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
 //            startActivity(newAdvancedCharacteristicOperationExampleActivity(macAddress, item.uuid))
-        } else {
-            Snackbar.make(findViewById<View>(android.R.id.content), R.string.not_clickable, Snackbar.LENGTH_SHORT)
-                .show()
+            }
+            else -> showSnackbarShort(R.id.content, R.string.not_clickable)
         }
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-        Snackbar.make(findViewById<View>(android.R.id.content), "Connection error: $throwable", Snackbar.LENGTH_SHORT)
-            .show()
+        showSnackbarShort(R.id.content, "Connection error: $throwable")
     }
 
     private fun updateUI() {

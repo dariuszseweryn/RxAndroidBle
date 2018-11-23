@@ -81,13 +81,11 @@ class ScanActivity : AppCompatActivity() {
             // add custom filters if needed
             .build()
 
-        scanDisposable = rxBleClient.scanBleDevices(scanSettings, scanFilter)
+        rxBleClient.scanBleDevices(scanSettings, scanFilter)
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally { dispose() }
-            .subscribe(
-                { resultsAdapter.addScanResult(it) },
-                { onScanFailure(it) }
-            )
+            .subscribe({ resultsAdapter.addScanResult(it) }, { onScanFailure(it) })
+            .let { scanDisposable = it }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -99,10 +97,8 @@ class ScanActivity : AppCompatActivity() {
 
     public override fun onPause() {
         super.onPause()
-        if (isScanning) {
-            // Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
-            scanDisposable?.dispose()
-        }
+        // Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
+        if (isScanning) scanDisposable?.dispose()
     }
 
     private fun configureResultList() {
@@ -112,16 +108,17 @@ class ScanActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@ScanActivity)
             adapter = resultsAdapter
         }
-        resultsAdapter.onAdapterItemClickListener = View.OnClickListener { view: View ->
-            val childAdapterPosition = recyclerView.getChildAdapterPosition(view)
-            val itemAtPosition = resultsAdapter.itemAtPosition(childAdapterPosition)
-            onAdapterItemClick(itemAtPosition)
+        resultsAdapter.onAdapterItemClickListener = View.OnClickListener { view ->
+            recyclerView.getChildAdapterPosition(view).let {
+                val itemAtPosition = resultsAdapter.itemAtPosition(it)
+                onAdapterItemClick(itemAtPosition)
+            }
         }
     }
 
     private fun onAdapterItemClick(scanResult: ScanResult) {
-        val macAddress = scanResult.bleDevice.macAddress
-        startActivity(newDeviceActivity(macAddress))
+        @Suppress("ReplaceSingleLineLet")
+        scanResult.bleDevice.macAddress.let { startActivity(newDeviceActivity(it)) }
     }
 
     private fun onScanFailure(throwable: Throwable) {

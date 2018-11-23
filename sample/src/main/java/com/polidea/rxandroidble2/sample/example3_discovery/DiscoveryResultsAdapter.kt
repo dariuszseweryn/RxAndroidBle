@@ -15,10 +15,6 @@ import java.util.UUID
 
 internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAdapter.ViewHolder>() {
 
-    private val data = mutableListOf<AdapterItem>()
-
-    var onAdapterItemClickListener: View.OnClickListener? = null
-
     class AdapterItem(val type: Int, val description: String, val uuid: UUID) {
         companion object {
             const val SERVICE = 1
@@ -37,6 +33,10 @@ internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAd
             ButterKnife.bind(this, itemView)
         }
     }
+
+    private val data = mutableListOf<AdapterItem>()
+
+    var onAdapterItemClickListener: View.OnClickListener? = null
 
     override fun getItemCount(): Int = data.size
 

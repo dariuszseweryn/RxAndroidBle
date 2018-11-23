@@ -11,10 +11,6 @@ import com.polidea.rxandroidble2.scan.ScanResult
 
 internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder>() {
 
-    private val data = mutableListOf<ScanResult>()
-
-    var onAdapterItemClickListener: View.OnClickListener? = null
-
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         @BindView(android.R.id.text1)
         lateinit var line1: TextView
@@ -26,6 +22,10 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
             ButterKnife.bind(this, itemView)
         }
     }
+
+    private val data = mutableListOf<ScanResult>()
+
+    var onAdapterItemClickListener: View.OnClickListener? = null
 
     fun addScanResult(bleScanResult: ScanResult) {
         // Not the best way to ensure distinct devices, just for the sake of the demo.
