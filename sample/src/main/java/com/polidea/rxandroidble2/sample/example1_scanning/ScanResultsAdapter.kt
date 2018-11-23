@@ -31,7 +31,10 @@ internal class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.View
         // Not the best way to ensure distinct devices, just for the sake of the demo.
         data.withIndex()
             .firstOrNull { it.value.bleDevice == bleScanResult.bleDevice }
-            ?.let { data[it.index] = bleScanResult }
+            ?.let {
+                data[it.index] = bleScanResult
+                notifyItemChanged(it.index)
+            }
             ?: run {
                 with(data) {
                     add(bleScanResult)
