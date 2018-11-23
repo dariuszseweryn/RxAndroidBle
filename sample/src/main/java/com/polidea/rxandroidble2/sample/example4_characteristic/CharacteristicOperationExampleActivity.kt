@@ -101,7 +101,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
                 .flatMapSingle { it.discoverServices() }
                 .flatMapSingle { rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { disposable -> connectButton.setText(R.string.connecting) }
+                .doOnSubscribe { connectButton.setText(R.string.connecting) }
                 .subscribe(
                     { characteristic ->
                         updateUI(characteristic)
