@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.widget.Toast
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.polidea.rxandroidble2.exceptions.BleScanException
@@ -16,6 +15,7 @@ import com.polidea.rxandroidble2.sample.util.checkLocationPermissionGranted
 import com.polidea.rxandroidble2.sample.util.handleException
 import com.polidea.rxandroidble2.sample.util.isRequestLocationPermissionGranted
 import com.polidea.rxandroidble2.sample.util.requestLocationPermission
+import com.polidea.rxandroidble2.sample.util.showToastShort
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
 
@@ -48,8 +48,8 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun scanBleDeviceInBackground() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
                 val scanSettings = ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
@@ -61,12 +61,12 @@ class BackgroundScanActivity : AppCompatActivity() {
                     .build()
 
                 rxBleClient.backgroundScanner.scanBleDeviceInBackground(callbackIntent, scanSettings, scanFilter)
-            } else {
-                Toast.makeText(this, "Background scanning requires at least API 26", Toast.LENGTH_SHORT).show()
+            } catch (scanException: BleScanException) {
+                Log.w("BackgroundScanActivity", "Failed to start background scan", scanException)
+                handleException(scanException)
             }
-        } catch (scanException: BleScanException) {
-            Log.w("BackgroundScanActivity", "Failed to start background scan", scanException)
-            handleException(scanException)
+        } else {
+            showToastShort("Background scanning requires at least API 26")
         }
     }
 
@@ -82,7 +82,7 @@ class BackgroundScanActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent)
         } else {
-            Toast.makeText(this, "Background scanning requires at least API 26", Toast.LENGTH_SHORT).show()
+            showToastShort("Background scanning requires at least API 26")
         }
     }
 }
