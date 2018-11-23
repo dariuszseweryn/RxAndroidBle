@@ -34,7 +34,7 @@ internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAd
         }
     }
 
-    private val data = mutableListOf<AdapterItem>()
+    private var data = listOf<AdapterItem>()
 
     var onAdapterItemClickListener: View.OnClickListener? = null
 
@@ -67,22 +67,15 @@ internal class DiscoveryResultsAdapter : RecyclerView.Adapter<DiscoveryResultsAd
     }
 
     fun swapScanResult(services: RxBleDeviceServices) {
-        with(data) {
-            clear()
-            services.bluetoothGattServices.forEach {
-                // Add service
-                val serviceItem = AdapterItem(AdapterItem.SERVICE, it.serviceType, it.uuid)
-                add(serviceItem)
-                it.characteristics.forEach { characteristic ->
-                    val characteristicItem =
-                        AdapterItem(
-                            AdapterItem.CHARACTERISTIC,
-                            characteristic.describeProperties(),
-                            characteristic.uuid
-                        )
-                    add(characteristicItem)
-                }
+        data = services.bluetoothGattServices.flatMap {
+            // Add service
+            val items = mutableListOf(AdapterItem(AdapterItem.SERVICE, it.serviceType, it.uuid))
+            it.characteristics.map { characteristic ->
+                AdapterItem(AdapterItem.CHARACTERISTIC, characteristic.describeProperties(), characteristic.uuid)
+            }.let {
+                items.addAll(it)
             }
+            items
         }
         notifyDataSetChanged()
     }
