@@ -49,14 +49,14 @@ class LongWriteExampleActivity : RxAppCompatActivity() {
             .establishConnection(false) // establish the connection
             .flatMap({ connection ->
                 Observable.combineLatest(
-                    // after establishing the connection lets setup the notifications
+                    // after establishing the connection let's setup the notifications
                     connection.setupNotification(DEVICE_CALLBACK_0),
                     connection.setupNotification(DEVICE_CALLBACK_1),
                     BiFunction<Observable<ByteArray>, Observable<ByteArray>, Pair<Observable<ByteArray>, Observable<ByteArray>>> { deviceCallback0, deviceCallback1 ->
                         deviceCallback0 to deviceCallback1
                     }
                 )
-            }, { // after the setup lets start the long write
+            }, { // after the setup let's start the long write
                     connection, callbackObservablePair ->
                 val (deviceCallback0, deviceCallback1) = callbackObservablePair
 
