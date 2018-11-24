@@ -47,28 +47,34 @@ internal fun prepareActivityLogic(
                     getCharacteristic(characteristicUuid, connection)
                         .map { connection to it }
                 }
+            // TODO: [PU] 27.02.2018 Darek, do you have any ideas on how to do it better to keep your example's ideas?
         }
         .flatMap { connectionAndCharacteristic ->
             val (connection, characteristic) = connectionAndCharacteristic
-            // convenience method to wrap reads
-            val readObservable = if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)) {
-                Observable.empty()
-            } else {
-                // else use the readClicks observable from the activity
-                readClicks
-                    // every click is requesting a read operation from the peripheral
-                    .flatMapSingle { connection.readCharacteristic(characteristic) }
-                    .compose(transformToPresenterEvent(Type.READ))// if the characteristic is not readable return an empty (dummy) observable
-            }
+
+            val readObservable =
+                if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)) {
+                    // if the characteristic is not readable return an empty (dummy) observable
+                    Observable.empty()
+                } else {
+                    // else use the readClicks observable from the activity
+                    readClicks
+                        // every click is requesting a read operation from the peripheral
+                        .flatMapSingle { connection.readCharacteristic(characteristic) }
+                        .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
+                }
+
             // basically the same logic as in the reads
-            val writeObservable = if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)) {
-                Observable.empty()
-            } else {
-                // with exception that clicks emit byte[] to write
-                writeClicks
-                    .flatMapSingle { bytes -> connection.writeCharacteristic(characteristic, bytes) }
-                    .compose(transformToPresenterEvent(Type.WRITE))
-            }
+            val writeObservable =
+                if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)) {
+                    Observable.empty()
+                } else {
+                    // with exception that clicks emit byte[] to write
+                    writeClicks
+                        .flatMapSingle { bytes -> connection.writeCharacteristic(characteristic, bytes) }
+                        .compose(transformToPresenterEvent(Type.WRITE))
+                }
+
             // checking if characteristic will potentially need a compatibility mode notifications
             val notificationSetupMode =
                 if (characteristic.getDescriptor(clientCharacteristicConfigDescriptorUuid) == null) {
@@ -76,28 +82,32 @@ internal fun prepareActivityLogic(
                 } else {
                     NotificationSetupMode.DEFAULT
                 }
+
             /*
              * wrapping observables for notifications and indications so they will emit FALSE and TRUE respectively.
              * this is needed because only one of them may be active at the same time and we need to differentiate
              * the clicks
              */
-            val enableNotifyClicksObservable = if (!characteristic.hasProperty(PROPERTY_NOTIFY)) {
-                Observable.never()
-            } else {
-                enableNotifyClicks.take(1).map { false }
-            }
-            /*
-            * if property for notifications is not available return Observable.never() dummy observable.
-            * Observable.never() is needed because of the Observable.amb() below which repeats
-            * the behaviour of Observable that first emits or terminates and it will be checking both
-            * notifyClicks and indicateClicks
-            */
-            // only the first click to enableNotifyClicks is taken to account
-            val enableIndicateClicksObservable = if (!characteristic.hasProperty(PROPERTY_INDICATE)) {
-                Observable.never()
-            } else {
-                enableIndicateClicks.take(1).map { true }
-            }
+            val enableNotifyClicksObservable =
+                if (!characteristic.hasProperty(PROPERTY_NOTIFY)) {
+                    /*
+                     * if property for notifications is not available return Observable.never() dummy observable.
+                     * Observable.never() is needed because of the Observable.amb() below which repeats
+                     * the behaviour of Observable that first emits or terminates and it will be checking both
+                     * notifyClicks and indicateClicks
+                     */
+                    Observable.never()
+                } else {
+                    // only the first click to enableNotifyClicks is taken to account
+                    enableNotifyClicks.take(1).map { false }
+                }
+
+            val enableIndicateClicksObservable =
+                if (!characteristic.hasProperty(PROPERTY_INDICATE)) {
+                    Observable.never()
+                } else {
+                    enableIndicateClicks.take(1).map { true }
+                }
 
             // checking which notify or indicate will be clicked first the other is unsubscribed on click
             val notifyAndIndicateObservable = Observable.amb(
@@ -122,9 +132,9 @@ internal fun prepareActivityLogic(
                     }
                 }
                 /*
-                * whenever the notification or indication is finished (by the user or an error) repeat from
-                * the clicks on notify / indicate
-                */
+                 * whenever the notification or indication is finished (by the user or an error) repeat from
+                 * the clicks on notify / indicate
+                 */
                 .compose(repeatAfterCompleted())
                 // at the beginning inform the activity about whether compat mode is being used
                 .startWith(
@@ -135,11 +145,7 @@ internal fun prepareActivityLogic(
                 )
 
             // merge all events from reads, writes, notifications and indications
-            Observable.merge(
-                readObservable,
-                writeObservable,
-                notifyAndIndicateObservable
-            )
+            Observable.merge(readObservable, writeObservable, notifyAndIndicateObservable)
                 // start by informing the Activity that connection is established
                 .startWith(InfoEvent("Hey, connection has been established!"))
         }
@@ -149,18 +155,18 @@ internal fun prepareActivityLogic(
         .onErrorReturn { throwable -> InfoEvent("Connection error: $throwable") }
         .compose(repeatAfterCompleted())
 
-// when connected discover services
 private fun getCharacteristic(
     characteristicUuid: UUID,
     connection: RxBleConnection
 ): Single<BluetoothGattCharacteristic> =
     connection
+        // when connected discover services
         .discoverServices()
-        .flatMap { services -> services.getCharacteristic(characteristicUuid) }
+        .flatMap { it.getCharacteristic(characteristicUuid) }
 
 /**
  * A convenience function creating a transformer that will use two observables for completing the returned observable (and
- * un-subscribing from the passed observable) [beforeEmission] will be used to complete the passed observable before its first
+ * unsubscribing from the passed observable) [beforeEmission] will be used to complete the passed observable before its first
  * emission and [afterEmission] will be used to do the same after the first emission
  *
  * @param beforeEmission the observable that will control completing the returned observable before its first emission

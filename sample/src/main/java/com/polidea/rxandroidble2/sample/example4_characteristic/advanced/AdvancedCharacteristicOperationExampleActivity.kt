@@ -137,9 +137,10 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        activityFlowDisposable = presenterEventObservable
+        presenterEventObservable
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { it.handleEvent() }
+            .let { activityFlowDisposable = it }
     }
 
     override fun onPause() {
@@ -208,11 +209,8 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
  * @return the observable
  */
 private fun Button.activatedClicksObservable(): Observable<Boolean> =
-    Observable.using<Boolean, Button>(
-        {
-            isEnabled = true
-            this
-        },
+    Observable.using(
+        { apply { isEnabled = true } },
         { RxView.clicks(it).map { true } },
         { it.isEnabled = false }
     )
