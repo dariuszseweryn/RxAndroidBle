@@ -12,7 +12,7 @@ internal fun ByteArray.toHex(): String =
         String(hexChars)
     }
 
-internal fun String.hexToBytes(): ByteArray {
+internal fun CharSequence.hexToBytes(): ByteArray {
     if (length % 2 == 1) throw IllegalArgumentException("hexToBytes requires an even-length String parameter")
 
     return ByteArray(length / 2).also { data ->

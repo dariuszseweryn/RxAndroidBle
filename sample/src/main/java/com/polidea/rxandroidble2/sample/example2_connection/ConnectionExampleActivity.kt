@@ -97,11 +97,11 @@ class ConnectionExampleActivity : RxAppCompatActivity() {
     }
 
     private fun onConnectionFailure(throwable: Throwable) {
-        showSnackbarShort(R.id.content, "Connection error: $throwable")
+        showSnackbarShort(text = "Connection error: $throwable")
     }
 
     private fun onConnectionReceived() {
-        showSnackbarShort(R.id.content, "Connection received")
+        showSnackbarShort(text = "Connection received")
     }
 
     private fun onConnectionStateChange(newState: RxBleConnection.RxBleConnectionState) {

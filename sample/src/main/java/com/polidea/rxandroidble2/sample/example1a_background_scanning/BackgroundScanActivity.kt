@@ -15,7 +15,7 @@ import com.polidea.rxandroidble2.sample.util.checkLocationPermissionGranted
 import com.polidea.rxandroidble2.sample.util.handleException
 import com.polidea.rxandroidble2.sample.util.isRequestLocationPermissionGranted
 import com.polidea.rxandroidble2.sample.util.requestLocationPermission
-import com.polidea.rxandroidble2.sample.util.showToastShort
+import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
 
@@ -66,7 +66,7 @@ class BackgroundScanActivity : AppCompatActivity() {
                 handleException(scanException)
             }
         } else {
-            showToastShort("Background scanning requires at least API 26")
+            showSnackbarShort(R.id.content, "Background scanning requires at least API 26")
         }
     }
 
@@ -82,7 +82,7 @@ class BackgroundScanActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent)
         } else {
-            showToastShort("Background scanning requires at least API 26")
+            showSnackbarShort(R.id.content, "Background scanning requires at least API 26")
         }
     }
 }

@@ -89,7 +89,7 @@ class AdvancedCharacteristicOperationExampleActivity : RxAppCompatActivity() {
     private lateinit var presenterEventObservable: Observable<PresenterEvent>
 
     private val inputBytes: ByteArray
-        get() = writeInput.text.toString().hexToBytes()
+        get() = writeInput.text.hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

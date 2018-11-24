@@ -63,14 +63,14 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
 
     private lateinit var characteristicUuid: UUID
 
-    private val disconnectTriggerSubject = PublishSubject.create<Boolean>()
+    private val disconnectTriggerSubject = PublishSubject.create<Unit>()
 
     private lateinit var connectionObservable: Observable<RxBleConnection>
 
     private lateinit var bleDevice: RxBleDevice
 
     private val inputBytes: ByteArray
-        get() = writeInput.text.toString().hexToBytes()
+        get() = writeInput.text.hexToBytes()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,7 +188,7 @@ class CharacteristicOperationExampleActivity : RxAppCompatActivity() {
     }
 
     private fun triggerDisconnect() {
-        disconnectTriggerSubject.onNext(true)
+        disconnectTriggerSubject.onNext(Unit)
     }
 
     /**
