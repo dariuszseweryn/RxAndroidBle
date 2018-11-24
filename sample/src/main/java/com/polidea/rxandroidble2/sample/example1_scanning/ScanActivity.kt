@@ -36,7 +36,7 @@ class ScanActivity : AppCompatActivity() {
 
     private var scanDisposable: Disposable? = null
 
-    private var resultsAdapter = ScanResultsAdapter()
+    private val resultsAdapter = ScanResultsAdapter()
 
     private var hasClickedScan = false
 

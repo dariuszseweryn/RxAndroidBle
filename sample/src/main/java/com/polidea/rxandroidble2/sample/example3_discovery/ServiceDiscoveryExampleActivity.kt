@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example3_discovery
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -19,7 +20,6 @@ import com.polidea.rxandroidble2.sample.util.showSnackbarShort
 import com.trello.rxlifecycle2.android.ActivityEvent.PAUSE
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 
@@ -36,13 +36,11 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
     @BindView(R.id.scan_results)
     internal lateinit var recyclerView: RecyclerView
 
-    private var resultsAdapter = DiscoveryResultsAdapter()
+    private val resultsAdapter = DiscoveryResultsAdapter()
 
     private lateinit var bleDevice: RxBleDevice
 
     private lateinit var macAddress: String
-
-    private var connectionDisposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,18 +53,16 @@ class ServiceDiscoveryExampleActivity : RxAppCompatActivity() {
         configureResultList()
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.connect)
     fun onConnectToggleClick() {
-        connectionDisposable = bleDevice.establishConnection(false)
+        bleDevice.establishConnection(false)
             .flatMapSingle { it.discoverServices() }
             .take(1) // Disconnect automatically after discovery
             .compose(bindUntilEvent(PAUSE))
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally { updateUI() }
-            .subscribe(
-                { resultsAdapter.swapScanResult(it) },
-                { onConnectionFailure(it) }
-            )
+            .subscribe({ resultsAdapter.swapScanResult(it) }, { onConnectionFailure(it) })
         updateUI()
     }
 
