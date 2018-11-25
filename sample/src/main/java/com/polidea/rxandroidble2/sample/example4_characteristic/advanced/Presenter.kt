@@ -66,6 +66,9 @@ internal fun prepareActivityLogic(
         .onErrorReturn { throwable -> InfoEvent("Connection error: $throwable") }
         .compose(repeatAfterCompleted())
 
+/**
+ * Establishes connection, gets characteristic and returns them as [Pair].
+ */
 private fun connectAndGetCharacteristic(
     device: RxBleDevice,
     characteristicUuid: UUID
@@ -77,6 +80,9 @@ private fun connectAndGetCharacteristic(
             }
     }
 
+/**
+ * Gets characteristic from [connection] for the given [characteristicUuid].
+ */
 private fun getCharacteristic(
     characteristicUuid: UUID,
     connection: RxBleConnection
@@ -86,6 +92,10 @@ private fun getCharacteristic(
         .discoverServices()
         .flatMap { it.getCharacteristic(characteristicUuid) }
 
+/**
+ * Reacts to user clicks, triggers operation he selected on received [RxBleConnection] and
+ * [BluetoothGattCharacteristic] (read, write, notify or indicate) and emits the result as a [PresenterEvent].
+ */
 private fun readWriteNotifyIndicate(
     characteristicUuid: UUID,
     readClicks: Observable<Boolean>,
