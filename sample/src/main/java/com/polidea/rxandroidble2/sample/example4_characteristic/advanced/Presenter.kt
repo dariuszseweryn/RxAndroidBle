@@ -6,10 +6,13 @@ import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import com.polidea.rxandroidble2.NotificationSetupMode
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
+import com.polidea.rxandroidble2.sample.example4_characteristic.advanced.Type.INDICATE
+import com.polidea.rxandroidble2.sample.example4_characteristic.advanced.Type.NOTIFY
 import com.polidea.rxandroidble2.sample.util.hasProperty
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
+import io.reactivex.functions.Function
 import java.util.Arrays.asList
 import java.util.UUID
 
@@ -41,119 +44,38 @@ internal fun prepareActivityLogic(
 ): Observable<PresenterEvent> =
 
     connectClicks.take(1) // subscribe to connectClicks and take one (unsubscribe after)
-        .flatMap { _ ->
-            device.establishConnection(false) // on click start connecting
-                .flatMapSingle { connection ->
-                    getCharacteristic(characteristicUuid, connection)
-                        .map { connection to it }
-                }
-            // TODO: [PU] 27.02.2018 Darek, do you have any ideas on how to do it better to keep your example's ideas?
-        }
-        .flatMap { connectionAndCharacteristic ->
-            val (connection, characteristic) = connectionAndCharacteristic
-
-            val readObservable =
-                if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)) {
-                    // if the characteristic is not readable return an empty (dummy) observable
-                    Observable.empty()
-                } else {
-                    // else use the readClicks observable from the activity
-                    readClicks
-                        // every click is requesting a read operation from the peripheral
-                        .flatMapSingle { connection.readCharacteristic(characteristic) }
-                        .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
-                }
-
-            // basically the same logic as in the reads
-            val writeObservable =
-                if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)) {
-                    Observable.empty()
-                } else {
-                    // with exception that clicks emit byte[] to write
-                    writeClicks
-                        .flatMapSingle { bytes -> connection.writeCharacteristic(characteristic, bytes) }
-                        .compose(transformToPresenterEvent(Type.WRITE))
-                }
-
-            // checking if characteristic will potentially need a compatibility mode notifications
-            val notificationSetupMode =
-                if (characteristic.getDescriptor(clientCharacteristicConfigDescriptorUuid) == null) {
-                    NotificationSetupMode.COMPAT
-                } else {
-                    NotificationSetupMode.DEFAULT
-                }
-
-            /*
-             * wrapping observables for notifications and indications so they will emit FALSE and TRUE respectively.
-             * this is needed because only one of them may be active at the same time and we need to differentiate
-             * the clicks
-             */
-            val enableNotifyClicksObservable =
-                if (!characteristic.hasProperty(PROPERTY_NOTIFY)) {
-                    /*
-                     * if property for notifications is not available return Observable.never() dummy observable.
-                     * Observable.never() is needed because of the Observable.amb() below which repeats
-                     * the behaviour of Observable that first emits or terminates and it will be checking both
-                     * notifyClicks and indicateClicks
-                     */
-                    Observable.never()
-                } else {
-                    // only the first click to enableNotifyClicks is taken to account
-                    enableNotifyClicks.take(1).map { false }
-                }
-
-            val enableIndicateClicksObservable =
-                if (!characteristic.hasProperty(PROPERTY_INDICATE)) {
-                    Observable.never()
-                } else {
-                    enableIndicateClicks.take(1).map { true }
-                }
-
-            // checking which notify or indicate will be clicked first the other is unsubscribed on click
-            val notifyAndIndicateObservable = Observable.amb(
-                asList(enableNotifyClicksObservable, enableIndicateClicksObservable)
+        // establish connection and get characteristic
+        .flatMap(connectAndGetCharacteristic(device, characteristicUuid))
+        // react to clicks by triggering either read, write, notify or indicate
+        .flatMap(
+            readWriteNotifyIndicate(
+                characteristicUuid,
+                readClicks,
+                writeClicks,
+                enableNotifyClicks,
+                enableIndicateClicks,
+                enablingIndicateClicks,
+                disableIndicateClicks,
+                enablingNotifyClicks,
+                disableNotifyClicks
             )
-                .flatMap { isIndication ->
-                    if (isIndication) {
-                        // if indication was clicked
-                        connection
-                            // we setup indications
-                            .setupIndication(characteristicUuid, notificationSetupMode)
-                            // use a convenience transformer for tearing down the notifications
-                            .compose(takeUntil(enablingIndicateClicks, disableIndicateClicks))
-                            // and wrap the emissions with a convenience function
-                            .compose(transformToNotificationPresenterEvent(Type.INDICATE))
-                    } else {
-                        // if notification was clicked
-                        connection
-                            .setupNotification(characteristicUuid, notificationSetupMode)
-                            .compose(takeUntil(enablingNotifyClicks, disableNotifyClicks))
-                            .compose(transformToNotificationPresenterEvent(Type.NOTIFY))
-                    }
-                }
-                /*
-                 * whenever the notification or indication is finished (by the user or an error) repeat from
-                 * the clicks on notify / indicate
-                 */
-                .compose(repeatAfterCompleted())
-                // at the beginning inform the activity about whether compat mode is being used
-                .startWith(
-                    CompatibilityModeEvent(
-                        characteristic.hasProperty(PROPERTY_NOTIFY or PROPERTY_INDICATE)
-                                && notificationSetupMode == NotificationSetupMode.COMPAT
-                    )
-                )
-
-            // merge all events from reads, writes, notifications and indications
-            Observable.merge(readObservable, writeObservable, notifyAndIndicateObservable)
-                // start by informing the Activity that connection is established
-                .startWith(InfoEvent("Hey, connection has been established!"))
-        }
+        )
         // convenience transformer to close the connection
         .compose(takeUntil(connectingClicks, disconnectClicks))
         // in case of a connection error inform the activity
         .onErrorReturn { throwable -> InfoEvent("Connection error: $throwable") }
         .compose(repeatAfterCompleted())
+
+private fun connectAndGetCharacteristic(
+    device: RxBleDevice,
+    characteristicUuid: UUID
+): Function<Boolean, Observable<Pair<RxBleConnection, BluetoothGattCharacteristic>>> =
+    Function {
+        device.establishConnection(false) // on click start connecting
+            .flatMapSingle { connection ->
+                getCharacteristic(characteristicUuid, connection).map { connection to it }
+            }
+    }
 
 private fun getCharacteristic(
     characteristicUuid: UUID,
@@ -163,6 +85,173 @@ private fun getCharacteristic(
         // when connected discover services
         .discoverServices()
         .flatMap { it.getCharacteristic(characteristicUuid) }
+
+private fun readWriteNotifyIndicate(
+    characteristicUuid: UUID,
+    readClicks: Observable<Boolean>,
+    writeClicks: Observable<ByteArray>,
+    enableNotifyClicks: Observable<Boolean>,
+    enableIndicateClicks: Observable<Boolean>,
+    enablingIndicateClicks: Observable<Boolean>,
+    disableIndicateClicks: Observable<Boolean>,
+    enablingNotifyClicks: Observable<Boolean>,
+    disableNotifyClicks: Observable<Boolean>
+): Function<Pair<RxBleConnection, BluetoothGattCharacteristic>, Observable<PresenterEvent>> =
+    Function { connectionAndCharacteristic ->
+        val (connection, characteristic) = connectionAndCharacteristic
+
+        // clicks trigger read/write operations from the peripheral
+        val readObservable = readClicks.readCharacteristic(connection, characteristic)
+        val writeObservable = writeClicks.writeCharacteristic(connection, characteristic)
+        // checking if characteristic will potentially need a compatibility mode notifications
+        val notificationSetupMode = characteristic.notificationSetupMode
+
+        /*
+         * wrapping observables for notifications and indications so they will emit FALSE and TRUE respectively.
+         * this is needed because only one of them may be active at the same time and we need to differentiate
+         * the clicks
+         */
+        val enableNotifyClicksObservable = enableNotifyClicks
+            .compose(characteristic.enableNotifyOrIndicate(PROPERTY_NOTIFY))
+        val enableIndicateClicksObservable = enableIndicateClicks
+            .compose(characteristic.enableNotifyOrIndicate(PROPERTY_INDICATE))
+
+        val notifyAndIndicateObservable = selectNotificationOrIndication(
+            connection,
+            characteristic,
+            characteristicUuid,
+            notificationSetupMode,
+            enableNotifyClicksObservable,
+            enableIndicateClicksObservable,
+            enablingIndicateClicks,
+            disableIndicateClicks,
+            enablingNotifyClicks,
+            disableNotifyClicks
+        )
+
+        // merge all events from reads, writes, notifications and indications
+        Observable.merge(readObservable, writeObservable, notifyAndIndicateObservable)
+            // start by informing the Activity that connection is established
+            .startWith(InfoEvent("Hey, connection has been established!"))
+    }
+
+private fun Observable<Boolean>.readCharacteristic(
+    connection: RxBleConnection,
+    characteristic: BluetoothGattCharacteristic
+): Observable<PresenterEvent> =
+    if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_READ)) {
+        // if the characteristic is not readable return an empty (dummy) observable
+        Observable.empty()
+    } else {
+        // else use the readClicks observable from the activity
+        // every click is requesting a read operation from the peripheral
+        flatMapSingle { connection.readCharacteristic(characteristic) }
+            .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
+    }
+
+private fun Observable<ByteArray>.writeCharacteristic(
+    connection: RxBleConnection,
+    characteristic: BluetoothGattCharacteristic
+): Observable<PresenterEvent> =
+// basically the same logic as in the reads
+    if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)) {
+        Observable.empty()
+    } else {
+        // with exception that clicks emit byte[] to write
+        flatMapSingle { bytes -> connection.writeCharacteristic(characteristic, bytes) }
+            .compose(transformToPresenterEvent(Type.WRITE))
+    }
+
+private fun BluetoothGattCharacteristic.enableNotifyOrIndicate(property: Int): ObservableTransformer<Boolean, Boolean> =
+    ObservableTransformer {
+        if (!hasProperty(property)) {
+            /*
+             * if property for notifications/indications is not available return Observable.never() dummy observable.
+             * Observable.never() is needed because of the Observable.amb() later in the chain which repeats
+             * the behaviour of Observable that first emits or terminates and it will be checking both
+             * notifyClicks and indicateClicks
+             */
+            Observable.never()
+        } else {
+            // only the first click to source clicks Observable is taken to account
+            // we map to true/false to differentiate clicks to notify/indicate
+            it.take(1).map { property == PROPERTY_NOTIFY }
+        }
+    }
+
+private fun selectNotificationOrIndication(
+    connection: RxBleConnection,
+    characteristic: BluetoothGattCharacteristic,
+    uuid: UUID,
+    mode: NotificationSetupMode,
+    enableNotifyClicksObservable: Observable<Boolean>,
+    enableIndicateClicksObservable: Observable<Boolean>,
+    enablingIndicateClicks: Observable<Boolean>,
+    disableIndicateClicks: Observable<Boolean>,
+    enablingNotifyClicks: Observable<Boolean>,
+    disableNotifyClicks: Observable<Boolean>
+): Observable<PresenterEvent> =
+// checking which notify or indicate will be clicked first the other is unsubscribed on click
+    Observable.amb(asList(enableNotifyClicksObservable, enableIndicateClicksObservable))
+        .flatMap { isIndication ->
+            if (isIndication) {
+                // we clicked indication
+                setupNotificationOrIndication(
+                    connection,
+                    uuid,
+                    mode,
+                    enablingIndicateClicks,
+                    disableIndicateClicks,
+                    INDICATE
+                )
+            } else {
+                // we clicked notification
+                setupNotificationOrIndication(
+                    connection,
+                    uuid,
+                    mode,
+                    enablingNotifyClicks,
+                    disableNotifyClicks,
+                    NOTIFY
+                )
+            }
+        }
+
+        /*
+         * whenever the notification or indication is finished (by the user or an error) repeat from
+         * the clicks on notify / indicate
+         */
+        .compose(repeatAfterCompleted())
+        // at the beginning inform the activity about whether compat mode is being used
+        .startWith(
+            CompatibilityModeEvent(
+                characteristic.hasProperty(PROPERTY_NOTIFY or PROPERTY_INDICATE)
+                        && mode == NotificationSetupMode.COMPAT
+            )
+        )
+
+@Suppress("ReplaceSingleLineLet")
+private fun setupNotificationOrIndication(
+    connection: RxBleConnection,
+    uuid: UUID,
+    mode: NotificationSetupMode,
+    beforeEmission: Observable<Boolean>,
+    afterEmission: Observable<Boolean>,
+    type: Type
+): Observable<PresenterEvent> =
+    if (type == Type.INDICATE) {
+        // we setup indication
+        connection.setupIndication(uuid, mode)
+    } else {
+        // we setup notification
+        connection.setupNotification(uuid, mode)
+    }.let {
+        it
+            // use a convenience transformer for tearing down the indications/notifications
+            .compose(takeUntil(beforeEmission, afterEmission))
+            // and wrap the emissions with a convenience function
+            .compose(transformToNotificationPresenterEvent(type))
+    }
 
 /**
  * A convenience function creating a transformer that will use two observables for completing the returned observable (and
@@ -185,6 +274,13 @@ private fun <T> takeUntil(beforeEmission: Observable<*>, afterEmission: Observab
                         .takeUntil(it)
                 }
         }
+    }
+
+private val BluetoothGattCharacteristic.notificationSetupMode: NotificationSetupMode
+    get() = if (getDescriptor(clientCharacteristicConfigDescriptorUuid) == null) {
+        NotificationSetupMode.COMPAT
+    } else {
+        NotificationSetupMode.DEFAULT
     }
 
 /**
