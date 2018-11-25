@@ -145,6 +145,11 @@ private fun readWriteNotifyIndicate(
             .startWith(InfoEvent("Hey, connection has been established!"))
     }
 
+/**
+ * If characteristic has [PROPERTY_READ][BluetoothGattCharacteristic.PROPERTY_READ], flatmaps `readClicks` receiver
+ * so that it triggers reading the characteristic. The result is then emitted as a [PresenterEvent] of type [READ][Type.READ].
+ * In other case function returns an empty [Observable].
+ */
 private fun Observable<Boolean>.readCharacteristic(
     connection: RxBleConnection,
     characteristic: BluetoothGattCharacteristic
@@ -153,12 +158,17 @@ private fun Observable<Boolean>.readCharacteristic(
         // if the characteristic is not readable return an empty (dummy) observable
         Observable.empty()
     } else {
-        // else use the readClicks observable from the activity
+        // else use the receiver `readClicks` observable from the activity
         // every click is requesting a read operation from the peripheral
         flatMapSingle { connection.readCharacteristic(characteristic) }
             .compose(transformToPresenterEvent(Type.READ)) // convenience method to wrap reads
     }
 
+/**
+ * If characteristic has [PROPERTY_WRITE][BluetoothGattCharacteristic.PROPERTY_WRITE], flatmaps `writeClicks` receiver
+ * so that it triggers writing emitted [ByteArray] to the characteristic. The result is then emitted as a [PresenterEvent]
+ * of type [WRITE][Type.WRITE]. In other case function returns an empty [Observable].
+ */
 private fun Observable<ByteArray>.writeCharacteristic(
     connection: RxBleConnection,
     characteristic: BluetoothGattCharacteristic
@@ -167,11 +177,16 @@ private fun Observable<ByteArray>.writeCharacteristic(
     if (!characteristic.hasProperty(BluetoothGattCharacteristic.PROPERTY_WRITE)) {
         Observable.empty()
     } else {
-        // with exception that clicks emit byte[] to write
+        // with exception that clicks emit ByteArray to write
         flatMapSingle { bytes -> connection.writeCharacteristic(characteristic, bytes) }
             .compose(transformToPresenterEvent(Type.WRITE))
     }
 
+/**
+ * Checks if characteristic has [PROPERTY_NOTIFY] or [PROPERTY_INDICATE] [property] and for each of them emits
+ * respectively [true] or [false] to differentiate the clicks. If a property is not present then the function emits
+ * an [Observable.never] for this property.
+ */
 private fun BluetoothGattCharacteristic.enableNotifyOrIndicate(property: Int): ObservableTransformer<Boolean, Boolean> =
     ObservableTransformer {
         if (!hasProperty(property)) {
@@ -183,12 +198,15 @@ private fun BluetoothGattCharacteristic.enableNotifyOrIndicate(property: Int): O
              */
             Observable.never()
         } else {
-            // only the first click to source clicks Observable is taken to account
+            // only the first click to source clicks Observable is taken into account
             // we map to true/false to differentiate clicks to notify/indicate
             it.take(1).map { property == PROPERTY_NOTIFY }
         }
     }
 
+/**
+ * Selects if notification or indication should be subscribed to, based on whichever the user clicks first.
+ */
 private fun selectNotificationOrIndication(
     connection: RxBleConnection,
     characteristic: BluetoothGattCharacteristic,
@@ -226,7 +244,6 @@ private fun selectNotificationOrIndication(
                 )
             }
         }
-
         /*
          * whenever the notification or indication is finished (by the user or an error) repeat from
          * the clicks on notify / indicate
@@ -240,6 +257,10 @@ private fun selectNotificationOrIndication(
             )
         )
 
+/**
+ * Sets up notification or indication, based on whichever the user clicked. Returns an [Observable] of [PresenterEvent]
+ * wrapping the results.
+ */
 @Suppress("ReplaceSingleLineLet")
 private fun setupNotificationOrIndication(
     connection: RxBleConnection,
@@ -286,6 +307,9 @@ private fun <T> takeUntil(beforeEmission: Observable<*>, afterEmission: Observab
         }
     }
 
+/**
+ * Tells if compatibility mode is being used.
+ */
 private val BluetoothGattCharacteristic.notificationSetupMode: NotificationSetupMode
     get() = if (getDescriptor(clientCharacteristicConfigDescriptorUuid) == null) {
         NotificationSetupMode.COMPAT
