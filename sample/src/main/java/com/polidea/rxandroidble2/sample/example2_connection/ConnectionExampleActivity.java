@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example2_connection;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,7 +41,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
     private Disposable connectionDisposable;
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
@@ -55,20 +55,21 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         }
     }
 
+    @SuppressLint("CheckResult")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
-        final Disposable disposable = bleDevice.establishConnection(false)
+        //noinspection ResultOfMethodCallIgnored
+        bleDevice.establishConnection(false)
                 .flatMapSingle(rxBleConnection -> rxBleConnection.requestMtu(72))
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(this::onMtuReceived, this::onConnectionFailure);
-
-        compositeDisposable.add(disposable);
     }
 
+    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,12 +79,11 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         // How to listen for connection state changes
-        final Disposable disposable = bleDevice.observeConnectionStateChanges()
+        //noinspection ResultOfMethodCallIgnored
+        bleDevice.observeConnectionStateChanges()
                 .compose(bindUntilEvent(DESTROY))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);
-
-        compositeDisposable.add(disposable);
     }
 
     private boolean isConnected() {
@@ -127,13 +127,5 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         final boolean connected = isConnected();
         connectButton.setText(connected ? R.string.disconnect : R.string.connect);
         autoConnectToggleSwitch.setEnabled(!connected);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        triggerDisconnect();
-        compositeDisposable.clear();
     }
 }

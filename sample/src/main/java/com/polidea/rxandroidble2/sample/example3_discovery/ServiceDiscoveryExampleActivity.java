@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example3_discovery;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -32,11 +33,12 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
     private String macAddress;
-    private Disposable connectionDisposable;
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        connectionDisposable = bleDevice.establishConnection(false)
+        //noinspection ResultOfMethodCallIgnored
+        bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
@@ -98,14 +100,5 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
     private void updateUI() {
         connectButton.setEnabled(!isConnected());
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (connectionDisposable != null) {
-            connectionDisposable.dispose();
-        }
     }
 }

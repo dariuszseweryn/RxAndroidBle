@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -50,7 +51,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,13 +73,15 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                 .compose(ReplayingShare.instance());
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
 
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            final Disposable connectionDisposable = connectionObservable
+            //noinspection ResultOfMethodCallIgnored
+            connectionObservable
                     .flatMapSingle(RxBleConnection::discoverServices)
                     .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(characteristicUuid))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -92,16 +94,16 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                             this::onConnectionFailure,
                             this::onConnectionFinished
                     );
-
-            compositeDisposable.add(connectionDisposable);
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.read)
     public void onReadClick() {
 
         if (isConnected()) {
-            final Disposable disposable = connectionObservable
+            //noinspection ResultOfMethodCallIgnored
+            connectionObservable
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -110,16 +112,16 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                         readHexOutputView.setText(HexString.bytesToHex(bytes));
                         writeInput.setText(HexString.bytesToHex(bytes));
                     }, this::onReadFailure);
-
-            compositeDisposable.add(disposable);
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.write)
     public void onWriteClick() {
 
         if (isConnected()) {
-            final Disposable disposable = connectionObservable
+            //noinspection ResultOfMethodCallIgnored
+            connectionObservable
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUuid, getInputBytes()))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -127,23 +129,21 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
                             bytes -> onWriteSuccess(),
                             this::onWriteFailure
                     );
-
-            compositeDisposable.add(disposable);
         }
     }
 
+    @SuppressLint("CheckResult")
     @OnClick(R.id.notify)
     public void onNotifyClick() {
 
         if (isConnected()) {
-            final Disposable disposable = connectionObservable
+            //noinspection ResultOfMethodCallIgnored
+            connectionObservable
                     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristicUuid))
                     .doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
-
-            compositeDisposable.add(disposable);
         }
     }
 
@@ -213,11 +213,5 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
 
     private byte[] getInputBytes() {
         return HexString.hexToBytes(writeInput.getText().toString());
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        compositeDisposable.clear();
     }
 }

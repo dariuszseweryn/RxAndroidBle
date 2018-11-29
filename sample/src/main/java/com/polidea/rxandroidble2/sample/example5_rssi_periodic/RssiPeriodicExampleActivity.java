@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.sample.example5_rssi_periodic;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.widget.Button;
@@ -33,7 +34,6 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
     Button connectButton;
     private RxBleDevice bleDevice;
     private Disposable connectionDisposable;
-    private Disposable stateDisposable;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
@@ -55,6 +55,7 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
         rssiView.setText(getString(R.string.read_rssi, rssiValue));
     }
 
+    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +66,8 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
 
         // How to listen for connection state changes
-        stateDisposable = bleDevice.observeConnectionStateChanges()
+        //noinspection ResultOfMethodCallIgnored
+        bleDevice.observeConnectionStateChanges()
                 .compose(bindUntilEvent(DESTROY))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);
@@ -100,15 +102,5 @@ public class RssiPeriodicExampleActivity extends RxAppCompatActivity {
     private void updateUI() {
         final boolean connected = isConnected();
         connectButton.setText(connected ? R.string.disconnect : R.string.connect);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        triggerDisconnect();
-        if (stateDisposable != null) {
-            stateDisposable.dispose();
-        }
     }
 }
