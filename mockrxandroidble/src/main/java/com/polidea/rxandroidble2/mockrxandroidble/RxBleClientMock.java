@@ -204,7 +204,22 @@ public class RxBleClientMock extends RxBleClient {
         public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
                                                         @NonNull byte[] data,
                                                         List<BluetoothGattDescriptor> descriptors) {
-            BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, 0, 0);
+            return addCharacteristic(uuid, data, 0, descriptors);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        int properties,
+                                                        List<BluetoothGattDescriptor> descriptors) {
+            BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, properties, 0);
             for (BluetoothGattDescriptor descriptor : descriptors) {
                 characteristic.addDescriptor(descriptor);
             }
