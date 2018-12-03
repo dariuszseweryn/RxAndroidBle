@@ -18,8 +18,6 @@ after_success:
 notifications:
   email: false
 
-sudo: false
-
 env:
   global:
     - GRADLE_OPTS="-Xms128m"
