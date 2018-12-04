@@ -20,7 +20,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 
 import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
