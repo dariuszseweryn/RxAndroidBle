@@ -2,6 +2,9 @@ package com.polidea.rxandroidble2.sample.example1a_background_scanning;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -47,21 +50,23 @@ public class BackgroundScanActivity extends AppCompatActivity {
     }
 
     private void scanBleDeviceInBackground() {
-        try {
-            rxBleClient.getBackgroundScanner().scanBleDeviceInBackground(
-                    callbackIntent,
-                    new ScanSettings.Builder()
-                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                            .build(),
-                    new ScanFilter.Builder()
-                            .setDeviceAddress("5C:31:3E:BF:F7:34")
-                            // add custom filters if needed
-                            .build()
-            );
-        } catch (BleScanException scanException) {
-            Log.w("BackgroundScanActivity", "Failed to start background scan", scanException);
-            ScanExceptionHandler.handleException(this, scanException);
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+            try {
+                rxBleClient.getBackgroundScanner().scanBleDeviceInBackground(
+                        callbackIntent,
+                        new ScanSettings.Builder()
+                                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                                .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                                .build(),
+                        new ScanFilter.Builder()
+                                .setDeviceAddress("5C:31:3E:BF:F7:34")
+                                // add custom filters if needed
+                                .build()
+                );
+            } catch (BleScanException scanException) {
+                Log.w("BackgroundScanActivity", "Failed to start background scan", scanException);
+                ScanExceptionHandler.handleException(this, scanException);
+            }
         }
     }
 
@@ -77,7 +82,9 @@ public class BackgroundScanActivity extends AppCompatActivity {
 
     @OnClick(R.id.scan_stop_btn)
     public void onScanStopClick() {
-        rxBleClient.getBackgroundScanner().stopBackgroundBleScan(callbackIntent);
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+            rxBleClient.getBackgroundScanner().stopBackgroundBleScan(callbackIntent);
+        }
     }
 
 }
