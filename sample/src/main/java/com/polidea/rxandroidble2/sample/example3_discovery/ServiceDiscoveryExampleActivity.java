@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.sample.example3_discovery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
@@ -13,7 +14,6 @@ import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,9 +21,7 @@ import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
-
-public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
+public class ServiceDiscoveryExampleActivity extends AppCompatActivity {
 
     @BindView(R.id.connect)
     Button connectButton;
@@ -39,7 +37,6 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
         connectionDisposable = bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
-                .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(adapter::swapScanResult, this::onConnectionFailure);
