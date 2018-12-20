@@ -2,7 +2,6 @@ package com.polidea.rxandroidble2.sample.example1a_background_scanning;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
