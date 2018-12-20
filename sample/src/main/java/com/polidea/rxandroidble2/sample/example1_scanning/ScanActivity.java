@@ -100,7 +100,7 @@ public class ScanActivity extends AppCompatActivity {
 
         if (isScanning()) {
             /*
-             * Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
+             * Stop scanning in onPause callback.
              */
             scanDisposable.dispose();
         }

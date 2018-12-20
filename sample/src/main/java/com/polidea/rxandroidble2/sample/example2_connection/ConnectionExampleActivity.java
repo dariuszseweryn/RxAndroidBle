@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,19 +15,14 @@ import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
-import static com.trello.rxlifecycle2.android.ActivityEvent.DESTROY;
-import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
-
-public class ConnectionExampleActivity extends RxAppCompatActivity {
+public class ConnectionExampleActivity extends AppCompatActivity {
 
     @BindView(R.id.connection_state)
     TextView connectionStateView;
@@ -40,7 +36,8 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
     private Disposable connectionDisposable;
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private Disposable mtuDisposable;
+    private Disposable connectionStateDisposable;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
@@ -48,7 +45,6 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
             triggerDisconnect();
         } else {
             connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
-                    .compose(bindUntilEvent(PAUSE))
                     .observeOn(AndroidSchedulers.mainThread())
                     .doFinally(this::dispose)
                     .subscribe(this::onConnectionReceived, this::onConnectionFailure);
@@ -58,15 +54,12 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
-        final Disposable disposable = bleDevice.establishConnection(false)
+        mtuDisposable = bleDevice.establishConnection(false)
                 .flatMapSingle(rxBleConnection -> rxBleConnection.requestMtu(72))
                 .take(1) // Disconnect automatically after discovery
-                .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(this::onMtuReceived, this::onConnectionFailure);
-
-        compositeDisposable.add(disposable);
     }
 
     @Override
@@ -78,12 +71,9 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         // How to listen for connection state changes
-        final Disposable disposable = bleDevice.observeConnectionStateChanges()
-                .compose(bindUntilEvent(DESTROY))
+        connectionStateDisposable = bleDevice.observeConnectionStateChanges()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);
-
-        compositeDisposable.add(disposable);
     }
 
     private boolean isConnected() {
@@ -134,6 +124,17 @@ public class ConnectionExampleActivity extends RxAppCompatActivity {
         super.onPause();
 
         triggerDisconnect();
-        compositeDisposable.clear();
+        if (mtuDisposable != null) {
+            mtuDisposable.dispose();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (connectionStateDisposable != null) {
+            connectionStateDisposable.dispose();
+        }
     }
 }
