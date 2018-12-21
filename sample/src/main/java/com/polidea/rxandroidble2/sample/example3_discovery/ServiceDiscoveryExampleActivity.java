@@ -19,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
 import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
 
@@ -31,10 +32,11 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
     private String macAddress;
+    private Disposable connectionDisposable;
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        bleDevice.establishConnection(false)
+        connectionDisposable = bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
                 .compose(bindUntilEvent(PAUSE))
@@ -73,11 +75,9 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private void onAdapterItemClick(DiscoveryResultsAdapter.AdapterItem item) {
 
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
-            final Intent intent = new Intent(this, CharacteristicOperationExampleActivity.class);
+            final Intent intent = CharacteristicOperationExampleActivity.startActivityIntent(this, macAddress, item.uuid);
             // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
-            // final Intent intent = new Intent(this, AdvancedCharacteristicOperationExampleActivity.class);
-            intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
-            intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
+//            final Intent intent = AdvancedCharacteristicOperationExampleActivity.startActivityIntent(this, macAddress, item.uuid);
             startActivity(intent);
         } else {
             //noinspection ConstantConditions
@@ -96,5 +96,14 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
 
     private void updateUI() {
         connectButton.setEnabled(!isConnected());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (connectionDisposable != null) {
+            connectionDisposable.dispose();
+        }
     }
 }

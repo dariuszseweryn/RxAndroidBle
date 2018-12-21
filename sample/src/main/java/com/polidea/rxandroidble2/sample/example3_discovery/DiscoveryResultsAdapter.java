@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.sample.example3_discovery;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -78,7 +79,7 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final int itemViewType = holder.getItemViewType();
         final AdapterItem item = getItem(position);
 
@@ -92,7 +93,8 @@ class DiscoveryResultsAdapter extends RecyclerView.Adapter<DiscoveryResultsAdapt
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final int layout = viewType == AdapterItem.SERVICE ? R.layout.item_discovery_service : R.layout.item_discovery_characteristic;
         final View itemView = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         itemView.setOnClickListener(onClickListener);
