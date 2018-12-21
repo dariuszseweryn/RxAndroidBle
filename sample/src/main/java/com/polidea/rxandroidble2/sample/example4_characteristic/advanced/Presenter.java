@@ -54,7 +54,7 @@ final class Presenter {
                 .flatMap(clickEvent ->
                                 // on click start connecting
                                 rxBleDevice.establishConnection(false)
-                                        .flatMapSingle(rxBleConnection -> mapToConnectionAndCharacteristic(characteristicUuid, rxBleConnection))
+                                        .flatMapSingle(rxBleConnection -> pairWithCharacteristic(characteristicUuid, rxBleConnection))
                                         .flatMap(connectionAndCharacteristic -> {
                                                     BluetoothGattCharacteristic characteristic = connectionAndCharacteristic.second;
                                                     RxBleConnection connection = connectionAndCharacteristic.first;
@@ -63,7 +63,7 @@ final class Presenter {
 
                                                     final Observable<PresenterEvent> writeObservable =
                                                             setupWritingBehaviour(writeClicks, characteristic, connection);
-                                                    
+
                                                     final Observable<PresenterEvent> notifyAndIndicateObservable =
                                                             setupNotificationAndIndicationBehaviour(connection, characteristic,
                                                                     enableNotifyClicks, enablingNotifyClicks, disableNotifyClicks,
@@ -91,8 +91,8 @@ final class Presenter {
 
     }
 
-    private static Single<Pair<RxBleConnection, BluetoothGattCharacteristic>> mapToConnectionAndCharacteristic(UUID characteristicUuid,
-                                                                                                               RxBleConnection rxBleConnection) {
+    private static Single<Pair<RxBleConnection, BluetoothGattCharacteristic>> pairWithCharacteristic(UUID characteristicUuid,
+                                                                                                     RxBleConnection rxBleConnection) {
         return getCharacteristic(characteristicUuid, rxBleConnection)
                 .map(bluetoothGattCharacteristic -> Pair.create(rxBleConnection, bluetoothGattCharacteristic));
     }
