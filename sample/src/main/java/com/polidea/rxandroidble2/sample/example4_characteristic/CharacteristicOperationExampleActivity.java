@@ -1,6 +1,8 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -51,6 +53,13 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private Observable<RxBleConnection> connectionObservable;
     private RxBleDevice bleDevice;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    public static Intent startActivityIntent(Context context, String peripheralMacAddress, UUID characteristicUuid) {
+        Intent intent = new Intent(context, CharacteristicOperationExampleActivity.class);
+        intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, peripheralMacAddress);
+        intent.putExtra(EXTRA_CHARACTERISTIC_UUID, characteristicUuid);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

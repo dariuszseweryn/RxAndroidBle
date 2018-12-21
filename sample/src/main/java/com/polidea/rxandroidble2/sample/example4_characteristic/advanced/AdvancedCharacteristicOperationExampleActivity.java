@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -67,6 +69,13 @@ public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatA
     Button indicateButton;
     private Disposable activityFlowDisposable;
     private Observable<PresenterEvent> presenterEventObservable;
+
+    public static Intent startActivityIntent(Context context, String peripheralMacAddress, UUID characteristicUuid) {
+        Intent intent = new Intent(context, AdvancedCharacteristicOperationExampleActivity.class);
+        intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, peripheralMacAddress);
+        intent.putExtra(EXTRA_CHARACTERISTIC_UUID, characteristicUuid);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
