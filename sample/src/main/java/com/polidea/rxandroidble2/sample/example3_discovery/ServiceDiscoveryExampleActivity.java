@@ -19,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
 public class ServiceDiscoveryExampleActivity extends AppCompatActivity {
@@ -30,16 +31,17 @@ public class ServiceDiscoveryExampleActivity extends AppCompatActivity {
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
     private String macAddress;
-    private Disposable connectionDisposable;
+    private final CompositeDisposable servicesDisposable = new CompositeDisposable();
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        connectionDisposable = bleDevice.establishConnection(false)
+        final Disposable disposable = bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(adapter::swapScanResult, this::onConnectionFailure);
+        servicesDisposable.add(disposable);
 
         updateUI();
     }
@@ -100,9 +102,6 @@ public class ServiceDiscoveryExampleActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
-        if (connectionDisposable != null) {
-            connectionDisposable.dispose();
-        }
+        servicesDisposable.clear();
     }
 }
