@@ -20,6 +20,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
 public class ConnectionExampleActivity extends AppCompatActivity {
@@ -36,8 +37,8 @@ public class ConnectionExampleActivity extends AppCompatActivity {
     SwitchCompat autoConnectToggleSwitch;
     private RxBleDevice bleDevice;
     private Disposable connectionDisposable;
-    private Disposable mtuDisposable;
-    private Disposable connectionStateDisposable;
+    private final CompositeDisposable mtuDisposable = new CompositeDisposable();
+    private Disposable stateDisposable;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
@@ -54,12 +55,13 @@ public class ConnectionExampleActivity extends AppCompatActivity {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
-        mtuDisposable = bleDevice.establishConnection(false)
+        final Disposable disposable = bleDevice.establishConnection(false)
                 .flatMapSingle(rxBleConnection -> rxBleConnection.requestMtu(72))
                 .take(1) // Disconnect automatically after discovery
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(this::onMtuReceived, this::onConnectionFailure);
+        mtuDisposable.add(disposable);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         // How to listen for connection state changes
-        connectionStateDisposable = bleDevice.observeConnectionStateChanges()
+        stateDisposable = bleDevice.observeConnectionStateChanges()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);
     }
@@ -124,17 +126,15 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         super.onPause();
 
         triggerDisconnect();
-        if (mtuDisposable != null) {
-            mtuDisposable.dispose();
-        }
+        mtuDisposable.clear();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        if (connectionStateDisposable != null) {
-            connectionStateDisposable.dispose();
+        if (stateDisposable != null) {
+            stateDisposable.dispose();
         }
     }
 }
