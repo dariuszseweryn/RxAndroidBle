@@ -117,7 +117,7 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun updateButtonUIState() {
-        scanToggleButton.setText(if (isScanning) R.string.stop_scan else R.string.start_scan)
+        scanToggleButton.setText(if (isScanning) R.string.button_stop_scan else R.string.button_start_scan)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

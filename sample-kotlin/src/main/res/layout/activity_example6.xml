@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
+    android:padding="@dimen/margin_standard">
 
     <Button
         android:id="@+id/connect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Connect"/>
+        android:text="@string/button_connect" />
 
     <Button
         android:id="@+id/run_custom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="Run Custom"/>
+        android:text="@string/button_run_custom" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -31,20 +27,20 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0x"
-            android:textSize="14sp"/>
+            android:text="@string/prefix_hex"
+            android:textSize="@dimen/text_size_standard" />
 
         <TextView
             android:id="@+id/custom_hex_output"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"/>
+            android:textSize="@dimen/text_size_standard" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/custom_output"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"/>
+        android:textSize="@dimen/text_size_standard" />
 
 </LinearLayout>

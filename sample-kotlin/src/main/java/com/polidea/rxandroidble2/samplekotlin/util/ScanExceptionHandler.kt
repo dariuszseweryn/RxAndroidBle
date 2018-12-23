@@ -45,7 +45,7 @@ internal fun Activity.showError(exception: BleScanException) {
 private fun Activity.getErrorMessage(exception: BleScanException): String =
 // Special case, as there might or might not be a retry date suggestion
     if (exception.reason == BleScanException.UNDOCUMENTED_SCAN_THROTTLE) {
-        getUndocumentedScanThrottleErrorMessage(exception.retryDateSuggestion)
+        getScanThrottleErrorMessage(exception.retryDateSuggestion)
     } else {
         // Handle all other possible errors
         ERROR_MESSAGES[exception.reason]?.let { errorResId ->
@@ -57,7 +57,7 @@ private fun Activity.getErrorMessage(exception: BleScanException): String =
         }
     }
 
-private fun Activity.getUndocumentedScanThrottleErrorMessage(retryDate: Date?): String =
+private fun Activity.getScanThrottleErrorMessage(retryDate: Date?): String =
     with(StringBuilder(getString(R.string.error_undocumented_scan_throttle))) {
         retryDate?.let { date ->
             String.format(

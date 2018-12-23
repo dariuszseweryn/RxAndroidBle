@@ -5,10 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingTop="@dimen/margin_standard"
     tools:context=".example1_scanning.ScanActivity">
 
     <TextView
@@ -21,11 +18,11 @@
         android:id="@+id/rssi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="@string/read_rssi"/>
+        tools:text="@string/format_rssi"/>
 
     <Button
         android:id="@+id/connect_toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Connect"/>
+        android:text="@string/button_connect"/>
 </LinearLayout>

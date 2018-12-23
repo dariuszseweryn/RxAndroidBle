@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/main"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
+    android:padding="@dimen/margin_standard">
 
     <Button
         android:id="@+id/connect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/connect"/>
+        android:text="@string/button_connect" />
 
     <Button
         android:id="@+id/read"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="@string/read"/>
+        android:text="@string/button_read" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -32,20 +28,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/prefix_hex"
-            android:textSize="14sp"/>
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/read_hex_output"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"/>
+            android:textSize="@dimen/text_size_standard" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/read_output"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"/>
+        android:textSize="@dimen/text_size_standard" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,14 +52,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/prefix_hex"
-            android:textSize="14sp"/>
+            android:textSize="@dimen/text_size_standard" />
 
         <EditText
             android:id="@+id/write_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/write_input"
-            android:inputType="numberDecimal"/>
+            android:hint="@string/edit_text_write_input"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            tools:targetApi="o" />
     </LinearLayout>
 
 
@@ -72,12 +70,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="@string/write"/>
+        android:text="@string/button_write" />
 
     <Button
         android:id="@+id/notify"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="@string/setup_notification"/>
+        android:text="@string/button_setup_notification" />
 </LinearLayout>
