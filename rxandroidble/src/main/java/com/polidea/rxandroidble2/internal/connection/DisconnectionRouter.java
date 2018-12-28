@@ -29,7 +29,6 @@ import io.reactivex.functions.Predicate;
 @ConnectionScope
 class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRouterOutput {
 
-    private static final String TAG = "DisconnectionRouter";
     private final Queue<ObservableEmitter<BleException>> exceptionEmitters = new ConcurrentLinkedQueue<>();
     private BleException exceptionOccurred;
     private Disposable adapterMonitoringDisposable;
@@ -61,14 +60,14 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .subscribe(new Consumer<BleException>() {
                     @Override
                     public void accept(BleException exception) {
-                        RxBleLog.d(TAG, "An exception received, indicating that the adapter has became unusable.");
+                        RxBleLog.d("An exception received, indicating that the adapter has became unusable.");
                         exceptionOccurred = exception;
                         notifySubscribersAboutException();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) {
-                        RxBleLog.w(TAG, "Failed to monitor adapter state.", throwable);
+                        RxBleLog.w(throwable, "Failed to monitor adapter state.");
                     }
                 });
     }
