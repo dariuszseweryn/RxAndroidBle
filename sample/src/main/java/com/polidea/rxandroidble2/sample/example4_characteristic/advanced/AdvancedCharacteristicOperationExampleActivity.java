@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +18,6 @@ import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.util.HexString;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
@@ -45,7 +45,7 @@ import io.reactivex.disposables.Disposable;
  * If the characteristic has both of PROPERTY_NOTIFY and PROPERTY_INDICATE then only one of them is possible to be set at any given time.
  * Texts on notification and indication buttons will change accordingly to the current state of the notifications / indications.
  */
-public class AdvancedCharacteristicOperationExampleActivity extends RxAppCompatActivity {
+public class AdvancedCharacteristicOperationExampleActivity extends AppCompatActivity {
 
     private static final String TAG = AdvancedCharacteristicOperationExampleActivity.class.getSimpleName();
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";

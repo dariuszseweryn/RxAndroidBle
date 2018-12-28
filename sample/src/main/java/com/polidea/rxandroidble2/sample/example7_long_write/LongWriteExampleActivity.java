@@ -4,10 +4,10 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import android.support.v7.app.AppCompatActivity;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ import io.reactivex.disposables.Disposable;
  * <p>
  * We need to write 1024 bytes of data to the device
  */
-public class LongWriteExampleActivity extends RxAppCompatActivity {
+public class LongWriteExampleActivity extends AppCompatActivity {
 
     public static final String DUMMY_DEVICE_ADDRESS = "AA:AA:AA:AA:AA:AA";
     private static final UUID DEVICE_CALLBACK_0 = UUID.randomUUID();
