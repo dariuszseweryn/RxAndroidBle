@@ -46,8 +46,8 @@ public class ConnectorImpl implements Connector {
 
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
                 return obtainRxBleConnection(connectionComponent)
-                        .delaySubscription(enqueueConnectOperation(connectionComponent))
                         .mergeWith(observeDisconnections(connectionComponent))
+                        .delaySubscription(enqueueConnectOperation(connectionComponent))
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
