@@ -69,7 +69,7 @@ class ScanActivity : AppCompatActivity() {
 
     @OnClick(R.id.background_scan_btn)
     fun onBackgroundScanRequested() {
-        // TODO
+        // TODO will be implemented in next PR
 //        startActivity(newBackgroundScanActivity())
     }
 

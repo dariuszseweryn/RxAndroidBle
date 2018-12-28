@@ -29,13 +29,13 @@ class DeviceActivity : AppCompatActivity() {
 
     @OnClick(R.id.connect)
     fun onConnectClick() {
-        // TODO
+        // TODO will be implemented in next PR
 //        startActivity(newConnectionExampleActivity(macAddress))
     }
 
     @OnClick(R.id.discovery)
     fun onDiscoveryClick() {
-        // TODO
+        // TODO will be implemented in next PR
 //        startActivity(newServiceDiscoveryExampleActivity(macAddress))
     }
 }
