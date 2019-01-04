@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">RxAndroidBle Sample Kotlin</string>
+    <string name="title_activity_scan">ScanActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="button_start_scan">Start scan</string>
+    <string name="button_stop_scan">Stop scan</string>
+    <string name="mac_address">MAC: %s</string>
+    <string name="connection_state">State: %s</string>
+    <string name="format_rssi">RSSI: %d</string>
+    <string name="prefix_hex">0x</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="connecting">Connecting</string>
+    <string name="button_read">Read</string>
+    <string name="button_write">Write</string>
+    <string name="button_setup_notification">Register notifications</string>
+    <string name="setting_notification">Setting up notifications…</string>
+    <string name="teardown_notification">Disable notifications</string>
+    <string name="button_setup_indication">Register indications</string>
+    <string name="setting_indication">Setting up indications…</string>
+    <string name="teardown_indication">Disable indications</string>
+    <string name="warning_notify_indicate_compat">NOTIFY &amp; INDICATE COMPATIBILITY MODE ONLY</string>
+    <string name="title_example1">Example RxAndroidBle usage</string>
+    <string name="title_example2">Connection &amp; connection state</string>
+    <string name="title_example3">Service discovery</string>
+    <string name="title_example4">Characteristic operations</string>
+    <string name="not_clickable">No action</string>
+    <string name="edit_text_write_input">Write input</string>
+    <string name="button_scan_in_background">Scan in background</string>
+    <string name="title_hello_bluetooth_world">Hello Bluetooth World!</string>
+    <string name="button_connect">Connect</string>
+    <string name="button_service_discovery">Service discovery</string>
+    <string name="toggle_autoconnect">Autoconnect</string>
+    <string name="title_set_mtu">Set MTU:</string>
+    <string name="button_set">Set</string>
+    <string name="button_connect_and_discover_services">Connect &amp; discover services</string>
+    <string name="button_run_custom">Run Custom</string>
+    <string name="title_characteristic">Characteristic:</string>
+    <string name="title_service">Service:</string>
+
+    <!-- Ble scan error messages -->
+    <string name="error_bluetooth_not_available">Bluetooth is not available</string>
+    <string name="error_bluetooth_disabled">Enable bluetooth and try again</string>
+    <string name="error_location_permission_missing">On Android 6.0 location permission is required. Please enable it in phone settings</string>
+    <string name="error_location_services_disabled">Location services need to be enabled on Android 6.0</string>
+    <string name="error_scan_failed_already_started">Scan with the same filters is already started</string>
+    <string name="error_scan_failed_application_registration_failed">Failed to register application for bluetooth scan</string>
+    <string name="error_scan_failed_feature_unsupported">Scan with specified parameters is not supported</string>
+    <string name="error_scan_failed_internal_error">Scan failed due to internal error</string>
+    <string name="error_scan_failed_out_of_hardware_resources">Scan cannot start due to limited hardware resources</string>
+    <string name="error_undocumented_scan_throttle">Android 7+ does not allow more scans.</string>
+    <string name="error_undocumented_scan_throttle_retry">Try in %d seconds</string>
+    <string name="error_bluetooth_cannot_start">Unable to start scanning</string>
+    <string name="error_unknown_error">Unknown error</string>
+    <string name="error_no_message">No message found for reason=%d. Consider adding one.</string>
+</resources>
