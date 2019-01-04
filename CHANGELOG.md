@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.8.0
+* Added `NotificationSetupMode.QUICK_SETUP` for devices which start notifying right after CCC descriptor write (https://github.com/Polidea/RxAndroidBle/pull/478)
+* Migrated to androidx usage (https://github.com/Polidea/RxAndroidBle/pull/497) 
+
 Version 1.7.2
 * Fixed stalled library (race condition) when trying to connect while BluetoothAdapter is OFF (https://github.com/Polidea/RxAndroidBle/pull/522)
 * Fixed logs in DisconnectionRouter (https://github.com/Polidea/RxAndroidBle/pull/523) 
