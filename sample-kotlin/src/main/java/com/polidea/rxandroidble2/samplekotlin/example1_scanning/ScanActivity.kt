@@ -63,10 +63,6 @@ class ScanActivity : AppCompatActivity() {
         }
     }
 
-    private fun onAdapterItemClick(scanResult: ScanResult) {
-        startActivity(newDeviceActivity(scanResult.bleDevice.macAddress))
-    }
-
     @OnClick(R.id.background_scan_btn)
     fun onBackgroundScanRequested() {
         // TODO will be implemented in next PR
