@@ -1,19 +1,19 @@
 ext {
-    rxJavaVersion = '2.2.2'
+    rxJavaVersion = '2.2.5'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     shadowPluginVersion = '2.0.2'
     daggerVersion = '2.15'
     libs = [
             /* Application dependencies */
-            annotations        : "androidx.annotation:annotation:1.0.0",
+            annotations        : "androidx.annotation:annotation:1.0.1",
             rxjava             : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
             rxandroid          : 'io.reactivex.rxjava2:rxandroid:2.0.2',
             rxrelay            : 'com.jakewharton.rxrelay2:rxrelay:2.1.0',
             junit              : 'junit:junit:4.12',
-            groovy             : 'org.codehaus.groovy:groovy:2.4.13',
-            spock              : ['org.spockframework:spock-core:1.1-groovy-2.4',
-                                  'cglib:cglib-nodep:3.2.7',
+            groovy             : 'org.codehaus.groovy:groovy:2.5.5',
+            spock              : ['org.spockframework:spock-core:1.2-groovy-2.5',
+                                  'cglib:cglib-nodep:3.2.10',
                                   'org.objenesis:objenesis:2.6'],
             robolectric        : 'org.robolectric:robolectric:3.8',
             electricspock      : 'com.github.hkhc:electricspock:0.9',
