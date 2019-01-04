@@ -24,7 +24,7 @@
             android:text="@string/button_stop_scan" />
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scan_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

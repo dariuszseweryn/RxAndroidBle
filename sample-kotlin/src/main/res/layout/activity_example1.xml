@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:text="@string/button_start_scan" />
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scan_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

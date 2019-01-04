@@ -1,10 +1,10 @@
 package com.polidea.rxandroidble2.samplekotlin.example1_scanning
 
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.polidea.rxandroidble2.samplekotlin.example1_scanning.ScanResultsAdapter.ViewHolder
