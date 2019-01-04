@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.samplekotlin.util
 
 import android.app.Activity
 import android.support.annotation.StringRes
-import android.support.design.widget.Snackbar
+import com.google.android.material.snackbar.Snackbar
 import com.polidea.rxandroidble2.samplekotlin.R
 
 internal fun Activity.showSnackbarShort(text: CharSequence) {
