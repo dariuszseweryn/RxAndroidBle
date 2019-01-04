@@ -2,9 +2,9 @@ package com.polidea.rxandroidble2.sample.example7_long_write;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
 
-import android.support.v7.app.AppCompatActivity;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.sample.SampleApplication;
