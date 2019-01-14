@@ -104,9 +104,8 @@ class ScanActivity : AppCompatActivity() {
         if (throwable is BleScanException) showError(throwable)
     }
 
-    private fun updateButtonUIState() {
+    private fun updateButtonUIState() =
         scan_toggle_btn.setText(if (isScanning) R.string.button_stop_scan else R.string.button_start_scan)
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (requestCode == REQUEST_PERMISSION_COARSE_LOCATION &&
@@ -128,9 +127,8 @@ class ScanActivity : AppCompatActivity() {
 private fun Context.checkLocationPermission(): Boolean =
     ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED
 
-private fun Activity.requestLocationPermission(requestCode: Int) {
+private fun Activity.requestLocationPermission(requestCode: Int) =
     ActivityCompat.requestPermissions(this, arrayOf(ACCESS_COARSE_LOCATION), requestCode)
-}
 
 private fun isLocationPermissionGranted(permissions: Array<String>, grantResults: IntArray): Boolean {
     permissions.forEachIndexed { index, permission ->

@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_device.connect
 import kotlinx.android.synthetic.main.activity_device.discovery
+import com.polidea.rxandroidble2.samplekotlin.example2_connection.ConnectionExampleActivity
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 
@@ -28,8 +29,7 @@ class DeviceActivity : AppCompatActivity() {
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 
         connect.setOnClickListener {
-            // TODO will be implemented in next PR
-//        startActivity(ConnectionExampleActivity.newInstance(this, macAddress))
+            startActivity(ConnectionExampleActivity.newInstance(this, macAddress))
         }
 
         discovery.setOnClickListener {

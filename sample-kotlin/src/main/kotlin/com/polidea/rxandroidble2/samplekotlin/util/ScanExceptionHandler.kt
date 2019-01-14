@@ -35,12 +35,11 @@ private val ERROR_MESSAGES = mapOf(
  *
  * @param exception BleScanException to show error message for
  */
-internal fun Activity.showError(exception: BleScanException) {
+internal fun Activity.showError(exception: BleScanException) =
     getErrorMessage(exception).let { errorMessage ->
         Log.e("Scanning", errorMessage, exception)
         showSnackbarShort(errorMessage)
     }
-}
 
 private fun Activity.getErrorMessage(exception: BleScanException): String =
 // Special case, as there might or might not be a retry date suggestion
