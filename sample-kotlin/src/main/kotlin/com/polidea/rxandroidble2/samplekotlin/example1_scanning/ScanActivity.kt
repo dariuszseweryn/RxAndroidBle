@@ -10,9 +10,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.polidea.rxandroidble2.exceptions.BleScanException
+import com.polidea.rxandroidble2.samplekotlin.DeviceActivity
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.newDeviceActivity
 import com.polidea.rxandroidble2.samplekotlin.util.showError
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanResult
@@ -32,7 +32,8 @@ class ScanActivity : AppCompatActivity() {
 
     private var scanDisposable: Disposable? = null
 
-    private val resultsAdapter = ScanResultsAdapter { startActivity(newDeviceActivity(it.bleDevice.macAddress)) }
+    private val resultsAdapter =
+        ScanResultsAdapter { startActivity(DeviceActivity.newInstance(this, it.bleDevice.macAddress)) }
 
     private var hasClickedScan = false
 

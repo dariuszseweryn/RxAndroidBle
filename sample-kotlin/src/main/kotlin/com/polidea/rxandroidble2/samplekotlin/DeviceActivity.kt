@@ -9,12 +9,14 @@ import kotlinx.android.synthetic.main.activity_device.discovery
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 
-internal fun Context.newDeviceActivity(macAddress: String): Intent =
-    Intent(this, DeviceActivity::class.java).apply {
-        putExtra(EXTRA_MAC_ADDRESS, macAddress)
-    }
-
 class DeviceActivity : AppCompatActivity() {
+
+    companion object {
+        fun newInstance(context: Context, macAddress: String): Intent =
+            Intent(context, DeviceActivity::class.java).apply {
+                putExtra(EXTRA_MAC_ADDRESS, macAddress)
+            }
+    }
 
     private lateinit var macAddress: String
 
