@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("com.android.application")
     kotlin("android")
+    kotlin("android.extensions")
 }
 
 android {
@@ -49,10 +50,6 @@ dependencies {
     implementation("com.google.android.material:material:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.0.0")
     implementation("androidx.annotation:annotation:1.0.1")
-
-    // Butterknife
-    implementation("com.jakewharton:butterknife:8.8.1")
-    annotationProcessor("com.jakewharton:butterknife-compiler:8.8.1")
 
     // RxBinding
     implementation("com.jakewharton.rxbinding2:rxbinding:2.2.0")
