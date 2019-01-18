@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import bleshadow.dagger.Binds;
+import bleshadow.dagger.BindsInstance;
 import bleshadow.dagger.Component;
 import bleshadow.dagger.Module;
 import bleshadow.dagger.Provides;
@@ -49,7 +50,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 @ClientScope
-@Component(modules = {ClientComponent.ClientModule.class, ClientComponent.ClientModuleBinder.class})
+@Component(modules = {ClientComponent.ClientModule.class})
 public interface ClientComponent {
 
     class NamedExecutors {
@@ -101,27 +102,19 @@ public interface ClientComponent {
         }
     }
 
+    @Component.Builder
+    interface Builder {
+        ClientComponent build();
+
+        @BindsInstance
+        Builder applicationContext(Context context);
+    }
+
     @Module(subcomponents = DeviceComponent.class)
-    class ClientModule {
-
-        private final Context context;
-
-        public ClientModule(Context context) {
-            this.context = context;
-        }
+    abstract class ClientModule {
 
         @Provides
-        BackgroundScanner provideBackgroundScanner(BackgroundScannerImpl backgroundScannerImpl) {
-            return backgroundScannerImpl;
-        }
-
-        @Provides
-        Context provideApplicationContext() {
-            return context;
-        }
-
-        @Provides
-        BluetoothManager provideBluetoothManager() {
+        static BluetoothManager provideBluetoothManager(Context context) {
             return (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         }
 
@@ -144,12 +137,12 @@ public interface ClientComponent {
         }
 
         @Provides
-        ContentResolver provideContentResolver() {
+        static ContentResolver provideContentResolver(Context context) {
             return context.getContentResolver();
         }
 
         @Provides
-        LocationServicesStatus provideLocationServicesStatus(
+        static LocationServicesStatus provideLocationServicesStatus(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
                 Provider<LocationServicesStatusApi18> locationServicesStatusApi18Provider,
                 Provider<LocationServicesStatusApi23> locationServicesStatusApi23Provider
@@ -161,7 +154,7 @@ public interface ClientComponent {
 
         @Provides
         @Named(NamedBooleanObservables.LOCATION_SERVICES_OK)
-        Observable<Boolean> provideLocationServicesOkObservable(
+        static Observable<Boolean> provideLocationServicesOkObservable(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
                 LocationServicesOkObservableApi23Factory locationServicesOkObservableApi23Factory
         ) {
@@ -222,13 +215,13 @@ public interface ClientComponent {
         }
 
         @Provides
-        LocationManager provideLocationManager() {
+        static LocationManager provideLocationManager(Context context) {
             return (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         }
 
         @Provides
         @Named(PlatformConstants.INT_TARGET_SDK)
-        int provideTargetSdk() {
+        static int provideTargetSdk(Context context) {
             try {
                 return context.getPackageManager().getApplicationInfo(context.getPackageName(), 0).targetSdkVersion;
             } catch (Throwable catchThemAll) {
@@ -239,7 +232,7 @@ public interface ClientComponent {
         @Provides
         @Named(PlatformConstants.BOOL_IS_ANDROID_WEAR)
         @SuppressLint("InlinedApi")
-        boolean provideIsAndroidWear(@Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
+        static boolean provideIsAndroidWear(Context context, @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
             return deviceSdk >= Build.VERSION_CODES.KITKAT_WATCH
                     && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
         }
@@ -290,13 +283,12 @@ public interface ClientComponent {
                 return scanPreconditionVerifierForApi24.get();
             }
         }
-    }
-
-    @Module
-    abstract class ClientModuleBinder {
 
         @Binds
         abstract Observable<RxBleAdapterStateObservable.BleAdapterState> bindStateObs(RxBleAdapterStateObservable stateObservable);
+
+        @Binds
+        abstract BackgroundScanner bindBackgroundScanner(BackgroundScannerImpl backgroundScannerImpl);
 
         @Binds
         @ClientScope
