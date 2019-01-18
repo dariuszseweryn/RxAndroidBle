@@ -266,6 +266,8 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
 
         /**
          * {@inheritDoc}
+         * If set to true and Location Services are off a {@link com.polidea.rxandroidble2.exceptions.BleScanException} will be emitted.
+         * <p>Default: true.</p>
          */
         @Override
         public ScanSettings.Builder setShouldCheckLocationServicesState(boolean shouldCheck) {
