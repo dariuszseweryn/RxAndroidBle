@@ -5,15 +5,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
@@ -25,16 +20,13 @@ import com.polidea.rxandroidble2.scan.ScanSettings
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.activity_example1.background_scan_btn
+import kotlinx.android.synthetic.main.activity_example1.scan_results
+import kotlinx.android.synthetic.main.activity_example1.scan_toggle_btn
 
 private const val REQUEST_PERMISSION_COARSE_LOCATION = 101
 
 class ScanActivity : AppCompatActivity() {
-
-    @BindView(R.id.scan_toggle_btn)
-    internal lateinit var scanToggleButton: Button
-
-    @BindView(R.id.scan_results)
-    internal lateinit var recyclerView: RecyclerView
 
     private val rxBleClient = SampleApplication.rxBleClient
 
@@ -50,12 +42,18 @@ class ScanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example1)
-        ButterKnife.bind(this)
         configureResultList()
+
+        background_scan_btn.setOnClickListener {
+            // TODO will be implemented in next PR
+//        startActivity(newBackgroundScanActivity())
+        }
+
+        scan_toggle_btn.setOnClickListener { onScanToggleClick() }
     }
 
     private fun configureResultList() {
-        with(recyclerView) {
+        with(scan_results) {
             setHasFixedSize(true)
             itemAnimator = null
             layoutManager = LinearLayoutManager(this@ScanActivity)
@@ -63,14 +61,7 @@ class ScanActivity : AppCompatActivity() {
         }
     }
 
-    @OnClick(R.id.background_scan_btn)
-    fun onBackgroundScanRequested() {
-        // TODO will be implemented in next PR
-//        startActivity(newBackgroundScanActivity())
-    }
-
-    @OnClick(R.id.scan_toggle_btn)
-    fun onScanToggleClick() {
+    private fun onScanToggleClick() {
         if (isScanning) {
             scanDisposable?.dispose()
         } else {
@@ -113,7 +104,7 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun updateButtonUIState() {
-        scanToggleButton.setText(if (isScanning) R.string.button_stop_scan else R.string.button_start_scan)
+        scan_toggle_btn.setText(if (isScanning) R.string.button_stop_scan else R.string.button_start_scan)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

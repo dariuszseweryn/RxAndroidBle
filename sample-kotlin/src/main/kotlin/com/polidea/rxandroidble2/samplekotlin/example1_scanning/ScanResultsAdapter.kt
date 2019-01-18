@@ -5,8 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.polidea.rxandroidble2.samplekotlin.example1_scanning.ScanResultsAdapter.ViewHolder
 import com.polidea.rxandroidble2.scan.ScanResult
 
@@ -15,15 +13,8 @@ internal class ScanResultsAdapter(
 ) : RecyclerView.Adapter<ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        @BindView(android.R.id.text1)
-        lateinit var device: TextView
-
-        @BindView(android.R.id.text2)
-        lateinit var rssi: TextView
-
-        init {
-            ButterKnife.bind(this, itemView)
-        }
+        val device: TextView = itemView.findViewById(android.R.id.text1)
+        val rssi: TextView = itemView.findViewById(android.R.id.text2)
     }
 
     private val data = mutableListOf<ScanResult>()
