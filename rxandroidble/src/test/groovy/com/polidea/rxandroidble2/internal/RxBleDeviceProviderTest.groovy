@@ -84,8 +84,8 @@ class RxBleDeviceProviderTest extends Specification {
                             }
 
                             @Override
-                            DeviceComponent.Builder deviceModule(DeviceModule module) {
-                                this.device = new StubDevice(module.macAddress)
+                            DeviceComponent.Builder macAddress(String macAddress) {
+                                this.device = new StubDevice(macAddress)
                                 return this
                             }
                         }
