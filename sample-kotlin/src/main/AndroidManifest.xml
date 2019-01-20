@@ -27,6 +27,10 @@
             android:name=".example2_connection.ConnectionExampleActivity"
             android:label="@string/title_example2" />
 
+        <activity
+            android:name=".example3_discovery.ServiceDiscoveryExampleActivity"
+            android:label="@string/title_example3" />
+
     </application>
 
 </manifest>
