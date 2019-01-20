@@ -8,9 +8,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.sample.util.isConnected
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
+import com.polidea.rxandroidble2.samplekotlin.util.isConnected
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
