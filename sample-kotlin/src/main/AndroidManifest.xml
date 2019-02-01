@@ -24,6 +24,12 @@
         <activity android:name=".DeviceActivity" />
 
         <activity
+            android:name="com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning.BackgroundScanActivity"
+            android:label="@string/title_example1" />
+
+        <receiver android:name="com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning.ScanReceiver" />
+
+        <activity
             android:name=".example2_connection.ConnectionExampleActivity"
             android:label="@string/title_example2" />
 
