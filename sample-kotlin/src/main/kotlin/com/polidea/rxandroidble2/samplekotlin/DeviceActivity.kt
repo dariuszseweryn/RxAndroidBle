@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.polidea.rxandroidble2.samplekotlin.example2_connection.ConnectionExampleActivity
+import com.polidea.rxandroidble2.samplekotlin.example3_discovery.ServiceDiscoveryExampleActivity
 import kotlinx.android.synthetic.main.activity_device.connect
 import kotlinx.android.synthetic.main.activity_device.discovery
 
@@ -33,8 +34,7 @@ class DeviceActivity : AppCompatActivity() {
         }
 
         discovery.setOnClickListener {
-            // TODO will be implemented in next PR
-//        startActivity(ServiceDiscoveryExampleActivity.newInstance(this, macAddress))
+            startActivity(ServiceDiscoveryExampleActivity.newInstance(this, macAddress))
         }
     }
 }
