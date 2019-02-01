@@ -192,6 +192,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
         mMatchMode = in.readInt();
         //noinspection WrongConstant
         mNumOfMatchesPerFilter = in.readInt();
+        mShouldCheckLocationProviderState = in.readInt() != 0;
     }
 
     @Override
@@ -201,6 +202,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
         dest.writeLong(mReportDelayMillis);
         dest.writeInt(mMatchMode);
         dest.writeInt(mNumOfMatchesPerFilter);
+        dest.writeInt(mShouldCheckLocationProviderState ? 1 : 0);
     }
 
     @Override
