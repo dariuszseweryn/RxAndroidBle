@@ -8,7 +8,7 @@
     <string name="connection_state">State: %s</string>
     <string name="format_rssi">RSSI: %d</string>
     <string name="prefix_hex">0x</string>
-    <string name="disconnect">Disconnect</string>
+    <string name="button_disconnect">Disconnect</string>
     <string name="connecting">Connecting</string>
     <string name="button_read">Read</string>
     <string name="button_write">Write</string>

@@ -45,8 +45,11 @@
 
         <EditText
             android:id="@+id/newMtu"
+            android:inputType="number"
             android:layout_width="100dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            tools:targetApi="o" />
 
         <Button
             android:id="@+id/set_mtu"

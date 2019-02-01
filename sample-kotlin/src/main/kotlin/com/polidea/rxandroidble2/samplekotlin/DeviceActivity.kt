@@ -4,17 +4,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.polidea.rxandroidble2.samplekotlin.example2_connection.ConnectionExampleActivity
 import kotlinx.android.synthetic.main.activity_device.connect
 import kotlinx.android.synthetic.main.activity_device.discovery
 
 private const val EXTRA_MAC_ADDRESS = "extra_mac_address"
 
-internal fun Context.newDeviceActivity(macAddress: String): Intent =
-    Intent(this, DeviceActivity::class.java).apply {
-        putExtra(EXTRA_MAC_ADDRESS, macAddress)
-    }
-
 class DeviceActivity : AppCompatActivity() {
+
+    companion object {
+        fun newInstance(context: Context, macAddress: String): Intent =
+            Intent(context, DeviceActivity::class.java).apply {
+                putExtra(EXTRA_MAC_ADDRESS, macAddress)
+            }
+    }
 
     private lateinit var macAddress: String
 
@@ -26,8 +29,7 @@ class DeviceActivity : AppCompatActivity() {
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 
         connect.setOnClickListener {
-            // TODO will be implemented in next PR
-//        startActivity(ConnectionExampleActivity.newInstance(this, macAddress))
+            startActivity(ConnectionExampleActivity.newInstance(this, macAddress))
         }
 
         discovery.setOnClickListener {
