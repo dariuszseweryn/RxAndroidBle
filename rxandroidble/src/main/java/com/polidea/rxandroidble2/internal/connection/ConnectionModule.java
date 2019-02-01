@@ -1,49 +1,47 @@
 package com.polidea.rxandroidble2.internal.connection;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ConnectionSetup;
+import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.Timeout;
+import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
+import com.polidea.rxandroidble2.internal.operations.OperationsProviderImpl;
 import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
+import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueueImpl;
 import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
 
+import bleshadow.dagger.Binds;
 import bleshadow.dagger.Module;
 import bleshadow.dagger.Provides;
+import bleshadow.dagger.multibindings.IntoSet;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
 import io.reactivex.Scheduler;
 
-import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
+import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
+import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
+import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
 
 @Module
-public class ConnectionModule {
+public abstract class ConnectionModule {
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
-    final boolean autoConnect;
-    final boolean suppressOperationCheck;
-    private final Timeout operationTimeout;
-
-    ConnectionModule(ConnectionSetup connectionSetup) {
-        this.autoConnect = connectionSetup.autoConnect;
-        this.suppressOperationCheck = connectionSetup.suppressOperationCheck;
-        this.operationTimeout = connectionSetup.operationTimeout;
-    }
-
-    @ConnectionScope
-    @Provides @Named(AUTO_CONNECT) boolean provideAutoConnect() {
-        return autoConnect;
-    }
-
 
     @Provides
     @Named(OPERATION_TIMEOUT)
-    TimeoutConfiguration providesOperationTimeoutConf(@Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler) {
+    static TimeoutConfiguration providesOperationTimeoutConf(
+            @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
+            Timeout operationTimeout
+    ) {
         return new TimeoutConfiguration(operationTimeout.timeout, operationTimeout.timeUnit, timeoutScheduler);
     }
 
     @Provides
-    IllegalOperationHandler provideIllegalOperationHandler(
+    static IllegalOperationHandler provideIllegalOperationHandler(
+            @Named(SUPPRESS_OPERATION_CHECKS) boolean suppressOperationCheck,
             Provider<LoggingIllegalOperationHandler> loggingIllegalOperationHandlerProvider,
             Provider<ThrowingIllegalOperationHandler> throwingIllegalOperationHandlerProvider
             ) {
@@ -55,7 +53,7 @@ public class ConnectionModule {
     }
 
     @Provides
-    CharacteristicPropertiesParser provideCharacteristicPropertiesParser() {
+    static CharacteristicPropertiesParser provideCharacteristicPropertiesParser() {
         return new CharacteristicPropertiesParser(BluetoothGattCharacteristic.PROPERTY_BROADCAST,
                 BluetoothGattCharacteristic.PROPERTY_READ,
                 BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
@@ -64,4 +62,54 @@ public class ConnectionModule {
                 BluetoothGattCharacteristic.PROPERTY_INDICATE,
                 BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE);
     }
+
+    @Provides
+    @Named(GATT_WRITE_MTU_OVERHEAD)
+    static int gattWriteMtuOverhead() {
+        return RxBleConnection.GATT_WRITE_MTU_OVERHEAD;
+    }
+
+    @Provides
+    @Named(GATT_MTU_MINIMUM)
+    static int minimumMtu() {
+        return RxBleConnection.GATT_MTU_MINIMUM;
+    }
+
+    @Provides
+    static BluetoothGatt provideBluetoothGatt(BluetoothGattProvider bluetoothGattProvider) {
+        return bluetoothGattProvider.getBluetoothGatt();
+    }
+
+    @Binds
+    abstract RxBleConnection.LongWriteOperationBuilder bindLongWriteOperationBuilder(LongWriteOperationBuilderImpl operationBuilder);
+
+    @Binds
+    abstract OperationsProvider bindOperationsProvider(OperationsProviderImpl operationsProvider);
+
+    @Binds
+    abstract MtuProvider bindCurrentMtuProvider(MtuWatcher mtuWatcher);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindMtuWatcherSubscriptionWatcher(MtuWatcher mtuWatcher);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindDisconnectActionSubscriptionWatcher(DisconnectAction disconnectAction);
+
+    @Binds
+    @IntoSet
+    abstract ConnectionSubscriptionWatcher bindConnectionQueueSubscriptionWatcher(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
+    abstract RxBleConnection bindRxBleConnection(RxBleConnectionImpl rxBleConnection);
+
+    @Binds
+    abstract ConnectionOperationQueue bindConnectionOperationQueue(ConnectionOperationQueueImpl connectionOperationQueue);
+
+    @Binds
+    abstract DisconnectionRouterInput bindDisconnectionRouterInput(DisconnectionRouter disconnectionRouter);
+
+    @Binds
+    abstract DisconnectionRouterOutput bindDisconnectionRouterOutput(DisconnectionRouter disconnectionRouter);
 }

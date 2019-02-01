@@ -41,7 +41,9 @@ public class ConnectorImpl implements Connector {
             @Override
             public ObservableSource<RxBleConnection> call() throws Exception {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
-                        .connectionModule(new ConnectionModule(options))
+                        .autoConnect(options.autoConnect)
+                        .suppressOperationChecks(options.suppressOperationCheck)
+                        .operationTimeout(options.operationTimeout)
                         .build();
 
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();

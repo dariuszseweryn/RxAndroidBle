@@ -1,12 +1,15 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.internal.operations.ConnectOperation;
+import bleshadow.dagger.BindsInstance;
 import bleshadow.dagger.Subcomponent;
+import bleshadow.javax.inject.Named;
 import java.util.Set;
 
 @ConnectionScope
-@Subcomponent(modules = {ConnectionModule.class, ConnectionModuleBinder.class})
+@Subcomponent(modules = {ConnectionModule.class})
 public interface ConnectionComponent {
 
     class NamedBooleans {
@@ -24,7 +27,14 @@ public interface ConnectionComponent {
     @Subcomponent.Builder
     interface Builder {
 
-        Builder connectionModule(ConnectionModule connectionModule);
+        @BindsInstance
+        Builder autoConnect(@Named(NamedBooleans.AUTO_CONNECT) boolean autoConnect);
+
+        @BindsInstance
+        Builder suppressOperationChecks(@Named(NamedBooleans.SUPPRESS_OPERATION_CHECKS) boolean suppressOperationChecks);
+
+        @BindsInstance
+        Builder operationTimeout(Timeout operationTimeout);
 
         ConnectionComponent build();
     }
