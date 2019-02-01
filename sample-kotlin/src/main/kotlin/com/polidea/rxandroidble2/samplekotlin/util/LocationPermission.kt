@@ -10,8 +10,7 @@ import androidx.core.content.ContextCompat
 private const val REQUEST_PERMISSION_COARSE_LOCATION = 101
 
 internal fun Context.checkLocationPermission(): Boolean =
-    ContextCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
+    ContextCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
 internal fun Activity.requestLocationPermission() =
     ActivityCompat.requestPermissions(
