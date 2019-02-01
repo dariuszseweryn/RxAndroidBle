@@ -5,5 +5,5 @@ import com.polidea.rxandroidble2.exceptions.BleScanException;
 
 public interface ScanPreconditionsVerifier {
 
-    void verify() throws BleScanException;
+    void verify(boolean checkLocationProviderState) throws BleScanException;
 }

@@ -34,8 +34,8 @@ public class ScanPreconditionsVerifierApi24 implements ScanPreconditionsVerifier
     }
 
     @Override
-    public void verify() {
-        scanPreconditionVerifierApi18.verify();
+    public void verify(boolean checkLocationProviderState) {
+        scanPreconditionVerifierApi18.verify(checkLocationProviderState);
 
         /*
          * Android 7.0 (API 24) introduces an undocumented scan throttle for applications that try to scan more than 5 times during

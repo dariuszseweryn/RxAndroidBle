@@ -6,8 +6,11 @@ import io.reactivex.schedulers.TestScheduler
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
+import spock.lang.Unroll
 
-public class ScanPreconditionsVerifierApi24Test extends Specification {
+class ScanPreconditionsVerifierApi24Test extends Specification {
+
+    private static final boolean[] TRUE_FALSE = [true, false]
 
     private TestScheduler testScheduler = new TestScheduler()
     private ScanPreconditionsVerifierApi18 mockScanPreconditionVerifierApi18 = Mock ScanPreconditionsVerifierApi18
@@ -17,6 +20,7 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         testScheduler.advanceTimeTo(1, TimeUnit.MINUTES)
     }
 
+    @Unroll
     def "should perform checks in proper order"() {
 
         given:
@@ -25,60 +29,90 @@ public class ScanPreconditionsVerifierApi24Test extends Specification {
         scheduler.now(TimeUnit.MILLISECONDS) >> TimeUnit.SECONDS.toMillis(5)
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
-        1 * mockScanPreconditionVerifierApi18.verify()
+        1 * mockScanPreconditionVerifierApi18.verify(checkLocationServices)
 
         then:
         thrown BleScanException
+
+        where:
+        checkLocationServices << [true, false]
     }
 
+    @Unroll
     def "should proxy exception thrown by ScanPreconditionsVerifierApi18"() {
 
         given:
         def testException = new BleScanException(BleScanException.UNKNOWN_ERROR_CODE, new Date())
-        mockScanPreconditionVerifierApi18.verify() >> { throw testException }
+        mockScanPreconditionVerifierApi18.verify(_) >> { throw testException }
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
         thrown BleScanException
+
+        where:
+        checkLocationServices << [true, false]
     }
 
+    @Unroll
     def "should throw BleScanException.UNDOCUMENTED_SCAN_THROTTLE if called 6th time during a 30 second window"() {
 
         given:
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices0)
+        objectUnderTest.verify(checkLocationServices1)
+        objectUnderTest.verify(checkLocationServices2)
+        objectUnderTest.verify(checkLocationServices3)
+        objectUnderTest.verify(checkLocationServices4)
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices5)
 
         then:
         BleScanException e = thrown BleScanException
         e.getReason() == BleScanException.UNDOCUMENTED_SCAN_THROTTLE
         e.getRetryDateSuggestion() == (new Date(testScheduler.now(TimeUnit.MILLISECONDS) + TimeUnit.SECONDS.toMillis(30)))
+
+        where:
+        [
+                checkLocationServices0,
+                checkLocationServices1,
+                checkLocationServices2,
+                checkLocationServices3,
+                checkLocationServices4,
+                checkLocationServices5
+        ] << [TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE].combinations()
+
     }
 
+    @Unroll
     def "should not throw BleScanException.UNDOCUMENTED_SCAN_THROTTLE if called 6th time after a 30 second window"() {
 
         given:
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices0)
+        objectUnderTest.verify(checkLocationServices1)
+        objectUnderTest.verify(checkLocationServices2)
+        objectUnderTest.verify(checkLocationServices3)
+        objectUnderTest.verify(checkLocationServices4)
         testScheduler.advanceTimeBy(31, TimeUnit.SECONDS)
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices5)
 
         then:
         notThrown Throwable
+
+        where:
+        [
+                checkLocationServices0,
+                checkLocationServices1,
+                checkLocationServices2,
+                checkLocationServices3,
+                checkLocationServices4,
+                checkLocationServices5
+        ] << [TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE].combinations()
     }
 }

@@ -6,7 +6,7 @@ import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class ScanPreconditionsVerifierApi18Test extends Specification {
+class ScanPreconditionsVerifierApi18Test extends Specification {
 
     private RxBleAdapterWrapper mockRxBleAdapterWrapper = Mock RxBleAdapterWrapper
 
@@ -19,7 +19,7 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
     def "should perform checks in proper order"() {
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(true)
 
         then:
         1 * mockRxBleAdapterWrapper.hasBluetoothAdapter() >> true
@@ -34,6 +34,7 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         1 * mockLocationServicesStatus.isLocationProviderOk() >> true
     }
 
+    @Unroll
     def "should not throw any exception if all checks return true"() {
 
         given:
@@ -43,10 +44,13 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         mockLocationServicesStatus.isLocationProviderOk() >> true
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
         notThrown Throwable
+
+        where:
+        checkLocationServices << TRUE_FALSE
     }
 
     @Unroll
@@ -59,14 +63,14 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOk
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
         BleScanException e = thrown(BleScanException)
         e.reason == BleScanException.BLUETOOTH_NOT_AVAILABLE
 
         where:
-        [isBluetoothEnabled, isLocationPermissionOk, isLocationProviderOk] << [TRUE_FALSE, TRUE_FALSE, TRUE_FALSE].combinations()
+        [isBluetoothEnabled, isLocationPermissionOk, isLocationProviderOk, checkLocationServices] << [TRUE_FALSE, TRUE_FALSE, TRUE_FALSE, TRUE_FALSE].combinations()
     }
 
     @Unroll
@@ -79,14 +83,14 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOk
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
         BleScanException e = thrown(BleScanException)
         e.reason == BleScanException.BLUETOOTH_DISABLED
 
         where:
-        [isLocationPermissionOk, isLocationProviderOk] << [TRUE_FALSE, TRUE_FALSE].combinations()
+        [isLocationPermissionOk, isLocationProviderOk, checkLocationServices] << [TRUE_FALSE, TRUE_FALSE, TRUE_FALSE].combinations()
     }
 
     @Unroll
@@ -99,14 +103,14 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOk
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(checkLocationServices)
 
         then:
         BleScanException e = thrown(BleScanException)
         e.reason == BleScanException.LOCATION_PERMISSION_MISSING
 
         where:
-        [isLocationProviderOk] << [TRUE_FALSE].combinations()
+        [isLocationProviderOk, checkLocationServices] << [TRUE_FALSE, TRUE_FALSE].combinations()
     }
 
     def "should throw BleScanException.LOCATION_SERVICES_DISABLED if location services are not enabled"() {
@@ -118,10 +122,25 @@ public class ScanPreconditionsVerifierApi18Test extends Specification {
         mockLocationServicesStatus.isLocationProviderOk() >> false
 
         when:
-        objectUnderTest.verify()
+        objectUnderTest.verify(true)
 
         then:
         BleScanException e = thrown(BleScanException)
         e.reason == BleScanException.LOCATION_SERVICES_DISABLED
+    }
+
+    def "should not check if isLocationProviderOk if checkLocationServices is false"() {
+
+        given:
+        mockRxBleAdapterWrapper.hasBluetoothAdapter() >> true
+        mockRxBleAdapterWrapper.isBluetoothEnabled() >> true
+        mockLocationServicesStatus.isLocationPermissionOk() >> true
+        0 * mockLocationServicesStatus.isLocationProviderOk() >> false
+
+        when:
+        objectUnderTest.verify(false)
+
+        then:
+        noExceptionThrown()
     }
 }

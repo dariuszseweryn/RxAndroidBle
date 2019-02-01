@@ -119,7 +119,7 @@ class RxBleClientImpl extends RxBleClient {
         return Observable.defer(new Callable<ObservableSource<? extends ScanResult>>() {
             @Override
             public Observable<ScanResult> call() {
-                scanPreconditionVerifier.verify();
+                scanPreconditionVerifier.verify(scanSettings.shouldCheckLocationProviderState());
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
                 final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
                 return operationQueue.queue(scanOperation)
@@ -140,7 +140,7 @@ class RxBleClientImpl extends RxBleClient {
         return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
             @Override
             public ObservableSource<? extends RxBleScanResult> call() throws Exception {
-                scanPreconditionVerifier.verify();
+                scanPreconditionVerifier.verify(true);
                 return initializeScan(filterServiceUUIDs);
             }
         });
