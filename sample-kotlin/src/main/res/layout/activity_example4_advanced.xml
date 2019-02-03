@@ -8,13 +8,13 @@
     android:paddingTop="@dimen/margin_standard">
 
     <Button
-        android:id="@+id/connect"
+        android:id="@+id/connect_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_connect" />
 
     <Button
-        android:id="@+id/read"
+        android:id="@+id/read_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
@@ -66,7 +66,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/write"
+        android:id="@+id/write_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
@@ -79,7 +79,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/notify"
+            android:id="@+id/notify_button"
             style="?android:buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -88,7 +88,7 @@
             android:text="@string/button_setup_notification" />
 
         <Button
-            android:id="@+id/indicate"
+            android:id="@+id/indicate_button"
             style="?android:buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
