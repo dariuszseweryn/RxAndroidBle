@@ -37,6 +37,10 @@
             android:name=".example3_discovery.ServiceDiscoveryExampleActivity"
             android:label="@string/title_example3" />
 
+        <activity
+            android:name=".example4_characteristic.CharacteristicOperationExampleActivity"
+            android:label="@string/title_example4"/>
+
     </application>
 
 </manifest>
