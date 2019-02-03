@@ -27,6 +27,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
@@ -56,4 +57,9 @@ dependencies {
 
     // Replaying share
     implementation 'com.jakewharton.rx2:replaying-share:2.1.0'
+
+    // Test
+    testImplementation project(':mockrxandroidble')
+    testImplementation rootProject.ext.libs.junit
+    testImplementation rootProject.ext.libs.robolectric
 }

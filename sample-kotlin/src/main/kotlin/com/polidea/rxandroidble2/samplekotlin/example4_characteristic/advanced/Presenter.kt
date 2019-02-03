@@ -200,8 +200,8 @@ private fun BluetoothGattCharacteristic.enableNotifyOrIndicate(property: Int): O
             Observable.never()
         } else {
             // only the first click to source clicks Observable is taken into account
-            // we map to true/false to differentiate clicks to notify/indicate
-            it.take(1).map { property == PROPERTY_NOTIFY }
+            // we map to true/false to differentiate clicks to indicate/notify
+            it.take(1).map { property == PROPERTY_INDICATE }
         }
     }
 
