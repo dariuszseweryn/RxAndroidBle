@@ -115,6 +115,9 @@ class PresenterTest {
         ).assertValueCount(3)
     }
 
+    /**
+     * Creates and configures a mock BLE device.
+     */
     private fun createDevice(
         deviceName: String,
         macAddress: String,
@@ -141,6 +144,9 @@ class PresenterTest {
                     .build()
             ).build()
 
+    /**
+     * Creates the presenter instance being tested.
+     */
     private fun presenterEventObservable(device: RxBleDevice): Observable<PresenterEvent> =
         prepareActivityLogic(
             device,
