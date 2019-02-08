@@ -52,4 +52,5 @@
     <string name="error_bluetooth_cannot_start">Unable to start scanning</string>
     <string name="error_unknown_error">Unknown error</string>
     <string name="error_no_message">No message found for reason=%d. Consider adding one.</string>
+    <string name="title_example5">Rssi periodic</string>
 </resources>
