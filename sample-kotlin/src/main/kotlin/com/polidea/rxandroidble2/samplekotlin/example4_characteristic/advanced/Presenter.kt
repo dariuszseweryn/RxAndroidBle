@@ -12,7 +12,6 @@ import com.polidea.rxandroidble2.samplekotlin.util.hasProperty
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
-import io.reactivex.functions.Function
 import java.util.Arrays.asList
 import java.util.UUID
 
@@ -73,8 +72,8 @@ internal fun prepareActivityLogic(
 private fun connectAndGetCharacteristic(
     device: RxBleDevice,
     characteristicUuid: UUID
-): Function<Boolean, Observable<Pair<RxBleConnection, BluetoothGattCharacteristic>>> =
-    Function {
+): (Boolean) -> Observable<Pair<RxBleConnection, BluetoothGattCharacteristic>> =
+    {
         device.establishConnection(false) // on click start connecting
             .flatMapSingle { connection ->
                 getCharacteristic(connection, characteristicUuid).map { connection to it }
@@ -107,8 +106,8 @@ private fun readWriteNotifyIndicate(
     disableIndicateClicks: Observable<Boolean>,
     enablingNotifyClicks: Observable<Boolean>,
     disableNotifyClicks: Observable<Boolean>
-): Function<Pair<RxBleConnection, BluetoothGattCharacteristic>, Observable<PresenterEvent>> =
-    Function { connectionAndCharacteristic ->
+): (Pair<RxBleConnection, BluetoothGattCharacteristic>) -> Observable<PresenterEvent> =
+    { connectionAndCharacteristic ->
         val (connection, characteristic) = connectionAndCharacteristic
 
         // clicks trigger read/write operations from the peripheral
