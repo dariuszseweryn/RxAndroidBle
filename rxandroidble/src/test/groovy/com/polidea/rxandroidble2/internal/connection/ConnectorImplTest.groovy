@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.internal.connection
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble2.ConnectionSetup
 import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.Timeout
 import com.polidea.rxandroidble2.internal.operations.ConnectOperation
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
 import io.reactivex.Observable
@@ -10,8 +11,6 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import java.util.concurrent.atomic.AtomicReference
 
 class ConnectorImplTest extends Specification {
 
@@ -30,7 +29,9 @@ class ConnectorImplTest extends Specification {
     ConnectorImpl objectUnderTest
 
     def setup() {
-        mockConnectionComponentBuilder.connectionModule(_) >> mockConnectionComponentBuilder
+        mockConnectionComponentBuilder.autoConnect(_) >> mockConnectionComponentBuilder
+        mockConnectionComponentBuilder.suppressOperationChecks(_) >> mockConnectionComponentBuilder
+        mockConnectionComponentBuilder.operationTimeout(_) >> mockConnectionComponentBuilder
         mockConnectionComponentBuilder.build() >> mockConnectionComponent
         mockConnectionComponent.connectOperation() >> mockConnect
         mockConnectionComponent.gattCallback() >> mockCallback
@@ -49,24 +50,25 @@ class ConnectorImplTest extends Specification {
     def "subscribing prepareConnection() should pass the provided ConnectionSetup in ConnectionModule to the ConnectionComponent.Builder"() {
 
         given:
-        AtomicReference<ConnectionModule> connectionModuleAtomicReference = new AtomicReference<>()
         clientOperationQueueMock.queue(mockConnect) >> Observable.empty()
-        def connectionSetup = new ConnectionSetup.Builder().setAutoConnect(autoConnect).setSuppressIllegalOperationCheck(suppressIllegalOperations).build()
+        def operationTimeout = Mock(Timeout)
+        def connectionSetup = new ConnectionSetup.Builder()
+                .setAutoConnect(autoConnect)
+                .setSuppressIllegalOperationCheck(suppressIllegalOperations)
+                .setOperationTimeout(operationTimeout)
+                .build()
 
         when:
         objectUnderTest.prepareConnection(connectionSetup).subscribe()
 
         then:
-        1 * mockConnectionComponentBuilder.connectionModule({ ConnectionModule cm ->
-            connectionModuleAtomicReference.set(cm)
-            true
-        }) >> mockConnectionComponentBuilder
+        1 * mockConnectionComponentBuilder.autoConnect(autoConnect) >> mockConnectionComponentBuilder
 
         and:
-        connectionModuleAtomicReference.get().autoConnect == autoConnect
+        1 * mockConnectionComponentBuilder.suppressOperationChecks(suppressIllegalOperations) >> mockConnectionComponentBuilder
 
         and:
-        connectionModuleAtomicReference.get().suppressOperationCheck == suppressIllegalOperations
+        1 * mockConnectionComponentBuilder.operationTimeout(operationTimeout) >> mockConnectionComponentBuilder
 
         where:
         [autoConnect, suppressIllegalOperations] << [[true, false], [true, false]].combinations()

@@ -51,7 +51,7 @@ public abstract class RxBleClient {
     public static RxBleClient create(@NonNull Context context) {
         return DaggerClientComponent
                 .builder()
-                .clientModule(new ClientComponent.ClientModule(context))
+                .applicationContext(context.getApplicationContext())
                 .build()
                 .rxBleClient();
     }
