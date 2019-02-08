@@ -41,14 +41,15 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:labelFor="@id/newMtu"
             android:text="@string/title_set_mtu" />
 
         <EditText
             android:id="@+id/newMtu"
-            android:inputType="number"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:importantForAutofill="no"
+            android:inputType="number"
             tools:targetApi="o" />
 
         <Button
@@ -58,4 +59,5 @@
             android:layout_marginStart="@dimen/margin_standard"
             android:text="@string/button_set" />
     </LinearLayout>
+
 </LinearLayout>
