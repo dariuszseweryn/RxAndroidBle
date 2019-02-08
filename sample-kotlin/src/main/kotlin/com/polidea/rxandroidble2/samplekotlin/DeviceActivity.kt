@@ -15,9 +15,7 @@ class DeviceActivity : AppCompatActivity() {
 
     companion object {
         fun newInstance(context: Context, macAddress: String): Intent =
-            Intent(context, DeviceActivity::class.java).apply {
-                putExtra(EXTRA_MAC_ADDRESS, macAddress)
-            }
+            Intent(context, DeviceActivity::class.java).apply { putExtra(EXTRA_MAC_ADDRESS, macAddress) }
     }
 
     private lateinit var macAddress: String
@@ -29,12 +27,7 @@ class DeviceActivity : AppCompatActivity() {
         macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 
-        connect.setOnClickListener {
-            startActivity(ConnectionExampleActivity.newInstance(this, macAddress))
-        }
-
-        discovery.setOnClickListener {
-            startActivity(ServiceDiscoveryExampleActivity.newInstance(this, macAddress))
-        }
+        connect.setOnClickListener { startActivity(ConnectionExampleActivity.newInstance(this, macAddress)) }
+        discovery.setOnClickListener { startActivity(ServiceDiscoveryExampleActivity.newInstance(this, macAddress)) }
     }
 }
