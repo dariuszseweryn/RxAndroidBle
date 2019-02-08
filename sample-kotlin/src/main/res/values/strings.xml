@@ -53,4 +53,5 @@
     <string name="error_unknown_error">Unknown error</string>
     <string name="error_no_message">No message found for reason=%d. Consider adding one.</string>
     <string name="title_example5">Rssi periodic</string>
+    <string name="title_example7">Long write</string>
 </resources>
