@@ -8,6 +8,7 @@ import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
 import com.polidea.rxandroidble2.samplekotlin.example3_discovery.DiscoveryResultsAdapter.AdapterItem
+import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.CharacteristicOperationExampleActivity
 import com.polidea.rxandroidble2.samplekotlin.util.isConnected
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -63,8 +64,7 @@ class ServiceDiscoveryExampleActivity : AppCompatActivity() {
     private fun onAdapterItemClick(item: AdapterItem) {
         when (item.type) {
             AdapterItem.CHARACTERISTIC -> {
-                // TODO will be implemented in next PR
-// TODO                startActivity(CharacteristicOperationExampleActivity.newInstance(this, macAddress, item.uuid))
+                startActivity(CharacteristicOperationExampleActivity.newInstance(this, macAddress, item.uuid))
                 // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
 //            startActivity(AdvancedCharacteristicOperationExampleActivity.newInstance(this, macAddress, item.uuid))
             }
