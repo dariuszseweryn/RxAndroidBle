@@ -22,6 +22,7 @@ import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
+import com.polidea.rxandroidble2.internal.util.LoggerUtil;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
 import java.nio.ByteBuffer;
@@ -78,7 +79,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 
     @Override
     protected void protectedRun(final ObservableEmitter<byte[]> emitter, final QueueReleaseInterface queueReleaseInterface) {
-        int batchSize = batchSizeProvider.getPayloadSizeLimit();
+        final int batchSize = batchSizeProvider.getPayloadSizeLimit();
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSizeProvider value must be greater than zero (now: " + batchSize + ")");
         }
@@ -87,7 +88,13 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         );
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytesToWrite);
         final QueueReleasingEmitterWrapper<byte[]> emitterWrapper = new QueueReleasingEmitterWrapper<>(emitter, queueReleaseInterface);
-        writeBatchAndObserve(batchSize, byteBuffer)
+        final IntSupplier previousBatchIndexSupplier = new IntSupplier() {
+            @Override
+            public int get() {
+                return (int) Math.ceil(byteBuffer.position() / (float) batchSize) - 1;
+            }
+        };
+        writeBatchAndObserve(batchSize, byteBuffer, previousBatchIndexSupplier)
                 .subscribeOn(bluetoothInteractionScheduler)
                 .filter(writeResponseForMatchingCharacteristic(bluetoothGattCharacteristic))
                 .take(1)
@@ -100,7 +107,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 .repeatWhen(bufferIsNotEmptyAndOperationHasBeenAcknowledgedAndNotUnsubscribed(
                         writeOperationAckStrategy, byteBuffer, emitterWrapper
                 ))
-                .retryWhen(errorIsRetryableAndAccordingTo(writeOperationRetryStrategy, byteBuffer, batchSize))
+                .retryWhen(errorIsRetryableAndAccordingTo(writeOperationRetryStrategy, byteBuffer, batchSize, previousBatchIndexSupplier))
                 .subscribe(new Observer<ByteAssociation<UUID>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -132,7 +139,8 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     @NonNull
-    private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer) {
+    private Observable<ByteAssociation<UUID>> writeBatchAndObserve(final int batchSize, final ByteBuffer byteBuffer,
+                                                                   final IntSupplier previousBatchIndexSupplier) {
         final Observable<ByteAssociation<UUID>> onCharacteristicWrite = rxBleGattCallback.getOnCharacteristicWrite();
         return Observable.create(
                 new ObservableOnSubscribe<ByteAssociation<UUID>>() {
@@ -153,7 +161,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                          */
                         try {
                             final byte[] bytesBatch = getNextBatch(byteBuffer, batchSize);
-                            writeData(bytesBatch);
+                            writeData(bytesBatch, previousBatchIndexSupplier);
                         } catch (Throwable throwable) {
                             emitter.onError(throwable);
                         }
@@ -171,8 +179,10 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         return tempBatchArray;
     }
 
-    private void writeData(byte[] bytesBatch) {
-        RxBleLog.d("Writing next batch");
+    private void writeData(byte[] bytesBatch, IntSupplier batchIndexGetter) {
+        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+            RxBleLog.d("Writing batch #%04d: %s", batchIndexGetter.get(), LoggerUtil.bytesToHex(bytesBatch));
+        }
         bluetoothGattCharacteristic.setValue(bytesBatch);
         final boolean success = bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
         if (!success) {
@@ -236,7 +246,8 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private static Function<Observable<Throwable>, ObservableSource<?>> errorIsRetryableAndAccordingTo(
             final WriteOperationRetryStrategy writeOperationRetryStrategy,
             final ByteBuffer byteBuffer,
-            final int batchSize) {
+            final int batchSize,
+            final IntSupplier previousBatchIndexSupplier) {
         return new Function<Observable<Throwable>, ObservableSource<?>>() {
 
             @Override
@@ -255,7 +266,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                         if (!(throwable instanceof BleGattCharacteristicException || throwable instanceof BleGattCannotStartException)) {
                             return Observable.error(throwable);
                         }
-                        final int failedBatchIndex = calculateFailedBatchIndex(byteBuffer, batchSize);
+                        final int failedBatchIndex = previousBatchIndexSupplier.get();
                         WriteOperationRetryStrategy.LongWriteFailure longWriteFailure = new WriteOperationRetryStrategy.LongWriteFailure(
                                 failedBatchIndex,
                                 (BleGattException) throwable
@@ -275,10 +286,10 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                     }
                 };
             }
-
-            private int calculateFailedBatchIndex(ByteBuffer byteBuffer, int batchSize) {
-                return (int) Math.ceil(byteBuffer.position() / (float) batchSize) - 1;
-            }
         };
+    }
+
+    interface IntSupplier {
+        int get();
     }
 }

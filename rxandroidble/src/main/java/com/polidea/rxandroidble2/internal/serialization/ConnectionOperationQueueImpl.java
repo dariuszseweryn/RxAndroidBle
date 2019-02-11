@@ -25,10 +25,10 @@ import io.reactivex.Scheduler;
 import io.reactivex.functions.Cancellable;
 import io.reactivex.observers.DisposableObserver;
 
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationFinished;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationQueued;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationRemoved;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationStarted;
+import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationFinished;
+import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationQueued;
+import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationRemoved;
+import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationStarted;
 
 @ConnectionScope
 public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, ConnectionSubscriptionWatcher {
