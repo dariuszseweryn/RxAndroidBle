@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.util.checkLocationPermission
 import com.polidea.rxandroidble2.samplekotlin.util.isLocationPermissionGranted
 import com.polidea.rxandroidble2.samplekotlin.util.requestLocationPermission
 import com.polidea.rxandroidble2.samplekotlin.util.showError
@@ -39,7 +38,7 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun onScanStartClick() {
-        if (checkLocationPermission()) {
+        if (isLocationPermissionGranted()) {
             scanBleDeviceInBackground()
         } else {
             hasClickedScan = true

@@ -41,7 +41,7 @@ public class BackgroundScanActivity extends AppCompatActivity {
     @OnClick(R.id.scan_start_btn)
     public void onScanStartClick() {
         hasClickedScan = true;
-        if (LocationPermission.checkLocationPermissionGranted(this)) {
+        if (LocationPermission.isLocationPermissionGranted(this)) {
             scanBleDeviceInBackground();
         } else {
             LocationPermission.requestLocationPermission(this);
