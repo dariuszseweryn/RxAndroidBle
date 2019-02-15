@@ -57,7 +57,7 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanDisposable.dispose();
         } else {
-            if (LocationPermission.checkLocationPermissionGranted(this)) {
+            if (LocationPermission.isLocationPermissionGranted(this)) {
                 scanBleDevices();
             } else {
                 hasClickedScan = true;

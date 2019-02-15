@@ -49,7 +49,7 @@ public class GattStatusParser {
         aMap.put(0x05, "GATT_INSUF_AUTHENTICATION");
         aMap.put(0x06, "GATT_REQ_NOT_SUPPORTED");
         aMap.put(0x07, "GATT_INVALID_OFFSET");
-        aMap.put(0x08, "GATT_INSUF_AUTHORIZATION");
+        aMap.put(0x08, "GATT_INSUF_AUTHORIZATION or GATT_CONN_TIMEOUT");
         aMap.put(0x09, "GATT_PREPARE_Q_FULL");
         aMap.put(0x0a, "GATT_NOT_FOUND");
         aMap.put(0x0b, "GATT_NOT_LONG");
@@ -59,6 +59,11 @@ public class GattStatusParser {
         aMap.put(0x0f, "GATT_INSUF_ENCRYPTION");
         aMap.put(0x10, "GATT_UNSUPPORT_GRP_TYPE");
         aMap.put(0x11, "GATT_INSUF_RESOURCE");
+
+        aMap.put(0x13, "GATT_CONN_TERMINATE_PEER_USER");
+        aMap.put(0x16, "GATT_CONN_TERMINATE_LOCAL_HOST");
+        aMap.put(0x22, "GATT_CONN_LMP_TIMEOUT");
+        aMap.put(0x3e, "GATT_CONN_FAIL_ESTABLISH");
 
         aMap.put(0x87, "GATT_ILLEGAL_PARAMETER");
         aMap.put(0x80, "GATT_NO_RESOURCES");
@@ -73,7 +78,6 @@ public class GattStatusParser {
         aMap.put(0x8a, "GATT_MORE");
         aMap.put(0x8b, "GATT_INVALID_CFG");
         aMap.put(0x8c, "GATT_SERVICE_STARTED");
-        aMap.put(0x00, "GATT_SUCCESS");
         aMap.put(0x8d, "GATT_ENCRYPED_NO_MITM");
         aMap.put(0x8e, "GATT_NOT_ENCRYPTED");
         aMap.put(0x8f, "GATT_CONGESTED");
@@ -81,6 +85,8 @@ public class GattStatusParser {
         aMap.put(0xfd, "GATT_CCC_CFG_ERR");
         aMap.put(0xfe, "GATT_PRC_IN_PROGRESS");
         aMap.put(0xff, "GATT_OUT_OF_RANGE");
+
+        aMap.put(0x100, "GATT_CONN_CANCEL");
         GATT_STATUS = Collections.unmodifiableMap(aMap);
     }
 
