@@ -26,7 +26,6 @@ public class ThrowingIllegalOperationHandler extends IllegalOperationHandler {
     @Override
     public BleIllegalOperationException handleMismatchData(BluetoothGattCharacteristic characteristic, int neededProperties) {
         String message = messageCreator.createMismatchMessage(characteristic, neededProperties);
-        RxBleLog.e(message);
         return new BleIllegalOperationException(message,
                 characteristic.getUuid(),
                 characteristic.getProperties(),
