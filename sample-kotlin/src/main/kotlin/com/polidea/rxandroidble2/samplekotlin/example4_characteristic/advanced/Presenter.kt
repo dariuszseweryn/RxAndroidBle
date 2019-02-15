@@ -24,8 +24,8 @@ private val clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902
  * The contract of the function is that it subscribes to the passed Observables only if a specific functionality is possible to use.
  *
  * @param connectingClicks used to disconnect the device even before connection is established
- * @param enableNotifyClicks used to disable notifications before they were enabled (but after enable click)
- * @param used to disable indications before they were enabled (but after enable click)
+ * @param enablingNotifyClicks used to disable notifications before they were enabled (but after enable click)
+ * @param enablingIndicateClicks used to disable indications before they were enabled (but after enable click)
  */
 internal fun prepareActivityLogic(
     device: RxBleDevice,
@@ -45,40 +45,40 @@ internal fun prepareActivityLogic(
 
     connectClicks.take(1) // subscribe to connectClicks and take one (unsubscribe after)
         // establish connection and get characteristic
-        .flatMap(connectAndGetCharacteristic(device, characteristicUuid))
-        // react to clicks by triggering either read, write, notify or indicate
-        .flatMap(
-            readWriteNotifyIndicate(
-                characteristicUuid,
-                readClicks,
-                writeClicks,
-                enableNotifyClicks,
-                enableIndicateClicks,
-                enablingIndicateClicks,
-                disableIndicateClicks,
-                enablingNotifyClicks,
-                disableNotifyClicks
-            )
-        )
-        // convenience transformer to close the connection
-        .compose(takeUntil(connectingClicks, disconnectClicks))
-        // in case of a connection error inform the activity
-        .onErrorReturn { throwable -> InfoEvent("Connection error: $throwable") }
+        .flatMap {
+            device.establishConnection(false)
+                .flatMap { connection ->
+                    setup(connection, characteristicUuid)
+                        // react to clicks by triggering either read, write, notify or indicate
+                        .flatMapObservable(toConnectionInteractionResults(
+                            characteristicUuid,
+                            readClicks,
+                            writeClicks,
+                            enableNotifyClicks,
+                            enableIndicateClicks,
+                            enablingIndicateClicks,
+                            disableIndicateClicks,
+                            enablingNotifyClicks,
+                            disableNotifyClicks
+                        ))
+                        // start by informing the Activity that connection is established
+                        .startWith(InfoEvent("Hey, connection has been established!"))
+                }
+                // convenience transformer to close the connection
+                .compose(takeUntil(connectingClicks, disconnectClicks))
+                // in case of a connection error inform the activity
+                .onErrorReturn { throwable -> InfoEvent("Connection error: $throwable") }
+        }
         .compose(repeatAfterCompleted())
 
 /**
- * Establishes connection, gets characteristic and returns them as [Pair].
+ * Setups a connection by discovering a characteristic with a given UUID and returns them as [Pair].
  */
-private fun connectAndGetCharacteristic(
-    device: RxBleDevice,
+private fun setup(
+    connection: RxBleConnection,
     characteristicUuid: UUID
-): (Boolean) -> Observable<Pair<RxBleConnection, BluetoothGattCharacteristic>> =
-    {
-        device.establishConnection(false) // on click start connecting
-            .flatMapSingle { connection ->
-                getCharacteristic(connection, characteristicUuid).map { connection to it }
-            }
-    }
+): Single<Pair<RxBleConnection, BluetoothGattCharacteristic>> =
+    getCharacteristic(connection, characteristicUuid).map { connection to it }
 
 /**
  * Gets characteristic from [connection] for the given [characteristicUuid].
@@ -96,7 +96,7 @@ private fun getCharacteristic(
  * Reacts to user clicks, triggers operation he selected on received [RxBleConnection] and
  * [BluetoothGattCharacteristic] (read, write, notify or indicate) and emits the result as a [PresenterEvent].
  */
-private fun readWriteNotifyIndicate(
+private fun toConnectionInteractionResults(
     characteristicUuid: UUID,
     readClicks: Observable<Boolean>,
     writeClicks: Observable<ByteArray>,
@@ -141,8 +141,6 @@ private fun readWriteNotifyIndicate(
 
         // merge all events from reads, writes, notifications and indications
         Observable.merge(readObservable, writeObservable, notifyAndIndicateObservable)
-            // start by informing the Activity that connection is established
-            .startWith(InfoEvent("Hey, connection has been established!"))
     }
 
 /**
