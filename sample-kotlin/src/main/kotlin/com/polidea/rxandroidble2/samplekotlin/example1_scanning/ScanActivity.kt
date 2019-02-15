@@ -7,7 +7,6 @@ import com.polidea.rxandroidble2.samplekotlin.DeviceActivity
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
 import com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning.BackgroundScanActivity
-import com.polidea.rxandroidble2.samplekotlin.util.checkLocationPermission
 import com.polidea.rxandroidble2.samplekotlin.util.isLocationPermissionGranted
 import com.polidea.rxandroidble2.samplekotlin.util.requestLocationPermission
 import com.polidea.rxandroidble2.samplekotlin.util.showError
@@ -56,7 +55,7 @@ class ScanActivity : AppCompatActivity() {
         if (isScanning) {
             scanDisposable?.dispose()
         } else {
-            if (checkLocationPermission()) {
+            if (isLocationPermissionGranted()) {
                 scanBleDevices()
                     .observeOn(AndroidSchedulers.mainThread())
                     .doFinally { dispose() }
