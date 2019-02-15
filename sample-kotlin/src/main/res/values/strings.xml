@@ -23,6 +23,8 @@
     <string name="title_example2">Connection &amp; connection state</string>
     <string name="title_example3">Service discovery</string>
     <string name="title_example4">Characteristic operations</string>
+    <string name="title_example5">Rssi periodic</string>
+    <string name="title_example7">Long write</string>
     <string name="not_clickable">No action</string>
     <string name="edit_text_write_input">Write input</string>
     <string name="button_scan_in_background">Scan in background</string>
