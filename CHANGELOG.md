@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.8.1
+* Added more GATT status descriptions (https://github.com/Polidea/RxAndroidBle/pull/543)
+
 Version 1.8.0
 * Added `NotificationSetupMode.QUICK_SETUP` for devices which start notifying right after CCC descriptor write (https://github.com/Polidea/RxAndroidBle/pull/478)
 * Migrated to androidx usage (https://github.com/Polidea/RxAndroidBle/pull/497) 

@@ -23,6 +23,36 @@
 
         <activity android:name=".DeviceActivity" />
 
+        <activity
+            android:name=".example1a_background_scanning.BackgroundScanActivity"
+            android:label="@string/title_example1" />
+
+        <receiver android:name=".example1a_background_scanning.ScanReceiver" />
+
+        <activity
+            android:name=".example2_connection.ConnectionExampleActivity"
+            android:label="@string/title_example2" />
+
+        <activity
+            android:name=".example3_discovery.ServiceDiscoveryExampleActivity"
+            android:label="@string/title_example3" />
+
+        <activity
+            android:name=".example4_characteristic.CharacteristicOperationExampleActivity"
+            android:label="@string/title_example4" />
+
+        <activity
+            android:name=".example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity"
+            android:label="@string/title_example4" />
+
+        <activity
+            android:name=".example5_rssi_periodic.RssiPeriodicExampleActivity"
+            android:label="@string/title_example5" />
+
+        <activity
+            android:name=".example7_long_write.LongWriteExampleActivity"
+            android:label="@string/title_example7" />
+
     </application>
 
 </manifest>

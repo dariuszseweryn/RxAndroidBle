@@ -73,6 +73,7 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         setTitle(getString(R.string.mac_address, macAddress));
         bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
         // How to listen for connection state changes
+        // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
         stateDisposable = bleDevice.observeConnectionStateChanges()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onConnectionStateChange);

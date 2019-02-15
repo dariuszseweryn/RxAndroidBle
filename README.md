@@ -309,7 +309,7 @@ The below table contains an overview of used `Observable` patterns
 \** this `Observable` may complete. For example `observeStateChanges()` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime. A second example: Observables emitted from `setupNotification` / `setupIndication` may complete when the parent Observable is disposed.
 
 ### Helpers
-We encourage you to check the package `com.polidea.rxandroidble.helpers` which contains handy reactive wrappers for some typical use-cases.
+We encourage you to check the package `com.polidea.rxandroidble2.helpers` and `com.polidea.rxandroidble2.utils` which contain handy reactive wrappers for some typical use-cases.
 
 #### Value interpretation
 Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
@@ -334,7 +334,7 @@ Complete usage examples are located in `/sample` [GitHub repo](https://github.co
 ### Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.8.0"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.8.1"
 ```
 ### Maven
 
@@ -342,7 +342,7 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.8.0"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.8.0</version>
+  <version>1.8.1</version>
   <type>aar</type>
 </dependency>
 ```
