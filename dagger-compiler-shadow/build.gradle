@@ -20,5 +20,5 @@ shadowJar {
 }
 
 dependencies {
-    compile rootProject.ext.libs.dagger_compiler
+    implementation rootProject.ext.libs.dagger_compiler
 }
