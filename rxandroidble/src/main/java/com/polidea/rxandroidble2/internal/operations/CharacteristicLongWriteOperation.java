@@ -6,6 +6,7 @@ import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.ClientComponent;
+import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.RxBleConnection.WriteOperationAckStrategy;
 import com.polidea.rxandroidble2.RxBleConnection.WriteOperationRetryStrategy;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
@@ -22,7 +23,7 @@ import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
-import com.polidea.rxandroidble2.internal.util.LoggerUtil;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
 import java.nio.ByteBuffer;
@@ -180,7 +181,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     private void writeData(byte[] bytesBatch, IntSupplier batchIndexGetter) {
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) { // TODO?
             RxBleLog.d("Writing batch #%04d: %s", batchIndexGetter.get(), LoggerUtil.bytesToHex(bytesBatch));
         }
         bluetoothGattCharacteristic.setValue(bytesBatch);

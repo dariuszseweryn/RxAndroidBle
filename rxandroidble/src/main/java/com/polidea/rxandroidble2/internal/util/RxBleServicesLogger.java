@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
+import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.utils.StandardUUIDsParser;
@@ -36,7 +37,7 @@ public class RxBleServicesLogger {
     }
 
     public void log(RxBleDeviceServices rxBleDeviceServices, BluetoothDevice device) {
-        if (RxBleLog.isAtLeast(RxBleLog.VERBOSE)) {
+        if (RxBleLog.isAtLeast(LogConstants.VERBOSE)) {
             RxBleLog.v("Preparing services description");
             RxBleLog.v(prepareServicesDescription(rxBleDeviceServices, device));
         }
