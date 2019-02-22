@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import android.util.SparseArray;
 
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.ScanRecordImplCompat;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 import com.polidea.rxandroidble2.internal.RxBleLog;

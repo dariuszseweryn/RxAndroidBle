@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.internal.operations.Operation;
 
-import com.polidea.rxandroidble2.internal.util.LoggerUtil;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.reactivex.ObservableEmitter;

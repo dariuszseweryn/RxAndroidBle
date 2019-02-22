@@ -1,5 +1,6 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble2.internal.logger;
 
+import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.Operation;
 
@@ -42,32 +43,32 @@ public class LoggerUtil {
     }
 
     public static void logOperationStarted(Operation operation) {
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("STARTED  %s(%d)", operation.getClass().getSimpleName(), System.identityHashCode(operation));
         }
     }
 
     public static void logOperationRemoved(Operation operation) {
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("REMOVED  %s(%d)", operation.getClass().getSimpleName(), System.identityHashCode(operation));
         }
     }
 
     public static void logOperationQueued(Operation operation) {
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("QUEUED   %s(%d)", operation.getClass().getSimpleName(), System.identityHashCode(operation));
         }
     }
 
     public static void logOperationFinished(Operation operation, long startTime, long endTime) {
-        if (RxBleLog.isAtLeast(RxBleLog.DEBUG)) {
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("FINISHED %s(%d) in %d ms", operation.getClass().getSimpleName(),
                     System.identityHashCode(operation), (endTime - startTime));
         }
     }
 
     public static void logOperationSkippedBecauseDisposedWhenAboutToRun(Operation operation) {
-        if (RxBleLog.isAtLeast(RxBleLog.VERBOSE)) {
+        if (RxBleLog.isAtLeast(LogConstants.VERBOSE)) {
             RxBleLog.v("SKIPPED  %s(%d) just before running — is disposed", operation.getClass().getSimpleName(),
                     System.identityHashCode(operation));
         }

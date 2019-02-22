@@ -4,6 +4,10 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
+import com.polidea.rxandroidble2.LogConstants;
+import com.polidea.rxandroidble2.LogOptions;
+
+import com.polidea.rxandroidble2.internal.logger.LoggerSetup;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.regex.Matcher;
@@ -20,25 +24,36 @@ public class RxBleLog {
 
     }
 
+    @Deprecated
     public static final int VERBOSE = Log.VERBOSE;
+    @Deprecated
     public static final int DEBUG = Log.DEBUG;
+    @Deprecated
     public static final int INFO = Log.INFO;
+    @Deprecated
     public static final int WARN = Log.WARN;
+    @Deprecated
     public static final int ERROR = Log.ERROR;
+    @Deprecated
     public static final int NONE = Integer.MAX_VALUE;
+
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
 
-    private static Logger logcatLogger = new Logger() {
+    private static LogOptions.Logger logcatLogger = new LogOptions.Logger() {
         @Override
         public void log(final int level, final String tag, final String msg) {
             Log.println(level, tag, msg);
         }
     };
 
-    private static int logLevel = Integer.MAX_VALUE;
-
-    private static Logger logger = logcatLogger;
+    private static LoggerSetup loggerSetup = new LoggerSetup(
+            LogConstants.NONE,
+            LogConstants.NONE,
+            LogConstants.NONE,
+            false,
+            logcatLogger
+    );
 
     private RxBleLog() {
 
@@ -62,7 +77,7 @@ public class RxBleLog {
 
     /**
      * Set a custom logger implementation, set it to {@code null} to use default logcat logging
-     *
+     * <p>
      * Example how to forward logs to Timber:<br>
      *
      * <code>
@@ -75,17 +90,40 @@ public class RxBleLog {
      * });
      * </pre>
      * </code>
+     *
+     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#setLogOptions(LogOptions)}
      */
+    @Deprecated
     public static void setLogger(@Nullable final Logger logger) {
-        if (logger == null) {
-            RxBleLog.logger = logcatLogger;
-        } else {
-            RxBleLog.logger = logger;
-        }
+        LogOptions.Logger loggerToSet = logger == null
+                ? logcatLogger
+                : new LogOptions.Logger() {
+            @Override
+            public void log(int level, String tag, String msg) {
+                logger.log(level, tag, msg);
+            }
+        };
+        LogOptions newLogOptions = new LogOptions.Builder().setLogger(loggerToSet).build();
+        RxBleLog.setLogOptions(newLogOptions);
     }
 
+    /**
+     * Old method to set log level
+     *
+     * @param logLevel the log level
+     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#setLogOptions(LogOptions)}
+     */
+    @Deprecated
     public static void setLogLevel(@LogLevel int logLevel) {
-        RxBleLog.logLevel = logLevel;
+        LogOptions newLogOptions = new LogOptions.Builder().setLogLevel(logLevel).build();
+        setLogOptions(newLogOptions);
+    }
+
+    public static void setLogOptions(LogOptions logOptions) {
+        LoggerSetup oldLoggerSetup = RxBleLog.loggerSetup;
+        LoggerSetup newLoggerSetup = oldLoggerSetup.merge(logOptions);
+        d("Received new options (%s) and merged with old setup: %s. New setup: %s", logOptions, oldLoggerSetup, newLoggerSetup);
+        RxBleLog.loggerSetup = newLoggerSetup;
     }
 
     private static String createTag() {
@@ -107,7 +145,7 @@ public class RxBleLog {
         }
         tag = tag.replace("Impl", "");
         tag = tag.replace("RxBle", "");
-        return "RxBle#" + tag.substring(tag.lastIndexOf('.') + 1);
+        return "RxBle#" + tag.substring(tag.lastIndexOf('.') + 1, tag.indexOf('$'));
     }
 
     private static String formatString(String message, Object... args) {
@@ -156,7 +194,7 @@ public class RxBleLog {
     }
 
     private static void throwShade(int priority, Throwable t, String message, Object... args) {
-        if (priority < logLevel) {
+        if (priority < loggerSetup.logLevel) {
             return;
         }
 
@@ -182,19 +220,19 @@ public class RxBleLog {
 
     private static void println(int priority, String tag, String message) {
         if (message.length() < 4000) {
-            logger.log(priority, tag, message);
+            loggerSetup.logger.log(priority, tag, message);
         } else {
             // It's rare that the message will be this large, so we're ok with the perf hit of splitting
             // and calling Log.println N times.  It's possible but unlikely that a single line will be
             // longer than 4000 characters: we're explicitly ignoring this case here.
             String[] lines = message.split("\n");
             for (String line : lines) {
-                logger.log(priority, tag, line);
+                loggerSetup.logger.log(priority, tag, line);
             }
         }
     }
 
     public static boolean isAtLeast(int expectedLogLevel) {
-        return logLevel <= expectedLogLevel;
+        return loggerSetup.logLevel <= expectedLogLevel;
     }
 }

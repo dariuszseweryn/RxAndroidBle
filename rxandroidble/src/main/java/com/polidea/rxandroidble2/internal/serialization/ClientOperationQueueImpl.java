@@ -15,10 +15,10 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.functions.Action;
-import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationFinished;
-import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationQueued;
-import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationRemoved;
-import static com.polidea.rxandroidble2.internal.util.LoggerUtil.logOperationStarted;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationFinished;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationQueued;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRemoved;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationStarted;
 
 public class ClientOperationQueueImpl implements ClientOperationQueue {
 
