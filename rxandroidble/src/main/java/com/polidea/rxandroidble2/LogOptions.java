@@ -48,13 +48,13 @@ public class LogOptions {
 
     @Override
     public String toString() {
-        return "LogOptions{" +
-                "logLevel=" + logLevel +
-                ", macAddressLogSetting=" + macAddressLogSetting +
-                ", uuidLogSetting=" + uuidLogSetting +
-                ", shouldLogAttributeValues=" + shouldLogAttributeValues +
-                ", logger=" + logger +
-                '}';
+        return "LogOptions{"
+                + "logLevel=" + logLevel
+                + ", macAddressLogSetting=" + macAddressLogSetting
+                + ", uuidLogSetting=" + uuidLogSetting
+                + ", shouldLogAttributeValues=" + shouldLogAttributeValues
+                + ", logger=" + logger
+                + '}';
     }
 
     public static class Builder {

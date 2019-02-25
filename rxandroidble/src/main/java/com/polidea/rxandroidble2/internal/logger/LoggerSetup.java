@@ -41,12 +41,12 @@ public class LoggerSetup {
 
     @Override
     public String toString() {
-        return "LoggerSetup{" +
-                "logLevel=" + logLevel +
-                ", macAddressLogSetting=" + macAddressLogSetting +
-                ", uuidLogSetting=" + uuidLogSetting +
-                ", shouldLogAttributeValues=" + shouldLogAttributeValues +
-                ", logger=" + logger +
-                '}';
+        return "LoggerSetup{"
+                + "logLevel=" + logLevel
+                + ", macAddressLogSetting=" + macAddressLogSetting
+                + ", uuidLogSetting=" + uuidLogSetting
+                + ", shouldLogAttributeValues=" + shouldLogAttributeValues
+                + ", logger=" + logger
+                + '}';
     }
 }
