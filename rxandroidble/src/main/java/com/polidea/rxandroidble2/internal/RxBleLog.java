@@ -145,7 +145,11 @@ public class RxBleLog {
         }
         tag = tag.replace("Impl", "");
         tag = tag.replace("RxBle", "");
-        return "RxBle#" + tag.substring(tag.lastIndexOf('.') + 1, tag.indexOf('$'));
+        int endIndex = tag.indexOf('$');
+        String classTag = endIndex <= 0
+                ? tag.substring(tag.lastIndexOf('.') + 1)
+                : tag.substring(tag.lastIndexOf('.') + 1, endIndex);
+        return "RxBle#" + classTag;
     }
 
     private static String formatString(String message, Object... args) {
@@ -234,5 +238,17 @@ public class RxBleLog {
 
     public static boolean isAtLeast(int expectedLogLevel) {
         return loggerSetup.logLevel <= expectedLogLevel;
+    }
+
+    public static @LogConstants.MacAddressLogSetting int getMacAddressLogSetting() {
+        return loggerSetup.macAddressLogSetting;
+    }
+
+    public static @LogConstants.UuidLogSetting int getUuidLogSetting() {
+        return loggerSetup.uuidLogSetting;
+    }
+
+    public static boolean getShouldLogAttributeValues() {
+        return loggerSetup.shouldLogAttributeValues;
     }
 }
