@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
 
@@ -68,7 +69,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            RxBleLog.d("onConnectionStateChange newState=%d status=%d", newState, status);
+            LoggerUtil.logCallback("onConnectionStateChange", gatt, status, newState);
             nativeCallbackDispatcher.notifyNativeConnectionStateCallback(gatt, status, newState);
             super.onConnectionStateChange(gatt, status, newState);
             bluetoothGattProvider.updateBluetoothGatt(gatt);
@@ -90,7 +91,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            RxBleLog.d("onServicesDiscovered status=%d", status);
+            LoggerUtil.logCallback("onServicesDiscovered", gatt, status);
             nativeCallbackDispatcher.notifyNativeServicesDiscoveredCallback(gatt, status);
             super.onServicesDiscovered(gatt, status);
 
@@ -102,7 +103,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            RxBleLog.d("onCharacteristicRead characteristic=%s status=%d", characteristic.getUuid(), status);
+            LoggerUtil.logCallback("onCharacteristicRead", gatt, status, characteristic, true);
             nativeCallbackDispatcher.notifyNativeReadCallback(gatt, characteristic, status);
             super.onCharacteristicRead(gatt, characteristic, status);
 
@@ -115,7 +116,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            RxBleLog.d("onCharacteristicWrite characteristic=%s status=%d", characteristic.getUuid(), status);
+            LoggerUtil.logCallback("onCharacteristicWrite", gatt, status, characteristic, false);
             nativeCallbackDispatcher.notifyNativeWriteCallback(gatt, characteristic, status);
             super.onCharacteristicWrite(gatt, characteristic, status);
 
@@ -128,7 +129,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            RxBleLog.d("onCharacteristicChanged characteristic=%s", characteristic.getUuid());
+            LoggerUtil.logCallback("onCharacteristicChanged", gatt, characteristic, true);
             nativeCallbackDispatcher.notifyNativeChangedCallback(gatt, characteristic);
             super.onCharacteristicChanged(gatt, characteristic);
 
@@ -150,7 +151,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            RxBleLog.d("onCharacteristicRead descriptor=%s status=%d", descriptor.getUuid(), status);
+            LoggerUtil.logCallback("onDescriptorRead", gatt, status, descriptor, true);
             nativeCallbackDispatcher.notifyNativeDescriptorReadCallback(gatt, descriptor, status);
             super.onDescriptorRead(gatt, descriptor, status);
 
@@ -162,7 +163,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            RxBleLog.d("onDescriptorWrite descriptor=%s status=%d", descriptor.getUuid(), status);
+            LoggerUtil.logCallback("onDescriptorWrite", gatt, status, descriptor, false);
             nativeCallbackDispatcher.notifyNativeDescriptorWriteCallback(gatt, descriptor, status);
             super.onDescriptorWrite(gatt, descriptor, status);
 
@@ -174,14 +175,14 @@ public class RxBleGattCallback {
 
         @Override
         public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-            RxBleLog.d("onReliableWriteCompleted status=%d", status);
+            LoggerUtil.logCallback("onReliableWriteCompleted", gatt, status);
             nativeCallbackDispatcher.notifyNativeReliableWriteCallback(gatt, status);
             super.onReliableWriteCompleted(gatt, status);
         }
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            RxBleLog.d("onReadRemoteRssi rssi=%d status=%d", rssi, status);
+            LoggerUtil.logCallback("onMtuChanged", gatt, status, rssi);
             nativeCallbackDispatcher.notifyNativeReadRssiCallback(gatt, rssi, status);
             super.onReadRemoteRssi(gatt, rssi, status);
 
@@ -193,7 +194,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-            RxBleLog.d("onMtuChanged mtu=%d status=%d", mtu, status);
+            LoggerUtil.logCallback("onMtuChanged", gatt, status, mtu);
             nativeCallbackDispatcher.notifyNativeMtuChangedCallback(gatt, mtu, status);
             super.onMtuChanged(gatt, mtu, status);
 

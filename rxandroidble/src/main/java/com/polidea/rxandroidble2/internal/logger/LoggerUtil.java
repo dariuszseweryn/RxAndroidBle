@@ -1,8 +1,12 @@
 package com.polidea.rxandroidble2.internal.logger;
 
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.Operation;
+import java.util.UUID;
 
 public class LoggerUtil {
 
@@ -14,7 +18,9 @@ public class LoggerUtil {
     public static String bytesToHex(byte[] bytes) {
         int byteArrayLength = bytes.length;
 
-        if (byteArrayLength == 0) return "[]";
+        if (byteArrayLength == 0) {
+            return "[]";
+        }
 
         int byteCharsLength = byteArrayLength * 2;
         int delimiterCount = (byteArrayLength - 1);
@@ -71,6 +77,97 @@ public class LoggerUtil {
         if (RxBleLog.isAtLeast(LogConstants.VERBOSE)) {
             RxBleLog.v("SKIPPED  %s(%d) just before running — is disposed", operation.getClass().getSimpleName(),
                     System.identityHashCode(operation));
+        }
+    }
+
+    public static void logCallback(String callbackName, BluetoothGatt gatt, int status, BluetoothGattCharacteristic characteristic,
+                                   boolean valueMatters) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), characteristic.getValue(), valueMatters);
+        RxBleLog.i(commonCallbackMessage() + commonStatusMessage() + commonValueMessage(),
+                gatt.getDevice().getAddress(), callbackName, status, value);
+    }
+
+    public static void logCallback(String callbackName, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic,
+                                   boolean valueMatters) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), characteristic.getValue(), valueMatters);
+        RxBleLog.i(commonCallbackMessage() + commonValueMessage(), gatt.getDevice().getAddress(), callbackName, value);
+    }
+
+    public static void logCallback(String callbackName, BluetoothGatt gatt, int status, BluetoothGattDescriptor descriptor,
+                                   boolean valueMatters) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        AttributeLogWrapper value = new AttributeLogWrapper(descriptor.getUuid(), descriptor.getValue(), valueMatters);
+        RxBleLog.i(commonCallbackMessage() + commonStatusMessage() + commonValueMessage(),
+                gatt.getDevice().getAddress(), callbackName, status, value);
+    }
+
+    public static void logCallback(String callbackName, BluetoothGatt gatt, int status) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        RxBleLog.i(commonCallbackMessage() + commonStatusMessage(), gatt.getDevice().getAddress(), callbackName, status);
+    }
+
+    public static void logCallback(String callbackName, BluetoothGatt gatt, int status, int value) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        RxBleLog.i(commonCallbackMessage() + commonStatusMessage() + commonValueMessage(),
+                gatt.getDevice().getAddress(), callbackName, status, value);
+    }
+
+    private static String commonCallbackMessage() {
+        return "(MAC: '%s') %24s()";
+    }
+
+    private static String commonStatusMessage() {
+        return ", status=%d";
+    }
+
+    private static String commonValueMessage() {
+        return ", value=%s";
+    }
+
+    static class AttributeLogWrapper {
+
+        private final UUID uuid;
+        private final byte[] value;
+        private final boolean valueMatters;
+
+        AttributeLogWrapper(UUID uuid, byte[] value, boolean valueMatters) {
+            this.uuid = uuid;
+            this.value = value;
+            this.valueMatters = valueMatters;
+        }
+
+        @Override
+        public String toString() {
+            return "[uuid='" + getUuid()
+                    + (valueMatters ? ("', hexValue=" + getValue()) : "'")
+                    + ']';
+        }
+
+        private String getUuid() {
+            int uuidLogSetting = RxBleLog.getUuidLogSetting();
+            if (uuidLogSetting == LogConstants.UUIDS_FULL) {
+                return uuid.toString();
+            }
+            return "...";
+        }
+
+        private String getValue() {
+            if (RxBleLog.getShouldLogAttributeValues()) {
+                return bytesToHex(value);
+            }
+            return "[...]";
         }
     }
 }
