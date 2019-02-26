@@ -15,7 +15,6 @@ import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble2.exceptions.BleGattException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
