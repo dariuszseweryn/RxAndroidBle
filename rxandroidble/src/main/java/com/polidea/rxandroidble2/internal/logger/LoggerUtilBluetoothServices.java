@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble2.internal.logger;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattService;
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
 import com.polidea.rxandroidble2.utils.StandardUUIDsParser;
 
 import bleshadow.javax.inject.Inject;
@@ -27,12 +28,12 @@ import bleshadow.javax.inject.Inject;
  * * Client Characteristic Configuration (ce029bc4-f9eb-11e7-8c3f-9a214cf093ae)
  * * Characteristic User Description (ce02a344-f9eb-11e7-8c3f-9a214cf093ae)
  */
-public class RxBleServicesLogger {
+public class LoggerUtilBluetoothServices {
 
     private final CharacteristicPropertiesParser characteristicPropertiesParser;
 
     @Inject
-    RxBleServicesLogger(CharacteristicPropertiesParser characteristicPropertiesParser) {
+    LoggerUtilBluetoothServices(CharacteristicPropertiesParser characteristicPropertiesParser) {
         this.characteristicPropertiesParser = characteristicPropertiesParser;
     }
 

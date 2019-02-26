@@ -11,7 +11,7 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.util.RxBleServicesLogger;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +25,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     private final RxBleGattCallback rxBleGattCallback;
     private final BluetoothGatt bluetoothGatt;
-    private final RxBleServicesLogger bleServicesLogger;
+    private final LoggerUtilBluetoothServices bleServicesLogger;
     private final TimeoutConfiguration timeoutConfiguration;
     private final Scheduler bluetoothInteractionScheduler;
     private final Scheduler timeoutScheduler;
@@ -35,7 +35,7 @@ public class OperationsProviderImpl implements OperationsProvider {
     OperationsProviderImpl(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
-            RxBleServicesLogger bleServicesLogger,
+            LoggerUtilBluetoothServices bleServicesLogger,
             @Named(ConnectionModule.OPERATION_TIMEOUT) TimeoutConfiguration timeoutConfiguration,
             @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
             @Named(ClientComponent.NamedSchedulers.TIMEOUT) Scheduler timeoutScheduler,
