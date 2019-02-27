@@ -11,6 +11,7 @@ import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -122,6 +123,9 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     @Override
     public String toString() {
-        return "RxBleDeviceImpl{" + "bluetoothDevice=" + bluetoothDevice.getName() + '(' + bluetoothDevice.getAddress() + ')' + '}';
+        return "RxBleDeviceImpl{"
+                + LoggerUtil.commonMacMessage(bluetoothDevice.getAddress())
+                + ", bluetoothDevice=" + bluetoothDevice.getName()
+                + '}';
     }
 }
