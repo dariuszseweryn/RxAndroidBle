@@ -113,4 +113,6 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
                 return BleScanException.UNKNOWN_ERROR_CODE;
         }
     }
+
+    // TODO toString
 }

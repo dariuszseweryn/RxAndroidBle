@@ -181,7 +181,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     }
 
     private void writeData(byte[] bytesBatch, IntSupplier batchIndexGetter) {
-        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) { // TODO?
+        if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("Writing batch #%04d: %s", batchIndexGetter.get(), LoggerUtil.bytesToHex(bytesBatch));
         }
         bluetoothGattCharacteristic.setValue(bytesBatch);
@@ -290,7 +290,17 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         };
     }
 
+    @Override
+    public String toString() {
+        return "CharacteristicLongWriteOperation{"
+                + LoggerUtil.commonMacMessage(bluetoothGatt)
+                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, false)
+                + ", maxBatchSize=" + batchSizeProvider.getPayloadSizeLimit()
+                + '}';
+    }
+
     interface IntSupplier {
+
         int get();
     }
 }

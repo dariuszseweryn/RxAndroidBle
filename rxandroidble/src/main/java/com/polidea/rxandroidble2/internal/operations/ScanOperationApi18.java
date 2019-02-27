@@ -54,4 +54,6 @@ public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, B
         // TODO: [PU] 29.01.2016 https://code.google.com/p/android/issues/detail?id=160503
         rxBleAdapterWrapper.stopLegacyLeScan(scanCallback);
     }
+
+    // TODO toString
 }

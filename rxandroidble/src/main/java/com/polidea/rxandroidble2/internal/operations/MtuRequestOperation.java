@@ -35,4 +35,12 @@ public class MtuRequestOperation extends SingleResponseOperation<Integer> {
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         return bluetoothGatt.requestMtu(mtu);
     }
+
+    @Override
+    public String toString() {
+        return "MtuRequestOperation{"
+                + super.toString()
+                + ", mtu=" + mtu
+                + '}';
+    }
 }

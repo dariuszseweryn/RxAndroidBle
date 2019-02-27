@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 
 import bleshadow.javax.inject.Inject;
@@ -169,5 +170,12 @@ public class DisconnectOperation extends QueueOperation<Void> {
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, macAddress, BleDisconnectedException.UNKNOWN_STATUS);
+    }
+
+    @Override
+    public String toString() {
+        return "DisconnectOperation{"
+                + LoggerUtil.commonMacMessage(macAddress)
+                + '}';
     }
 }

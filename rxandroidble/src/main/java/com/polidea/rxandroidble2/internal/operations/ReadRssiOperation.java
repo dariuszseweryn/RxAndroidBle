@@ -29,4 +29,9 @@ public class ReadRssiOperation extends SingleResponseOperation<Integer> {
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         return bluetoothGatt.readRemoteRssi();
     }
+
+    @Override
+    public String toString() {
+        return "ReadRssiOperation{" + super.toString() + '}';
+    }
 }

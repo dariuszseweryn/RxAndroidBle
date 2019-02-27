@@ -112,6 +112,6 @@ public class OperationsProviderImpl implements OperationsProvider {
                                                                                       long delay,
                                                                                       TimeUnit timeUnit) {
         return new ConnectionPriorityChangeOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration,
-                connectionPriority, delay, timeUnit, timeoutScheduler);
+                connectionPriority, new TimeoutConfiguration(delay, timeUnit, timeoutScheduler));
     }
 }

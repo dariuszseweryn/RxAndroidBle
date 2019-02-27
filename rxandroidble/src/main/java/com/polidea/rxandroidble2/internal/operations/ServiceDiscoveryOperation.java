@@ -104,4 +104,9 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
             }
         });
     }
+
+    @Override
+    public String toString() {
+        return "ServiceDiscoveryOperation{" + super.toString() + '}';
+    }
 }

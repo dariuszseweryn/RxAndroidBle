@@ -7,6 +7,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 
 import bleshadow.javax.inject.Named;
 
@@ -38,5 +39,13 @@ public class CharacteristicReadOperation extends SingleResponseOperation<byte[]>
     @Override
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         return bluetoothGatt.readCharacteristic(bluetoothGattCharacteristic);
+    }
+
+    @Override
+    public String toString() {
+        return "CharacteristicReadOperation{"
+                + super.toString()
+                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, false)
+                + '}';
     }
 }
