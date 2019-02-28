@@ -66,7 +66,7 @@ public class RxBleAdapterWrapper {
     public void stopLeScan(ScanCallback scanCallback) {
         final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         if (bluetoothLeScanner == null) {
-            RxBleLog.w(
+            RxBleLog.v(
                     "Cannot call BluetoothLeScanner.stopScan(ScanCallback) on 'null' reference because BluetoothAdapter.isEnabled() == %b",
                     bluetoothAdapter.isEnabled()
             );
