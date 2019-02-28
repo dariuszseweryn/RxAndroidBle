@@ -43,13 +43,13 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
     // AndroidX
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation rootProject.ext.libs.appcompat
+    implementation rootProject.ext.libs.material_design
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    implementation 'androidx.annotation:annotation:1.0.1'
+    implementation rootProject.ext.libs.annotations
 
     // RxBinding
-    implementation 'com.jakewharton.rxbinding2:rxbinding:2.2.0'
+    implementation rootProject.ext.libs.rxjava_binding
 
     // RxJava
     implementation rootProject.ext.libs.rxjava
@@ -57,7 +57,7 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxkotlin:2.3.0'
 
     // Replaying share
-    implementation 'com.jakewharton.rx2:replaying-share:2.1.0'
+    implementation rootProject.ext.libs.rxjava_replayingshare
 
     // Test
     testImplementation project(':mockrxandroidble')
