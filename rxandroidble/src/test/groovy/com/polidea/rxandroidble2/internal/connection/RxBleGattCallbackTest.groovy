@@ -258,12 +258,12 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered() }
         ]
         whenAction << [
-                { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
-                { BluetoothGattCallback callback, int status -> callback.onCharacteristicWrite(Mock(BluetoothGatt), Mock(BluetoothGattCharacteristic), status) },
-                { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
-                { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(Mock(BluetoothGatt), Mock(BluetoothGattDescriptor), status) },
-                { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(Mock(BluetoothGatt), 0, status) },
-                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(Mock(BluetoothGatt), status) }
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(mockBluetoothGatt, Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onCharacteristicWrite(mockBluetoothGatt, Mock(BluetoothGattCharacteristic), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
+                { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(mockBluetoothGatt, 0, status) },
+                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(mockBluetoothGatt, status) }
         ]
     }
 }

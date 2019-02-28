@@ -133,6 +133,7 @@ public class LoggerUtil {
     }
 
     public static String commonMacMessage(BluetoothGatt gatt) {
+        if (gatt == null) return "MAC=null";
         return commonMacMessage(gatt.getDevice().getAddress());
     }
 
