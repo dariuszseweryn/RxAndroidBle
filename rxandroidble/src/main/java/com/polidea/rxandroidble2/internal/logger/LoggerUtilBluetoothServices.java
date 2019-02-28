@@ -87,7 +87,7 @@ public class LoggerUtilBluetoothServices {
                 .append('\n')
                 .append('\t').append("* ").append(createCharacteristicName(characteristic))
                 .append(" (")
-                .append(characteristic.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(characteristic.getUuid()))
                 .append(")");
     }
 
@@ -98,7 +98,7 @@ public class LoggerUtilBluetoothServices {
                 .append('\t')
                 .append("* ").append(createDescriptorName(descriptor))
                 .append(" (")
-                .append(descriptor.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(descriptor.getUuid()))
                 .append(")");
     }
 
@@ -135,7 +135,7 @@ public class LoggerUtilBluetoothServices {
                 .append(" - ")
                 .append(createServiceName(bluetoothGattService))
                 .append(" (")
-                .append(bluetoothGattService.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(bluetoothGattService.getUuid()))
                 .append(")\n")
                 .append("Instance ID: ").append(bluetoothGattService.getInstanceId())
                 .append('\n');
