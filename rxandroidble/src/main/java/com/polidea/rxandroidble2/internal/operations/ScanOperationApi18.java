@@ -55,5 +55,10 @@ public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, B
         rxBleAdapterWrapper.stopLegacyLeScan(scanCallback);
     }
 
-    // TODO toString
+    @Override
+    public String toString() {
+        return "ScanOperationApi18{"
+                + (scanFilterMatcher.isEmpty() ? "" : "ANY_MUST_MATCH -> " + scanFilterMatcher)
+                + '}';
+    }
 }

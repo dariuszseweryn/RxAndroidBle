@@ -18,6 +18,7 @@ import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
+import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.Emitter;
@@ -114,5 +115,14 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
         }
     }
 
-    // TODO toString
+    @Override
+    public String toString() {
+        boolean scanFiltersEmpty = scanFilters == null || scanFilters.length == 0;
+        boolean emulatedScanFiltersEmpty = emulatedScanFilterMatcher.isEmpty();
+        return "ScanOperationApi21{"
+                + (scanFiltersEmpty ? "" : "ANY_MUST_MATCH -> filters=" + Arrays.toString(scanFilters))
+                + (!scanFiltersEmpty && !emulatedScanFiltersEmpty ? " and then " : "")
+                + (emulatedScanFiltersEmpty ? "" : "ANY_MUST_MATCH -> " + emulatedScanFilterMatcher)
+                + '}';
+    }
 }

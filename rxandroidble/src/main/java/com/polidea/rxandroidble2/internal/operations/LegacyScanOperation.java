@@ -3,12 +3,16 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.Nullable;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble2.internal.util.UUIDUtil;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,16 +20,15 @@ import io.reactivex.Emitter;
 
 public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 
-    private final boolean isFilterDefined;
     private final UUIDUtil uuidUtil;
+    @Nullable
     private final Set<UUID> filterUuids;
 
     public LegacyScanOperation(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, final UUIDUtil uuidUtil) {
         super(rxBleAdapterWrapper);
 
-        this.isFilterDefined = filterServiceUUIDs != null && filterServiceUUIDs.length > 0;
         this.uuidUtil = uuidUtil;
-        if (this.isFilterDefined) {
+        if (filterServiceUUIDs != null && filterServiceUUIDs.length > 0) {
             this.filterUuids = new HashSet<>(filterServiceUUIDs.length);
             Collections.addAll(filterUuids, filterServiceUUIDs);
         } else {
@@ -39,7 +42,7 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
 
-                if (!isFilterDefined || uuidUtil.extractUUIDs(scanRecord).containsAll(filterUuids)) {
+                if (filterUuids == null || uuidUtil.extractUUIDs(scanRecord).containsAll(filterUuids)) {
                     emitter.onNext(new RxBleInternalScanResultLegacy(device, rssi, scanRecord));
                 }
             }
@@ -57,5 +60,21 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
         rxBleAdapterWrapper.stopLegacyLeScan(scanCallback);
     }
 
-    // TODO toString
+    @Override
+    public String toString() {
+        return "LegacyScanOperation{"
+                + (filterUuids == null ? "" : "ALL_MUST_MATCH -> uuids=" + logUuids(filterUuids))
+                + '}';
+    }
+
+    private static String logUuids(Set<UUID> filterUuids) {
+        int size = filterUuids.size();
+        String[] uuids = new String[size];
+        Iterator<UUID> iterator = filterUuids.iterator();
+        for (int i = 0; i < size; i++) {
+            String uuidToLog = LoggerUtil.getUuidToLog(iterator.next());
+            uuids[i] = uuidToLog;
+        }
+        return Arrays.toString(uuids);
+    }
 }
