@@ -61,7 +61,7 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
     @Override
     boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, BluetoothAdapter.LeScanCallback scanCallback) {
         if (this.filterUuids == null) {
-            RxBleLog.d("No filtering —> debug logs of scanned devices disabled");
+            RxBleLog.d("No library side filtering —> debug logs of scanned devices disabled");
         }
         return rxBleAdapterWrapper.startLegacyLeScan(scanCallback);
     }

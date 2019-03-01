@@ -97,7 +97,7 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
     @Override
     boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, ScanCallback scanCallback) {
         if (this.emulatedScanFilterMatcher.isEmpty()) {
-            RxBleLog.d("No emulated filtering —> debug logs of scanned devices disabled");
+            RxBleLog.d("No library side filtering —> debug logs of scanned devices disabled");
         }
         rxBleAdapterWrapper.startLeScan(
                 androidScanObjectsConverter.toNativeFilters(scanFilters),
