@@ -69,7 +69,7 @@ public abstract class RxBleClient {
     }
 
     /**
-     * Method for setting logging options
+     * Method for setting logging options. Options not set will not get overridden
      *
      * @param logOptions the logging options
      */
