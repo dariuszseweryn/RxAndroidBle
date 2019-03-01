@@ -364,8 +364,8 @@ import java.util.UUID;
 
     @Override
     public String toString() {
-        return "BluetoothLeScanFilter [mDeviceName=" + mDeviceName + ", mDeviceAddress="
-                + mDeviceAddress
+        return "BluetoothLeScanFilter [mDeviceName=" + mDeviceName
+                + ", " + LoggerUtil.commonMacMessage(mDeviceAddress)
                 + ", mUuid=" + (mServiceUuid == null ? null : LoggerUtil.getUuidToLog(mServiceUuid.getUuid()))
                 + ", mUuidMask=" + (mServiceUuidMask == null ? null : LoggerUtil.getUuidToLog(mServiceUuidMask.getUuid()))
                 + ", mServiceDataUuid=" + (mServiceDataUuid == null ? null : LoggerUtil.getUuidToLog(mServiceDataUuid.getUuid()))

@@ -16,6 +16,8 @@ public class LoggerUtil {
     private final static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     public static String bytesToHex(byte[] bytes) {
+        if (bytes == null) return String.valueOf(null);
+
         if (!RxBleLog.getShouldLogAttributeValues()) {
             return "[...]";
         }
@@ -138,6 +140,7 @@ public class LoggerUtil {
     }
 
     public static String commonMacMessage(String macAddress) {
+        if (macAddress == null) return "MAC=null";
         int logSetting = RxBleLog.getMacAddressLogSetting();
         switch (logSetting) {
 

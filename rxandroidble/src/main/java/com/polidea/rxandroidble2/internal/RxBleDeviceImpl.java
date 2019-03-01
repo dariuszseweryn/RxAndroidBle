@@ -125,7 +125,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     public String toString() {
         return "RxBleDeviceImpl{"
                 + LoggerUtil.commonMacMessage(bluetoothDevice.getAddress())
-                + ", bluetoothDevice=" + bluetoothDevice.getName()
+                + ", name=" + bluetoothDevice.getName()
                 + '}';
     }
 }

@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.LegacyScanOperation;
 import com.polidea.rxandroidble2.internal.operations.Operation;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
@@ -24,6 +25,7 @@ import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
+import io.reactivex.functions.Consumer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -126,6 +128,12 @@ class RxBleClientImpl extends RxBleClient {
                         .unsubscribeOn(bluetoothInteractionScheduler)
                         .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
                         .map(internalToExternalScanResultMapFunction)
+                        .doOnNext(new Consumer<ScanResult>() {
+                            @Override
+                            public void accept(ScanResult scanResult) {
+                                RxBleLog.i("%s", scanResult);
+                            }
+                        })
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());
             }
         });
@@ -136,6 +144,7 @@ class RxBleClientImpl extends RxBleClient {
         return backgroundScanner;
     }
 
+    @Override
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
         return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
             @Override
@@ -207,6 +216,12 @@ class RxBleClientImpl extends RxBleClient {
                     @Override
                     public RxBleScanResult apply(RxBleInternalScanResultLegacy scanResult) {
                         return convertToPublicScanResult(scanResult);
+                    }
+                })
+                .doOnNext(new Consumer<RxBleScanResult>() {
+                    @Override
+                    public void accept(RxBleScanResult rxBleScanResult) {
+                        RxBleLog.i("%s", rxBleScanResult);
                     }
                 })
                 .share();
