@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
 import androidx.annotation.Nullable;
+import com.polidea.rxandroidble2.LogConstants;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
@@ -41,7 +43,14 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
         return new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-
+                if (filterUuids != null && RxBleLog.isAtLeast(LogConstants.DEBUG)) {
+                    RxBleLog.d("%s, name=%s, rssi=%d, data=%s",
+                            LoggerUtil.commonMacMessage(device.getAddress()),
+                            device.getName(),
+                            rssi,
+                            LoggerUtil.bytesToHex(scanRecord)
+                    );
+                }
                 if (filterUuids == null || uuidUtil.extractUUIDs(scanRecord).containsAll(filterUuids)) {
                     emitter.onNext(new RxBleInternalScanResultLegacy(device, rssi, scanRecord));
                 }
@@ -51,6 +60,9 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
 
     @Override
     boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, BluetoothAdapter.LeScanCallback scanCallback) {
+        if (this.filterUuids == null) {
+            RxBleLog.d("No filtering —> debug logs of scanned devices disabled");
+        }
         return rxBleAdapterWrapper.startLegacyLeScan(scanCallback);
     }
 

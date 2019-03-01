@@ -9,9 +9,20 @@ public class EmulatedScanFilterMatcher {
 
     @Nullable
     private final ScanFilter[] scanFilters;
+    private final boolean isEmpty;
 
     public EmulatedScanFilterMatcher(@Nullable ScanFilter... scanFilters) {
         this.scanFilters = scanFilters;
+        boolean tempIsEmpty = true;
+        if (scanFilters != null && scanFilters.length != 0) {
+            for (ScanFilter scanFilter : scanFilters) {
+                if (!scanFilter.isAllFieldsEmpty()) {
+                    tempIsEmpty = false;
+                    break;
+                }
+            }
+        }
+        isEmpty = tempIsEmpty;
     }
 
     public boolean matches(RxBleInternalScanResult internalScanResult) {
@@ -29,7 +40,7 @@ public class EmulatedScanFilterMatcher {
     }
 
     public boolean isEmpty() {
-        return scanFilters == null || scanFilters.length == 0;
+        return isEmpty;
     }
 
     @Override
