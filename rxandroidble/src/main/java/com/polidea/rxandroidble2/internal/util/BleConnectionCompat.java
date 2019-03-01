@@ -81,7 +81,7 @@ public class BleConnectionCompat {
                 | InvocationTargetException
                 | InstantiationException
                 | NoSuchFieldException exception) {
-            RxBleLog.w(exception, "Error during connecting via reflection");
+            RxBleLog.w(exception, "Error while trying to connect via reflection");
             return connectGattCompat(bluetoothGattCallback, remoteDevice, true);
         }
     }
