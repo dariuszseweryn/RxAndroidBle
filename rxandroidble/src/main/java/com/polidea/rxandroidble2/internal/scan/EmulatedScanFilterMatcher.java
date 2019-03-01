@@ -2,20 +2,19 @@ package com.polidea.rxandroidble2.internal.scan;
 
 
 import androidx.annotation.Nullable;
-import com.polidea.rxandroidble2.scan.ScanFilter;
 import java.util.Arrays;
 
 public class EmulatedScanFilterMatcher {
 
     @Nullable
-    private final ScanFilter[] scanFilters;
+    private final ScanFilterInterface[] scanFilters;
     private final boolean isEmpty;
 
-    public EmulatedScanFilterMatcher(@Nullable ScanFilter... scanFilters) {
+    public EmulatedScanFilterMatcher(@Nullable ScanFilterInterface... scanFilters) {
         this.scanFilters = scanFilters;
         boolean tempIsEmpty = true;
         if (scanFilters != null && scanFilters.length != 0) {
-            for (ScanFilter scanFilter : scanFilters) {
+            for (ScanFilterInterface scanFilter : scanFilters) {
                 if (!scanFilter.isAllFieldsEmpty()) {
                     tempIsEmpty = false;
                     break;
@@ -30,7 +29,7 @@ public class EmulatedScanFilterMatcher {
             return true;
         }
 
-        for (ScanFilter scanFilter : scanFilters) {
+        for (ScanFilterInterface scanFilter : scanFilters) {
             if (scanFilter.matches(internalScanResult)) {
                 return true;
             }
