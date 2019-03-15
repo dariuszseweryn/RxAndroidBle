@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
+import com.jakewharton.rxrelay2.BehaviorRelay;
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
@@ -9,16 +10,12 @@ import com.polidea.rxandroidble2.internal.DeviceModule;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.Queue;
-
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Cancellable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
@@ -29,9 +26,9 @@ import io.reactivex.functions.Predicate;
 @ConnectionScope
 class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRouterOutput {
 
-    private final Queue<ObservableEmitter<BleException>> exceptionEmitters = new ConcurrentLinkedQueue<>();
-    private BleException exceptionOccurred;
-    private Disposable adapterMonitoringDisposable;
+    private final BehaviorRelay<BleException> bleExceptionBehaviorRelay = BehaviorRelay.create();
+    private final Observable<BleException> firstDisconnectionValueObs;
+    private final Observable<Object> firstDisconnectionExceptionObs;
 
     @Inject
     DisconnectionRouter(
@@ -49,25 +46,43 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
          One of those events must happen eventually. Then the adapterStateObservable (which uses BroadcastReceiver on a Context) will
          get unsubscribed. The rest of this chain lives only in the @ConnectionScope context and will get Garbage Collected eventually.
          */
-        adapterMonitoringDisposable = awaitAdapterNotUsable(adapterWrapper, adapterStateObservable)
+        final Disposable adapterMonitoringDisposable = awaitAdapterNotUsable(adapterWrapper, adapterStateObservable)
                 .map(new Function<Boolean, BleException>() {
                     @Override
                     public BleException apply(Boolean isAdapterUsable) {
                         return BleDisconnectedException.adapterDisabled(macAddress);
                     }
                 })
-                .firstElement()
-                .subscribe(new Consumer<BleException>() {
+                .doOnNext(new Consumer<BleException>() {
                     @Override
-                    public void accept(BleException exception) {
+                    public void accept(BleException e) {
                         RxBleLog.d("An exception received, indicating that the adapter has became unusable.");
-                        exceptionOccurred = exception;
-                        notifySubscribersAboutException();
                     }
-                }, new Consumer<Throwable>() {
+                })
+                .subscribe(bleExceptionBehaviorRelay, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) {
                         RxBleLog.w(throwable, "Failed to monitor adapter state.");
+                    }
+                });
+
+        firstDisconnectionValueObs = bleExceptionBehaviorRelay
+                .firstElement()
+                .toObservable()
+                .doOnTerminate(new Action() {
+                    @Override
+                    public void run() {
+                        adapterMonitoringDisposable.dispose();
+                    }
+                })
+                .replay()
+                .autoConnect(0);
+
+        firstDisconnectionExceptionObs = firstDisconnectionValueObs
+                .flatMap(new Function<BleException, ObservableSource<?>>() {
+                    @Override
+                    public ObservableSource<?> apply(BleException e) {
+                        return Observable.error(e);
                     }
                 });
     }
@@ -90,82 +105,24 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 });
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public void onDisconnectedException(BleDisconnectedException disconnectedException) {
-        onExceptionOccurred(disconnectedException);
+        bleExceptionBehaviorRelay.accept(disconnectedException);
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public void onGattConnectionStateException(BleGattException disconnectedGattException) {
-        onExceptionOccurred(disconnectedGattException);
+        bleExceptionBehaviorRelay.accept(disconnectedGattException);
     }
 
-    private synchronized void onExceptionOccurred(BleException exception) {
-        if (exceptionOccurred == null) {
-            exceptionOccurred = exception;
-            notifySubscribersAboutException();
-        }
-    }
-
-    private void notifySubscribersAboutException() {
-        if (adapterMonitoringDisposable != null) {
-            adapterMonitoringDisposable.dispose();
-        }
-
-        while (!exceptionEmitters.isEmpty()) {
-            final ObservableEmitter<BleException> exceptionEmitter = exceptionEmitters.poll();
-            exceptionEmitter.onNext(exceptionOccurred);
-            exceptionEmitter.onComplete();
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
     @Override
     public Observable<BleException> asValueOnlyObservable() {
-        return Observable.create(new ObservableOnSubscribe<BleException>() {
-            @Override
-            public void subscribe(final ObservableEmitter<BleException> emitter) {
-                synchronized (DisconnectionRouter.this) {
-                    if (exceptionOccurred != null) {
-                        emitter.onNext(exceptionOccurred);
-                        emitter.onComplete();
-                    } else {
-                        storeEmitterToBeNotifiedInTheFuture(emitter);
-                    }
-                }
-            }
-        });
+        return firstDisconnectionValueObs;
     }
 
-    private void storeEmitterToBeNotifiedInTheFuture(final ObservableEmitter<BleException> emitter) {
-        exceptionEmitters.add(emitter);
-        emitter.setCancellable(new Cancellable() {
-            @Override
-            public void cancel() {
-                exceptionEmitters.remove(emitter);
-            }
-        });
-    }
-
-    /**
-     * @inheritDoc
-     */
     @Override
     public <T> Observable<T> asErrorOnlyObservable() {
-        return asValueOnlyObservable()
-                .flatMap(new Function<BleException, Observable<T>>() {
-                    @Override
-                    public Observable<T> apply(BleException e) {
-                        return Observable.error(e);
-                    }
-                });
+        // [DS 11.03.2019] Not an elegant solution but it should decrease amount of allocations. Should not emit values so —> safe to cast.
+        return (Observable<T>) firstDisconnectionExceptionObs;
     }
 }
