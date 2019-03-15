@@ -53,11 +53,11 @@ public final class LogConstants {
     /**
      * Full MAC address will be logged i.e. '00:11:22:33:44:55'
      */
-    public static final int MAC_ADDRESS_FULL = 2;
+    public static final int MAC_ADDRESS_FULL = VERBOSE;
     /**
      * Truncated MAC address will be logged i.e. '00:11:22:33:44:XX'
      */
-    public static final int MAC_ADDRESS_TRUNCATED = 3;
+    public static final int MAC_ADDRESS_TRUNCATED = DEBUG;
 
     @IntDef({UUIDS_FULL, NONE})
     @Retention(RetentionPolicy.SOURCE)
@@ -68,5 +68,5 @@ public final class LogConstants {
     /**
      * Full UUID will be logged
      */
-    public static final int UUIDS_FULL = 2;
+    public static final int UUIDS_FULL = VERBOSE;
 }
