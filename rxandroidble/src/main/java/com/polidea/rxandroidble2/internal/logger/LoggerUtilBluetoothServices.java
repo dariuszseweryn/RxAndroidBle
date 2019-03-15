@@ -123,7 +123,7 @@ public class LoggerUtilBluetoothServices {
     private void appendDeviceHeader(BluetoothDevice device, StringBuilder descriptionBuilder) {
         descriptionBuilder
                 .append("--------------- ====== Printing peripheral content ====== ---------------\n")
-                .append("PERIPHERAL ADDRESS: ").append(device.getAddress()).append('\n')
+                .append(LoggerUtil.commonMacMessage(device.getAddress())).append('\n')
                 .append("PERIPHERAL NAME: ").append(device.getName()).append('\n')
                 .append("-------------------------------------------------------------------------");
     }
