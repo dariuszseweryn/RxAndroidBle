@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -11,10 +12,8 @@ import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 import com.polidea.rxandroidble2.internal.util.UUIDUtil;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -73,20 +72,10 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "LegacyScanOperation{"
-                + (filterUuids == null ? "" : "ALL_MUST_MATCH -> uuids=" + logUuids(filterUuids))
+                + (filterUuids == null ? "" : "ALL_MUST_MATCH -> uuids=" + LoggerUtil.getUuidSetToLog(filterUuids))
                 + '}';
-    }
-
-    private static String logUuids(Set<UUID> filterUuids) {
-        int size = filterUuids.size();
-        String[] uuids = new String[size];
-        Iterator<UUID> iterator = filterUuids.iterator();
-        for (int i = 0; i < size; i++) {
-            String uuidToLog = LoggerUtil.getUuidToLog(iterator.next());
-            uuids[i] = uuidToLog;
-        }
-        return Arrays.toString(uuids);
     }
 }

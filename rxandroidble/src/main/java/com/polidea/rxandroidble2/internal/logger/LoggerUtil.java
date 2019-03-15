@@ -6,6 +6,9 @@ import android.bluetooth.BluetoothGattDescriptor;
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.Operation;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
 
 public class LoggerUtil {
@@ -181,6 +184,17 @@ public class LoggerUtil {
             return uuid.toString();
         }
         return "...";
+    }
+
+    public static String getUuidSetToLog(Set<UUID> uuidSet) {
+        int size = uuidSet.size();
+        String[] uuids = new String[size];
+        Iterator<UUID> iterator = uuidSet.iterator();
+        for (int i = 0; i < size; i++) {
+            String uuidToLog = LoggerUtil.getUuidToLog(iterator.next());
+            uuids[i] = uuidToLog;
+        }
+        return Arrays.toString(uuids);
     }
 
     public static class AttributeLogWrapper {
