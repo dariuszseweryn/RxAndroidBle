@@ -60,7 +60,7 @@ public abstract class RxBleClient {
      * A convenience method.
      * Sets the log level that will be printed out in the console. Default is LogLevel.NONE which logs nothing.
      *
-     * @deprecated use {@link #setLogOptions(LogOptions)}
+     * @deprecated use {@link #updateLogOptions(LogOptions)}
      * @param logLevel the minimum log level to log
      */
     @Deprecated
@@ -69,12 +69,12 @@ public abstract class RxBleClient {
     }
 
     /**
-     * Method for setting logging options. Options not set will not get overridden
+     * Method for updating logging options. Properties not set in {@link LogOptions} will not get updated
      *
      * @param logOptions the logging options
      */
-    public static void setLogOptions(LogOptions logOptions) {
-        RxBleLog.setLogOptions(logOptions);
+    public static void updateLogOptions(LogOptions logOptions) {
+        RxBleLog.updateLogOptions(logOptions);
     }
 
     /**

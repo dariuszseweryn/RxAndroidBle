@@ -4,6 +4,10 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+/**
+ * Data class for new logger options used inside the library. If a particular setting is not defined then it will not get updated when
+ * passed to {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}.
+ */
 public class LogOptions {
 
     @Nullable
@@ -64,6 +68,9 @@ public class LogOptions {
 
     /**
      * The builder for {@link #LogOptions(Integer, Integer, Integer, Boolean, Logger)}
+     * If a particular setting will not be defined on the builder the produced
+     * {@link #LogOptions(Integer, Integer, Integer, Boolean, Logger)} will not overwrite them in the library when passed to
+     * {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}.
      */
     public static class Builder {
 

@@ -63,6 +63,7 @@ public class RxBleLog {
      * Simple logging interface for log messages from RxAndroidBle
      *
      * @see #setLogger(Logger)
+     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
      */
     public interface Logger {
 
@@ -76,7 +77,8 @@ public class RxBleLog {
     }
 
     /**
-     * Set a custom logger implementation, set it to {@code null} to use default logcat logging
+     * Old method to set a custom logger implementation, set it to {@code null} to use default logcat logging.
+     * It updates only the logger object. The rest of log settings remain unchanged.
      * <p>
      * Example how to forward logs to Timber:<br>
      *
@@ -91,7 +93,7 @@ public class RxBleLog {
      * </pre>
      * </code>
      *
-     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#setLogOptions(LogOptions)}
+     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
      */
     @Deprecated
     public static void setLogger(@Nullable final Logger logger) {
@@ -104,22 +106,28 @@ public class RxBleLog {
             }
         };
         LogOptions newLogOptions = new LogOptions.Builder().setLogger(loggerToSet).build();
-        RxBleLog.setLogOptions(newLogOptions);
+        RxBleLog.updateLogOptions(newLogOptions);
     }
 
     /**
-     * Old method to set log level
+     * Old method to set log level. It updates only the log level value. The rest of log settings remain unchanged.
      *
      * @param logLevel the log level
-     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#setLogOptions(LogOptions)}
+     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
      */
     @Deprecated
     public static void setLogLevel(@LogLevel int logLevel) {
         LogOptions newLogOptions = new LogOptions.Builder().setLogLevel(logLevel).build();
-        setLogOptions(newLogOptions);
+        updateLogOptions(newLogOptions);
     }
 
-    public static void setLogOptions(LogOptions logOptions) {
+    /**
+     * Method to update current logger setup with new LogOptions. Only set options will be updated. Options that were not set or set to null
+     * on the LogOptions will not update the current setup leaving the previous values untouched.
+     *
+     * @param logOptions the new log options
+     */
+    public static void updateLogOptions(LogOptions logOptions) {
         LoggerSetup oldLoggerSetup = RxBleLog.loggerSetup;
         LoggerSetup newLoggerSetup = oldLoggerSetup.merge(logOptions);
         d("Received new options (%s) and merged with old setup: %s. New setup: %s", logOptions, oldLoggerSetup, newLoggerSetup);

@@ -15,7 +15,7 @@ class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         rxBleClient = RxBleClient.create(this)
-        RxBleClient.setLogOptions(LogOptions.Builder()
+        RxBleClient.updateLogOptions(LogOptions.Builder()
                 .setLogLevel(LogConstants.INFO)
                 .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
                 .setUuidsLogSetting(LogConstants.UUIDS_FULL)

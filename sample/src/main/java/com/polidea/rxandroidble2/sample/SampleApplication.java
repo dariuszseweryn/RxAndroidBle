@@ -27,7 +27,7 @@ public class SampleApplication extends Application {
     public void onCreate() {
         super.onCreate();
         rxBleClient = RxBleClient.create(this);
-        RxBleClient.setLogOptions(new LogOptions.Builder()
+        RxBleClient.updateLogOptions(new LogOptions.Builder()
                 .setLogLevel(LogConstants.INFO)
                 .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
                 .setUuidsLogSetting(LogConstants.UUIDS_FULL)
