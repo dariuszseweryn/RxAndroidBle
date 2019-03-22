@@ -1,12 +1,14 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble2.internal.logger;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
+import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
 import com.polidea.rxandroidble2.utils.StandardUUIDsParser;
 
 import bleshadow.javax.inject.Inject;
@@ -26,17 +28,17 @@ import bleshadow.javax.inject.Inject;
  * * Client Characteristic Configuration (ce029bc4-f9eb-11e7-8c3f-9a214cf093ae)
  * * Characteristic User Description (ce02a344-f9eb-11e7-8c3f-9a214cf093ae)
  */
-public class RxBleServicesLogger {
+public class LoggerUtilBluetoothServices {
 
     private final CharacteristicPropertiesParser characteristicPropertiesParser;
 
     @Inject
-    RxBleServicesLogger(CharacteristicPropertiesParser characteristicPropertiesParser) {
+    LoggerUtilBluetoothServices(CharacteristicPropertiesParser characteristicPropertiesParser) {
         this.characteristicPropertiesParser = characteristicPropertiesParser;
     }
 
     public void log(RxBleDeviceServices rxBleDeviceServices, BluetoothDevice device) {
-        if (RxBleLog.isAtLeast(RxBleLog.VERBOSE)) {
+        if (RxBleLog.isAtLeast(LogConstants.VERBOSE)) {
             RxBleLog.v("Preparing services description");
             RxBleLog.v(prepareServicesDescription(rxBleDeviceServices, device));
         }
@@ -85,7 +87,7 @@ public class RxBleServicesLogger {
                 .append('\n')
                 .append('\t').append("* ").append(createCharacteristicName(characteristic))
                 .append(" (")
-                .append(characteristic.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(characteristic.getUuid()))
                 .append(")");
     }
 
@@ -96,7 +98,7 @@ public class RxBleServicesLogger {
                 .append('\t')
                 .append("* ").append(createDescriptorName(descriptor))
                 .append(" (")
-                .append(descriptor.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(descriptor.getUuid()))
                 .append(")");
     }
 
@@ -121,7 +123,7 @@ public class RxBleServicesLogger {
     private void appendDeviceHeader(BluetoothDevice device, StringBuilder descriptionBuilder) {
         descriptionBuilder
                 .append("--------------- ====== Printing peripheral content ====== ---------------\n")
-                .append("PERIPHERAL ADDRESS: ").append(device.getAddress()).append('\n')
+                .append(LoggerUtil.commonMacMessage(device.getAddress())).append('\n')
                 .append("PERIPHERAL NAME: ").append(device.getName()).append('\n')
                 .append("-------------------------------------------------------------------------");
     }
@@ -133,7 +135,7 @@ public class RxBleServicesLogger {
                 .append(" - ")
                 .append(createServiceName(bluetoothGattService))
                 .append(" (")
-                .append(bluetoothGattService.getUuid().toString())
+                .append(LoggerUtil.getUuidToLog(bluetoothGattService.getUuid()))
                 .append(")\n")
                 .append("Instance ID: ").append(bluetoothGattService.getInstanceId())
                 .append('\n');

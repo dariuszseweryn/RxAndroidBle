@@ -60,14 +60,14 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                 .subscribe(new Consumer<BleException>() {
                     @Override
                     public void accept(BleException exception) {
-                        RxBleLog.d("An exception received, indicating that the adapter has became unusable.");
+                        RxBleLog.v("An exception received, indicating that the adapter has became unusable.");
                         exceptionOccurred = exception;
                         notifySubscribersAboutException();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) {
-                        RxBleLog.w(throwable, "Failed to monitor adapter state.");
+                        RxBleLog.e(throwable, "Failed to monitor adapter state.");
                     }
                 });
     }

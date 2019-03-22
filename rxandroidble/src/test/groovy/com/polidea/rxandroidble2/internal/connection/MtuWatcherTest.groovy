@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection
 
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import io.reactivex.Observable
@@ -13,9 +15,17 @@ class MtuWatcherTest extends Specification {
 
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
 
+    BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
+
+    BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
+
+    String mockAddress = "deviceAddress"
+
     MtuWatcher objectUnderTest
 
     private void setupObjectUnderTest(int minimumGattMtu) {
+        mockBluetoothGatt.getDevice() >> mockBluetoothDevice
+        mockBluetoothDevice.getAddress() >> mockAddress
         mockGattCallback.getOnMtuChanged() >> onMtuChangedObservablePublishSubject.switchMap { it }
         objectUnderTest = new MtuWatcher(mockGattCallback, minimumGattMtu)
     }
@@ -54,7 +64,7 @@ class MtuWatcherTest extends Specification {
         given:
         setupObjectUnderTest(10)
         objectUnderTest.onConnectionSubscribed()
-        onMtuChangedObservablePublishSubject.onNext(Observable.error(new BleGattException(null, 0, BleGattOperationType.ON_MTU_CHANGED)))
+        onMtuChangedObservablePublishSubject.onNext(Observable.error(new BleGattException(mockBluetoothGatt, 0, BleGattOperationType.ON_MTU_CHANGED)))
         onMtuChangedObservablePublishSubject.onNext(Observable.just(newMtu))
 
         expect:

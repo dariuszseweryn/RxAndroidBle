@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import android.util.SparseArray;
 
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.ScanRecordImplCompat;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -203,7 +204,7 @@ public class UUIDUtil {
             return new ScanRecordImplCompat(serviceUuids, manufacturerData, serviceData,
                     advertiseFlag, txPowerLevel, localName, scanRecord);
         } catch (Exception e) {
-            RxBleLog.e(e, "unable to parse scan record: " + Arrays.toString(scanRecord));
+            RxBleLog.e(e, "Unable to parse scan record: %s", LoggerUtil.bytesToHex(scanRecord));
             // As the record is invalid, ignore all the parsed results for this packet
             // and return an empty record with raw scanRecord bytes in results
             return new ScanRecordImplCompat(null, null, null, -1, Integer.MIN_VALUE, null, scanRecord);

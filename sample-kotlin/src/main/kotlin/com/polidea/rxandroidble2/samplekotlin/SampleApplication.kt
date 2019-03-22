@@ -1,8 +1,9 @@
 package com.polidea.rxandroidble2.samplekotlin
 
 import android.app.Application
+import com.polidea.rxandroidble2.LogConstants
+import com.polidea.rxandroidble2.LogOptions
 import com.polidea.rxandroidble2.RxBleClient
-import com.polidea.rxandroidble2.internal.RxBleLog
 
 class SampleApplication : Application() {
 
@@ -14,6 +15,12 @@ class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         rxBleClient = RxBleClient.create(this)
-        RxBleClient.setLogLevel(RxBleLog.VERBOSE)
+        RxBleClient.updateLogOptions(LogOptions.Builder()
+                .setLogLevel(LogConstants.INFO)
+                .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
+                .setUuidsLogSetting(LogConstants.UUIDS_FULL)
+                .setShouldLogAttributeValues(true)
+                .build()
+        )
     }
 }

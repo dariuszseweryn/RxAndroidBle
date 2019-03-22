@@ -60,10 +60,26 @@ public abstract class RxBleClient {
      * A convenience method.
      * Sets the log level that will be printed out in the console. Default is LogLevel.NONE which logs nothing.
      *
+     * @deprecated use {@link #updateLogOptions(LogOptions)}
      * @param logLevel the minimum log level to log
      */
+    @Deprecated
     public static void setLogLevel(@RxBleLog.LogLevel int logLevel) {
         RxBleLog.setLogLevel(logLevel);
+    }
+
+    /**
+     * Method for updating logging options. Properties not set in {@link LogOptions} will not get updated.
+     * <p>
+     *     Default behaviour: MAC addresses are not logged (MAC='XX:XX:XX:XX:XX:XX'), uuids are not logged (uuid='...'), byte array values
+     *     are not logged (value=[...]), logger is logging to the logcat ({@link android.util.Log}), log level is set to not logging
+     *     anything ({@link LogConstants#NONE})
+     * </p>
+     *
+     * @param logOptions the logging options
+     */
+    public static void updateLogOptions(LogOptions logOptions) {
+        RxBleLog.updateLogOptions(logOptions);
     }
 
     /**

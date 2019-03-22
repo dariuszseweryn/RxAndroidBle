@@ -60,7 +60,7 @@ public class InternalScanResultCreator {
             case ScanSettings.CALLBACK_TYPE_MATCH_LOST:
                 return CALLBACK_TYPE_MATCH_LOST;
             default:
-                RxBleLog.w("Unknown callback type %d -> check android.bluetooth.le.ScanSettings");
+                RxBleLog.w("Unknown callback type %d -> check android.bluetooth.le.ScanSettings", callbackType);
                 return CALLBACK_TYPE_UNKNOWN;
         }
     }

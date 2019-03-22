@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2;
 
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+
 /**
  * Represents a scan result from Bluetooth LE scan.
  */
@@ -39,5 +41,14 @@ public class RxBleScanResult {
      */
     public byte[] getScanRecord() {
         return scanRecord;
+    }
+
+    @Override
+    public String toString() {
+        return "RxBleScanResult{"
+                + "bleDevice=" + bleDevice
+                + ", rssi=" + rssi
+                + ", scanRecord=" + LoggerUtil.bytesToHex(scanRecord)
+                + '}';
     }
 }

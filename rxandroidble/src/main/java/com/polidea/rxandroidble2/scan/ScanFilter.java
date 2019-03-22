@@ -7,7 +7,9 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
+import com.polidea.rxandroidble2.internal.scan.ScanFilterInterface;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +32,7 @@ import java.util.UUID;
  * https://code.google.com/p/android/issues/detail?id=181561
  * https://code.google.com/p/android/issues/detail?id=313221
  */
- public final class ScanFilter implements Parcelable {
+ public class ScanFilter implements Parcelable, ScanFilterInterface {
 
     @Nullable
     private final String mDeviceName;
@@ -363,12 +365,14 @@ import java.util.UUID;
 
     @Override
     public String toString() {
-        return "BluetoothLeScanFilter [mDeviceName=" + mDeviceName + ", mDeviceAddress="
-                + mDeviceAddress
-                + ", mUuid=" + mServiceUuid + ", mUuidMask=" + mServiceUuidMask
-                + ", mServiceDataUuid=" + String.valueOf(mServiceDataUuid) + ", mServiceData="
-                + Arrays.toString(mServiceData) + ", mServiceDataMask="
-                + Arrays.toString(mServiceDataMask) + ", mManufacturerId=" + mManufacturerId
+        return "BluetoothLeScanFilter [mDeviceName=" + mDeviceName
+                + ", " + LoggerUtil.commonMacMessage(mDeviceAddress)
+                + ", mUuid=" + (mServiceUuid == null ? null : LoggerUtil.getUuidToLog(mServiceUuid.getUuid()))
+                + ", mUuidMask=" + (mServiceUuidMask == null ? null : LoggerUtil.getUuidToLog(mServiceUuidMask.getUuid()))
+                + ", mServiceDataUuid=" + (mServiceDataUuid == null ? null : LoggerUtil.getUuidToLog(mServiceDataUuid.getUuid()))
+                + ", mServiceData=" + Arrays.toString(mServiceData)
+                + ", mServiceDataMask=" + Arrays.toString(mServiceDataMask)
+                + ", mManufacturerId=" + mManufacturerId
                 + ", mManufacturerData=" + Arrays.toString(mManufacturerData)
                 + ", mManufacturerDataMask=" + Arrays.toString(mManufacturerDataMask) + "]";
     }
