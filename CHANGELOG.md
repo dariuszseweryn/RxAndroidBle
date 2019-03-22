@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.8.2
+* Fixed sporadic NullPointerException in DisconnectionRouter (https://github.com/Polidea/RxAndroidBle/pull/553)
+
 Version 1.8.1
 * Added more GATT status descriptions (https://github.com/Polidea/RxAndroidBle/pull/543)
 
