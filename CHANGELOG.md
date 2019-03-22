@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.9.0
+* Added possibility to disable Location Services check before scan (https://github.com/Polidea/RxAndroidBle/pull/533)
+* Reworked library logging API and behaviour (https://github.com/Polidea/RxAndroidBle/pull/551) 
+
 Version 1.8.2
 * Fixed sporadic NullPointerException in DisconnectionRouter (https://github.com/Polidea/RxAndroidBle/pull/553)
 
