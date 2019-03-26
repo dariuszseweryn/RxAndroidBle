@@ -25,5 +25,5 @@ artifacts {
 }
 
 dependencies {
-    compile rootProject.ext.libs.dagger
+    implementation rootProject.ext.libs.dagger
 }

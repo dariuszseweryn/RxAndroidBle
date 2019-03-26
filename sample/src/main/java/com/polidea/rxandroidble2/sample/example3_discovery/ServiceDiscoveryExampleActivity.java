@@ -2,9 +2,10 @@ package com.polidea.rxandroidble2.sample.example3_discovery;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 
 import com.polidea.rxandroidble2.RxBleConnection;
@@ -13,17 +14,15 @@ import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
-import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
-
-public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
+public class ServiceDiscoveryExampleActivity extends AppCompatActivity {
 
     @BindView(R.id.connect)
     Button connectButton;
@@ -32,17 +31,17 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private DiscoveryResultsAdapter adapter;
     private RxBleDevice bleDevice;
     private String macAddress;
-    private Disposable connectionDisposable;
+    private final CompositeDisposable servicesDisposable = new CompositeDisposable();
 
     @OnClick(R.id.connect)
     public void onConnectToggleClick() {
-        connectionDisposable = bleDevice.establishConnection(false)
+        final Disposable disposable = bleDevice.establishConnection(false)
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .take(1) // Disconnect automatically after discovery
-                .compose(bindUntilEvent(PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::updateUI)
                 .subscribe(adapter::swapScanResult, this::onConnectionFailure);
+        servicesDisposable.add(disposable);
 
         updateUI();
     }
@@ -75,11 +74,9 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     private void onAdapterItemClick(DiscoveryResultsAdapter.AdapterItem item) {
 
         if (item.type == DiscoveryResultsAdapter.AdapterItem.CHARACTERISTIC) {
-            final Intent intent = new Intent(this, CharacteristicOperationExampleActivity.class);
+            final Intent intent = CharacteristicOperationExampleActivity.startActivityIntent(this, macAddress, item.uuid);
             // If you want to check the alternative advanced implementation comment out the line above and uncomment one below
-            // final Intent intent = new Intent(this, AdvancedCharacteristicOperationExampleActivity.class);
-            intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, macAddress);
-            intent.putExtra(CharacteristicOperationExampleActivity.EXTRA_CHARACTERISTIC_UUID, item.uuid);
+//            final Intent intent = AdvancedCharacteristicOperationExampleActivity.startActivityIntent(this, macAddress, item.uuid);
             startActivity(intent);
         } else {
             //noinspection ConstantConditions
@@ -103,9 +100,6 @@ public class ServiceDiscoveryExampleActivity extends RxAppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
-        if (connectionDisposable != null) {
-            connectionDisposable.dispose();
-        }
+        servicesDisposable.clear();
     }
 }

@@ -5,10 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.annotation.NonNull;
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import bleshadow.javax.inject.Inject;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposables;
@@ -24,23 +24,28 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
 
     public static class BleAdapterState {
 
-        public static final BleAdapterState STATE_ON = new BleAdapterState(true);
-        public static final BleAdapterState STATE_OFF = new BleAdapterState(false);
-        public static final BleAdapterState STATE_TURNING_ON = new BleAdapterState(false);
-        public static final BleAdapterState STATE_TURNING_OFF = new BleAdapterState(false);
+        public static final BleAdapterState STATE_ON = new BleAdapterState(true, "STATE_ON");
+        public static final BleAdapterState STATE_OFF = new BleAdapterState(false, "STATE_OFF");
+        public static final BleAdapterState STATE_TURNING_ON = new BleAdapterState(false, "STATE_TURNING_ON");
+        public static final BleAdapterState STATE_TURNING_OFF = new BleAdapterState(false, "STATE_TURNING_OFF");
 
         private final boolean isUsable;
+        private final String stateName;
 
-        private BleAdapterState(boolean isUsable) {
+        private BleAdapterState(boolean isUsable, String stateName) {
             this.isUsable = isUsable;
+            this.stateName = stateName;
         }
 
         public boolean isUsable() {
             return isUsable;
         }
-    }
 
-    private static final String TAG = "AdapterStateObs";
+        @Override
+        public String toString() {
+            return stateName;
+        }
+    }
 
     @NonNull
     private final Context context;
@@ -59,7 +64,9 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
 
                 if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                     int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-                    observer.onNext(mapToBleAdapterState(state));
+                    BleAdapterState internalState = mapToBleAdapterState(state);
+                    RxBleLog.i("Adapter state changed: %s", internalState);
+                    observer.onNext(internalState);
                 }
             }
         };
@@ -69,7 +76,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
                 try {
                     context.unregisterReceiver(receiver);
                 } catch (IllegalArgumentException exception) {
-                    Log.d(TAG, "The receiver is already not registered.");
+                    RxBleLog.w("The receiver is already not registered.");
                 }
             }
         }));

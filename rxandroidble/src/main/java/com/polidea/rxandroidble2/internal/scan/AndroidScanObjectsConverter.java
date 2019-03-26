@@ -3,9 +3,9 @@ package com.polidea.rxandroidble2.internal.scan;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.annotation.RestrictTo;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;

@@ -2,14 +2,14 @@ package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.util.RxBleServicesLogger;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -25,12 +25,12 @@ import io.reactivex.functions.Function;
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
     private final BluetoothGatt bluetoothGatt;
-    private final RxBleServicesLogger bleServicesLogger;
+    private final LoggerUtilBluetoothServices bleServicesLogger;
 
     ServiceDiscoveryOperation(
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
-            RxBleServicesLogger bleServicesLogger,
+            LoggerUtilBluetoothServices bleServicesLogger,
             TimeoutConfiguration timeoutConfiguration) {
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.SERVICE_DISCOVERY, timeoutConfiguration);
         this.bluetoothGatt = bluetoothGatt;
@@ -103,5 +103,10 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
                 }
             }
         });
+    }
+
+    @Override
+    public String toString() {
+        return "ServiceDiscoveryOperation{" + super.toString() + '}';
     }
 }

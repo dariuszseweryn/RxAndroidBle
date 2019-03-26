@@ -37,8 +37,8 @@ public class RxBleDeviceProvider {
 
             final DeviceComponent deviceComponent =
                     deviceComponentBuilder.get()
-                    .deviceModule(new DeviceModule(macAddress))
-                    .build();
+                            .macAddress(macAddress)
+                            .build();
 
             final RxBleDevice newRxBleDevice = deviceComponent.provideDevice();
             cachedDeviceComponents.put(macAddress, deviceComponent);

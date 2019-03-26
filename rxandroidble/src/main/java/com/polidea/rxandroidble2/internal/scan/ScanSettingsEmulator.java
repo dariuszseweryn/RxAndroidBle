@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
-import android.support.annotation.IntRange;
+import androidx.annotation.IntRange;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -76,7 +76,7 @@ public class ScanSettingsEmulator {
             case ScanSettings.SCAN_MODE_BALANCED:
                 return scanModeBalancedTransformer();
             case ScanSettings.SCAN_MODE_OPPORTUNISTIC:
-                RxBleLog.d("Cannot emulate opportunistic scan mode since it is OS dependent - fallthrough to low power");
+                RxBleLog.w("Cannot emulate opportunistic scan mode since it is OS dependent - fallthrough to low power");
                 // fallthrough
             case ScanSettings.SCAN_MODE_LOW_POWER:
                 return scanModeLowPowerTransformer();

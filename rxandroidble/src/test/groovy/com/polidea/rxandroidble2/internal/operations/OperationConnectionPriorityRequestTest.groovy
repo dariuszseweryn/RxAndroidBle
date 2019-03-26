@@ -23,6 +23,11 @@ class OperationConnectionPriorityRequestTest extends Specification {
             timeout.intValue(),
             testScheduler
     )
+    TimeoutConfiguration successTimeoutConfiguration = new TimeoutConfiguration(
+            completedDelay,
+            delayUnit,
+            testScheduler
+    )
     ConnectionPriorityChangeOperation objectUnderTest
 
     def setup() {
@@ -66,9 +71,7 @@ class OperationConnectionPriorityRequestTest extends Specification {
                 mockBluetoothGatt,
                 mockTimeoutConfiguration,
                 connectionPriority,
-                completedDelay,
-                delayUnit,
-                testScheduler
+                successTimeoutConfiguration
         )
     }
 }

@@ -41,13 +41,15 @@ public class ConnectorImpl implements Connector {
             @Override
             public ObservableSource<RxBleConnection> call() throws Exception {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
-                        .connectionModule(new ConnectionModule(options))
+                        .autoConnect(options.autoConnect)
+                        .suppressOperationChecks(options.suppressOperationCheck)
+                        .operationTimeout(options.operationTimeout)
                         .build();
 
                 final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
                 return obtainRxBleConnection(connectionComponent)
-                        .delaySubscription(enqueueConnectOperation(connectionComponent))
                         .mergeWith(observeDisconnections(connectionComponent))
+                        .delaySubscription(enqueueConnectOperation(connectionComponent))
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {

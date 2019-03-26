@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection
 
 import android.bluetooth.*
-import android.support.annotation.NonNull
+import androidx.annotation.NonNull
 import com.polidea.rxandroidble2.*
 import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException
@@ -10,7 +10,7 @@ import com.polidea.rxandroidble2.internal.operations.OperationsProviderImpl
 import com.polidea.rxandroidble2.internal.operations.ReadRssiOperation
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
-import com.polidea.rxandroidble2.internal.util.RxBleServicesLogger
+import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Scheduler
@@ -42,7 +42,7 @@ class RxBleConnectionTest extends Specification {
     def illegalOperationChecker = Mock IllegalOperationChecker
     def testScheduler = new TestScheduler()
     def timeoutConfig = new MockOperationTimeoutConfiguration(testScheduler)
-    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, Mock(RxBleServicesLogger),
+    def operationsProviderMock = new OperationsProviderImpl(gattCallback, bluetoothGattMock, Mock(LoggerUtilBluetoothServices),
             timeoutConfig, testScheduler, testScheduler,
             { new ReadRssiOperation(gattCallback, bluetoothGattMock, timeoutConfig) })
     def notificationAndIndicationManagerMock = Mock NotificationAndIndicationManager

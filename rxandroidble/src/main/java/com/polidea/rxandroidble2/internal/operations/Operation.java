@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.operations;
 
 
-import android.support.annotation.RestrictTo;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;

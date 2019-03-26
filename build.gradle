@@ -2,15 +2,17 @@ apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
 
 buildscript {
+    ext.kotlinVersion = '1.3.21'
     repositories {
         google()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
-        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:2.0.0'
+        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
+        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:2.0.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
@@ -38,6 +40,19 @@ allprojects {
             // containers (currently) have 2 dedicated cores and 4GB of memory
             maxParallelForks = 2
             minHeapSize = '128m'
+        }
+    }
+
+    dependencyUpdates.resolutionStrategy {
+        componentSelection { rules ->
+            rules.all { ComponentSelection selection ->
+                boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'preview'].any { qualifier ->
+                    selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+                }
+                if (rejected) {
+                    selection.reject('Release candidate')
+                }
+            }
         }
     }
 }

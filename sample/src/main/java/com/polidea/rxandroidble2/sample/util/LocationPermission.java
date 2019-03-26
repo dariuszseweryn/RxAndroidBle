@@ -5,8 +5,9 @@ import android.Manifest.permission;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class LocationPermission {
 
@@ -16,9 +17,9 @@ public class LocationPermission {
 
     private static final int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
 
-    public static boolean checkLocationPermissionGranted(final Context context) {
-        return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED;
+    public static boolean isLocationPermissionGranted(final Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true; // It is not needed at all as there were no runtime permissions yet
+        return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static void requestLocationPermission(final Activity activity) {
@@ -30,7 +31,7 @@ public class LocationPermission {
     }
 
     public static boolean isRequestLocationPermissionGranted(final int requestCode, final String[] permissions,
-            final int[] grantResults) {
+                                                             final int[] grantResults) {
         if (requestCode == REQUEST_PERMISSION_COARSE_LOCATION) {
             for (int i = 0; i < permissions.length; i++) {
                 if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)

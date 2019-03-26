@@ -3,8 +3,8 @@ package com.polidea.rxandroidble2.scan;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import java.util.List;
 

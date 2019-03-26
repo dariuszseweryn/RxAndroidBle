@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.internal.connection
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
@@ -8,6 +9,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.subjects.PublishSubject
+import spock.lang.Shared
 import spock.lang.Unroll
 
 import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
@@ -15,8 +17,24 @@ import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterSt
 class DisconnectionRouterTest extends ElectricSpecification {
 
     String mockMacAddress = "1234"
+
     PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject = PublishSubject.create()
+
     DisconnectionRouter objectUnderTest
+
+    @Shared
+    BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
+
+    @Shared
+    BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
+
+    @Shared
+    String mockAddress = "deviceAddress"
+
+    def setupSpec() {
+        mockBluetoothGatt.getDevice() >> mockBluetoothDevice
+        mockBluetoothDevice.getAddress() >> mockAddress
+    }
 
     def createObjectUnderTest(boolean isBluetoothAdapterOnInitially) {
         def mockBleAdapterWrapper = Mock(RxBleAdapterWrapper)
@@ -74,7 +92,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
 
         given:
         createObjectUnderTest(true)
-        BleGattException testException = new BleGattException(Mock(BluetoothGatt), BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
+        BleGattException testException = new BleGattException(mockBluetoothGatt, BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
         def errorTestSubscriber = objectUnderTest.asErrorOnlyObservable().test()
         def valueTestSubscriber = objectUnderTest.asValueOnlyObservable().test()
 
@@ -92,7 +110,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
 
         given:
         createObjectUnderTest(true)
-        BleGattException testException = new BleGattException(Mock(BluetoothGatt), BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
+        BleGattException testException = new BleGattException(mockBluetoothGatt, BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
         objectUnderTest.onGattConnectionStateException(testException)
 
         when:
@@ -106,7 +124,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
 
         given:
         createObjectUnderTest(true)
-        BleGattException testException = new BleGattException(Mock(BluetoothGatt), BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
+        BleGattException testException = new BleGattException(mockBluetoothGatt, BluetoothGatt.GATT_FAILURE, BleGattOperationType.CONNECTION_STATE)
         objectUnderTest.onGattConnectionStateException(testException)
 
         when:
@@ -137,7 +155,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
         valueTestSubscriber.assertValueCount(1)
 
         where:
-        bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
+        bleAdapterState << [STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF]
     }
 
     @Unroll
@@ -154,7 +172,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
         errorTestSubscriber.assertError({ BleDisconnectedException e -> e.bluetoothDeviceAddress == mockMacAddress })
 
         where:
-        bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
+        bleAdapterState << [STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF]
     }
 
     @Unroll
@@ -174,7 +192,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
         valueTestSubscriber.assertValueCount(1)
 
         where:
-        bleAdapterState << [ STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF ]
+        bleAdapterState << [STATE_TURNING_ON, STATE_TURNING_OFF, STATE_OFF]
     }
 
     def "should emit exception from .asErrorOnlyObservable() when RxBleAdapterWrapper.isEnabled() returns false"() {
@@ -245,7 +263,7 @@ class DisconnectionRouterTest extends ElectricSpecification {
                     mockAdapterStateSubject.onNext(STATE_OFF)
                 },
                 { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
-                    objectUnderTest.onGattConnectionStateException(new BleGattException(null, 0, BleGattOperationType.CHARACTERISTIC_WRITE))
+                    objectUnderTest.onGattConnectionStateException(new BleGattException(mockBluetoothGatt, 0, BleGattOperationType.CHARACTERISTIC_WRITE))
                 },
                 { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
                     objectUnderTest.onDisconnectedException(new BleDisconnectedException("test"))

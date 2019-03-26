@@ -3,7 +3,7 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
@@ -14,6 +14,7 @@ import com.polidea.rxandroidble2.internal.QueueOperation;
 import com.polidea.rxandroidble2.internal.connection.BluetoothGattProvider;
 import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.BleConnectionCompat;
 
@@ -177,5 +178,13 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
     @Override
     protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, bluetoothDevice.getAddress(), BleDisconnectedException.UNKNOWN_STATUS);
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectOperation{"
+                + LoggerUtil.commonMacMessage(bluetoothDevice.getAddress())
+                + ", autoConnect=" + autoConnect
+                + '}';
     }
 }

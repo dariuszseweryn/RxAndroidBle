@@ -16,4 +16,11 @@ public class TimeoutConfiguration {
         this.timeoutTimeUnit = timeoutTimeUnit;
         this.timeoutScheduler = timeoutScheduler;
     }
+
+    @Override
+    public String toString() {
+        return "{value=" + timeout
+                + ", timeUnit=" + timeoutTimeUnit
+                + '}';
+    }
 }

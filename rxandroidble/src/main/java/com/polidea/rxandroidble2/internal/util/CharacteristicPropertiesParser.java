@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.util;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.internal.BluetoothGattCharacteristicProperty;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -86,7 +86,7 @@ public class CharacteristicPropertiesParser {
         } else {
             // This case is unicorny and only left for my peace of mind. The property is matched against known dictionary before
             // being passed here, so it MUST match one of the values [MK]
-            RxBleLog.e("Unknown property specified");
+            RxBleLog.e("Unknown property specified (%d)", property);
             return "UNKNOWN (" + property + " -> check android.bluetooth.BluetoothGattCharacteristic)";
         }
     }

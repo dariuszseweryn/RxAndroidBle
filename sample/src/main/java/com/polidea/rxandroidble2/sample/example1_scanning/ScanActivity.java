@@ -2,10 +2,10 @@ package com.polidea.rxandroidble2.sample.example1_scanning;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.widget.Button;
 
 import com.polidea.rxandroidble2.RxBleClient;
@@ -57,7 +57,7 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanDisposable.dispose();
         } else {
-            if (LocationPermission.checkLocationPermissionGranted(this)) {
+            if (LocationPermission.isLocationPermissionGranted(this)) {
                 scanBleDevices();
             } else {
                 hasClickedScan = true;
@@ -100,7 +100,7 @@ public class ScanActivity extends AppCompatActivity {
 
         if (isScanning()) {
             /*
-             * Stop scanning in onPause callback. You can use rxlifecycle for convenience. Examples are provided later.
+             * Stop scanning in onPause callback.
              */
             scanDisposable.dispose();
         }
