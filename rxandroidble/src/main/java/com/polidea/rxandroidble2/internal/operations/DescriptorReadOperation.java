@@ -7,6 +7,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 
 import bleshadow.javax.inject.Inject;
@@ -39,5 +40,13 @@ public class DescriptorReadOperation extends SingleResponseOperation<ByteAssocia
     @Override
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         return bluetoothGatt.readDescriptor(bluetoothGattDescriptor);
+    }
+
+    @Override
+    public String toString() {
+        return "DescriptorReadOperation{"
+                + super.toString()
+                + ", descriptor=" + LoggerUtil.wrap(bluetoothGattDescriptor, false)
+                + '}';
     }
 }

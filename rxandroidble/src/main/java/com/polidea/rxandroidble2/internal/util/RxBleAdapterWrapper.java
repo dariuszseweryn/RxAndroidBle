@@ -9,8 +9,8 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import java.util.List;
@@ -66,7 +66,10 @@ public class RxBleAdapterWrapper {
     public void stopLeScan(ScanCallback scanCallback) {
         final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         if (bluetoothLeScanner == null) {
-            RxBleLog.d("Cannot perform BluetoothLeScanner.stopScan(ScanCallback) because scanner is unavailable (Probably adapter is off)");
+            RxBleLog.v(
+                    "Cannot call BluetoothLeScanner.stopScan(ScanCallback) on 'null' reference because BluetoothAdapter.isEnabled() == %b",
+                    bluetoothAdapter.isEnabled()
+            );
             // if stopping the scan is not possible due to BluetoothLeScanner not accessible then it is probably stopped anyway
             return;
         }

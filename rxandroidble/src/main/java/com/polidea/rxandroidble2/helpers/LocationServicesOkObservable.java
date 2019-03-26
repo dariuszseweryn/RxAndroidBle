@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.helpers;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.DaggerClientComponent;
@@ -29,7 +29,7 @@ public class LocationServicesOkObservable extends Observable<Boolean> {
     public static LocationServicesOkObservable createInstance(@NonNull final Context context) {
         return DaggerClientComponent
                 .builder()
-                .clientModule(new ClientComponent.ClientModule(context))
+                .applicationContext(context.getApplicationContext())
                 .build()
                 .locationServicesOkObservable();
     }

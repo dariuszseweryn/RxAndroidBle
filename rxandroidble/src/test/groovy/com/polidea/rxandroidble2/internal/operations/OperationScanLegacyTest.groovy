@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.internal.operations
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.support.annotation.Nullable
+import androidx.annotation.Nullable
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper

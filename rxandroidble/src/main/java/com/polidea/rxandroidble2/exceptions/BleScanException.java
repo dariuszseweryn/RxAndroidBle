@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble2.exceptions;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Date;

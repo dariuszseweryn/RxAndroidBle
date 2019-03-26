@@ -47,8 +47,8 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
                 emitter.tryOnError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
             }
         } catch (Throwable throwable) {
-            RxBleLog.e(throwable, "Error while calling the start scan function");
-            emitter.tryOnError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START));
+            RxBleLog.w(throwable, "Error while calling the start scan function");
+            emitter.tryOnError(new BleScanException(BleScanException.BLUETOOTH_CANNOT_START, throwable));
         } finally {
             queueReleaseInterface.release();
         }

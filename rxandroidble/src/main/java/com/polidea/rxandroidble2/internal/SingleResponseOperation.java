@@ -9,6 +9,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
@@ -95,5 +96,10 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
     protected BleException provideException(DeadObjectException deadObjectException) {
         return new BleDisconnectedException(deadObjectException, bluetoothGatt.getDevice().getAddress(),
                 BleDisconnectedException.UNKNOWN_STATUS);
+    }
+
+    @Override
+    public String toString() {
+        return LoggerUtil.commonMacMessage(bluetoothGatt);
     }
 }

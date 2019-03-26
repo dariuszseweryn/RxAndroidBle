@@ -10,6 +10,7 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
+import io.reactivex.internal.functions.Functions;
 
 @ConnectionScope
 class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer<Integer> {
@@ -41,12 +42,9 @@ class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer
 
     @Override
     public void onConnectionSubscribed() {
-        serialSubscription.set(mtuObservable.subscribe(this, new Consumer<Throwable>() {
-            @Override
-            public void accept(Throwable throwable) {
-                // ignoring, this is expected when the connection is lost.
-            }
-        }));
+        serialSubscription.set(mtuObservable.subscribe(this,
+                // ignoring error, it is expected when the connection is lost.
+                Functions.emptyConsumer()));
     }
 
     @Override

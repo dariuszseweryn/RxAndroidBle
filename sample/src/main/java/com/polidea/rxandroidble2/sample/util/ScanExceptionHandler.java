@@ -2,9 +2,9 @@ package com.polidea.rxandroidble2.sample.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.sample.R;
 import java.util.Date;

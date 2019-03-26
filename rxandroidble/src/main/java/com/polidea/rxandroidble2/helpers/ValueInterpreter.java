@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble2.helpers;
 
 
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

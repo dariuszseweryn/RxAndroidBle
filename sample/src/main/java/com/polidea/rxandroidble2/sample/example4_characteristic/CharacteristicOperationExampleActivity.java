@@ -1,8 +1,11 @@
 package com.polidea.rxandroidble2.sample.example4_characteristic;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -14,7 +17,6 @@ import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.util.HexString;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.UUID;
 
@@ -27,9 +29,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 
-import static com.trello.rxlifecycle2.android.ActivityEvent.PAUSE;
-
-public class CharacteristicOperationExampleActivity extends RxAppCompatActivity {
+public class CharacteristicOperationExampleActivity extends AppCompatActivity {
 
     public static final String EXTRA_CHARACTERISTIC_UUID = "extra_uuid";
     @BindView(R.id.connect)
@@ -52,6 +52,13 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
     private RxBleDevice bleDevice;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    public static Intent startActivityIntent(Context context, String peripheralMacAddress, UUID characteristicUuid) {
+        Intent intent = new Intent(context, CharacteristicOperationExampleActivity.class);
+        intent.putExtra(DeviceActivity.EXTRA_MAC_ADDRESS, peripheralMacAddress);
+        intent.putExtra(EXTRA_CHARACTERISTIC_UUID, characteristicUuid);
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +76,6 @@ public class CharacteristicOperationExampleActivity extends RxAppCompatActivity 
         return bleDevice
                 .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
-                .compose(bindUntilEvent(PAUSE))
                 .compose(ReplayingShare.instance());
     }
 

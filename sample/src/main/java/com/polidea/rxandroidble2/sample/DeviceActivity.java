@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity;
 import com.polidea.rxandroidble2.sample.example3_discovery.ServiceDiscoveryExampleActivity;

@@ -1,5 +1,23 @@
 Change Log
 ==========
+Version 1.9.0
+* Added possibility to disable Location Services check before scan (https://github.com/Polidea/RxAndroidBle/pull/533)
+* Reworked library logging API and behaviour (https://github.com/Polidea/RxAndroidBle/pull/551) 
+
+Version 1.8.2
+* Fixed sporadic NullPointerException in DisconnectionRouter (https://github.com/Polidea/RxAndroidBle/pull/553)
+
+Version 1.8.1
+* Added more GATT status descriptions (https://github.com/Polidea/RxAndroidBle/pull/543)
+
+Version 1.8.0
+* Added `NotificationSetupMode.QUICK_SETUP` for devices which start notifying right after CCC descriptor write (https://github.com/Polidea/RxAndroidBle/pull/478)
+* Migrated to androidx usage (https://github.com/Polidea/RxAndroidBle/pull/497) 
+
+Version 1.7.2
+* Fixed stalled library (race condition) when trying to connect while BluetoothAdapter is OFF (https://github.com/Polidea/RxAndroidBle/pull/522)
+* Fixed logs in DisconnectionRouter (https://github.com/Polidea/RxAndroidBle/pull/523) 
+
 Version 1.7.1
 * Fixed possible `IllegalArgumentException` while parsing UUIDs from advertisements (https://github.com/Polidea/RxAndroidBle/pull/485)
 * Fixed `NullPointerException` when calling `BackgroundScanner` start / stop scan while `BluetoothAdapter` was not turned ON (https://github.com/Polidea/RxAndroidBle/pull/487)
@@ -15,7 +33,7 @@ Version 1.6.0
 * Deprecated ConnectionSharingAdapter (https://github.com/Polidea/RxAndroidBle/pull/397)
 * Fixed unexpected behaviour of LocationServicesOkObservable if unsubscribed immediately after first emission (https://github.com/Polidea/RxAndroidBle/pull/430)
 * Added possibility to modify CustomOperation priority (https://github.com/Polidea/RxAndroidBle/pull/414)
-* Fixed stalled library if a just stared operation was already unsubscribed (https://github.com/Polidea/RxAndroidBle/pull/428) 
+* Fixed stalled library if a just started operation was already unsubscribed (https://github.com/Polidea/RxAndroidBle/pull/428) 
 
 Version 1.5.0
 * Added possibility to change default operation timeout (https://github.com/Polidea/RxAndroidBle/pull/321)

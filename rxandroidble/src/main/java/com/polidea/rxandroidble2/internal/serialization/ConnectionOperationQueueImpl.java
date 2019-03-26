@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.serialization;
 
-import android.support.annotation.RestrictTo;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
@@ -25,10 +25,12 @@ import io.reactivex.Scheduler;
 import io.reactivex.functions.Cancellable;
 import io.reactivex.observers.DisposableObserver;
 
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationFinished;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationQueued;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationRemoved;
-import static com.polidea.rxandroidble2.internal.util.OperationLogger.logOperationStarted;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.commonMacMessage;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationFinished;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationQueued;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRemoved;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRunning;
+import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationStarted;
 
 @ConnectionScope
 public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, ConnectionSubscriptionWatcher {
@@ -60,6 +62,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                         final Operation<?> operation = entry.operation;
                         final long startedAtTime = System.currentTimeMillis();
                         logOperationStarted(operation);
+                        logOperationRunning(operation);
 
                         /*
                          * Calling bluetooth calls before the previous one returns in a callback usually finishes with a failure
@@ -81,7 +84,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
                 }
 
                 flushQueue();
-                RxBleLog.d("Terminated.");
+                RxBleLog.v("Terminated (%s)", commonMacMessage(deviceMacAddress));
             }
         });
     }
@@ -125,7 +128,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
             // already terminated
             return;
         }
-        RxBleLog.i("Connection operations queue to be terminated (" + deviceMacAddress + ')');
+        RxBleLog.d(disconnectException, "Connection operations queue to be terminated (%s)", commonMacMessage(deviceMacAddress));
         shouldRun = false;
         disconnectionException = disconnectException;
         runnableFuture.cancel(true);

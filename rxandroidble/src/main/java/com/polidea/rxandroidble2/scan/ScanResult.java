@@ -2,6 +2,7 @@ package com.polidea.rxandroidble2.scan;
 
 
 import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 
 public class ScanResult {
 
@@ -46,7 +47,7 @@ public class ScanResult {
                 + ", rssi=" + rssi
                 + ", timestampNanos=" + timestampNanos
                 + ", callbackType=" + callbackType
-                + ", scanRecord=" + scanRecord
+                + ", scanRecord=" + LoggerUtil.bytesToHex(scanRecord.getBytes())
                 + '}';
     }
 }

@@ -1,9 +1,10 @@
 package com.polidea.rxandroidble2.exceptions;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.utils.GattStatusParser;
 
 /**
@@ -72,6 +73,7 @@ public class BleDisconnectedException extends BleException {
 
     private static String createMessage(@Nullable String bluetoothDeviceAddress, int status) {
         final String gattCallbackStatusDescription = GattStatusParser.getGattCallbackStatusDescription(status);
-        return "Disconnected from " + bluetoothDeviceAddress + " with status " + status + " (" + gattCallbackStatusDescription + ")";
+        return "Disconnected from " + LoggerUtil.commonMacMessage(bluetoothDeviceAddress) + " with status " + status + " ("
+                + gattCallbackStatusDescription + ")";
     }
 }

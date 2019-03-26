@@ -3,8 +3,8 @@ package com.polidea.rxandroidble2;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;

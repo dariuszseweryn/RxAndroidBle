@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal;
 
-import android.support.annotation.RestrictTo;
+import androidx.annotation.RestrictTo;
 
 import java.util.UUID;
 
