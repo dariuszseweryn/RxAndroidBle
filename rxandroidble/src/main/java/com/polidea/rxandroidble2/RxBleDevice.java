@@ -91,9 +91,9 @@ public interface RxBleDevice {
      *                         the device is not in range after a 30-second timeout. If true, the connection will be pending indefinitely.
      *                         Unlike the native Android API, if set to true and the connection is lost there will NOT be any attempt to
      *                         reconnect unless explicitly resubscribed.
-     * @param operationTimeout Timeout configuration after which the operation will be considered as broken. Eventually the operation
-     *                         will be canceled and removed from queue. Keep in mind that it will cancel the library's operation
-     *                         only and may leave Android's BLE stack in an inconsistent state.
+     * @param operationTimeout Timeout configuration for operations scheduled using {@link RxBleConnection} emitted from this observable.
+     *                         Those operations will be considered broken after the specified timeout. Keep in mind that after the timeout
+     *                         those operations will be canceled and may leave Android's BLE stack in an inconsistent state.
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This occurs when the
