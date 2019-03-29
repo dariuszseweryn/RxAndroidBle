@@ -171,4 +171,21 @@ class ClientStateObservableTest extends Specification {
                 STATE_TURNING_ON
         ]
     }
+
+    def "should not emit BLUETOOTH_NOT_ENABLED state when transitioning from state BLUETOOTH_OFF"() {
+
+        given:
+        adapterWrapperMock.hasBluetoothAdapter() >> true
+        adapterWrapperMock.isBluetoothEnabled() >> false
+        locationServicesStatusMock.isLocationPermissionOk() >> true
+        adapterStateSubject.onNext(STATE_OFF)
+        def testSubscriber = objectUnderTest.test()
+        adapterStateSubject.onNext(STATE_TURNING_ON)
+
+        when:
+        testScheduler.triggerActions()
+
+        then:
+        testSubscriber.assertNoValues()
+    }
 }
