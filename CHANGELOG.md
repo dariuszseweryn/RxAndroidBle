@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.9.1
+* Fixed `RxBleClient.observeStateChanges()` emissions (https://github.com/Polidea/RxAndroidBle/pull/556)
+* Fixed `RxBleDevice.establishConnection(boolean, Timeout)` Javadoc (https://github.com/Polidea/RxAndroidBle/pull/558)
+
 Version 1.9.0
 * Added possibility to disable Location Services check before scan (https://github.com/Polidea/RxAndroidBle/pull/533)
 * Reworked library logging API and behaviour (https://github.com/Polidea/RxAndroidBle/pull/551) 
