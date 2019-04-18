@@ -16,10 +16,10 @@ import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
 import java.util.concurrent.TimeUnit;
 
-import bleshadow.dagger.Binds;
-import bleshadow.dagger.Module;
-import bleshadow.dagger.Provides;
-import bleshadow.javax.inject.Named;
+import dagger.Binds;
+import dagger.Module;
+import dagger.Provides;
+import javax.inject.Named;
 import io.reactivex.Scheduler;
 
 @Module(subcomponents = ConnectionComponent.class)

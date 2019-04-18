@@ -34,7 +34,7 @@ class RxBleClientTest extends Specification {
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
     RxBleDeviceProvider mockDeviceProvider = Mock RxBleDeviceProvider
-    bleshadow.dagger.Lazy<ClientStateObservable> mockLazyClientStateObservable = Mock bleshadow.dagger.Lazy
+    dagger.Lazy<ClientStateObservable> mockLazyClientStateObservable = Mock dagger.Lazy
     ScanSetupBuilder mockScanSetupBuilder = Mock ScanSetupBuilder
     Operation mockOperationScan = Mock Operation
     ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> mockObservableTransformer =

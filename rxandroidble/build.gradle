@@ -50,11 +50,11 @@ dependencies {
     api rootProject.ext.libs.rxjava
     api rootProject.ext.libs.annotations
     implementation rootProject.ext.libs.rxrelay
-    implementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
-    annotationProcessor project(path: ':dagger-compiler-shadow', transitive: false, configuration: 'shadow')
+    implementation rootProject.ext.libs.dagger
+    annotationProcessor rootProject.ext.libs.dagger_compiler
 
     // Test dependencies
-    testImplementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
+    testImplementation rootProject.ext.libs.dagger
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock

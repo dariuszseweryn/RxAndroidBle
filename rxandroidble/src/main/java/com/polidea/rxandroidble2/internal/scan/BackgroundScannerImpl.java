@@ -19,7 +19,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import java.util.ArrayList;
 import java.util.List;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 @TargetApi(Build.VERSION_CODES.O)
 public class BackgroundScannerImpl implements BackgroundScanner {

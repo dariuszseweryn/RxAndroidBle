@@ -16,7 +16,7 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import java.util.List;
 import java.util.Set;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 public class RxBleAdapterWrapper {
 

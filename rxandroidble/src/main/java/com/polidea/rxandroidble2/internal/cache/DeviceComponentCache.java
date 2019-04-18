@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 @ClientScope
 public class DeviceComponentCache implements Map<String, DeviceComponent> {

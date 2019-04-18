@@ -1,4 +1,0 @@
-shadowJar {
-    relocate 'dagger', 'bleshadow.dagger'
-    relocate 'javax.inject', 'bleshadow.javax.inject'
-}

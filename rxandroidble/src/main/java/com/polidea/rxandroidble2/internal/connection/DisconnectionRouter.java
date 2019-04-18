@@ -10,8 +10,8 @@ import com.polidea.rxandroidble2.internal.DeviceModule;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
+import javax.inject.Inject;
+import javax.inject.Named;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.disposables.Disposable;
@@ -21,7 +21,8 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 /**
- * A class that is responsible for routing all potential sources of disconnection to an Observable that emits only errors.
+ * A class that is responsible for routing all potential sources of disconnection to an
+ * Observable that emits only errors.
  */
 @ConnectionScope
 class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRouterOutput {
@@ -37,14 +38,18 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
             final Observable<RxBleAdapterStateObservable.BleAdapterState> adapterStateObservable
     ) {
         /*
-         The below .subscribe() is only to make the above .cache() to start working as soon as possible.
-         We are not tracking the resulting `Subscription`. This is because of the contract of this class which is supposed to be called
+         The below .subscribe() is only to make the above .cache() to start working as soon
+         as possible.
+         We are not tracking the resulting `Subscription`. This is because of the contract of
+         this class which is supposed to be called
          when a disconnection happens from one of three places:
             1. adapterStateObservable: the adapter turning into state other than STATE_ON
             2. onDisconnectedException
             3. onGattConnectionStateException
-         One of those events must happen eventually. Then the adapterStateObservable (which uses BroadcastReceiver on a Context) will
-         get unsubscribed. The rest of this chain lives only in the @ConnectionScope context and will get Garbage Collected eventually.
+         One of those events must happen eventually. Then the adapterStateObservable (which
+         uses BroadcastReceiver on a Context) will
+         get unsubscribed. The rest of this chain lives only in the @ConnectionScope context
+         and will get Garbage Collected eventually.
          */
         final Disposable adapterMonitoringDisposable = awaitAdapterNotUsable(adapterWrapper, adapterStateObservable)
                 .map(new Function<Boolean, BleException>() {
@@ -122,7 +127,8 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
 
     @Override
     public <T> Observable<T> asErrorOnlyObservable() {
-        // [DS 11.03.2019] Not an elegant solution but it should decrease amount of allocations. Should not emit values so —> safe to cast.
+        // [DS 11.03.2019] Not an elegant solution but it should decrease amount of allocations.
+        // Should not emit values so —> safe to cast.
         return (Observable<T>) firstDisconnectionExceptionObs;
     }
 }

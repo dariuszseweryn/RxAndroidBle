@@ -5,8 +5,8 @@ import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.RxBleConnection;
 
-import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @ConnectionScope

@@ -7,7 +7,7 @@ import android.location.LocationManager;
 
 import android.os.Build;
 import android.provider.Settings;
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 
 @TargetApi(Build.VERSION_CODES.KITKAT)

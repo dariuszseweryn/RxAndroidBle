@@ -15,7 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 

@@ -8,7 +8,7 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.os.Build;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;

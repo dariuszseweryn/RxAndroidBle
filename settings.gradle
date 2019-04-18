@@ -1,4 +1,4 @@
-include ':rxandroidble', ':dagger-compiler-shadow', ':dagger-library-shadow'
+include ':rxandroidble'
 include ':sample', ':sample-kotlin', ':mockrxandroidble'
 
 rootProject.name = 'rxandroidble-parent'

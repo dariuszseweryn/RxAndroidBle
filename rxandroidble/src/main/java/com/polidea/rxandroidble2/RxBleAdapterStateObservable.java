@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import androidx.annotation.NonNull;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import io.reactivex.Observable;
 import io.reactivex.Observer;

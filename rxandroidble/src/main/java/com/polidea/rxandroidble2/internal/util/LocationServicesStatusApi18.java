@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.util;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 public class LocationServicesStatusApi18 implements LocationServicesStatus {
 
