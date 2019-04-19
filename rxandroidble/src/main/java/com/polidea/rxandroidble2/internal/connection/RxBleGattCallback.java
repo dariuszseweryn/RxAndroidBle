@@ -202,6 +202,13 @@ public class RxBleGattCallback {
                 changedMtuOutput.valueRelay.accept(mtu);
             }
         }
+
+        // This callback first appeared in Android 8.0 (android-8.0.0_r1/core/java/android/bluetooth/BluetoothGattCallback.java)
+        // It is hidden since
+        @SuppressWarnings("unused")
+        public void onConnectionUpdated(BluetoothGatt gatt, int interval, int latency, int timeout, int status) {
+            LoggerUtil.logConnectionUpdateCallback("onConnectionUpdated", gatt, status, interval, latency, timeout);
+        }
     };
 
     private RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
