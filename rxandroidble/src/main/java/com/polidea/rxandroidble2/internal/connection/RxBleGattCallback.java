@@ -219,7 +219,7 @@ public class RxBleGattCallback {
     }
 
     private boolean propagateErrorIfOccurred(
-            Output output,
+            Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattCharacteristic characteristic,
             int status,
@@ -234,7 +234,7 @@ public class RxBleGattCallback {
     }
 
     private boolean propagateErrorIfOccurred(
-            Output output,
+            Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattDescriptor descriptor,
             int status,
@@ -248,7 +248,7 @@ public class RxBleGattCallback {
         ));
     }
 
-    private boolean propagateErrorIfOccurred(Output output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
+    private boolean propagateErrorIfOccurred(Output<?> output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
         return isException(status) && propagateStatusError(output, new BleGattException(gatt, status, operationType));
     }
 
@@ -256,8 +256,7 @@ public class RxBleGattCallback {
         return status != BluetoothGatt.GATT_SUCCESS;
     }
 
-    private boolean propagateStatusError(Output output, BleGattException exception) {
-        //noinspection unchecked
+    private boolean propagateStatusError(Output<?> output, BleGattException exception) {
         output.errorRelay.accept(exception);
         return true;
     }
@@ -309,7 +308,6 @@ public class RxBleGattCallback {
     }
 
     public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
-        //noinspection unchecked
         return Observable.merge(
                 disconnectionRouter.<CharacteristicChangedEvent>asErrorOnlyObservable(),
                 changedCharacteristicSerializedPublishRelay
