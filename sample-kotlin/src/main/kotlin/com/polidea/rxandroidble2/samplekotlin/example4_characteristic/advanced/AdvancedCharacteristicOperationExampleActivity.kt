@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.Button
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import com.jakewharton.rxbinding2.view.RxView
+import com.jakewharton.rxbinding3.view.clicks
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
@@ -234,7 +234,7 @@ class AdvancedCharacteristicOperationExampleActivity : AppCompatActivity() {
 private fun Button.activatedClicksObservable(): Observable<Boolean> =
     Observable.using(
         { apply { isEnabled = true } },
-        { RxView.clicks(it).map { true } },
+        { it.clicks().map { true } },
         { it.isEnabled = false }
     )
         .subscribeOn(AndroidSchedulers.mainThread()) // RxView expects to be subscribed on the Main Thread
