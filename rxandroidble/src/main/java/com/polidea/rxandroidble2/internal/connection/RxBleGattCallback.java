@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.jakewharton.rxrelay2.Relay;
+import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
@@ -208,6 +209,7 @@ public class RxBleGattCallback {
         @SuppressWarnings("unused")
         public void onConnectionUpdated(BluetoothGatt gatt, int interval, int latency, int timeout, int status) {
             LoggerUtil.logConnectionUpdateCallback("onConnectionUpdated", gatt, status, interval, latency, timeout);
+            nativeCallbackDispatcher.notifyNativeParamsUpdateCallback(gatt, interval, latency, timeout, status);
         }
     };
 
@@ -344,9 +346,24 @@ public class RxBleGattCallback {
      * <p>
      * The callback reference will be automatically released after the operation is terminated. The main drawback of this API is that
      * we can't assure you the thread on which it will be executed. Please keep this in mind as the system may execute it on a main thread.
+     *
+     * @param callback the object to be called
      */
     public void setNativeCallback(BluetoothGattCallback callback) {
         nativeCallbackDispatcher.setNativeCallback(callback);
+    }
+
+    /**
+     * {@link #setNativeCallback(BluetoothGattCallback)}
+     * Since Android 8.0 (API 26) BluetoothGattCallback has some hidden method(s). Setting this {@link HiddenBluetoothGattCallback} will
+     * relay calls to those hidden methods.
+     *
+     * On API lower than 26 this method does nothing
+     *
+     * @param callbackHidden the object to be called
+     */
+    public void setHiddenNativeCallback(HiddenBluetoothGattCallback callbackHidden) {
+        nativeCallbackDispatcher.setNativeCallabackHidden(callbackHidden);
     }
 
     private static class Output<T> {

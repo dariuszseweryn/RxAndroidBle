@@ -348,6 +348,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                     @Override
                     public void run() {
                         gattCallback.setNativeCallback(null);
+                        gattCallback.setHiddenNativeCallback(null);
                     }
                 };
             }
