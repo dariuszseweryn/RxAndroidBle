@@ -506,9 +506,13 @@ public interface RxBleConnection {
      * <p>
      * By default connection is balanced.
      * <p>
-     * NOTE: Due to lack of support for `BluetoothGattCallback.onConnectionPriorityChanged()` or similar it
-     * is not possible to know if the request was successful (accepted by the peripheral). This also causes
-     * the need of specifying when the request is considered finished (parameter delay and timeUnit).
+     * NOTE: Till API 26 (8.0) there was no method like `BluetoothGattCallback.onConnectionPriorityChanged()`. It was not possible to know
+     * if the request was successful (accepted by the peripheral). This also causes the need of specifying when the request is considered
+     * finished (parameter delay and timeUnit). Since API 26 the mentioned callback is hidden, yet possible to use. It is not used to
+     * automatically complete this request due to Android OS changing connection parameters on its own. It is not possible to determine
+     * which callback is actually finishing the request. If it is a must for your implementation you may access the callback by
+     * {@link RxBleGattCallback#setHiddenNativeCallback(HiddenBluetoothGattCallback)} via {@link #queue(RxBleCustomOperation)} and create
+     * a custom request connection priority operation.
      * <p>
      * As of Lollipop the connection parameters are:
      * * {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}: min interval 30 ms, max interval 50 ms, slave latency 0
