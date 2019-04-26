@@ -20,62 +20,56 @@ class NativeCallbackDispatcher {
 
     }
 
-    void notifyNativeChangedCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+    public void notifyNativeChangedCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         if (nativeCallback != null) {
             nativeCallback.onCharacteristicChanged(gatt, characteristic);
         }
     }
 
-    void notifyNativeConnectionStateCallback(BluetoothGatt gatt, int status, int newState) {
+    public void notifyNativeConnectionStateCallback(BluetoothGatt gatt, int status, int newState) {
         if (nativeCallback != null) {
             nativeCallback.onConnectionStateChange(gatt, status, newState);
         }
     }
 
-    void notifyNativeDescriptorReadCallback(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+    public void notifyNativeDescriptorReadCallback(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         if (nativeCallback != null) {
             nativeCallback.onDescriptorRead(gatt, descriptor, status);
         }
     }
 
-    void notifyNativeDescriptorWriteCallback(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+    public void notifyNativeDescriptorWriteCallback(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         if (nativeCallback != null) {
             nativeCallback.onDescriptorWrite(gatt, descriptor, status);
         }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    void notifyNativeMtuChangedCallback(BluetoothGatt gatt, int mtu, int status) {
+    public void notifyNativeMtuChangedCallback(BluetoothGatt gatt, int mtu, int status) {
         if (nativeCallback != null) {
             nativeCallback.onMtuChanged(gatt, mtu, status);
         }
     }
 
-    void notifyNativeReadRssiCallback(BluetoothGatt gatt, int rssi, int status) {
+    public void notifyNativeReadRssiCallback(BluetoothGatt gatt, int rssi, int status) {
         if (nativeCallback != null) {
             nativeCallback.onReadRemoteRssi(gatt, rssi, status);
         }
     }
 
-    void notifyNativeReliableWriteCallback(BluetoothGatt gatt, int status) {
+    public void notifyNativeReliableWriteCallback(BluetoothGatt gatt, int status) {
         if (nativeCallback != null) {
             nativeCallback.onReliableWriteCompleted(gatt, status);
         }
     }
 
-    void notifyNativeServicesDiscoveredCallback(BluetoothGatt gatt, int status) {
+    public void notifyNativeServicesDiscoveredCallback(BluetoothGatt gatt, int status) {
         if (nativeCallback != null) {
             nativeCallback.onServicesDiscovered(gatt, status);
         }
     }
 
-    void notifyNativeReadCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        if (nativeCallback != null) {
-            nativeCallback.onCharacteristicRead(gatt, characteristic, status);
-        }
-    }
-
-    void notifyNativeWriteCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+    public void notifyNativeWriteCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         if (nativeCallback != null) {
             nativeCallback.onCharacteristicWrite(gatt, characteristic, status);
         }
@@ -89,6 +83,12 @@ class NativeCallbackDispatcher {
 
     void setNativeCallback(BluetoothGattCallback callback) {
         this.nativeCallback = callback;
+    }
+
+    void notifyNativeReadCallback(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        if (nativeCallback != null) {
+            nativeCallback.onCharacteristicRead(gatt, characteristic, status);
+        }
     }
 
     void setNativeCallabackHidden(HiddenBluetoothGattCallback callbackHidden) {
