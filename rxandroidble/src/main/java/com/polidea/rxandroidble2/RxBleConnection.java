@@ -510,7 +510,8 @@ public interface RxBleConnection {
      * if the request was successful (accepted by the peripheral). This also causes the need of specifying when the request is considered
      * finished (parameter delay and timeUnit). Since API 26 the mentioned callback is hidden, yet possible to use. It is not used to
      * automatically complete this request due to Android OS changing connection parameters on its own. It is not possible to determine
-     * which callback is actually finishing the request. If it is a must for your implementation you may access the callback by
+     * which callback is actually finishing the request nor if the Android OS will not change the parameters right after the request.
+     * If access to the callback is a must for your implementation you may achieve it by
      * {@link RxBleGattCallback#setHiddenNativeCallback(HiddenBluetoothGattCallback)} via {@link #queue(RxBleCustomOperation)} and create
      * a custom request connection priority operation.
      * <p>
