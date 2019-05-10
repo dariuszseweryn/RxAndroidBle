@@ -47,6 +47,7 @@ import io.reactivex.functions.Predicate;
 
 class RxBleClientImpl extends RxBleClient {
 
+    @Deprecated
     public static final String TAG = "RxBleClient";
     private final ClientOperationQueue operationQueue;
     private final UUIDUtil uuidUtil;
