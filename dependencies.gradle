@@ -22,7 +22,7 @@ ext {
             robolectric           : 'org.robolectric:robolectric:3.8',
             /* Sample apps-only dependencies */
             rxjava_replayingshare : 'com.jakewharton.rx2:replaying-share:2.1.1',
-            rxjava_binding        : 'com.jakewharton.rxbinding2:rxbinding:2.2.0',
+            rxjava_binding        : 'com.jakewharton.rxbinding3:rxbinding:3.0.0-alpha2',
             appcompat             : 'androidx.appcompat:appcompat:1.0.2',
             material_design       : 'com.google.android.material:material:1.0.0'
     ]
