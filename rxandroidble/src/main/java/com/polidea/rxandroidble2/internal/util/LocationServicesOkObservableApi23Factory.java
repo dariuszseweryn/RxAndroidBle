@@ -9,28 +9,23 @@ import android.location.LocationManager;
 import android.os.Build;
 
 import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
-import com.polidea.rxandroidble2.ClientComponent;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
 import io.reactivex.functions.Cancellable;
+import io.reactivex.schedulers.Schedulers;
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class LocationServicesOkObservableApi23Factory {
     private final Context context;
     private final LocationServicesStatus locationServicesStatus;
-    private final Scheduler bluetoothInteractionScheduler;
 
     @Inject
     LocationServicesOkObservableApi23Factory(
             final Context context,
-            final LocationServicesStatus locationServicesStatus,
-            @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) final Scheduler bluetoothInteractionScheduler) {
+            final LocationServicesStatus locationServicesStatus) {
         this.context = context;
         this.locationServicesStatus = locationServicesStatus;
-        this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
     }
 
     public Observable<Boolean> get() {
@@ -56,7 +51,7 @@ public class LocationServicesOkObservableApi23Factory {
             }
         })
                 .distinctUntilChanged()
-                .subscribeOn(bluetoothInteractionScheduler)
-                .unsubscribeOn(bluetoothInteractionScheduler);
+                .subscribeOn(Schedulers.trampoline())
+                .unsubscribeOn(Schedulers.trampoline());
     }
 }
