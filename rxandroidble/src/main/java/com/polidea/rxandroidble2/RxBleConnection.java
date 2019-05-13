@@ -539,6 +539,17 @@ public interface RxBleConnection {
     );
 
     /**
+     * Allows observing of connection parameters updates. This is part of Android's hidden API and therefore is not guaranteed to work.
+     * It was added in API 26 (8.0, Oreo) in {@link android.bluetooth.BluetoothGattCallback} and will not work on lower API levels at all.
+     * The system does change the parameters on its own at the beginning of connection (i.e. to speed up service discovery process).
+     * The parameters may be further changed by using {@link #requestConnectionPriority(int, long, TimeUnit)}.
+     *
+     * @return Observable which may emit updates of the connection parameters
+     */
+    @RequiresApi(api = 26 /* Build.VERSION_CODES.O */)
+    Observable<ConnectionParametersUpdate> observeConnectionParametersUpdates();
+
+    /**
      * Performs GATT read rssi operation.
      *
      * @return Observable emitting the read RSSI value
