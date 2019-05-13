@@ -5,15 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.schedulers.TestScheduler
 import org.robolectric.annotation.Config
 
 @Config(manifest = Config.NONE)
 class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
-    def testScheduler = new TestScheduler()
-    def objectUnderTest = new LocationServicesOkObservableApi23Factory(contextMock, mockLocationServicesStatus, testScheduler)
+    def objectUnderTest = new LocationServicesOkObservableApi23Factory(contextMock, mockLocationServicesStatus)
     BroadcastReceiver registeredReceiver
 
     def setup() {
@@ -24,10 +22,9 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
 
         given:
         mockLocationServicesStatus.isLocationProviderOk() >> true
-        objectUnderTest.get().subscribe()
 
         when:
-        testScheduler.triggerActions()
+        objectUnderTest.get().subscribe()
 
         then:
         1 * contextMock.registerReceiver(!null, {
@@ -41,11 +38,9 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
         mockLocationServicesStatus.isLocationProviderOk() >> true
         shouldCaptureRegisteredReceiver()
         def disposable = objectUnderTest.get().test()
-        testScheduler.triggerActions()
-        disposable.dispose()
 
         when:
-        testScheduler.triggerActions()
+        disposable.dispose()
 
         then:
         1 * contextMock.unregisterReceiver(registeredReceiver)
@@ -54,10 +49,9 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
     def "should still register and unregister in correct order"() {
         given:
         mockLocationServicesStatus.isLocationProviderOk() >> isLocationProviderOkResult
-        objectUnderTest.get().take(1).test()
 
         when:
-        testScheduler.triggerActions()
+        objectUnderTest.get().take(1).test()
 
         then:
         1 * contextMock.registerReceiver(_, _)
@@ -74,10 +68,9 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
         given:
         shouldCaptureRegisteredReceiver()
         mockLocationServicesStatus.isLocationProviderOk() >>> [true, false, true]
-        def testObserver = objectUnderTest.get().test()
 
         when:
-        testScheduler.triggerActions()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(true)
@@ -100,10 +93,9 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
         given:
         shouldCaptureRegisteredReceiver()
         mockLocationServicesStatus.isLocationProviderOk() >>> [false, false, true, true, false, false]
-        def testObserver = objectUnderTest.get().test()
 
         when:
-        testScheduler.triggerActions()
+        def testObserver = objectUnderTest.get().test()
 
         then:
         testObserver.assertValue(false)
