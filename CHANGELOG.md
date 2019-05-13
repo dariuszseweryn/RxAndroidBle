@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.9.2
+* Fixed `IllegalArgumentException` in `LocationServicesOkObservableApi23Factory` (https://github.com/Polidea/RxAndroidBle/pull/573)
+
 Version 1.9.1
 * Fixed `RxBleClient.observeStateChanges()` emissions (https://github.com/Polidea/RxAndroidBle/pull/556)
 * Fixed `RxBleDevice.establishConnection(boolean, Timeout)` Javadoc (https://github.com/Polidea/RxAndroidBle/pull/558)
