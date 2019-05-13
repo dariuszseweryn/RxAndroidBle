@@ -10,9 +10,11 @@ import androidx.annotation.NonNull;
 import bleshadow.javax.inject.Inject;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
+import io.reactivex.functions.Cancellable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Observes Bluetooth adapter state. This responds to user interactions as well as system controlled state changes.
@@ -42,45 +44,46 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         }
 
         @Override
+        @NonNull
         public String toString() {
             return stateName;
         }
     }
 
     @NonNull
-    private final Context context;
+    private final Observable<BleAdapterState> bleAdapterStateObservable;
 
     @Inject
     public RxBleAdapterStateObservable(@NonNull final Context context) {
-        this.context = context;
+        bleAdapterStateObservable = Observable.create(new ObservableOnSubscribe<BleAdapterState>() {
+            @Override
+            public void subscribe(final ObservableEmitter<BleAdapterState> emitter) {
+                final BroadcastReceiver receiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                        BleAdapterState internalState = mapToBleAdapterState(state);
+                        RxBleLog.i("Adapter state changed: %s", internalState);
+                        emitter.onNext(internalState);
+                    }
+                };
+                emitter.setCancellable(new Cancellable() {
+                    @Override
+                    public void cancel() {
+                        context.unregisterReceiver(receiver);
+                    }
+                });
+                context.registerReceiver(receiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+            }
+        })
+                .subscribeOn(Schedulers.trampoline())
+                .unsubscribeOn(Schedulers.trampoline())
+                .share();
     }
 
     @Override
     protected void subscribeActual(final Observer<? super BleAdapterState> observer) {
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-
-                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-                    BleAdapterState internalState = mapToBleAdapterState(state);
-                    RxBleLog.i("Adapter state changed: %s", internalState);
-                    observer.onNext(internalState);
-                }
-            }
-        };
-        observer.onSubscribe(Disposables.fromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                try {
-                    context.unregisterReceiver(receiver);
-                } catch (IllegalArgumentException exception) {
-                    RxBleLog.w("The receiver is already not registered.");
-                }
-            }
-        }));
-        context.registerReceiver(receiver, createFilter());
+        bleAdapterStateObservable.subscribe(observer);
     }
 
     private static BleAdapterState mapToBleAdapterState(int state) {
@@ -96,9 +99,5 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
             default:
                 return BleAdapterState.STATE_OFF;
         }
-    }
-
-    private static IntentFilter createFilter() {
-        return new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
     }
 }
