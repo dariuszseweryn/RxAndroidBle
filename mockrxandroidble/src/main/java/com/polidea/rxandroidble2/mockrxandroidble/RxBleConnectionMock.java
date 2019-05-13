@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
+import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
@@ -408,6 +409,11 @@ public class RxBleConnectionMock implements RxBleConnection {
                         return Observable.just(characteristicNotificationSources.get(characteristicUuid));
                     }
                 });
+    }
+
+    @Override
+    public Observable<ConnectionParameters> observeConnectionParametersUpdates() {
+        return Observable.never();
     }
 
     private void dismissCharacteristicNotification(UUID characteristicUuid, NotificationSetupMode setupMode, boolean isIndication) {
