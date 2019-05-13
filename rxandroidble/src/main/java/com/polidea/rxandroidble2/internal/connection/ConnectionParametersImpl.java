@@ -1,13 +1,13 @@
 package com.polidea.rxandroidble2.internal.connection;
 
-import com.polidea.rxandroidble2.ConnectionParametersUpdate;
+import com.polidea.rxandroidble2.ConnectionParameters;
 
 
-public class ConnectionParametersUpdateImpl implements ConnectionParametersUpdate {
+public class ConnectionParametersImpl implements ConnectionParameters {
 
     private final int interval, latency, timeout;
 
-    ConnectionParametersUpdateImpl(int interval, int latency, int timeout) {
+    ConnectionParametersImpl(int interval, int latency, int timeout) {
         this.interval = interval;
         this.latency = latency;
         this.timeout = timeout;

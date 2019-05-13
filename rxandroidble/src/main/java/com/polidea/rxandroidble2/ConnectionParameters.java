@@ -5,7 +5,7 @@ import androidx.annotation.IntRange;
 /**
  * An interface representing connection parameters update
  */
-public interface ConnectionParametersUpdate {
+public interface ConnectionParameters {
 
     /**
      * Returns the connection interval used on this connection, 1.25ms unit. Valid range is from 6 (7.5ms) to 3200 (4000ms)

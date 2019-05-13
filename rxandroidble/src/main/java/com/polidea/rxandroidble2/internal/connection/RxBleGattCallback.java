@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.jakewharton.rxrelay2.Relay;
-import com.polidea.rxandroidble2.ConnectionParametersUpdate;
+import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
@@ -48,7 +48,7 @@ public class RxBleGattCallback {
     private final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     private final Output<Integer> readRssiOutput = new Output<>();
     private final Output<Integer> changedMtuOutput = new Output<>();
-    private final Output<ConnectionParametersUpdate> updatedConnectionOutput = new Output<>();
+    private final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
         public Observable<?> apply(BleGattException bleGattException) {
@@ -214,7 +214,7 @@ public class RxBleGattCallback {
             nativeCallbackDispatcher.notifyNativeParamsUpdateCallback(gatt, interval, latency, timeout, status);
             if (updatedConnectionOutput.hasObservers()
                     && !propagateErrorIfOccurred(updatedConnectionOutput, gatt, status, BleGattOperationType.CONNECTION_PRIORITY_CHANGE)) {
-                updatedConnectionOutput.valueRelay.accept(new ConnectionParametersUpdateImpl(interval, latency, timeout));
+                updatedConnectionOutput.valueRelay.accept(new ConnectionParametersImpl(interval, latency, timeout));
             }
         }
     };
@@ -344,7 +344,7 @@ public class RxBleGattCallback {
         return withDisconnectionHandling(readRssiOutput).observeOn(callbackScheduler);
     }
 
-    public Observable<ConnectionParametersUpdate> getConnectionParametersUpdates() {
+    public Observable<ConnectionParameters> getConnectionParametersUpdates() {
         return withDisconnectionHandling(updatedConnectionOutput).observeOn(callbackScheduler);
     }
 

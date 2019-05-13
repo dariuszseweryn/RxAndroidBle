@@ -547,7 +547,7 @@ public interface RxBleConnection {
      * @return Observable which may emit updates of the connection parameters
      */
     @RequiresApi(api = 26 /* Build.VERSION_CODES.O */)
-    Observable<ConnectionParametersUpdate> observeConnectionParametersUpdates();
+    Observable<ConnectionParameters> observeConnectionParametersUpdates();
 
     /**
      * Performs GATT read rssi operation.

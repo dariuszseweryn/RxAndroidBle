@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ConnectionParametersUpdate;
+import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
@@ -309,7 +309,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    public Observable<ConnectionParametersUpdate> observeConnectionParametersUpdates() {
+    public Observable<ConnectionParameters> observeConnectionParametersUpdates() {
         return gattCallback.getConnectionParametersUpdates();
     }
 
