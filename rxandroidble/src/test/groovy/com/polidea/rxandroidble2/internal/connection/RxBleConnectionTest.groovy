@@ -305,6 +305,20 @@ class RxBleConnectionTest extends Specification {
         receivedMtuValue == mtuValue
     }
 
+    def "should pass items emitted by RxBleGattCallback.getConnectionParametersUpdates()"() {
+        given:
+        def connectionParametersPublishSubject = PublishSubject.create()
+        gattCallback.getConnectionParametersUpdates() >> connectionParametersPublishSubject
+        def mockConnectionParameters = Mock ConnectionParameters
+        def testSubscriber = objectUnderTest.observeConnectionParametersUpdates().test()
+
+        when:
+        connectionParametersPublishSubject.onNext(mockConnectionParameters)
+
+        then:
+        testSubscriber.assertValue(mockConnectionParameters)
+    }
+
     def "should pass items emitted by observable returned from RxBleCustomOperation.asObservable()"() {
         given:
         def customOperation = customOperationWithOutcome {
