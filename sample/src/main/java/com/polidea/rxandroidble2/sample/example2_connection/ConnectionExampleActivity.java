@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.sample.example2_connection;
 
 import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -52,7 +51,7 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @OnClick(R.id.set_mtu)
     public void onSetMtu() {
         final Disposable disposable = bleDevice.establishConnection(false)

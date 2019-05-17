@@ -21,7 +21,7 @@ class ScanReceiver : BroadcastReceiver() {
             }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     override fun onReceive(context: Context, intent: Intent) {
         val backgroundScanner = SampleApplication.rxBleClient.backgroundScanner
         try {

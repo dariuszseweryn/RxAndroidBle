@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
@@ -66,7 +65,7 @@ public interface RxBleConnection {
      * Description of correct values of connection priority
      */
     @Retention(RetentionPolicy.SOURCE)
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @IntDef({BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER,
             BluetoothGatt.CONNECTION_PRIORITY_BALANCED,
             BluetoothGatt.CONNECTION_PRIORITY_HIGH})
@@ -531,7 +530,7 @@ public interface RxBleConnection {
      *                                     if requested operation returned false or threw exception
      * @throws IllegalArgumentException    in case of invalid connection priority or delay
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     Completable requestConnectionPriority(
             @ConnectionPriority int connectionPriority,
             @IntRange(from = 1) long delay,
@@ -546,7 +545,7 @@ public interface RxBleConnection {
      *
      * @return Observable which may emit updates of the connection parameters
      */
-    @RequiresApi(api = 26 /* Build.VERSION_CODES.O */)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     Observable<ConnectionParameters> observeConnectionParametersUpdates();
 
     /**
@@ -566,7 +565,7 @@ public interface RxBleConnection {
      *                                     the MTU for internal reasons.
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     Single<Integer> requestMtu(@IntRange(from = GATT_MTU_MINIMUM, to = GATT_MTU_MAXIMUM) int mtu);
 
     /**

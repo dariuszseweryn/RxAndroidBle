@@ -47,7 +47,7 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun scanBleDeviceInBackground() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */) {
             try {
                 val scanSettings = ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -77,7 +77,7 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun onScanStopClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */) {
             rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent)
         } else {
             showSnackbarShort("Background scanning requires at least API 26")
