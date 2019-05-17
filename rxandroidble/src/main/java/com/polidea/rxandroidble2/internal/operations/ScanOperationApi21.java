@@ -62,7 +62,9 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
         return new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
-                if (!emulatedScanFilterMatcher.isEmpty() && RxBleLog.isAtLeast(LogConstants.DEBUG)) {
+                if (!emulatedScanFilterMatcher.isEmpty()
+                        && RxBleLog.isAtLeast(LogConstants.DEBUG)
+                        && RxBleLog.getShouldLogScannedPeripherals()) {
                     ScanRecord scanRecord = result.getScanRecord();
                     RxBleLog.d("%s, name=%s, rssi=%d, data=%s",
                             LoggerUtil.commonMacMessage(result.getDevice().getAddress()),
