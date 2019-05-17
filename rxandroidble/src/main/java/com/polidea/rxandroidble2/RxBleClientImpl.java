@@ -132,7 +132,7 @@ class RxBleClientImpl extends RxBleClient {
                         .doOnNext(new Consumer<ScanResult>() {
                             @Override
                             public void accept(ScanResult scanResult) {
-                                RxBleLog.i("%s", scanResult);
+                                if (RxBleLog.getShouldLogScannedPeripherals()) RxBleLog.i("%s", scanResult);
                             }
                         })
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());

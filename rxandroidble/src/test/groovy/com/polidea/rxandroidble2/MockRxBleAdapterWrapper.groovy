@@ -74,12 +74,12 @@ class MockRxBleAdapterWrapper extends RxBleAdapterWrapper {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public int startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, PendingIntent callbackIntent) {
         return 0
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public void stopLeScan(PendingIntent callbackIntent) {
 
     }

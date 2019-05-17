@@ -38,7 +38,7 @@ public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, B
         return new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                if (!scanFilterMatcher.isEmpty() && RxBleLog.isAtLeast(LogConstants.DEBUG)) {
+                if (!scanFilterMatcher.isEmpty() && RxBleLog.isAtLeast(LogConstants.DEBUG) && RxBleLog.getShouldLogScannedPeripherals()) {
                     RxBleLog.d("%s, name=%s, rssi=%d, data=%s",
                             LoggerUtil.commonMacMessage(device.getAddress()),
                             device.getName(),

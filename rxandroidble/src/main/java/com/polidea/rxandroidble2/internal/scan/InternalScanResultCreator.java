@@ -9,7 +9,6 @@ import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_UNKN
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.os.Build;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.ClientScope;
@@ -36,21 +35,21 @@ public class InternalScanResultCreator {
                 ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord());
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
                 ScanCallbackType.CALLBACK_TYPE_BATCH);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(int callbackType, ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord());
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
                 toScanCallbackType(callbackType));
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     private static ScanCallbackType toScanCallbackType(int callbackType) {
         switch (callbackType) {
             case ScanSettings.CALLBACK_TYPE_ALL_MATCHES:
