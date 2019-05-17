@@ -8,10 +8,12 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Build;
 
 import bleshadow.javax.inject.Inject;
+import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 
 class NativeCallbackDispatcher {
 
     private BluetoothGattCallback nativeCallback;
+    private HiddenBluetoothGattCallback nativeCallbackHidden;
 
     @Inject
     NativeCallbackDispatcher() {
@@ -73,6 +75,12 @@ class NativeCallbackDispatcher {
         }
     }
 
+    void notifyNativeParamsUpdateCallback(BluetoothGatt gatt, int interval, int latency, int timeout, int status) {
+        if (nativeCallbackHidden != null) {
+            nativeCallbackHidden.onConnectionUpdated(gatt, interval, latency, timeout, status);
+        }
+    }
+
     void setNativeCallback(BluetoothGattCallback callback) {
         this.nativeCallback = callback;
     }
@@ -81,5 +89,9 @@ class NativeCallbackDispatcher {
         if (nativeCallback != null) {
             nativeCallback.onCharacteristicRead(gatt, characteristic, status);
         }
+    }
+
+    void setNativeCallabackHidden(HiddenBluetoothGattCallback callbackHidden) {
+        this.nativeCallbackHidden = callbackHidden;
     }
 }

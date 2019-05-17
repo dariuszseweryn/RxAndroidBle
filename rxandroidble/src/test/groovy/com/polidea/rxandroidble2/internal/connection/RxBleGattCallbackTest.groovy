@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection
 
 import android.bluetooth.*
+import com.polidea.rxandroidble2.HiddenBluetoothGattCallback
 import com.polidea.rxandroidble2.exceptions.*
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.observers.TestObserver
@@ -65,7 +66,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { return (it as RxBleGattCallback).getOnCharacteristicChanged() },
                 { return (it as RxBleGattCallback).getOnDescriptorRead() },
                 { return (it as RxBleGattCallback).getOnDescriptorWrite() },
-                { return (it as RxBleGattCallback).getOnRssiRead() }
+                { return (it as RxBleGattCallback).getOnRssiRead() },
+                { return (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
         callbackCaller << [
                 { (it as BluetoothGattCallback).onConnectionStateChange(mockBluetoothGatt, GATT_SUCCESS, STATE_CONNECTED) },
@@ -75,7 +77,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as BluetoothGattCallback).onCharacteristicChanged(mockBluetoothGatt, mockBluetoothGattCharacteristic) },
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_SUCCESS) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_SUCCESS) },
-                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_SUCCESS) }
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_SUCCESS) },
+                { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_SUCCESS) }
         ]
     }
 
@@ -141,7 +144,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
-                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) },
+                { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_FAILURE) }
         ]
     }
 
@@ -186,7 +190,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { return (it as RxBleGattCallback).getOnCharacteristicChanged() },
                 { return (it as RxBleGattCallback).getOnDescriptorRead() },
                 { return (it as RxBleGattCallback).getOnDescriptorWrite() },
-                { return (it as RxBleGattCallback).getOnRssiRead() }
+                { return (it as RxBleGattCallback).getOnRssiRead() },
+                { return (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
     }
 
@@ -209,7 +214,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as RxBleGattCallback).getOnCharacteristicWrite() },
                 { (it as RxBleGattCallback).getOnDescriptorRead() },
                 { (it as RxBleGattCallback).getOnDescriptorWrite() },
-                { (it as RxBleGattCallback).getOnRssiRead() }
+                { (it as RxBleGattCallback).getOnRssiRead() },
+                { (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
         callbackCaller << [
                 { (it as BluetoothGattCallback).onServicesDiscovered(mockBluetoothGatt, GATT_FAILURE) },
@@ -217,7 +223,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as BluetoothGattCallback).onCharacteristicWrite(mockBluetoothGatt, mockBluetoothGattCharacteristic, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
-                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) }
+                { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) },
+                { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_FAILURE) }
         ]
         errorAssertion << [
                 { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
@@ -225,6 +232,7 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as TestObserver).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
                 { (it as TestObserver).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
                 { (it as TestObserver).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
+                { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
                 { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } }
         ]
     }
@@ -255,7 +263,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorRead() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorWrite() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnRssiRead() },
-                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered() }
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getConnectionParametersUpdates() }
         ]
         whenAction << [
                 { BluetoothGattCallback callback, int status -> callback.onCharacteristicRead(mockBluetoothGatt, Mock(BluetoothGattCharacteristic), status) },
@@ -263,7 +272,8 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
                 { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
                 { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(mockBluetoothGatt, 0, status) },
-                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(mockBluetoothGatt, status) }
+                { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(mockBluetoothGatt, status) },
+                { BluetoothGattCallback callback, int status -> (callback as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, status) }
         ]
     }
 }
