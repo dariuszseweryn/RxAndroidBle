@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 
 import bleshadow.javax.inject.Inject;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
@@ -44,7 +43,7 @@ class NativeCallbackDispatcher {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     void notifyNativeMtuChangedCallback(BluetoothGatt gatt, int mtu, int status) {
         if (nativeCallback != null) {
             nativeCallback.onMtuChanged(gatt, mtu, status);

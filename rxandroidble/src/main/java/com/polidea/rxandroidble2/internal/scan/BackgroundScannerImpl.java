@@ -21,7 +21,7 @@ import java.util.List;
 
 import bleshadow.javax.inject.Inject;
 
-@TargetApi(Build.VERSION_CODES.O)
+@TargetApi(26 /* Build.VERSION_CODES.O */)
 public class BackgroundScannerImpl implements BackgroundScanner {
 
     private static final int NO_ERROR = 0;
@@ -41,10 +41,10 @@ public class BackgroundScannerImpl implements BackgroundScanner {
         this.internalToExternalScanResultConverter = internalToExternalScanResultConverter;
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     @Override
     public void scanBleDeviceInBackground(@NonNull PendingIntent callbackIntent, ScanSettings scanSettings, ScanFilter... scanFilters) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT < 26 /* Build.VERSION_CODES.O */) {
             RxBleLog.w("PendingIntent based scanning is available for Android O and higher only.");
             return;
         }
@@ -65,10 +65,10 @@ public class BackgroundScannerImpl implements BackgroundScanner {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
     @Override
     public void stopBackgroundBleScan(@NonNull PendingIntent callbackIntent) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT < 26 /* Build.VERSION_CODES.O */) {
             RxBleLog.w("PendingIntent based scanning is available for Android O and higher only.");
             return;
         }

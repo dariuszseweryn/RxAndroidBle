@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2.internal.connection;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -96,7 +95,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public Completable requestConnectionPriority(int connectionPriority, long delay, @NonNull TimeUnit timeUnit) {
         if (connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
                 && connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_BALANCED
@@ -119,7 +118,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public Single<Integer> requestMtu(int mtu) {
         return operationQueue.queue(operationsProvider.provideMtuChangeOperation(mtu)).firstOrError();
     }

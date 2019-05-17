@@ -4,7 +4,6 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
-import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -26,7 +25,7 @@ import java.util.List;
 
 import io.reactivex.Emitter;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+@RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
 public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {
 
     @NonNull
