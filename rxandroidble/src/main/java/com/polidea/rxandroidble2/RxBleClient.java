@@ -72,8 +72,8 @@ public abstract class RxBleClient {
      * Method for updating logging options. Properties not set in {@link LogOptions} will not get updated.
      * <p>
      *     Default behaviour: MAC addresses are not logged (MAC='XX:XX:XX:XX:XX:XX'), uuids are not logged (uuid='...'), byte array values
-     *     are not logged (value=[...]), logger is logging to the logcat ({@link android.util.Log}), log level is set to not logging
-     *     anything ({@link LogConstants#NONE})
+     *     are not logged (value=[...]), logger is logging to the logcat ({@link android.util.Log}), all scanned peripherals are logged if
+     *     log level allows it, log level is set not to log anything ({@link LogConstants#NONE})
      * </p>
      *
      * @param logOptions the logging options

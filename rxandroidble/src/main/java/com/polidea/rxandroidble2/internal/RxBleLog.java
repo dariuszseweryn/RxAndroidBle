@@ -52,6 +52,7 @@ public class RxBleLog {
             LogConstants.NONE,
             LogConstants.NONE,
             false,
+            true,
             logcatLogger
     );
 
@@ -258,5 +259,9 @@ public class RxBleLog {
 
     public static boolean getShouldLogAttributeValues() {
         return loggerSetup.shouldLogAttributeValues;
+    }
+
+    public static boolean getShouldLogScannedPeripherals() {
+        return loggerSetup.shouldLogScannedPeripherals;
     }
 }
