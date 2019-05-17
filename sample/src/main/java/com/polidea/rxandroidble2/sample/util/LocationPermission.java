@@ -18,7 +18,10 @@ public class LocationPermission {
     private static final int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
 
     public static boolean isLocationPermissionGranted(final Context context) {
-        if (Build.VERSION.SDK_INT < 23 /* Build.VERSION_CODES.M */) return true; // It is not needed at all as there were no runtime permissions yet
+        if (Build.VERSION.SDK_INT < 23 /* Build.VERSION_CODES.M */) {
+            // It is not needed at all as there were no runtime permissions yet
+            return true;
+        }
         return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
