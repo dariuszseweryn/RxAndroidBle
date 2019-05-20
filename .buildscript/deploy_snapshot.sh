@@ -34,25 +34,15 @@ function join_by {
 set -e
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
   echo "Skipping snapshot deployment: wrong repository. Expected '$SLUG' but was '$TRAVIS_REPO_SLUG'."
-  exit 0
-fi
-
-if [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
+elif [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
   echo "Skipping snapshot deployment: wrong JDK. Expected '$JDK' but was '$TRAVIS_JDK_VERSION'."
-  exit 0
-fi
-
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo "Skipping snapshot deployment: was pull request."
-  exit 0
-fi
-
-if [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
+elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
   PRINT_BRANCHES="['$(join_by "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
   echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
-  exit 0
+else
+  echo "Deploying snapshot..."
+  ./gradlew uploadArchives -PSONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME -PSONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD
+  echo "Snapshot deployed!"
 fi
-
-echo "Deploying snapshot..."
-./gradlew uploadArchives -PSONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME -PSONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD
-echo "Snapshot deployed!"
