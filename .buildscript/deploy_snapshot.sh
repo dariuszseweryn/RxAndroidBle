@@ -7,7 +7,7 @@
 
 SLUG="Polidea/RxAndroidBle"
 JDK="oraclejdk8"
-BRANCHES=("master")
+WHITELIST_BRANCHES=("master")
 # TODO [PU] Eventually branch name should be set to master and the RxJava 1.0 version should be moved to "master-rxjava1.X
 
 function contains {
@@ -47,8 +47,8 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   exit 0
 fi
 
-if [ $(contains "${BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
-  PRINT_BRANCHES="['$(join_by "', '" ${BRANCHES[@]})']" # i.e. ['master', 'develop']
+if [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
+  PRINT_BRANCHES="['$(join_by "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
   echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
   exit 0
 fi
