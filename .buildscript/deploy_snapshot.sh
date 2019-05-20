@@ -7,8 +7,29 @@
 
 SLUG="Polidea/RxAndroidBle"
 JDK="oraclejdk8"
-BRANCH="master"
+WHITELIST_BRANCHES=("master")
 # TODO [PU] Eventually branch name should be set to master and the RxJava 1.0 version should be moved to "master-rxjava1.X
+
+function contains {
+  local n=$#
+  local value=${!n}
+  for ((i=1;i < $#;i++)) {
+    if [ "${!i}" == "${value}" ]; then
+      echo "y"
+      return 0
+    fi
+  }
+  echo "n"
+  return 1
+}
+
+function join_by {
+  local d=$1
+  shift
+  echo -n "$1"
+  shift
+  printf "%s" "${@/#/$d}"
+}
 
 set -e
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
@@ -17,8 +38,9 @@ elif [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
   echo "Skipping snapshot deployment: wrong JDK. Expected '$JDK' but was '$TRAVIS_JDK_VERSION'."
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo "Skipping snapshot deployment: was pull request."
-elif [ "$TRAVIS_BRANCH" != "$BRANCH" ]; then
-  echo "Skipping snapshot deployment: wrong branch. Expected '$BRANCH' but was '$TRAVIS_BRANCH'."
+elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
+  PRINT_BRANCHES="['$(join_by "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
+  echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
 else
   echo "Deploying snapshot..."
   ./gradlew uploadArchives -PSONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME -PSONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD
