@@ -15,15 +15,14 @@ function contains {
   local value=${!n}
   for ((i=1;i < $#;i++)) {
     if [ "${!i}" == "${value}" ]; then
-      echo "y"
+      echo "true"
       return 0
     fi
   }
-  echo "n"
-  return 1
+  echo "false"
 }
 
-function join_by {
+function joinBy {
   local d=$1
   shift
   echo -n "$1"
@@ -38,8 +37,8 @@ elif [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
   echo "Skipping snapshot deployment: wrong JDK. Expected '$JDK' but was '$TRAVIS_JDK_VERSION'."
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo "Skipping snapshot deployment: was pull request."
-elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "n" ]; then
-  PRINT_BRANCHES="['$(join_by "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
+elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "false" ]; then
+  PRINT_BRANCHES="['$(joinBy "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
   echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
 else
   echo "Deploying snapshot..."
