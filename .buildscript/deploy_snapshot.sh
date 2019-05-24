@@ -30,6 +30,25 @@ function joinBy {
   printf "%s" "${@/#/$d}"
 }
 
+function getProperty {
+  PROP_KEY=$2
+  PROP_VALUE=`cat $1 | grep "$PROP_KEY" | cut -d'=' -f2`
+  echo $PROP_VALUE
+}
+
+function getVersionName {
+  echo $(getProperty "gradle.properties" "VERSION_NAME")
+}
+
+function hasSnapshotSuffix { # true if parameter '*-SNAPSHOT'
+  local VERSION_NAME_END=$(echo $1 | cut -d'-' -f2)
+  if [ ${VERSION_NAME_END} == "SNAPSHOT" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 set -e
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
   echo "Skipping snapshot deployment: wrong repository. Expected '$SLUG' but was '$TRAVIS_REPO_SLUG'."
@@ -37,6 +56,8 @@ elif [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
   echo "Skipping snapshot deployment: wrong JDK. Expected '$JDK' but was '$TRAVIS_JDK_VERSION'."
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo "Skipping snapshot deployment: was pull request."
+elif [ $(hasSnapshotSuffix $(getVersionName)) == "false" ]; then
+  echo "Skipping snapshot deployment: wrong version name. Expected name ending with '-SNAPSHOT' but was '$(getVersionName)'"
 elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "false" ]; then
   PRINT_BRANCHES="['$(joinBy "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
   echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
