@@ -56,11 +56,11 @@ elif [ "$TRAVIS_JDK_VERSION" != "$JDK" ]; then
   echo "Skipping snapshot deployment: wrong JDK. Expected '$JDK' but was '$TRAVIS_JDK_VERSION'."
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo "Skipping snapshot deployment: was pull request."
-elif [ $(hasSnapshotSuffix $(getVersionName)) == "false" ]; then
-  echo "Skipping snapshot deployment: wrong version name. Expected name ending with '-SNAPSHOT' but was '$(getVersionName)'"
 elif [ $(contains "${WHITELIST_BRANCHES[@]}" "$TRAVIS_BRANCH") == "false" ]; then
   PRINT_BRANCHES="['$(joinBy "', '" ${WHITELIST_BRANCHES[@]})']" # i.e. ['master', 'develop']
   echo "Skipping snapshot deployment: wrong branch. Expected one of $PRINT_BRANCHES but was '$TRAVIS_BRANCH'."
+elif [ $(hasSnapshotSuffix $(getVersionName)) == "false" ]; then
+  echo "Skipping snapshot deployment: wrong version name. Expected name ending with '-SNAPSHOT' but was '$(getVersionName)'"
 else
   echo "Deploying snapshot..."
   ./gradlew uploadArchives -PSONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME -PSONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD
