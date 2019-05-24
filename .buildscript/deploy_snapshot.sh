@@ -7,7 +7,7 @@
 
 SLUG="Polidea/RxAndroidBle"
 JDK="oraclejdk8"
-WHITELIST_BRANCHES=("master")
+WHITELIST_BRANCHES=("master" "develop")
 # TODO [PU] Eventually branch name should be set to master and the RxJava 1.0 version should be moved to "master-rxjava1.X
 
 function contains {
