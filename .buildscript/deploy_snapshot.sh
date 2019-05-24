@@ -20,7 +20,6 @@ function contains {
     fi
   }
   echo "false"
-  return 1
 }
 
 function joinBy {
