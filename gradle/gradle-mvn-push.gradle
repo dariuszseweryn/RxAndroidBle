@@ -99,11 +99,6 @@ afterEvaluate {
             }
         }
 
-        signing {
-            required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-            sign configurations.archives
-        }
-
         if (isAndroidProject()) {
             task install(type: Upload, dependsOn: assemble) {
                 repositories.mavenInstaller {
@@ -211,6 +206,17 @@ afterEvaluate {
             task javadocJar(type: Jar, dependsOn: javadoc) {
                 classifier = 'javadoc'
                 from javadoc.destinationDir
+            }
+        }
+
+        signing {
+            required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+            if (isAndroidProject()) {
+                sign configurations.archives
+            } else {
+                sign jar
+                sign javadocJar
+                sign sourcesJar
             }
         }
 
