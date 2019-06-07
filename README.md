@@ -385,6 +385,8 @@ If you encounter seemingly incorrect behaviour in your application that is regar
 * non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
 * commercial — drop an email to hello@polidea.com for more info
 
+Learn more about Polidea's BLE services [here](https://www.polidea.com/services/ble)
+
 ## Discussions
 Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELibraries/RxAndroidBle)
 
