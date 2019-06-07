@@ -258,9 +258,7 @@ RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 ```
 
 ### Error handling
-Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
-
-*Important* — Prior to version `1.3.0` each failure on `BluetoothGatt` was effectively closing the connection. From `1.3.0` onwards individual errors will not close the connection if they are not directly related to it. This change does allow to retry operations (i.e. after Android will establish a device bond).
+Every error you may encounter is provided via `onError` callback. Each public method has JavaDoc explaining possible errors.
 
 ### Observable behaviour
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
