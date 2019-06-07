@@ -326,7 +326,7 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.10.0"
 
 ### Snapshot
 If your are interested in cutting-edge build you can get a `SNAPSHOT` version of the library. 
-NOTE: It is built from the top of the `master` branch and a subject to more frequent changes that may break the API and/or change behavior.
+NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
 
 To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
 ```groovy
