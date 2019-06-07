@@ -3,27 +3,6 @@
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
 
-## RxJava2.X :tada: :confetti_ball: :tada:
-
-This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating from RxJava 1 you'll have to use new artifact:
-
-Was:
-```groovy
-implementation "com.polidea.rxandroidble:rxandroidble:x.y.z"
-```
-
-Is:
-```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:x.y.z"
-```
-
-At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
-
-Therefore, RxJava1 based version reaches state of a **feature freeze** from now on. We will support it in terms of bug fixes till **30th June 2018**, so please plan your migrations ahead of time.
-
-You can read more about differences [here](https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0).
-
-
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
