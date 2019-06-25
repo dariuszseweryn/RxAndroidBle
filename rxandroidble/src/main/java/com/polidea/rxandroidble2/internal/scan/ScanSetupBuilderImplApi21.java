@@ -13,6 +13,8 @@ import bleshadow.javax.inject.Inject;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
@@ -37,14 +39,15 @@ public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @Override
-    public ScanSetup build(ScanSettings scanSettings, ScanFilter... scanFilters) {
+    public List<ScanSetup> build(ScanSettings scanSettings, ScanFilter... scanFilters) {
         /*
          Android 5.0 (API21) does not handle FIRST_MATCH and / or MATCH_LOST callback type
          https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder.html#setCallbackType(int)
           */
         final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> callbackTypeTransformer
                 = scanSettingsEmulator.emulateCallbackType(scanSettings.getCallbackType());
-        return new ScanSetup(
+        ArrayList<ScanSetup> scanSetups = new ArrayList<>();
+        scanSetups.add(new ScanSetup(
                 new ScanOperationApi21(
                         rxBleAdapterWrapper,
                         internalScanResultCreator,
@@ -58,6 +61,7 @@ public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
                         return observable.compose(callbackTypeTransformer);
                     }
                 }
-        );
+        ));
+        return scanSetups;
     }
 }

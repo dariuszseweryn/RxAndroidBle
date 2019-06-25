@@ -25,9 +25,12 @@ import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
+import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Consumer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -123,11 +126,15 @@ class RxBleClientImpl extends RxBleClient {
             @Override
             public Observable<ScanResult> call() {
                 scanPreconditionVerifier.verify(scanSettings.shouldCheckLocationProviderState());
-                final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
-                final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
-                return operationQueue.queue(scanOperation)
+                final List<ScanSetup> scanSetups = scanSetupBuilder.build(scanSettings, scanFilters);
+                final ScanSetup initialScanSetup = scanSetups.get(0);
+                final List<ScanSetup> fallbackScanSetups = scanSetups.size() > 1
+                        ? scanSetups.subList(1, scanSetups.size())
+                        : Collections.<ScanSetup>emptyList();
+                final Operation<RxBleInternalScanResult> scanOperation = initialScanSetup.scanOperation;
+                return scanUsing(initialScanSetup)
+                        .compose(ifUnsupportedRetryWith(fallbackScanSetups))
                         .unsubscribeOn(bluetoothInteractionScheduler)
-                        .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
                         .map(internalToExternalScanResultMapFunction)
                         .doOnNext(new Consumer<ScanResult>() {
                             @Override
@@ -138,6 +145,39 @@ class RxBleClientImpl extends RxBleClient {
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());
             }
         });
+    }
+
+    private Observable<RxBleInternalScanResult> scanUsing(ScanSetup scanSetup) {
+        return operationQueue.queue(scanSetup.scanOperation)
+                .compose(scanSetup.scanOperationBehaviourEmulatorTransformer);
+    }
+
+    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> ifUnsupportedRetryWith(
+            final List<ScanSetup> fallbackScanSetups) {
+        return new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
+            @Override
+            public ObservableSource<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> upstream) {
+                Observable<RxBleInternalScanResult> resultObservable = upstream;
+                for (final ScanSetup scanSetup : fallbackScanSetups) {
+                    resultObservable = resultObservable.onErrorResumeNext(
+                            new Function<Throwable, ObservableSource<? extends RxBleInternalScanResult>>() {
+                                @Override
+                                public ObservableSource<? extends RxBleInternalScanResult> apply(Throwable throwable) {
+                                    if (!(throwable instanceof BleScanException)) {
+                                        RxBleLog.w(throwable, "Unexpected exception on scan");
+                                        return Observable.error(throwable);
+                                    }
+                                    final BleScanException bleScanException = (BleScanException) throwable;
+                                    if (bleScanException.getReason() != BleScanException.SCAN_FAILED_FEATURE_UNSUPPORTED) {
+                                        return Observable.error(bleScanException);
+                                    }
+                                    return scanUsing(scanSetup);
+                                }
+                            });
+                }
+                return resultObservable;
+            }
+        };
     }
 
     @Override

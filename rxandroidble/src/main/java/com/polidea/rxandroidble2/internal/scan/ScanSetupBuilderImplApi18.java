@@ -12,6 +12,8 @@ import bleshadow.javax.inject.Inject;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetupBuilderImplApi18 implements ScanSetupBuilder {
@@ -32,12 +34,13 @@ public class ScanSetupBuilderImplApi18 implements ScanSetupBuilder {
     }
 
     @Override
-    public ScanSetup build(ScanSettings scanSettings, ScanFilter... scanFilters) {
+    public List<ScanSetup> build(ScanSettings scanSettings, ScanFilter... scanFilters) {
         final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> scanModeTransformer
                 = scanSettingsEmulator.emulateScanMode(scanSettings.getScanMode());
         final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> callbackTypeTransformer
                 = scanSettingsEmulator.emulateCallbackType(scanSettings.getCallbackType());
-        return new ScanSetup(
+        ArrayList<ScanSetup> scanSetups = new ArrayList<>(1);
+        scanSetups.add(new ScanSetup(
                 new ScanOperationApi18(
                         rxBleAdapterWrapper,
                         internalScanResultCreator,
@@ -50,6 +53,7 @@ public class ScanSetupBuilderImplApi18 implements ScanSetupBuilder {
                                 .compose(callbackTypeTransformer);
                     }
                 }
-        );
+        ));
+        return scanSetups;
     }
 }

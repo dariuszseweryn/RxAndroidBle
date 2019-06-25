@@ -13,6 +13,8 @@ import bleshadow.javax.inject.Inject;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
@@ -34,7 +36,7 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @Override
-    public ScanSetup build(ScanSettings scanSettings, ScanFilter... scanFilters) {
+    public List<ScanSetup> build(ScanSettings scanSettings, ScanFilter... scanFilters) {
         // for now assuming that on Android 6.0+ there are no problems
 
         if (scanSettings.getCallbackType() != ScanSettings.CALLBACK_TYPE_ALL_MATCHES && scanFilters.length == 0) {
@@ -43,7 +45,8 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
                     ScanFilter.empty()
             };
         }
-        return new ScanSetup(
+        ArrayList<ScanSetup> scanSetups = new ArrayList<>();
+        scanSetups.add(new ScanSetup(
                 new ScanOperationApi21(
                         rxBleAdapterWrapper,
                         internalScanResultCreator,
@@ -57,6 +60,7 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
                         return observable;
                     }
                 }
-        );
+        ));
+        return scanSetups;
     }
 }
