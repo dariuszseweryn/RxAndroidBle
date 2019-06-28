@@ -315,7 +315,7 @@ Keep in mind that these are only _samples_ to show how the library can be used. 
 ### Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.10.0"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.10.1"
 ```
 ### Maven
 
@@ -323,7 +323,7 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.10.0"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.10.0</version>
+  <version>1.10.1</version>
   <type>aar</type>
 </dependency>
 ```
