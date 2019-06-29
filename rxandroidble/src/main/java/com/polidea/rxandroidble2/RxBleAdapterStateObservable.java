@@ -67,13 +67,13 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
                         emitter.onNext(internalState);
                     }
                 };
+                context.registerReceiver(receiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
                 emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() {
                         context.unregisterReceiver(receiver);
                     }
                 });
-                context.registerReceiver(receiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
             }
         })
                 .subscribeOn(Schedulers.trampoline())

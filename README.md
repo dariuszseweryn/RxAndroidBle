@@ -3,27 +3,6 @@
   <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
 </p>
 
-## RxJava2.X :tada: :confetti_ball: :tada:
-
-This version of RxAndroidBLE supports RxJava2.X natively. If you are migrating from RxJava 1 you'll have to use new artifact:
-
-Was:
-```groovy
-implementation "com.polidea.rxandroidble:rxandroidble:x.y.z"
-```
-
-Is:
-```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:x.y.z"
-```
-
-At the current stage we do not plan to provide a migration guide, however vanilla RxJava1 -> RxJava 2 guides apply well.
-
-Therefore, RxJava1 based version reaches state of a **feature freeze** from now on. We will support it in terms of bug fixes till **30th June 2018**, so please plan your migrations ahead of time.
-
-You can read more about differences [here](https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0).
-
-
 ## Introduction
 
 RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches. It is backed by RxJava, implementing complicated APIs as handy reactive observables. The library does for you:
@@ -279,9 +258,7 @@ RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 ```
 
 ### Error handling
-Every error you may encounter is provided via onError callback. Each public method has JavaDoc explaining possible errors.
-
-*Important* — Prior to version `1.3.0` each failure on `BluetoothGatt` was effectively closing the connection. From `1.3.0` onwards individual errors will not close the connection if they are not directly related to it. This change does allow to retry operations (i.e. after Android will establish a device bond).
+Every error you may encounter is provided via `onError` callback. Each public method has JavaDoc explaining possible errors.
 
 ### Observable behaviour
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
@@ -309,7 +286,7 @@ The below table contains an overview of used `Observable` patterns
 \** this `Observable` may complete. For example `observeStateChanges()` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime. A second example: Observables emitted from `setupNotification` / `setupIndication` may complete when the parent Observable is disposed.
 
 ### Helpers
-We encourage you to check the package `com.polidea.rxandroidble2.helpers` and `com.polidea.rxandroidble2.utils` which contain handy reactive wrappers for some typical use-cases.
+We encourage you to check the package [`com.polidea.rxandroidble2.helpers`](https://github.com/Polidea/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/helpers) and [`com.polidea.rxandroidble2.utils`](https://github.com/Polidea/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/utils) which contain handy reactive wrappers for some typical use-cases.
 
 #### Value interpretation
 Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
@@ -319,7 +296,7 @@ Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `
 If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
 
 ### Permissions
-RxAndroidBle already provides all the necessary bluetooth permissions for you. Recently, Google has started checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission do not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
+RxAndroidBle already provides all the necessary bluetooth permissions for you. Google is checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
 
 ```xml
 <uses-permission
@@ -328,13 +305,17 @@ RxAndroidBle already provides all the necessary bluetooth permissions for you. R
 ```
 ## More examples
 
-Complete usage examples are located in `/sample` [GitHub repo](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample).
+Usage examples are located in:
+- [`/sample`](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample)
+- [`/sample-kotlin`](https://github.com/Polidea/RxAndroidBle/tree/master/sample-kotlin/src/main/kotlin/com/polidea/rxandroidble2/samplekotlin)
+
+Keep in mind that these are only _samples_ to show how the library can be used. These are not meant for being role model of a good application architecture.
 
 ## Download
 ### Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.10.0"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.10.1"
 ```
 ### Maven
 
@@ -342,14 +323,14 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.10.0"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.10.0</version>
+  <version>1.10.1</version>
   <type>aar</type>
 </dependency>
 ```
 
 ### Snapshot
 If your are interested in cutting-edge build you can get a `SNAPSHOT` version of the library. 
-NOTE: It is built from the top of the `master` branch and a subject to more frequent changes that may break the API and/or change behavior.
+NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
 
 To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
 ```groovy
@@ -384,6 +365,8 @@ If you encounter seemingly incorrect behaviour in your application that is regar
 ## Support
 * non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
 * commercial — drop an email to hello@polidea.com for more info
+
+Learn more about Polidea's BLE services [here](https://www.polidea.com/services/ble)
 
 ## Discussions
 Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELibraries/RxAndroidBle)
