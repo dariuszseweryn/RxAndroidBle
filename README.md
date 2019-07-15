@@ -1,6 +1,11 @@
 # RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
 <p align="center">
-  <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
+  <img 
+    alt="Tailored software services including concept, design, development and testing"
+    src="site/RX-Android.png"
+    height="300"
+    style="margin-top: 20px; margin-bottom: 20px;"
+  />
 </p>
 
 ## Introduction
