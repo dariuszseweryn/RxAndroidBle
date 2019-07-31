@@ -96,7 +96,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                         return bleAdapterState.isUsable();
                     }
                 })
-                .startWith(adapterWrapper.isBluetoothEnabled())
+                .startWithItem(adapterWrapper.isBluetoothEnabled())
                 .filter(new Predicate<Boolean>() {
                     @Override
                     public boolean test(Boolean isAdapterUsable) {

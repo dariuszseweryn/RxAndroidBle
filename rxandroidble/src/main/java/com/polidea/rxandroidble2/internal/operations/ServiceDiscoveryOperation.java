@@ -11,6 +11,7 @@ import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
+import io.reactivex.functions.Supplier;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -74,9 +75,9 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
             final RxBleGattCallback rxBleGattCallback,
             final Scheduler timeoutScheduler
     ) {
-        return Single.defer(new Callable<SingleSource<? extends RxBleDeviceServices>>() {
+        return Single.defer(new Supplier<SingleSource<? extends RxBleDeviceServices>>() {
             @Override
-            public SingleSource<? extends RxBleDeviceServices> call() throws Exception {
+            public SingleSource<? extends RxBleDeviceServices> get() {
                 final List<BluetoothGattService> services = bluetoothGatt.getServices();
                 if (services.size() == 0) {
                     // if after the timeout services are empty we have no other option to declare a failed discovery
@@ -106,6 +107,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "ServiceDiscoveryOperation{" + super.toString() + '}';
     }

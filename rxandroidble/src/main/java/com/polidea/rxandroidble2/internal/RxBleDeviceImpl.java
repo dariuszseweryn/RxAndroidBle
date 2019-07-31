@@ -12,7 +12,7 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import java.util.concurrent.Callable;
+import io.reactivex.functions.Supplier;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import bleshadow.javax.inject.Inject;
@@ -69,9 +69,9 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() throws Exception {
+            public ObservableSource<RxBleConnection> get() {
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(options)
                             .doFinally(new Action() {

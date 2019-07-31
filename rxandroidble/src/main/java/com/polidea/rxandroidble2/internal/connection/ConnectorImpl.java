@@ -7,6 +7,7 @@ import com.polidea.rxandroidble2.ConnectionSetup;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 
+import io.reactivex.functions.Supplier;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -37,9 +38,9 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() throws Exception {
+            public ObservableSource<RxBleConnection> get() {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
                         .autoConnect(options.autoConnect)
                         .suppressOperationChecks(options.suppressOperationCheck)

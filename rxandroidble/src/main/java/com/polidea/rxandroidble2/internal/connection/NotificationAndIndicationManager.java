@@ -16,11 +16,11 @@ import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble2.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
+import io.reactivex.functions.Supplier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
@@ -71,9 +71,9 @@ class NotificationAndIndicationManager {
     Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
             @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean isIndication
     ) {
-        return Observable.defer(new Callable<ObservableSource<Observable<byte[]>>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends Observable<byte[]>>>() {
             @Override
-            public ObservableSource<Observable<byte[]>> call() {
+            public ObservableSource<Observable<byte[]>> get() {
                 synchronized (activeNotificationObservableMap) {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());

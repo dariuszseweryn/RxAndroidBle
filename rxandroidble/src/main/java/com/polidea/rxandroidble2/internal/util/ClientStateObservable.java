@@ -85,7 +85,7 @@ public class ClientStateObservable extends Observable<RxBleClient.State> {
             final Observable<Boolean> locationServicesOkObservable
     ) {
         return rxBleAdapterStateObservable
-                .startWith(rxBleAdapterWrapper.isBluetoothEnabled()
+                .startWithItem(rxBleAdapterWrapper.isBluetoothEnabled()
                         ? RxBleAdapterStateObservable.BleAdapterState.STATE_ON
                         /*
                          * Actual RxBleAdapterStateObservable.BleAdapterState does not really matter - because in the .switchMap() below
