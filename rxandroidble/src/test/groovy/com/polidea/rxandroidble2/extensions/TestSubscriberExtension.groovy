@@ -50,6 +50,26 @@ class TestSubscriberExtension {
         subscriber.assertValueSequence(values)
     }
 
+    static <T> void assertTerminated(final TestObserver<T> subscriber) {
+        try {
+            subscriber.assertComplete()
+        } catch (Throwable ignored) {
+            subscriber.assertError({ true })
+        }
+    }
+
+    static <T> void assertNotTerminated(final TestObserver<T> subscriber) {
+        subscriber.assertNotComplete()
+        subscriber.assertNoErrors()
+        if (subscriber.isDisposed()) {
+            throw AssertionError("TestObserver is disposed")
+        }
+    }
+
+    static <T> void assertErrorMessage(final TestObserver<T> subscriber, final String errorMessage) {
+        subscriber.assertError { it.message == errorMessage }
+    }
+
     static boolean assertAllBatchesSmaller(final TestSubscriber<byte[]> subscriber, int maxBatchSize) {
         def emittedValues = subscriber.values()
         def size = emittedValues.size()
