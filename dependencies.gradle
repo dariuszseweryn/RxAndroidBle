@@ -7,7 +7,7 @@ ext {
     libs = [
             /* Library-only dependencies */
             rxjava                : "io.reactivex.rxjava3:rxjava:$rxJavaVersion",
-            rxandroid             : 'io.reactivex.rxjava2:rxandroid:2.1.1',
+            rxandroid             : 'io.reactivex.rxjava3:rxandroid:3.0.0',
             rxrelay               : 'com.jakewharton.rxrelay3:rxrelay:3.0.0',
             junit                 : 'junit:junit:4.13',
             groovy                : 'org.codehaus.groovy:groovy:2.5.8',
