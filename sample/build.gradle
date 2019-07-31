@@ -35,6 +35,9 @@ android {
 
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    resolutionStrategy.dependencySubstitution {
+        substitute module('io.reactivex.rxjava2:rxjava') with module(libs.rxjava)
+    }
 }
 
 dependencies {
