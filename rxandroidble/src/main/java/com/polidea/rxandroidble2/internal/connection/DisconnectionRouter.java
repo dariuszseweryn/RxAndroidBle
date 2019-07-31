@@ -1,7 +1,7 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
-import com.jakewharton.rxrelay2.BehaviorRelay;
+import com.jakewharton.rxrelay3.BehaviorRelay;
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
@@ -12,13 +12,13 @@ import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 
 /**
  * A class that is responsible for routing all potential sources of disconnection to an Observable that emits only errors.
@@ -96,7 +96,7 @@ class DisconnectionRouter implements DisconnectionRouterInput, DisconnectionRout
                         return bleAdapterState.isUsable();
                     }
                 })
-                .startWith(adapterWrapper.isBluetoothEnabled())
+                .startWithItem(adapterWrapper.isBluetoothEnabled())
                 .filter(new Predicate<Boolean>() {
                     @Override
                     public boolean test(Boolean isAdapterUsable) {

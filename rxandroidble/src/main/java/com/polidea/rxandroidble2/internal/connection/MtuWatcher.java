@@ -6,11 +6,11 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.Observable;
-import io.reactivex.disposables.SerialDisposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
-import io.reactivex.internal.functions.Functions;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.SerialDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.internal.functions.Functions;
 
 @ConnectionScope
 class MtuWatcher implements ConnectionSubscriptionWatcher, MtuProvider, Consumer<Integer> {

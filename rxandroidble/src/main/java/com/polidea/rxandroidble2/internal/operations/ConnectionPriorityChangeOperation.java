@@ -10,7 +10,7 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 
 import bleshadow.javax.inject.Inject;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class ConnectionPriorityChangeOperation extends SingleResponseOperation<Long> {
 

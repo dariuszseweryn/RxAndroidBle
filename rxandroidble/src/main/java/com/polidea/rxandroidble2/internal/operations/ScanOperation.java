@@ -9,8 +9,8 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.functions.Cancellable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.functions.Cancellable;
 
 /**
  * A class that handles starting and stopping BLE scans.

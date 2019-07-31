@@ -4,7 +4,7 @@ import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Scheduler;
 
 
 public class MockOperationTimeoutConfiguration extends TimeoutConfiguration {

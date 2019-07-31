@@ -11,9 +11,9 @@ import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
 import com.polidea.rxandroidble2.samplekotlin.util.isConnected
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_example5.connect_toggle
 import kotlinx.android.synthetic.main.activity_example5.connection_state
 import kotlinx.android.synthetic.main.activity_example5.rssi

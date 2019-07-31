@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 
 /**
  * Service discovery result containing list of services and characteristics within the services.

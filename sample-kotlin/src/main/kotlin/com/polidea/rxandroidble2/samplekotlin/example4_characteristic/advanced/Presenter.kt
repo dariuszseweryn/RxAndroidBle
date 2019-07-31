@@ -9,9 +9,9 @@ import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced.Type.INDICATE
 import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced.Type.NOTIFY
 import com.polidea.rxandroidble2.samplekotlin.util.hasProperty
-import io.reactivex.Observable
-import io.reactivex.ObservableTransformer
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableTransformer
+import io.reactivex.rxjava3.core.Single
 import java.util.Arrays.asList
 import java.util.UUID
 
@@ -62,7 +62,7 @@ internal fun prepareActivityLogic(
                             disableNotifyClicks
                         ))
                         // start by informing the Activity that connection is established
-                        .startWith(InfoEvent("Hey, connection has been established!"))
+                        .startWithItem(InfoEvent("Hey, connection has been established!"))
                 }
                 // convenience transformer to close the connection
                 .compose(takeUntil(connectingClicks, disconnectClicks))
@@ -248,7 +248,7 @@ private fun selectNotificationOrIndication(
          */
         .compose(repeatAfterCompleted())
         // at the beginning inform the activity about whether compat mode is being used
-        .startWith(
+        .startWithItem(
             CompatibilityModeEvent(
                 characteristic.hasProperty(PROPERTY_NOTIFY or PROPERTY_INDICATE)
                         && mode == NotificationSetupMode.COMPAT

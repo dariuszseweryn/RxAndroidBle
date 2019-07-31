@@ -13,12 +13,12 @@ import java.util.concurrent.TimeUnit;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Function;
-import io.reactivex.observables.GroupedObservable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.ObservableTransformer;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.observables.GroupedObservable;
 
 import static com.polidea.rxandroidble2.internal.util.ObservableUtil.identityTransformer;
 

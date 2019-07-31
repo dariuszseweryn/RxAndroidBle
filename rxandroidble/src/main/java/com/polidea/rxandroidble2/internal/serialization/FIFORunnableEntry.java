@@ -8,10 +8,10 @@ import com.polidea.rxandroidble2.internal.operations.Operation;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Observer;
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
 

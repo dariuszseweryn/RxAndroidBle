@@ -11,8 +11,8 @@ import com.polidea.rxandroidble2.samplekotlin.example3_discovery.DiscoveryResult
 import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.CharacteristicOperationExampleActivity
 import com.polidea.rxandroidble2.samplekotlin.util.isConnected
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_example3.connect
 import kotlinx.android.synthetic.main.activity_example3.scan_results
 

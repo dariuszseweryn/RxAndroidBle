@@ -21,14 +21,14 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.Emitter;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.SingleObserver;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.core.Emitter;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTING;

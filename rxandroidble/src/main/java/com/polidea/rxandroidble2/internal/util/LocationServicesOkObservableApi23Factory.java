@@ -8,11 +8,11 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 
 import bleshadow.javax.inject.Inject;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Cancellable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.functions.Cancellable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @TargetApi(19 /* Build.VERSION_CODES.KITKAT */)
 public class LocationServicesOkObservableApi23Factory {

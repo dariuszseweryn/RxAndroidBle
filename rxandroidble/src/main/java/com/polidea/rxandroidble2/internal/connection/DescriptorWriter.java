@@ -7,7 +7,7 @@ import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
 
 import bleshadow.javax.inject.Inject;
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 @ConnectionScope
 class DescriptorWriter {

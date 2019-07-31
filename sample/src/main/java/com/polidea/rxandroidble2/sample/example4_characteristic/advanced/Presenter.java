@@ -11,9 +11,9 @@ import com.polidea.rxandroidble2.RxBleDevice;
 
 import java.util.UUID;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableTransformer;
+import io.reactivex.rxjava3.core.Single;
 
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE;
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
@@ -78,7 +78,7 @@ final class Presenter {
                                                             notifyAndIndicateObservable
                                                     )
                                                             // start by informing the Activity that connection is established
-                                                            .startWith(new InfoEvent("Hey, connection has been established!"));
+                                                            .startWithItem(new InfoEvent("Hey, connection has been established!"));
                                                 }
                                         )
                                         // convenience transformer to close the connection
@@ -180,7 +180,7 @@ final class Presenter {
                  */
                 .compose(repeatAfterCompleted())
                 // at the beginning inform the activity about whether compat mode is being used
-                .startWith(new CompatibilityModeEvent(
+                .startWithItem(new CompatibilityModeEvent(
                         hasProperty(characteristic, PROPERTY_NOTIFY | PROPERTY_INDICATE)
                                 && notificationSetupMode == NotificationSetupMode.COMPAT
                 ));

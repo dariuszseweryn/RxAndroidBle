@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Scheduler;
 
 public class ScanPreconditionsVerifierApi24 implements ScanPreconditionsVerifier {
 

@@ -18,12 +18,12 @@ import java.util.concurrent.Future;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Cancellable;
-import io.reactivex.observers.DisposableObserver;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Cancellable;
+import io.reactivex.rxjava3.observers.DisposableObserver;
 
 import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.commonMacMessage;
 import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationFinished;

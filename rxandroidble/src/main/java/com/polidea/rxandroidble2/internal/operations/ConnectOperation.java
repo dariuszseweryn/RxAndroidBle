@@ -22,14 +22,14 @@ import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.SingleTransformer;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Predicate;
-import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.core.SingleTransformer;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;

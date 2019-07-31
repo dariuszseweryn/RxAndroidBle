@@ -26,27 +26,26 @@ import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
-import io.reactivex.functions.Consumer;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import bleshadow.dagger.Lazy;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.Maybe;
-import io.reactivex.MaybeSource;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeSource;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.functions.Supplier;
 
 class RxBleClientImpl extends RxBleClient {
 
@@ -125,9 +124,9 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(final ScanSettings scanSettings, final ScanFilter... scanFilters) {
-        return Observable.defer(new Callable<ObservableSource<? extends ScanResult>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends ScanResult>>() {
             @Override
-            public Observable<ScanResult> call() {
+            public Observable<ScanResult> get() {
                 scanPreconditionVerifier.verify(scanSettings.shouldCheckLocationProviderState());
                 final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
                 final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
@@ -154,9 +153,9 @@ class RxBleClientImpl extends RxBleClient {
     @Override
     @Deprecated
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
-        return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleScanResult>>() {
             @Override
-            public ObservableSource<? extends RxBleScanResult> call() {
+            public ObservableSource<? extends RxBleScanResult> get() {
                 scanPreconditionVerifier.verify(true);
                 return initializeScan(filterServiceUUIDs);
             }

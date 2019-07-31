@@ -7,9 +7,9 @@ import org.reactivestreams.Subscriber;
 
 import java.nio.ByteBuffer;
 
-import io.reactivex.Emitter;
-import io.reactivex.Flowable;
-import io.reactivex.functions.Consumer;
+import io.reactivex.rxjava3.core.Emitter;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Consumer;
 
 /**
  * TODO It may be possible to introduce backpressure here.

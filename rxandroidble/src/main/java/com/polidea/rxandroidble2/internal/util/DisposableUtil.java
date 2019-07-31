@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble2.internal.util;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.SingleEmitter;
-import io.reactivex.observers.DisposableObserver;
-import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.observers.DisposableObserver;
+import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 
 public class DisposableUtil {
 

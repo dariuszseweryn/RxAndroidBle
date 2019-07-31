@@ -3,7 +3,7 @@ package com.polidea.rxandroidble2.internal;
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.Nullable;
 
-import com.jakewharton.rxrelay2.BehaviorRelay;
+import com.jakewharton.rxrelay3.BehaviorRelay;
 import com.polidea.rxandroidble2.ConnectionSetup;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
@@ -12,13 +12,13 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import bleshadow.javax.inject.Inject;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Supplier;
 
 @DeviceScope
 class RxBleDeviceImpl implements RxBleDevice {
@@ -69,9 +69,9 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() {
+            public ObservableSource<RxBleConnection> get() {
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(options)
                             .doFinally(new Action() {

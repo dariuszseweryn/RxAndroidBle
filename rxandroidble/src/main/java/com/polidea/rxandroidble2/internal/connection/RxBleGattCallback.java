@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.jakewharton.rxrelay2.PublishRelay;
-import com.jakewharton.rxrelay2.Relay;
+import com.jakewharton.rxrelay3.PublishRelay;
+import com.jakewharton.rxrelay3.Relay;
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 import com.polidea.rxandroidble2.ClientComponent;
@@ -26,9 +26,9 @@ import java.util.UUID;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 

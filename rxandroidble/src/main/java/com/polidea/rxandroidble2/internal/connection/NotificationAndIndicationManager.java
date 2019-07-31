@@ -16,26 +16,26 @@ import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble2.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
+import io.reactivex.rxjava3.functions.Supplier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
-import io.reactivex.CompletableTransformer;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.internal.functions.Functions;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.core.CompletableTransformer;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.ObservableTransformer;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.internal.functions.Functions;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 @ConnectionScope
 class NotificationAndIndicationManager {
@@ -71,9 +71,9 @@ class NotificationAndIndicationManager {
     Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
             @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean isIndication
     ) {
-        return Observable.defer(new Callable<ObservableSource<Observable<byte[]>>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends Observable<byte[]>>>() {
             @Override
-            public ObservableSource<Observable<byte[]>> call() {
+            public ObservableSource<Observable<byte[]>> get() {
                 synchronized (activeNotificationObservableMap) {
                     final CharacteristicNotificationId id
                             = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());

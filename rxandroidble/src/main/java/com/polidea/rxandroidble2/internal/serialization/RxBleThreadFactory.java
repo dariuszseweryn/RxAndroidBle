@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.serialization;
 
-import io.reactivex.internal.schedulers.NonBlockingThread;
+import io.reactivex.rxjava3.internal.schedulers.NonBlockingThread;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 

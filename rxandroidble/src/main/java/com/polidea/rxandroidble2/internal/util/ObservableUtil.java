@@ -1,8 +1,8 @@
 package com.polidea.rxandroidble2.internal.util;
 
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableTransformer;
 
 public class ObservableUtil {
 
@@ -19,7 +19,7 @@ public class ObservableUtil {
     }
 
     public static <T> Observable<T> justOnNext(T onNext) {
-        return Observable.<T>never().startWith(onNext);
+        return Observable.<T>never().startWithItem(onNext);
     }
 
     @SuppressWarnings("unchecked")

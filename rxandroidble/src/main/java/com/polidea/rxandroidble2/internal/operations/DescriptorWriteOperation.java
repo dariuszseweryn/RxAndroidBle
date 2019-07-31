@@ -12,7 +12,7 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import bleshadow.javax.inject.Named;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 import static com.polidea.rxandroidble2.internal.util.ByteAssociationUtil.descriptorPredicate;
 import static com.polidea.rxandroidble2.internal.util.ByteAssociationUtil.getBytesFromAssociation;

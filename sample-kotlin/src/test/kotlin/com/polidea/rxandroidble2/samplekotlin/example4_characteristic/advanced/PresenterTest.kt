@@ -8,8 +8,8 @@ import android.os.Build
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleClientMock
 import com.polidea.rxandroidble2.samplekotlin.BuildConfig
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.junit.*
 import org.junit.runner.*
 import org.robolectric.RobolectricTestRunner

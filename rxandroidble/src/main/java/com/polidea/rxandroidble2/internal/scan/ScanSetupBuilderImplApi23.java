@@ -13,7 +13,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import bleshadow.javax.inject.Inject;
 
-import io.reactivex.ObservableTransformer;
+import io.reactivex.rxjava3.core.ObservableTransformer;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {

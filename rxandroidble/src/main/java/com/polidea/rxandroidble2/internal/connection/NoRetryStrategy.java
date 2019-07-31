@@ -2,8 +2,8 @@ package com.polidea.rxandroidble2.internal.connection;
 
 import com.polidea.rxandroidble2.RxBleConnection;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
 
 public class NoRetryStrategy implements RxBleConnection.WriteOperationRetryStrategy {
 

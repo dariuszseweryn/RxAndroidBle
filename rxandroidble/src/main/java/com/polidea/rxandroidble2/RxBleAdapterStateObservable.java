@@ -9,12 +9,12 @@ import androidx.annotation.NonNull;
 
 import bleshadow.javax.inject.Inject;
 import com.polidea.rxandroidble2.internal.RxBleLog;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.functions.Cancellable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.functions.Cancellable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * Observes Bluetooth adapter state. This responds to user interactions as well as system controlled state changes.

@@ -16,11 +16,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.SingleSource;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
@@ -74,9 +75,9 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
             final RxBleGattCallback rxBleGattCallback,
             final Scheduler timeoutScheduler
     ) {
-        return Single.defer(new Callable<SingleSource<? extends RxBleDeviceServices>>() {
+        return Single.defer(new Supplier<SingleSource<? extends RxBleDeviceServices>>() {
             @Override
-            public SingleSource<? extends RxBleDeviceServices> call() {
+            public SingleSource<? extends RxBleDeviceServices> get() {
                 final List<BluetoothGattService> services = bluetoothGatt.getServices();
                 if (services.size() == 0) {
                     // if after the timeout services are empty we have no other option to declare a failed discovery
@@ -106,6 +107,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "ServiceDiscoveryOperation{" + super.toString() + '}';
     }

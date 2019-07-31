@@ -9,12 +9,12 @@ import com.polidea.rxandroidble2.internal.operations.Operation;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationFinished;
 import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationQueued;
 import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRemoved;
@@ -63,7 +63,7 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
             public void subscribe(ObservableEmitter<T> tEmitter) {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
 
-                tEmitter.setDisposable(Disposables.fromAction(new Action() {
+                tEmitter.setDisposable(Disposable.fromAction(new Action() {
                     @Override
                     public void run() {
                         if (queue.remove(entry)) {

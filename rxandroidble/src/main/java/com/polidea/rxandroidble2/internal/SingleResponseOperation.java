@@ -16,10 +16,10 @@ import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
 
 /**
  * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.

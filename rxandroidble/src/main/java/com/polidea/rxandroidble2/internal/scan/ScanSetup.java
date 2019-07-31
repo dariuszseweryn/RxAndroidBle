@@ -5,7 +5,7 @@ import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.internal.operations.Operation;
 
-import io.reactivex.ObservableTransformer;
+import io.reactivex.rxjava3.core.ObservableTransformer;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class ScanSetup {

@@ -4,8 +4,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 
 import java.util.UUID;
 
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 
 public class ByteAssociationUtil {
 

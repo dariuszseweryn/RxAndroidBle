@@ -54,7 +54,7 @@ dependencies {
     // RxJava
     implementation rootProject.ext.libs.rxjava
     implementation rootProject.ext.libs.rxandroid
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
+    implementation 'io.reactivex.rxjava3:rxkotlin:3.0.0'
 
     // Replaying share
     implementation rootProject.ext.libs.rxjava_replayingshare

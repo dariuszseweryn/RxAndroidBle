@@ -46,11 +46,11 @@ import bleshadow.dagger.Module;
 import bleshadow.dagger.Provides;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Function;
-import io.reactivex.plugins.RxJavaPlugins;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @ClientScope
 @Component(modules = {ClientComponent.ClientModule.class})

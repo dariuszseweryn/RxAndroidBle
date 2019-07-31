@@ -1,14 +1,14 @@
 ext {
-    rxJavaVersion = '2.2.17'
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
-    targetCompatibilityVersion = JavaVersion.VERSION_1_7
+    rxJavaVersion = '3.0.11'
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
+    targetCompatibilityVersion = JavaVersion.VERSION_1_8
     shadowPluginVersion = '5.0.0'
     daggerVersion = '2.15'
     libs = [
             /* Library-only dependencies */
-            rxjava                : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
+            rxjava                : "io.reactivex.rxjava3:rxjava:$rxJavaVersion",
             rxandroid             : 'io.reactivex.rxjava2:rxandroid:2.1.1',
-            rxrelay               : 'com.jakewharton.rxrelay2:rxrelay:2.1.1',
+            rxrelay               : 'com.jakewharton.rxrelay3:rxrelay:3.0.0',
             junit                 : 'junit:junit:4.13',
             groovy                : 'org.codehaus.groovy:groovy:2.5.8',
             spock                 : ['org.spockframework:spock-core:1.2-groovy-2.5',
@@ -21,8 +21,8 @@ ext {
             annotations           : "androidx.annotation:annotation:1.1.0",
             robolectric           : 'org.robolectric:robolectric:3.8',
             /* Sample apps-only dependencies */
-            rxjava_replayingshare : 'com.jakewharton.rx2:replaying-share:2.2.0',
-            rxjava_binding        : 'com.jakewharton.rxbinding3:rxbinding:3.1.0',
+            rxjava_replayingshare : 'com.jakewharton.rx3:replaying-share:3.0.0',
+            rxjava_binding        : 'com.jakewharton.rxbinding4:rxbinding:4.0.0',
             appcompat             : 'androidx.appcompat:appcompat:1.1.0',
             material_design       : 'com.google.android.material:material:1.0.0'
     ]

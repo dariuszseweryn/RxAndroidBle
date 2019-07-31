@@ -12,12 +12,13 @@ import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Supplier;
 
 public class ConnectorImpl implements Connector {
 
@@ -37,9 +38,9 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() {
+            public ObservableSource<RxBleConnection> get() {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
                         .autoConnect(options.autoConnect)
                         .suppressOperationChecks(options.suppressOperationCheck)

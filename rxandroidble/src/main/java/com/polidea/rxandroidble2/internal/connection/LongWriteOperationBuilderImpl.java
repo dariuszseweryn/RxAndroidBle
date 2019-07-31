@@ -11,10 +11,10 @@ import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue
 import java.util.UUID;
 
 import bleshadow.javax.inject.Inject;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.SingleSource;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Function;
 
 public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
 

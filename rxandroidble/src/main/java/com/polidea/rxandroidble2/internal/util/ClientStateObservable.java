@@ -12,13 +12,13 @@ import java.util.concurrent.TimeUnit;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 
 /**
  * The Observable class which emits changes to the Client State. These can be useful for evaluating if particular functionality
@@ -85,7 +85,7 @@ public class ClientStateObservable extends Observable<RxBleClient.State> {
             final Observable<Boolean> locationServicesOkObservable
     ) {
         return rxBleAdapterStateObservable
-                .startWith(rxBleAdapterWrapper.isBluetoothEnabled()
+                .startWithItem(rxBleAdapterWrapper.isBluetoothEnabled()
                         ? RxBleAdapterStateObservable.BleAdapterState.STATE_ON
                         /*
                          * Actual RxBleAdapterStateObservable.BleAdapterState does not really matter - because in the .switchMap() below
@@ -114,7 +114,7 @@ public class ClientStateObservable extends Observable<RxBleClient.State> {
     @Override
     protected void subscribeActual(Observer<? super RxBleClient.State> observer) {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
-            observer.onSubscribe(Disposables.empty());
+            observer.onSubscribe(Disposable.empty());
             observer.onComplete();
             return;
         }

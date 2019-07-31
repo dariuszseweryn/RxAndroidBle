@@ -7,8 +7,8 @@ import com.polidea.rxandroidble2.internal.BluetoothGattCharacteristicProperty;
 
 import bleshadow.javax.inject.Inject;
 
-import io.reactivex.Completable;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.functions.Action;
 
 /**
  * Class for checking whether the requested operation is legal on chosen characteristic.

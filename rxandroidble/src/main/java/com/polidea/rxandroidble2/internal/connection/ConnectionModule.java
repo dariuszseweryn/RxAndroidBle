@@ -19,7 +19,7 @@ import bleshadow.dagger.Provides;
 import bleshadow.dagger.multibindings.IntoSet;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Scheduler;
 
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;

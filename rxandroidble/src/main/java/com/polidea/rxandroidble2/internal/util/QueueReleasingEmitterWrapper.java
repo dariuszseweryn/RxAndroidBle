@@ -6,11 +6,11 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Emitter;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Cancellable;
+import io.reactivex.rxjava3.core.Emitter;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Cancellable;
 
 /**
  * A convenience class to use in {@link QueueOperation} subclasses. It wraps the {@link Emitter}
