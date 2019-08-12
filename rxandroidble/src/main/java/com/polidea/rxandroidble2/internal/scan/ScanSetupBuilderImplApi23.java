@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
-import android.os.Build;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 
@@ -33,7 +32,7 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
         this.androidScanObjectsConverter = androidScanObjectsConverter;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @Override
     public ScanSetup build(ScanSettings scanSettings, ScanFilter... scanFilters) {
         // for now assuming that on Android 6.0+ there are no problems

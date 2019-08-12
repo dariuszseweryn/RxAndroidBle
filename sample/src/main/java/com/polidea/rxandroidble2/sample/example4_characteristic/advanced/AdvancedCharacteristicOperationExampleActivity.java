@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding3.view.RxView;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;

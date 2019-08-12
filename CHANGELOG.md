@@ -1,5 +1,17 @@
 Change Log
 ==========
+Version 1.10.1
+* Fixed `IllegalStateException` in `RxBleAdapterStateObservable` (https://github.com/Polidea/RxAndroidBle/pull/596)
+
+Version 1.10.0
+* Added possibility to disable logs of scanned peripherals via `LogOptions.Builder.setShouldLogScannedPeripherals()` (https://github.com/Polidea/RxAndroidBle/pull/579)
+* Added `RxBleConnection.observeConnectionParametersUpdates()` function (https://github.com/Polidea/RxAndroidBle/pull/565)
+* Minor allocation decrease in `LocationServicesOkObservable` (https://github.com/Polidea/RxAndroidBle/pull/574)
+* Fixed leaking `RxBleAdapterStateObservable` (https://github.com/Polidea/RxAndroidBle/pull/575)
+
+Version 1.9.2
+* Fixed `IllegalArgumentException` in `LocationServicesOkObservableApi23Factory` (https://github.com/Polidea/RxAndroidBle/pull/573)
+
 Version 1.9.1
 * Fixed `RxBleClient.observeStateChanges()` emissions (https://github.com/Polidea/RxAndroidBle/pull/556)
 * Fixed `RxBleDevice.establishConnection(boolean, Timeout)` Javadoc (https://github.com/Polidea/RxAndroidBle/pull/558)

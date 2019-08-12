@@ -19,14 +19,17 @@ public class LogOptions {
     @Nullable
     private Boolean shouldLogAttributeValues;
     @Nullable
+    private Boolean shouldLogScannedPeripherals;
+    @Nullable
     private Logger logger;
 
     private LogOptions(@Nullable Integer logLevel, @Nullable Integer macAddressLogSetting, @Nullable Integer uuidLogSetting,
-                       @Nullable Boolean shouldLogAttributeValues, @Nullable Logger logger) {
+                       @Nullable Boolean shouldLogAttributeValues, @Nullable Boolean shouldLogScannedPeripherals, @Nullable Logger logger) {
         this.logLevel = logLevel;
         this.macAddressLogSetting = macAddressLogSetting;
         this.uuidLogSetting = uuidLogSetting;
         this.shouldLogAttributeValues = shouldLogAttributeValues;
+        this.shouldLogScannedPeripherals = shouldLogScannedPeripherals;
         this.logger = logger;
     }
 
@@ -51,6 +54,11 @@ public class LogOptions {
     }
 
     @Nullable
+    public Boolean getShouldLogScannedPeripherals() {
+        return shouldLogScannedPeripherals;
+    }
+
+    @Nullable
     public Logger getLogger() {
         return logger;
     }
@@ -62,14 +70,15 @@ public class LogOptions {
                 + ", macAddressLogSetting=" + macAddressLogSetting
                 + ", uuidLogSetting=" + uuidLogSetting
                 + ", shouldLogAttributeValues=" + shouldLogAttributeValues
+                + ", shouldLogScannedPeripherals=" + shouldLogScannedPeripherals
                 + ", logger=" + logger
                 + '}';
     }
 
     /**
-     * The builder for {@link #LogOptions(Integer, Integer, Integer, Boolean, Logger)}
+     * The builder for {@link #LogOptions(Integer, Integer, Integer, Boolean, Boolean, Logger)}
      * If a particular setting will not be defined on the builder the produced
-     * {@link #LogOptions(Integer, Integer, Integer, Boolean, Logger)} will not overwrite them in the library when passed to
+     * {@link #LogOptions(Integer, Integer, Integer, Boolean, Boolean, Logger)} will not overwrite them in the library when passed to
      * {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}.
      */
     public static class Builder {
@@ -82,6 +91,8 @@ public class LogOptions {
         private Integer uuidsLogSetting;
         @Nullable
         private Boolean shouldLogAttributeValues;
+        @Nullable
+        private Boolean shouldLogScannedPeripherals;
         @Nullable
         private Logger logger;
 
@@ -143,6 +154,17 @@ public class LogOptions {
         }
 
         /**
+         * Set if scan results should be logged.
+         *
+         * @param shouldLogScannedPeripherals the setting
+         * @return the builder
+         */
+        public Builder setShouldLogScannedPeripherals(@Nullable Boolean shouldLogScannedPeripherals) {
+            this.shouldLogScannedPeripherals = shouldLogScannedPeripherals;
+            return this;
+        }
+
+        /**
          * Set the logger to get the output
          *
          * @param logger the logger
@@ -154,7 +176,8 @@ public class LogOptions {
         }
 
         public LogOptions build() {
-            return new LogOptions(logLevel, macAddressLogSetting, uuidsLogSetting, shouldLogAttributeValues, logger);
+            return new LogOptions(logLevel, macAddressLogSetting, uuidsLogSetting, shouldLogAttributeValues,
+                    shouldLogScannedPeripherals, logger);
         }
     }
 

@@ -16,7 +16,7 @@ public class SampleApplication extends Application {
     private RxBleClient rxBleClient;
 
     /**
-     * In practise you will use some kind of dependency injection pattern.
+     * In practice you will use some kind of dependency injection pattern.
      */
     public static RxBleClient getRxBleClient(Context context) {
         SampleApplication application = (SampleApplication) context.getApplicationContext();

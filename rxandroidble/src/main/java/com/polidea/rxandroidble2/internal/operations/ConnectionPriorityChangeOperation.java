@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
-import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
@@ -36,7 +35,7 @@ public class ConnectionPriorityChangeOperation extends SingleResponseOperation<L
                 successTimeoutConfiguration.timeoutScheduler);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @Override
     protected boolean startOperation(BluetoothGatt bluetoothGatt) throws IllegalArgumentException, BleGattCannotStartException {
         return bluetoothGatt.requestConnectionPriority(connectionPriority);

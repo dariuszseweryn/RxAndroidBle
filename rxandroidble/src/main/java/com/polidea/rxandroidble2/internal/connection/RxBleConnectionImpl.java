@@ -3,12 +3,12 @@ package com.polidea.rxandroidble2.internal.connection;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.ClientComponent;
+import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
@@ -95,7 +95,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public Completable requestConnectionPriority(int connectionPriority, long delay, @NonNull TimeUnit timeUnit) {
         if (connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
                 && connectionPriority != BluetoothGatt.CONNECTION_PRIORITY_BALANCED
@@ -118,7 +118,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public Single<Integer> requestMtu(int mtu) {
         return operationQueue.queue(operationsProvider.provideMtuChangeOperation(mtu)).firstOrError();
     }
@@ -313,6 +313,11 @@ public class RxBleConnectionImpl implements RxBleConnection {
     }
 
     @Override
+    public Observable<ConnectionParameters> observeConnectionParametersUpdates() {
+        return gattCallback.getConnectionParametersUpdates();
+    }
+
+    @Override
     public <T> Observable<T> queue(@NonNull final RxBleCustomOperation<T> operation) {
         return queue(operation, Priority.NORMAL);
     }
@@ -353,6 +358,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
                     @Override
                     public void run() {
                         gattCallback.setNativeCallback(null);
+                        gattCallback.setHiddenNativeCallback(null);
                     }
                 };
             }

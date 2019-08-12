@@ -6,15 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
-import android.os.Build;
 
 import javax.inject.Inject;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Cancellable;
+import io.reactivex.schedulers.Schedulers;
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
+@TargetApi(19 /* Build.VERSION_CODES.KITKAT */)
 public class LocationServicesOkObservableApi23Factory {
     private final Context context;
     private final LocationServicesStatus locationServicesStatus;
@@ -30,7 +30,7 @@ public class LocationServicesOkObservableApi23Factory {
     public Observable<Boolean> get() {
         return Observable.create(new ObservableOnSubscribe<Boolean>() {
             @Override
-            public void subscribe(final ObservableEmitter<Boolean> emitter) throws Exception {
+            public void subscribe(final ObservableEmitter<Boolean> emitter) {
                 final boolean initialValue = locationServicesStatus.isLocationProviderOk();
                 final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
                     @Override
@@ -43,11 +43,14 @@ public class LocationServicesOkObservableApi23Factory {
                 context.registerReceiver(broadcastReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
                 emitter.setCancellable(new Cancellable() {
                     @Override
-                    public void cancel() throws Exception {
+                    public void cancel() {
                         context.unregisterReceiver(broadcastReceiver);
                     }
                 });
             }
-        }).distinctUntilChanged();
+        })
+                .distinctUntilChanged()
+                .subscribeOn(Schedulers.trampoline())
+                .unsubscribeOn(Schedulers.trampoline());
     }
 }

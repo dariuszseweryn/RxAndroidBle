@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -26,13 +27,16 @@ class BackgroundScanActivity : AppCompatActivity() {
 
     private val rxBleClient = SampleApplication.rxBleClient
 
-    private val callbackIntent = ScanReceiver.newPendingIntent(this)
+    private lateinit var callbackIntent: PendingIntent
 
     private var hasClickedScan = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example1a)
+
+        callbackIntent = ScanReceiver.newPendingIntent(this)
+
         scan_start_btn.setOnClickListener { onScanStartClick() }
         scan_stop_btn.setOnClickListener { onScanStopClick() }
     }
@@ -47,7 +51,7 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun scanBleDeviceInBackground() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */) {
             try {
                 val scanSettings = ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -77,7 +81,7 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun onScanStopClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */) {
             rxBleClient.backgroundScanner.stopBackgroundBleScan(callbackIntent)
         } else {
             showSnackbarShort("Background scanning requires at least API 26")
