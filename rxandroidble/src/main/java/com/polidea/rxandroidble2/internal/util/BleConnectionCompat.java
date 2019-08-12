@@ -41,7 +41,7 @@ public class BleConnectionCompat {
          * https://android.googlesource.com/platform/frameworks/base/+/android-6.0.1_r72/core/java/android/bluetooth/BluetoothGatt.java#739
          * issue: https://android.googlesource.com/platform/frameworks/base/+/d35167adcaa40cb54df8e392379dfdfe98bcdba2%5E%21/#F0
           */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || !autoConnect) {
+        if (Build.VERSION.SDK_INT >= 24 /* Build.VERSION_CODES.N */ || !autoConnect) {
             return connectGattCompat(bluetoothGattCallback, remoteDevice, autoConnect);
         }
 
@@ -89,7 +89,7 @@ public class BleConnectionCompat {
     private BluetoothGatt connectGattCompat(BluetoothGattCallback bluetoothGattCallback, BluetoothDevice device, boolean autoConnect) {
         RxBleLog.v("Connecting without reflection");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= 23 /* Build.VERSION_CODES.M */) {
             return device.connectGatt(context, autoConnect, bluetoothGattCallback, TRANSPORT_LE);
         } else {
             return device.connectGatt(context, autoConnect, bluetoothGattCallback);
@@ -105,7 +105,7 @@ public class BleConnectionCompat {
         return (Boolean) (connectMethod.invoke(bluetoothGatt, true, bluetoothGattCallback));
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    @TargetApi(23 /* Build.VERSION_CODES.M */)
     private BluetoothGatt createBluetoothGatt(Object iBluetoothGatt, BluetoothDevice remoteDevice)
             throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor bluetoothGattConstructor = BluetoothGatt.class.getDeclaredConstructors()[0];

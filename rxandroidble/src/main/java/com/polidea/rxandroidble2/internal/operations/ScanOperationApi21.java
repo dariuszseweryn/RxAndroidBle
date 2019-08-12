@@ -4,7 +4,6 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
-import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -26,7 +25,7 @@ import java.util.List;
 
 import io.reactivex.Emitter;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+@RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
 public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {
 
     @NonNull
@@ -62,7 +61,9 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
         return new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
-                if (!emulatedScanFilterMatcher.isEmpty() && RxBleLog.isAtLeast(LogConstants.DEBUG)) {
+                if (!emulatedScanFilterMatcher.isEmpty()
+                        && RxBleLog.isAtLeast(LogConstants.DEBUG)
+                        && RxBleLog.getShouldLogScannedPeripherals()) {
                     ScanRecord scanRecord = result.getScanRecord();
                     RxBleLog.d("%s, name=%s, rssi=%d, data=%s",
                             LoggerUtil.commonMacMessage(result.getDevice().getAddress()),

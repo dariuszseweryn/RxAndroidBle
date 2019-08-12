@@ -70,7 +70,7 @@ class ConnectionExampleActivity : AppCompatActivity() {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     private fun onSetMtu() {
         newMtu.text.toString().toIntOrNull()?.let { mtu ->
             bleDevice.establishConnection(false)

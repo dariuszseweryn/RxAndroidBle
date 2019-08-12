@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
@@ -66,7 +65,7 @@ public interface RxBleConnection {
      * Description of correct values of connection priority
      */
     @Retention(RetentionPolicy.SOURCE)
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @IntDef({BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER,
             BluetoothGatt.CONNECTION_PRIORITY_BALANCED,
             BluetoothGatt.CONNECTION_PRIORITY_HIGH})
@@ -506,9 +505,14 @@ public interface RxBleConnection {
      * <p>
      * By default connection is balanced.
      * <p>
-     * NOTE: Due to lack of support for `BluetoothGattCallback.onConnectionPriorityChanged()` or similar it
-     * is not possible to know if the request was successful (accepted by the peripheral). This also causes
-     * the need of specifying when the request is considered finished (parameter delay and timeUnit).
+     * NOTE: Till API 26 (8.0) there was no method like `BluetoothGattCallback.onConnectionPriorityChanged()`. It was not possible to know
+     * if the request was successful (accepted by the peripheral). This also causes the need of specifying when the request is considered
+     * finished (parameter delay and timeUnit). Since API 26 the mentioned callback is hidden, yet possible to use. It is not used to
+     * automatically complete this request due to Android OS changing connection parameters on its own. It is not possible to determine
+     * which callback is actually finishing the request nor if the Android OS will not change the parameters right after the request.
+     * If access to the callback is a must for your implementation you may achieve it by
+     * {@link RxBleGattCallback#setHiddenNativeCallback(HiddenBluetoothGattCallback)} via {@link #queue(RxBleCustomOperation)} and create
+     * a custom request connection priority operation.
      * <p>
      * As of Lollipop the connection parameters are:
      * * {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}: min interval 30 ms, max interval 50 ms, slave latency 0
@@ -526,12 +530,23 @@ public interface RxBleConnection {
      *                                     if requested operation returned false or threw exception
      * @throws IllegalArgumentException    in case of invalid connection priority or delay
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     Completable requestConnectionPriority(
             @ConnectionPriority int connectionPriority,
             @IntRange(from = 1) long delay,
             @NonNull TimeUnit timeUnit
     );
+
+    /**
+     * Allows observing of connection parameters updates. This is part of Android's hidden API and therefore is not guaranteed to work.
+     * It was added in API 26 (8.0, Oreo) in {@link android.bluetooth.BluetoothGattCallback} and will not work on lower API levels at all.
+     * The system does change the parameters on its own at the beginning of connection (i.e. to speed up service discovery process).
+     * The parameters may be further changed by using {@link #requestConnectionPriority(int, long, TimeUnit)}.
+     *
+     * @return Observable which may emit updates of the connection parameters
+     */
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    Observable<ConnectionParameters> observeConnectionParametersUpdates();
 
     /**
      * Performs GATT read rssi operation.
@@ -550,7 +565,7 @@ public interface RxBleConnection {
      *                                     the MTU for internal reasons.
      * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     Single<Integer> requestMtu(@IntRange(from = GATT_MTU_MINIMUM, to = GATT_MTU_MAXIMUM) int mtu);
 
     /**

@@ -12,6 +12,7 @@ public class LoggerSetup {
     @LogConstants.UuidLogSetting
     public final int uuidLogSetting;
     public final boolean shouldLogAttributeValues;
+    public final boolean shouldLogScannedPeripherals;
     public final LogOptions.Logger logger;
 
     public LoggerSetup(
@@ -19,12 +20,14 @@ public class LoggerSetup {
             int macAddressLogSetting,
             int uuidLogSetting,
             boolean shouldLogAttributeValues,
+            boolean shouldLogScannedPeripherals,
             LogOptions.Logger logger
     ) {
         this.logLevel = logLevel;
         this.macAddressLogSetting = macAddressLogSetting;
         this.uuidLogSetting = uuidLogSetting;
         this.shouldLogAttributeValues = shouldLogAttributeValues;
+        this.shouldLogScannedPeripherals = shouldLogScannedPeripherals;
         this.logger = logger;
     }
 
@@ -35,8 +38,11 @@ public class LoggerSetup {
         int uuidLogSetting = logOptions.getUuidLogSetting() != null ? logOptions.getUuidLogSetting() : this.uuidLogSetting;
         boolean shouldLogAttributeValues =
                 logOptions.getShouldLogAttributeValues() != null ? logOptions.getShouldLogAttributeValues() : this.shouldLogAttributeValues;
+        boolean shouldLogScanResults = logOptions.getShouldLogScannedPeripherals() != null
+                ? logOptions.getShouldLogScannedPeripherals()
+                : this.shouldLogScannedPeripherals;
         LogOptions.Logger logger = logOptions.getLogger() != null ? logOptions.getLogger() : this.logger;
-        return new LoggerSetup(logLevel, macAddressLogSetting, uuidLogSetting, shouldLogAttributeValues, logger);
+        return new LoggerSetup(logLevel, macAddressLogSetting, uuidLogSetting, shouldLogAttributeValues, shouldLogScanResults, logger);
     }
 
     @Override
@@ -46,6 +52,7 @@ public class LoggerSetup {
                 + ", macAddressLogSetting=" + macAddressLogSetting
                 + ", uuidLogSetting=" + uuidLogSetting
                 + ", shouldLogAttributeValues=" + shouldLogAttributeValues
+                + ", shouldLogScannedPeripherals=" + shouldLogScannedPeripherals
                 + ", logger=" + logger
                 + '}';
     }

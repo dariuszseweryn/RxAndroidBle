@@ -47,6 +47,7 @@ import io.reactivex.functions.Predicate;
 
 class RxBleClientImpl extends RxBleClient {
 
+    @Deprecated
     public static final String TAG = "RxBleClient";
     private final ClientOperationQueue operationQueue;
     private final UUIDUtil uuidUtil;
@@ -131,7 +132,7 @@ class RxBleClientImpl extends RxBleClient {
                         .doOnNext(new Consumer<ScanResult>() {
                             @Override
                             public void accept(ScanResult scanResult) {
-                                RxBleLog.i("%s", scanResult);
+                                if (RxBleLog.getShouldLogScannedPeripherals()) RxBleLog.i("%s", scanResult);
                             }
                         })
                         .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());

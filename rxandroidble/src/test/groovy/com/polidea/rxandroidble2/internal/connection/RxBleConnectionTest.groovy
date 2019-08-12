@@ -305,6 +305,20 @@ class RxBleConnectionTest extends Specification {
         receivedMtuValue == mtuValue
     }
 
+    def "should pass items emitted by RxBleGattCallback.getConnectionParametersUpdates()"() {
+        given:
+        def connectionParametersPublishSubject = PublishSubject.create()
+        gattCallback.getConnectionParametersUpdates() >> connectionParametersPublishSubject
+        def mockConnectionParameters = Mock ConnectionParameters
+        def testSubscriber = objectUnderTest.observeConnectionParametersUpdates().test()
+
+        when:
+        connectionParametersPublishSubject.onNext(mockConnectionParameters)
+
+        then:
+        testSubscriber.assertValue(mockConnectionParameters)
+    }
+
     def "should pass items emitted by observable returned from RxBleCustomOperation.asObservable()"() {
         given:
         def customOperation = customOperationWithOutcome {
@@ -391,6 +405,48 @@ class RxBleConnectionTest extends Specification {
 
         then:
         1 * gattCallback.setNativeCallback(null)
+    }
+
+    def "should clear hidden native gatt callback after custom operation is finished"() {
+        given:
+        def hiddenNativeCallback = Mock HiddenBluetoothGattCallback
+        def customOperation = new RxBleCustomOperation<Boolean>() {
+
+            @Override
+            Observable<byte[]> asObservable(BluetoothGatt bluetoothGatt, RxBleGattCallback rxBleGattCallback,
+                                            Scheduler scheduler) throws Throwable {
+                rxBleGattCallback.setHiddenNativeCallback(hiddenNativeCallback)
+                return just(true)
+            }
+        }
+
+        when:
+        objectUnderTest.queue(customOperation).test()
+
+        then:
+        1 * gattCallback.setHiddenNativeCallback(null)
+    }
+
+    def "should clear hidden native gatt callback after custom operation failed"() {
+        given:
+        def hiddenNativeCallback = Mock HiddenBluetoothGattCallback
+        def customOperation = new RxBleCustomOperation<Boolean>() {
+
+            @NonNull
+            @Override
+            Observable<byte[]> asObservable(BluetoothGatt bluetoothGatt,
+                                            RxBleGattCallback rxBleGattCallback,
+                                            Scheduler scheduler) throws Throwable {
+                rxBleGattCallback.setHiddenNativeCallback(hiddenNativeCallback)
+                return Observable.error(new IllegalArgumentException("Oh no, da error!"))
+            }
+        }
+
+        when:
+        objectUnderTest.queue(customOperation).test()
+
+        then:
+        1 * gattCallback.setHiddenNativeCallback(null)
     }
 
     def "should release the queue if observable returned from RxBleCustomOperation.asObservable() will emit error"() {

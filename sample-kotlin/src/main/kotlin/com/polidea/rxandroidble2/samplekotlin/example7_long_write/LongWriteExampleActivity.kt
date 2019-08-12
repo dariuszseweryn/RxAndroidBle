@@ -40,6 +40,7 @@ private val WRITE_CHARACTERISTIC = UUID.randomUUID()
 class LongWriteExampleActivity : AppCompatActivity() {
 
     companion object {
+        @Suppress("unused")
         fun newInstance(context: Context) = Intent(context, LongWriteExampleActivity::class.java)
     }
 
@@ -61,9 +62,11 @@ class LongWriteExampleActivity : AppCompatActivity() {
             .flatMap { it }
             .take(1) // after the successful write we are no longer interested in the connection so it will be released
             .subscribe(
+                @Suppress("UNUSED_ANONYMOUS_PARAMETER")
                 { bytes ->
                     // react
                 },
+                @Suppress("UNUSED_ANONYMOUS_PARAMETER")
                 { throwable ->
                     // handle error
                 }

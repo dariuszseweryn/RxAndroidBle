@@ -2,7 +2,6 @@ package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.RxBleConnection;
@@ -19,7 +18,7 @@ public interface OperationsProvider {
             PayloadSizeLimitProvider maxBatchSizeProvider,
             byte[] bytes);
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     MtuRequestOperation provideMtuChangeOperation(int requestedMtu);
 
     CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic);

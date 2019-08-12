@@ -22,10 +22,26 @@ will be closed.
 <br />1.
 <br />2.
 <br />3.
-#### Minimum code snippet reproducing the issue
-
-#### Logs from the application running with setting `RxBleLog.setLogLevel(RxBleLog.VERBOSE)`
 
 #### Actual result
+// What you have experienced
 
 #### Expected result
+// A clear and concise description of what you expected to happen
+
+#### Minimum code snippet reproducing the issue
+
+#### Logs from the application running with settings:
+```java
+RxBleClient.updateLogOptions(new LogOptions.Builder()
+        .setLogLevel(LogConstants.DEBUG)
+        .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
+        .setUuidsLogSetting(LogConstants.UUIDS_FULL)
+        .setShouldLogAttributeValues(true)
+        .build()
+);
+```
+
+```
+// paste logs here
+```
