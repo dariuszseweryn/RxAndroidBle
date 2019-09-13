@@ -184,6 +184,21 @@ public class OperationScanApi21Test extends Specification {
         [true, true]         | 2
     }
 
+    def "onScanFailed() should not throw if Observable is already disposed."() {
+
+        given:
+        def capturedLeScanCallbackRef = captureScanCallback()
+        prepareObjectUnderTest(Mock(ScanSettings), null, null)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
+
+        when:
+        testSubscriber.dispose()
+        capturedLeScanCallbackRef.get().onScanFailed(ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED)
+
+        then:
+        testSubscriber.assertNoErrors()
+    }
+
     private AtomicReference<ScanCallback> captureScanCallback() {
         AtomicReference<ScanCallback> scanCallbackAtomicReference = new AtomicReference<>()
         mockAdapterWrapper.startLeScan(_, _, _) >> { List<ScanFilter> _, ScanSettings _1, ScanCallback scanCallback ->
