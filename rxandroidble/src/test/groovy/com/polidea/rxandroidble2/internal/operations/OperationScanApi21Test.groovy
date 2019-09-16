@@ -14,6 +14,7 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
+import io.reactivex.plugins.RxJavaPlugins
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -188,6 +189,7 @@ public class OperationScanApi21Test extends Specification {
 
         given:
         def capturedLeScanCallbackRef = captureScanCallback()
+        def rxUnhandledExceptionRef = captureRxUnhandledExceptions()
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
 
@@ -196,7 +198,8 @@ public class OperationScanApi21Test extends Specification {
         capturedLeScanCallbackRef.get().onScanFailed(ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED)
 
         then:
-        testSubscriber.assertNoErrors()
+        rxUnhandledExceptionRef.get() == null
+
     }
 
     private AtomicReference<ScanCallback> captureScanCallback() {
@@ -205,6 +208,14 @@ public class OperationScanApi21Test extends Specification {
             scanCallbackAtomicReference.set(scanCallback)
         }
         return scanCallbackAtomicReference
+    }
+
+    private AtomicReference<Throwable> captureRxUnhandledExceptions() {
+        AtomicReference<Throwable> unhandledExceptionAtomicReference = new AtomicReference<>()
+        RxJavaPlugins.setErrorHandler({ throwable ->
+            unhandledExceptionAtomicReference.set(throwable)
+        })
+        return unhandledExceptionAtomicReference
     }
 
     private static class MockBleAdapterWrapper extends RxBleAdapterWrapper {
