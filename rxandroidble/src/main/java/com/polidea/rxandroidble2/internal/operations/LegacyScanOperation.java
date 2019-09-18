@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import io.reactivex.Emitter;
+import io.reactivex.ObservableEmitter;
 
 public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 
@@ -38,7 +38,7 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
     }
 
     @Override
-    BluetoothAdapter.LeScanCallback createScanCallback(final Emitter<RxBleInternalScanResultLegacy> emitter) {
+    BluetoothAdapter.LeScanCallback createScanCallback(final ObservableEmitter<RxBleInternalScanResultLegacy> emitter) {
         return new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {

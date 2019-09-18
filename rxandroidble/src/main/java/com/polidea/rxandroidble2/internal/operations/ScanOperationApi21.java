@@ -23,7 +23,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import java.util.Arrays;
 import java.util.List;
 
-import io.reactivex.Emitter;
+import io.reactivex.ObservableEmitter;
 
 @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
 public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {
@@ -57,7 +57,7 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
     }
 
     @Override
-    ScanCallback createScanCallback(final Emitter<RxBleInternalScanResult> emitter) {
+    ScanCallback createScanCallback(final ObservableEmitter<RxBleInternalScanResult> emitter) {
         return new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
@@ -90,7 +90,7 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
 
             @Override
             public void onScanFailed(int errorCode) {
-                emitter.onError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
+                emitter.tryOnError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
             }
         };
     }

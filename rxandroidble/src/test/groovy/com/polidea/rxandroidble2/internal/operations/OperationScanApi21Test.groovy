@@ -14,6 +14,7 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
+import io.reactivex.plugins.RxJavaPlugins
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -184,12 +185,40 @@ public class OperationScanApi21Test extends Specification {
         [true, true]         | 2
     }
 
+    def "onScanFailed() should not result in exception being passed to RxJavaPlugins.onErrorHandler() if Observable was disposed."() {
+
+        given:
+        def capturedLeScanCallbackRef = captureScanCallback()
+        def rxUnhandledExceptionRef = captureRxUnhandledExceptions()
+        prepareObjectUnderTest(Mock(ScanSettings), null, null)
+        def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
+        testSubscriber.dispose()
+
+        when:
+        capturedLeScanCallbackRef.get().onScanFailed(ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED)
+
+        then:
+        rxUnhandledExceptionRef.get() == null
+
+        cleanup:
+        RxJavaPlugins.setErrorHandler(null)
+
+    }
+
     private AtomicReference<ScanCallback> captureScanCallback() {
         AtomicReference<ScanCallback> scanCallbackAtomicReference = new AtomicReference<>()
         mockAdapterWrapper.startLeScan(_, _, _) >> { List<ScanFilter> _, ScanSettings _1, ScanCallback scanCallback ->
             scanCallbackAtomicReference.set(scanCallback)
         }
         return scanCallbackAtomicReference
+    }
+
+    private static AtomicReference<Throwable> captureRxUnhandledExceptions() {
+        AtomicReference<Throwable> unhandledExceptionAtomicReference = new AtomicReference<>()
+        RxJavaPlugins.setErrorHandler({ throwable ->
+            unhandledExceptionAtomicReference.set(throwable)
+        })
+        return unhandledExceptionAtomicReference
     }
 
     private static class MockBleAdapterWrapper extends RxBleAdapterWrapper {
