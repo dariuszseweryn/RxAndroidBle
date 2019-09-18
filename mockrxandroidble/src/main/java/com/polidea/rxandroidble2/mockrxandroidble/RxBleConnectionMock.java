@@ -47,8 +47,8 @@ import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.internal.functions.Functions;
-import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
+import io.reactivex.rxjava3.subjects.SingleSubject;
 
 public class RxBleConnectionMock implements RxBleConnection {
 
