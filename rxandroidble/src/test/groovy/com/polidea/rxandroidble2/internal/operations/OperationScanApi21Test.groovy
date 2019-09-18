@@ -185,20 +185,23 @@ public class OperationScanApi21Test extends Specification {
         [true, true]         | 2
     }
 
-    def "onScanFailed() should not throw if Observable is already disposed."() {
+    def "onScanFailed() should not result in exception being passed to RxJavaPlugins.onErrorHandler() if Observable was disposed."() {
 
         given:
         def capturedLeScanCallbackRef = captureScanCallback()
         def rxUnhandledExceptionRef = captureRxUnhandledExceptions()
         prepareObjectUnderTest(Mock(ScanSettings), null, null)
         def testSubscriber = objectUnderTest.run(mockQueueReleaseInterface).test()
+        testSubscriber.dispose()
 
         when:
-        testSubscriber.dispose()
         capturedLeScanCallbackRef.get().onScanFailed(ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED)
 
         then:
         rxUnhandledExceptionRef.get() == null
+
+        cleanup:
+        RxJavaPlugins.setErrorHandler(null)
 
     }
 
@@ -210,7 +213,7 @@ public class OperationScanApi21Test extends Specification {
         return scanCallbackAtomicReference
     }
 
-    private AtomicReference<Throwable> captureRxUnhandledExceptions() {
+    private static AtomicReference<Throwable> captureRxUnhandledExceptions() {
         AtomicReference<Throwable> unhandledExceptionAtomicReference = new AtomicReference<>()
         RxJavaPlugins.setErrorHandler({ throwable ->
             unhandledExceptionAtomicReference.set(throwable)
