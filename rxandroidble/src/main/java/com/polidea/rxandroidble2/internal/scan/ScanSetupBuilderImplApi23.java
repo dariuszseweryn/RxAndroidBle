@@ -39,22 +39,23 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     @Override
     public ScanSetup build(ScanSettings scanSettings, ScanFilter... scanFilters) {
-        // for now assuming that on Android 6.0+ there are no other problems than commented below
-        boolean scanFiltersEmpty = true;
-        for (ScanFilter scanFilter : scanFilters) {
-            scanFiltersEmpty &= scanFilter.isAllFieldsEmpty();
-        }
+        boolean areFiltersSpecified = areFiltersSpecified(scanFilters);
+        boolean isFilteringCallbackType = scanSettings.getCallbackType() != ScanSettings.CALLBACK_TYPE_ALL_MATCHES;
 
         ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> resultTransformer = ObservableUtil.identityTransformer();
         ScanSettings resultScanSettings = scanSettings;
-        if (scanSettings.getCallbackType() != ScanSettings.CALLBACK_TYPE_ALL_MATCHES && scanFiltersEmpty) {
-            // native matching does not work with no filters specified - see https://issuetracker.google.com/issues/37127640
-            // so we will use a callback type that will work and emulate the desired behaviour
-            RxBleLog.d("ScanSettings.callbackType != CALLBACK_TYPE_ALL_MATCHES but no filters specified. "
+
+        // native matching (when a device is first seen or no longer seen) does not work with no filters specified —
+        // see https://issuetracker.google.com/issues/37127640
+        // so we will use a callback type that will work and emulate the desired behaviour
+        boolean shouldEmulateCallbackType = isFilteringCallbackType && !areFiltersSpecified;
+        if (shouldEmulateCallbackType) {
+            RxBleLog.d("ScanSettings.callbackType != CALLBACK_TYPE_ALL_MATCHES but no (or only empty) filters are specified. "
                 + "Falling back to callbackType emulation.");
             resultTransformer = scanSettingsEmulator.emulateCallbackType(scanSettings.getCallbackType());
             resultScanSettings = scanSettings.copyWithCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES);
         }
+
         return new ScanSetup(
                 new ScanOperationApi21(
                         rxBleAdapterWrapper,
@@ -65,5 +66,13 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
                         scanFilters),
                 resultTransformer
         );
+    }
+
+    private boolean areFiltersSpecified(ScanFilter[] scanFilters) {
+        boolean scanFiltersEmpty = true;
+        for (ScanFilter scanFilter : scanFilters) {
+            scanFiltersEmpty &= scanFilter.isAllFieldsEmpty();
+        }
+        return !scanFiltersEmpty;
     }
 }

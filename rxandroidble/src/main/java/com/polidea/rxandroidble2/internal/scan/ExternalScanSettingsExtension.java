@@ -7,6 +7,14 @@ public interface ExternalScanSettingsExtension<R extends ExternalScanSettingsExt
 
     boolean shouldCheckLocationProviderState();
 
+    // [DS 18.09.2019] Introduced to be sure that new ScanSettings properties will not break workaround introduced in
+    // ScanSettingsBuilderImplApi21
+    /**
+     * Copies the current ScanSettings with changed callback type.
+     *
+     * @param callbackType callback type of the copied object
+     * @return new ScanSettings object with copied properties and new callback type
+     */
     R copyWithCallbackType(int callbackType);
 
     interface Builder<T extends Builder<T>> {
