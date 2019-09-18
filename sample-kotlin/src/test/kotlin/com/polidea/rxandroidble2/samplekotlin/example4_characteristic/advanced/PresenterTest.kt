@@ -9,11 +9,13 @@ import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleClientMock
 import com.polidea.rxandroidble2.samplekotlin.BuildConfig
 import io.reactivex.Observable
+import io.reactivex.observers.TestObserver
 import io.reactivex.subjects.PublishSubject
 import org.junit.*
 import org.junit.runner.*
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.lang.AssertionError
 import java.util.UUID
 
 private const val deviceName = "TestDevice"
@@ -163,4 +165,45 @@ class PresenterTest {
             enablingIndicateClicks,
             disableIndicateClicks
         )
+
+    //region Below is copied from BaseTestConsumer from RxJava 2 — functions were removed in RxJava 3
+    /**
+     * Assert that the TestObserver/TestSubscriber received only items that are in the specified
+     * collection as well, irrespective of the order they were received.
+     *
+     *
+     * This helps asserting when the order of the values is not guaranteed, i.e., when merging
+     * asynchronous streams.
+     *
+     *
+     * To ensure that only the expected items have been received, no more and no less, in any order,
+     * apply [.assertValueCount] with `expected.size()`.
+     *
+     * @param expected the collection of values expected in any order
+     * @return this
+     */
+    private fun <T> TestObserver<T>.assertValueSet(expected: Collection<T>): TestObserver<T> {
+        if (expected.isEmpty()) {
+            this.assertNoValues()
+            return this
+        }
+        for (v in this.values()) {
+            if (!expected.contains(v)) {
+                AssertionError("Value not in the expected collection: " + valueAndClass(v))
+            }
+        }
+        return this
+    }
+
+    /**
+     * Appends the class name to a non-null value.
+     * @param o the object
+     * @return the string representation
+     */
+    private fun valueAndClass(o: Any?): String {
+        return if (o != null) {
+            o.toString() + " (class: " + o.javaClass.simpleName + ")"
+        } else "null"
+    }
+    //endregion
 }
