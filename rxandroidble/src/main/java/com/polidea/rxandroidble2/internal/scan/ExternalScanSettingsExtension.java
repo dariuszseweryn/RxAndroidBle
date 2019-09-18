@@ -3,9 +3,11 @@ package com.polidea.rxandroidble2.internal.scan;
 /**
  * An interface that describes what library extensions should be added to {@link com.polidea.rxandroidble2.scan.ScanSettings}
  */
-public interface ExternalScanSettingsExtension {
+public interface ExternalScanSettingsExtension<R extends ExternalScanSettingsExtension<R>> {
 
     boolean shouldCheckLocationProviderState();
+
+    R copyWithCallbackType(int callbackType);
 
     interface Builder<T extends Builder<T>> {
 

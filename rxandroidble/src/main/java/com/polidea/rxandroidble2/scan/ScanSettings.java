@@ -19,7 +19,7 @@ import java.lang.annotation.RetentionPolicy;
  * https://code.google.com/p/android/issues/detail?id=178614
  * https://code.google.com/p/android/issues/detail?id=228428
  */
-public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
+public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<ScanSettings> {
 
     @IntDef({SCAN_MODE_OPPORTUNISTIC, SCAN_MODE_LOW_POWER, SCAN_MODE_BALANCED, SCAN_MODE_LOW_LATENCY})
     @Retention(RetentionPolicy.SOURCE)
@@ -222,6 +222,18 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
             return new ScanSettings(in);
         }
     };
+
+    @Override
+    public ScanSettings copyWithCallbackType(@CallbackType int callbackType) {
+        return new ScanSettings(
+                this.mScanMode,
+                callbackType,
+                this.mReportDelayMillis,
+                this.mMatchMode,
+                this.mNumOfMatchesPerFilter,
+                this.mShouldCheckLocationProviderState
+        );
+    }
 
     /**
      * Builder for {@link ScanSettings}.
