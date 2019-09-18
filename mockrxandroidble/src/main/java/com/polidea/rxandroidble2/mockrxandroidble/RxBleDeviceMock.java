@@ -8,6 +8,8 @@ import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Supplier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +62,9 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(boolean autoConnect) {
-        return Observable.defer(new Callable<Observable<RxBleConnection>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends RxBleConnection>>() {
             @Override
-            public Observable<RxBleConnection> call() {
+            public ObservableSource<? extends RxBleConnection> get() {
                 if (isConnected.compareAndSet(false, true)) {
                     return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
                             .doOnSubscribe(new Consumer<Disposable>() {
@@ -97,7 +99,7 @@ public class RxBleDeviceMock implements RxBleDevice {
     }
 
     private Observable<RxBleConnection> emitConnectionWithoutCompleting() {
-        return Observable.<RxBleConnection>never().startWith(rxBleConnection);
+        return Observable.<RxBleConnection>never().startWithItem(rxBleConnection);
     }
 
     public List<UUID> getAdvertisedUUIDs() {
