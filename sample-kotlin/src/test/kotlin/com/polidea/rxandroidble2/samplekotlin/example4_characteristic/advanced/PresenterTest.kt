@@ -1,20 +1,17 @@
 package com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced
 
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE
+import android.bluetooth.BluetoothGattCharacteristic.*
 import android.os.Build
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleClientMock
-import com.polidea.rxandroidble2.samplekotlin.BuildConfig
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.subjects.PublishSubject
-import org.junit.*
-import org.junit.runner.*
+import org.junit.Test
+import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.UUID
+import java.util.*
 
 private const val deviceName = "TestDevice"
 private const val macAddress = "AA:BB:CC:DD:EE:FF"
@@ -22,13 +19,17 @@ private const val rssi = -42
 private val serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
 private val characteristicUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
 private val characteristicNotifiedUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
-private val clientCharacteristicConfigDescriptorUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+private val clientCharacteristicConfigDescriptorUuid =
+    UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 private val characteristicData = "Polidea".toByteArray()
 private val descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb")
 private val descriptorData = "Config".toByteArray()
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, constants = BuildConfig::class, sdk = [Build.VERSION_CODES.LOLLIPOP])
+@Config(
+    manifest = Config.NONE,
+    sdk = [Build.VERSION_CODES.LOLLIPOP]
+)
 class PresenterTest {
 
     private val characteristicNotificationSubject = PublishSubject.create<ByteArray>()
@@ -53,7 +54,7 @@ class PresenterTest {
         connectClicks.onNext(true)
         readClicks.onNext(true)
 
-        testObserver.assertValueSet(
+        testObserver.assertValueSequence(
             listOf(
                 InfoEvent("Hey, connection has been established!"),
                 CompatibilityModeEvent(false),
@@ -70,7 +71,7 @@ class PresenterTest {
         connectClicks.onNext(true)
         writeClicks.onNext("TestWrite".toByteArray())
 
-        testObserver.assertValueSet(
+        testObserver.assertValueSequence(
             listOf(
                 InfoEvent("Hey, connection has been established!"),
                 CompatibilityModeEvent(false),
@@ -88,7 +89,7 @@ class PresenterTest {
         enableNotifyClicks.onNext(true)
         characteristicNotificationSubject.onNext("TestNotification".toByteArray())
 
-        testObserver.assertValueSet(
+        testObserver.assertValueSequence(
             listOf(
                 InfoEvent("Hey, connection has been established!"),
                 CompatibilityModeEvent(false),
@@ -106,7 +107,7 @@ class PresenterTest {
         enableIndicateClicks.onNext(true)
         characteristicNotificationSubject.onNext("TestIndication".toByteArray())
 
-        testObserver.assertValueSet(
+        testObserver.assertValueSequence(
             listOf(
                 InfoEvent("Hey, connection has been established!"),
                 CompatibilityModeEvent(false),
@@ -163,4 +164,45 @@ class PresenterTest {
             enablingIndicateClicks,
             disableIndicateClicks
         )
+
+    //region Below is copied from BaseTestConsumer from RxJava 2 — functions were removed in RxJava 3
+    /**
+     * Assert that the TestObserver/TestSubscriber received only items that are in the specified
+     * collection as well, irrespective of the order they were received.
+     *
+     *
+     * This helps asserting when the order of the values is not guaranteed, i.e., when merging
+     * asynchronous streams.
+     *
+     *
+     * To ensure that only the expected items have been received, no more and no less, in any order,
+     * apply [.assertValueCount] with `expected.size()`.
+     *
+     * @param expected the collection of values expected in any order
+     * @return this
+     */
+    private fun <T> TestObserver<T>.assertValueSet(expected: Collection<T>): TestObserver<T> {
+        if (expected.isEmpty()) {
+            this.assertNoValues()
+            return this
+        }
+        for (v in this.values()) {
+            if (!expected.contains(v)) {
+                AssertionError("Value not in the expected collection: " + valueAndClass(v))
+            }
+        }
+        return this
+    }
+
+    /**
+     * Appends the class name to a non-null value.
+     * @param o the object
+     * @return the string representation
+     */
+    private fun valueAndClass(o: Any?): String {
+        return if (o != null) {
+            o.toString() + " (class: " + o.javaClass.simpleName + ")"
+        } else "null"
+    }
+    //endregion
 }
