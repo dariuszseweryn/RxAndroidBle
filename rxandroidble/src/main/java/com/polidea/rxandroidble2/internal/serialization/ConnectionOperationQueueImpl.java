@@ -105,11 +105,11 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void subscribe(ObservableEmitter<T> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<T> emitter) {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, emitter);
                 emitter.setCancellable(new Cancellable() {
                     @Override
-                    public void cancel() throws Exception {
+                    public void cancel() {
                         if (queue.remove(entry)) {
                             logOperationRemoved(operation);
                         }

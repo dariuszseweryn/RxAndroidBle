@@ -42,7 +42,7 @@ public class ByteArrayBatchObservable extends Flowable<byte[]> {
         Flowable.generate(new Consumer<Emitter<byte[]>>() {
 
             @Override
-            public void accept(Emitter<byte[]> emitter) throws Exception {
+            public void accept(Emitter<byte[]> emitter) {
                 int nextBatchSize = Math.min(byteBuffer.remaining(), maxBatchSize);
                 if (nextBatchSize == 0) {
                     emitter.onComplete();

@@ -54,7 +54,7 @@ class ServiceDiscoveryManager {
             return deviceServicesObservable.doOnSubscribe(
                     new Consumer<Disposable>() {
                         @Override
-                        public void accept(Disposable disposable) throws Exception {
+                        public void accept(Disposable disposable) {
                             timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
                         }
                     });
@@ -68,7 +68,7 @@ class ServiceDiscoveryManager {
                 .switchIfEmpty(getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout()))
                 .doOnSuccess(Functions.actionConsumer(new Action() {
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         hasCachedResults = true;
                     }
                 }))

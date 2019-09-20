@@ -34,7 +34,7 @@ public class ByteAssociationUtil {
     descriptorPredicate(final BluetoothGattDescriptor bluetoothGattDescriptor) {
         return new Predicate<ByteAssociation<BluetoothGattDescriptor>>() {
             @Override
-            public boolean test(ByteAssociation<BluetoothGattDescriptor> uuidPair) throws Exception {
+            public boolean test(ByteAssociation<BluetoothGattDescriptor> uuidPair) {
                 return uuidPair.first.equals(bluetoothGattDescriptor);
             }
         };

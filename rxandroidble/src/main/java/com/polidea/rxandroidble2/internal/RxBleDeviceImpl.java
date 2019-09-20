@@ -71,7 +71,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
         return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() throws Exception {
+            public ObservableSource<RxBleConnection> call() {
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(options)
                             .doFinally(new Action() {

@@ -149,7 +149,7 @@ class RxBleClientImpl extends RxBleClient {
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
         return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
             @Override
-            public ObservableSource<? extends RxBleScanResult> call() throws Exception {
+            public ObservableSource<? extends RxBleScanResult> call() {
                 scanPreconditionVerifier.verify(true);
                 return initializeScan(filterServiceUUIDs);
             }
@@ -179,14 +179,14 @@ class RxBleClientImpl extends RxBleClient {
         return rxBleAdapterStateObservable
                 .filter(new Predicate<BleAdapterState>() {
                     @Override
-                    public boolean test(BleAdapterState state) throws Exception {
+                    public boolean test(BleAdapterState state) {
                         return state != BleAdapterState.STATE_ON;
                     }
                 })
                 .firstElement()
                 .flatMap(new Function<BleAdapterState, MaybeSource<T>>() {
                     @Override
-                    public MaybeSource<T> apply(BleAdapterState bleAdapterState) throws Exception {
+                    public MaybeSource<T> apply(BleAdapterState bleAdapterState) {
                         return Maybe.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
                     }
                 })
@@ -206,7 +206,7 @@ class RxBleClientImpl extends RxBleClient {
         return operationQueue.queue(scanOperation)
                 .doFinally(new Action() {
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         synchronized (queuedScanOperations) {
                             queuedScanOperations.remove(filteredUUIDs);
                         }

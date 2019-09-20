@@ -56,7 +56,7 @@ public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable
     }
 
     @Override
-    synchronized public void cancel() throws Exception {
+    synchronized public void cancel() {
         isEmitterCanceled.set(true);
     }
 

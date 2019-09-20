@@ -42,7 +42,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
         return rxBleGattCallback.getOnServicesDiscovered().firstOrError()
                 .doOnSuccess(new Consumer<RxBleDeviceServices>() {
                     @Override
-                    public void accept(RxBleDeviceServices rxBleDeviceServices) throws Exception {
+                    public void accept(RxBleDeviceServices rxBleDeviceServices) {
                         bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice());
                     }
                 });
@@ -76,7 +76,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
     ) {
         return Single.defer(new Callable<SingleSource<? extends RxBleDeviceServices>>() {
             @Override
-            public SingleSource<? extends RxBleDeviceServices> call() throws Exception {
+            public SingleSource<? extends RxBleDeviceServices> call() {
                 final List<BluetoothGattService> services = bluetoothGatt.getServices();
                 if (services.size() == 0) {
                     // if after the timeout services are empty we have no other option to declare a failed discovery
@@ -94,7 +94,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
                                 public Single<RxBleDeviceServices> apply(Long delayedSeconds) {
                                     return Single.fromCallable(new Callable<RxBleDeviceServices>() {
                                         @Override
-                                        public RxBleDeviceServices call() throws Exception {
+                                        public RxBleDeviceServices call() {
                                             return new RxBleDeviceServices(bluetoothGatt.getServices());
                                         }
                                     });

@@ -44,8 +44,7 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
     }
 
     @Override
-    final protected void protectedRun(final ObservableEmitter<T> emitter, final QueueReleaseInterface queueReleaseInterface)
-            throws Throwable {
+    final protected void protectedRun(final ObservableEmitter<T> emitter, final QueueReleaseInterface queueReleaseInterface) {
         final QueueReleasingEmitterWrapper<T> emitterWrapper = new QueueReleasingEmitterWrapper<>(emitter, queueReleaseInterface);
         getCallback(rxBleGattCallback)
                 .timeout(
