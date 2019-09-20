@@ -61,24 +61,4 @@ public class DisposableUtil {
             }
         };
     }
-
-    public static <T> DisposableObserver<T> disposableObserver(final Observer<T> emitter) {
-        return new DisposableObserver<T>() {
-
-            @Override
-            public void onNext(T t) {
-                emitter.onNext(t);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                emitter.onError(e);
-            }
-
-            @Override
-            public void onComplete() {
-                emitter.onComplete();
-            }
-        };
-    }
 }
