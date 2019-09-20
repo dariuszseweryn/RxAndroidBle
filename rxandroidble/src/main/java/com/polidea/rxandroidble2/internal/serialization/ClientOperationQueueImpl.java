@@ -30,7 +30,6 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                //noinspection InfiniteLoopStatement
                 while (true) {
                     try {
                         final FIFORunnableEntry<?> entry = queue.take();
