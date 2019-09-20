@@ -11,7 +11,6 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import bleshadow.javax.inject.Inject;
 
-import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
@@ -52,12 +51,7 @@ public class ScanSetupBuilderImplApi21 implements ScanSetupBuilder {
                         scanSettings,
                         new EmulatedScanFilterMatcher(scanFilters),
                         null),
-                new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
-                    @Override
-                    public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
-                        return observable.compose(callbackTypeTransformer);
-                    }
-                }
+                callbackTypeTransformer
         );
     }
 }

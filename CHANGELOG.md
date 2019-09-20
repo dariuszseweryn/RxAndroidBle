@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.10.2
+* Fixed possible `UndeliverableException` when scan subscription is quickly disposed (https://github.com/Polidea/RxAndroidBle/pull/609)
+* Minor allocation decrease in `ScanSetupBuilderImplApi21` (https://github.com/Polidea/RxAndroidBle/pull/613)
+
 Version 1.10.1
 * Fixed `IllegalStateException` in `RxBleAdapterStateObservable` (https://github.com/Polidea/RxAndroidBle/pull/596)
 

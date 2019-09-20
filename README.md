@@ -1,6 +1,11 @@
 # RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
 <p align="center">
-  <img alt="Tailored software services including concept, design, development and testing" src="site/logo_android.png" />
+  <img 
+    alt="Tailored software services including concept, design, development and testing"
+    src="site/RX-Android.png"
+    height="300"
+    style="margin-top: 20px; margin-bottom: 20px;"
+  />
 </p>
 
 ## Introduction
@@ -315,7 +320,7 @@ Keep in mind that these are only _samples_ to show how the library can be used. 
 ### Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.10.1"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.10.2"
 ```
 ### Maven
 
@@ -323,7 +328,7 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.10.1"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.10.1</version>
+  <version>1.10.2</version>
   <type>aar</type>
 </dependency>
 ```
