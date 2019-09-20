@@ -14,9 +14,9 @@ import io.reactivex.functions.Cancellable;
 
 /**
  * A convenience class to use in {@link QueueOperation} subclasses. It wraps the {@link Emitter}
- * and {@link QueueReleaseInterface} and makes sure that the {@link rx.Subscription} it was subscribed to will finish and call
- * {@link QueueReleaseInterface#release()} in either {@link #onCompleted()} or {@link #onError(Throwable)} in case of the wrapped emitter
- * being unsubscribed / canceled.
+ * and {@link QueueReleaseInterface} and makes sure that the {@link io.reactivex.disposables.Disposable} it was subscribed to will finish
+ * and call {@link QueueReleaseInterface#release()} in either {@link #onComplete()} or {@link #onError(Throwable)} in case of the wrapped
+ * emitter being unsubscribed / canceled.
  * @param <T> parameter of the wrapped {@link Emitter}
  */
 public class QueueReleasingEmitterWrapper<T> implements Observer<T>, Cancellable {

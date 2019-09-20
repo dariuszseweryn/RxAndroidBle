@@ -104,7 +104,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
 
     /**
      * Match as many advertisement per filter as hw could allow, depends on current
-     * capability and availibility of the resources in hw
+     * capability and availability of the resources in hw
      */
     public static final int MATCH_NUM_MAX_ADVERTISEMENT = 3;
 
