@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.internal.util;
 
 import io.reactivex.ObservableEmitter;
-import io.reactivex.Observer;
 import io.reactivex.SingleEmitter;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
