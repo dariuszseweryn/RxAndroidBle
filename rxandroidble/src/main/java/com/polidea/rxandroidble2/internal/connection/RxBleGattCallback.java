@@ -290,7 +290,7 @@ public class RxBleGattCallback {
     }
 
     /**
-     * @return Observable that never emits onNexts.
+     * @return Observable that never emits onNext.
      * @throws BleDisconnectedException emitted in case of a disconnect that is a part of the normal flow
      * @throws BleGattException         emitted in case of connection was interrupted unexpectedly.
      */
@@ -371,7 +371,7 @@ public class RxBleGattCallback {
      * @param callbackHidden the object to be called
      */
     public void setHiddenNativeCallback(HiddenBluetoothGattCallback callbackHidden) {
-        nativeCallbackDispatcher.setNativeCallabackHidden(callbackHidden);
+        nativeCallbackDispatcher.setNativeCallbackHidden(callbackHidden);
     }
 
     private static class Output<T> {
