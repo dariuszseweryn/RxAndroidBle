@@ -61,12 +61,12 @@ public class ClientOperationQueueImpl implements ClientOperationQueue {
     public <T> Observable<T> queue(final Operation<T> operation) {
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void subscribe(ObservableEmitter<T> tEmitter) throws Exception {
+            public void subscribe(ObservableEmitter<T> tEmitter) {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, tEmitter);
 
                 tEmitter.setDisposable(Disposables.fromAction(new Action() {
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         if (queue.remove(entry)) {
                             logOperationRemoved(operation);
                         }

@@ -57,7 +57,7 @@ public class ScanSettingsEmulator {
 
                     @Override
                     public ObservableSource<RxBleInternalScanResult>
-                    apply(final Observable<RxBleInternalScanResult> publishedObservable) throws Exception {
+                    apply(final Observable<RxBleInternalScanResult> publishedObservable) {
                         final Observable<Object> closeTenSecondsAfterMostRecentEmissionFunc = publishedObservable
                                 .switchMap(emitAfterTimerFunc);
                         return publishedObservable
@@ -112,7 +112,7 @@ public class ScanSettingsEmulator {
                 return rxBleInternalScanResultObservable.take(windowInMillis, TimeUnit.MILLISECONDS, scheduler)
                         .repeatWhen(new Function<Observable<Object>, ObservableSource<?>>() {
                             @Override
-                            public ObservableSource<?> apply(Observable<Object> observable) throws Exception {
+                            public ObservableSource<?> apply(Observable<Object> observable) {
                                 return observable.delay(delayToNextWindow, TimeUnit.MILLISECONDS, scheduler
                                 );
                             }

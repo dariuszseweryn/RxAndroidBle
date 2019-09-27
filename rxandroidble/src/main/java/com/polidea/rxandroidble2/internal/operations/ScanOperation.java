@@ -34,7 +34,7 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
         try {
             emitter.setCancellable(new Cancellable() {
                 @Override
-                public void cancel() throws Exception {
+                public void cancel() {
                     RxBleLog.i("Scan operation is requested to stop.");
                     stopScan(rxBleAdapterWrapper, scanCallback);
                 }
