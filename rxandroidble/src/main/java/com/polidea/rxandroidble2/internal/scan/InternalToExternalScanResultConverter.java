@@ -6,7 +6,7 @@ import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble2.scan.ScanResult;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 import io.reactivex.functions.Function;
 

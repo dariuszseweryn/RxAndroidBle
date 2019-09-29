@@ -266,6 +266,28 @@ public interface RxBleConnection {
     Single<RxBleDeviceServices> discoverServices(@IntRange(from = 1) long timeout, @NonNull TimeUnit timeUnit);
 
     /**
+     * Performs GATT service discovery and emits discovered results. After service discovery you can walk through
+     * {@link android.bluetooth.BluetoothGattService}s and {@link BluetoothGattCharacteristic}s.
+     * <p>
+     * Result of the discovery is cached internally so consecutive calls won't trigger BLE operation and can be
+     * considered relatively lightweight.
+     *
+     * Timeouts after specified amount of time.
+     *
+     * The cache can be cleared to perform a new Gatt Discover and maybe find a service previously hidden
+     *
+     * @param timeout multiplier of TimeUnit after which the discovery will timeout in case of no return values
+     * @param timeUnit TimeUnit for the timeout
+     * @param clearCache Flag to ask the cache clearing (Warning, this functionnality can alter the good working of your app
+     *                   You should have strong knowledge of how it works)
+     * @return Observable emitting result a GATT service discovery.
+     * @throws BleGattCannotStartException with {@link BleGattOperationType#SERVICE_DISCOVERY} type, when it wasn't possible to start
+     *                                     the discovery for internal reasons.
+     * @throws BleGattException            in case of GATT operation error with {@link BleGattOperationType#SERVICE_DISCOVERY} type.
+     */
+    Single<RxBleDeviceServices> discoverServices(@IntRange(from = 1) long timeout, @NonNull TimeUnit timeUnit, Boolean clearCache);
+
+    /**
      * @see #setupNotification(UUID, NotificationSetupMode)  with default setup mode.
      */
     Observable<Observable<byte[]>> setupNotification(@NonNull UUID characteristicUuid);

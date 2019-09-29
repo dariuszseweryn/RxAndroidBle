@@ -8,7 +8,7 @@ import com.polidea.rxandroidble2.Timeout
 import com.polidea.rxandroidble2.internal.cache.DeviceComponentCache
 import spock.lang.Specification
 
-import bleshadow.javax.inject.Provider;
+import javax.inject.Provider;
 
 class RxBleDeviceProviderTest extends Specification {
 

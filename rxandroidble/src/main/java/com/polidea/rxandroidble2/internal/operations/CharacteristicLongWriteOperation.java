@@ -29,7 +29,7 @@ import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import bleshadow.javax.inject.Named;
+import javax.inject.Named;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;

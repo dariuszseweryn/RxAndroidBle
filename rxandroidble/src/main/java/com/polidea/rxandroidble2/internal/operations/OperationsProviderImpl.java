@@ -14,9 +14,9 @@ import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
 import java.util.concurrent.TimeUnit;
 
-import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
-import bleshadow.javax.inject.Provider;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 import io.reactivex.Scheduler;
 

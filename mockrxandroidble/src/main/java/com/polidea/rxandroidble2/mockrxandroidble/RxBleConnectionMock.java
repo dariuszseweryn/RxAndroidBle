@@ -102,6 +102,11 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    public Single<RxBleDeviceServices> discoverServices(long timeout, @NonNull TimeUnit timeUnit, Boolean clearCache) {
+        return Single.just(rxBleDeviceServices);
+    }
+
+    @Override
     public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<? extends BluetoothGattCharacteristic>>() {

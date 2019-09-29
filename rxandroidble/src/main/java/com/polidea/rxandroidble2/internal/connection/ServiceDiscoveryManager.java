@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
@@ -47,7 +47,28 @@ class ServiceDiscoveryManager {
     }
 
     Single<RxBleDeviceServices> getDiscoverServicesSingle(final long timeout, final TimeUnit timeoutTimeUnit) {
-        if (hasCachedResults) {
+        return getDiscoverServicesSingle(timeout, timeoutTimeUnit, false);
+    }
+
+    Single<RxBleDeviceServices> getDiscoverServicesSingle(final long timeout, final TimeUnit timeoutTimeUnit, Boolean clearCache) {
+        if (clearCache) {
+            hasCachedResults = false;
+            this.deviceServicesObservable = getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout())
+                    .doOnSuccess(Functions.actionConsumer(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            hasCachedResults = true;
+                        }
+                    }))
+                    .doOnError(Functions.actionConsumer(new Action() {
+                        @Override
+                        public void run() {
+                            reset();
+                        }
+                    }))
+                    .cache();
+        }
+        if (hasCachedResults && !clearCache) {
             // optimisation to decrease the number of allocations
             return deviceServicesObservable;
         } else {

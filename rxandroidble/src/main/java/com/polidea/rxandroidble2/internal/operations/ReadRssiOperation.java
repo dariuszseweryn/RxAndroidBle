@@ -7,8 +7,8 @@ import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 
-import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import io.reactivex.Single;
 

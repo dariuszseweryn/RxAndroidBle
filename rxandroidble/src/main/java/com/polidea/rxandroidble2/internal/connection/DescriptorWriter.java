@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import io.reactivex.Completable;
 
 @ConnectionScope

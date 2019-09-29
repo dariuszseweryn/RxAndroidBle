@@ -9,7 +9,7 @@ import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 
-import bleshadow.javax.inject.Named;
+import javax.inject.Named;
 
 import io.reactivex.Single;
 

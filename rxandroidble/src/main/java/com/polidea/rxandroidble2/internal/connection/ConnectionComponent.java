@@ -3,9 +3,9 @@ package com.polidea.rxandroidble2.internal.connection;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.internal.operations.ConnectOperation;
-import bleshadow.dagger.BindsInstance;
-import bleshadow.dagger.Subcomponent;
-import bleshadow.javax.inject.Named;
+import dagger.BindsInstance;
+import dagger.Subcomponent;
+import javax.inject.Named;
 import java.util.Set;
 
 @ConnectionScope

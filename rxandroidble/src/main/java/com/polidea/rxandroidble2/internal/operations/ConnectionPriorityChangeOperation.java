@@ -8,7 +8,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 import io.reactivex.Single;
 

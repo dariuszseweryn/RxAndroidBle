@@ -9,8 +9,8 @@ import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.concurrent.TimeUnit;
 
-import bleshadow.javax.inject.Inject;
-import bleshadow.javax.inject.Named;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

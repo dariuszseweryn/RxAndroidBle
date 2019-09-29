@@ -11,7 +11,7 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
 import com.polidea.rxandroidble2.utils.StandardUUIDsParser;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * --------------- ====== Printing peripheral content ====== ---------------

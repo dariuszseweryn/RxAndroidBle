@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import bleshadow.javax.inject.Inject;
+import javax.inject.Inject;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 
 class NativeCallbackDispatcher {

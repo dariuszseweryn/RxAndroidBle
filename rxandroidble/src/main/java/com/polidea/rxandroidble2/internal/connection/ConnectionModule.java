@@ -13,12 +13,12 @@ import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueueImpl;
 import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
 
-import bleshadow.dagger.Binds;
-import bleshadow.dagger.Module;
-import bleshadow.dagger.Provides;
-import bleshadow.dagger.multibindings.IntoSet;
-import bleshadow.javax.inject.Named;
-import bleshadow.javax.inject.Provider;
+import dagger.Binds;
+import dagger.Module;
+import dagger.Provides;
+import dagger.multibindings.IntoSet;
+import javax.inject.Named;
+import javax.inject.Provider;
 import io.reactivex.Scheduler;
 
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
