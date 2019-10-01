@@ -67,7 +67,7 @@ public class RxBleGattCallback {
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
     }
 
-    private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {

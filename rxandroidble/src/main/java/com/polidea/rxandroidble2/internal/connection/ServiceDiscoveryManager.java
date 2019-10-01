@@ -35,7 +35,7 @@ class ServiceDiscoveryManager {
     private final BluetoothGatt bluetoothGatt;
     private final OperationsProvider operationProvider;
     private Single<RxBleDeviceServices> deviceServicesObservable;
-    private Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
+    private final Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
     private boolean hasCachedResults = false;
 
     @Inject

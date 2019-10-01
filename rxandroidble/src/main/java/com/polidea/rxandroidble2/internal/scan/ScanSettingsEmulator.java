@@ -25,7 +25,7 @@ import static com.polidea.rxandroidble2.internal.util.ObservableUtil.identityTra
 public class ScanSettingsEmulator {
 
     private final Scheduler scheduler;
-    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatch;
+    private final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatch;
 
     @Inject
     public ScanSettingsEmulator(@Named(ClientComponent.NamedSchedulers.COMPUTATION) final Scheduler scheduler) {
@@ -33,7 +33,7 @@ public class ScanSettingsEmulator {
 
         this.emulateFirstMatch = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
 
-            private Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatchFunc = toFirstMatch();
+            private final Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatchFunc = toFirstMatch();
             private final Observable<Long> timerObservable = Observable.timer(10L, TimeUnit.SECONDS, scheduler);
             private final Function<RxBleInternalScanResult, Observable<?>> emitAfterTimerFunc
                     = new Function<RxBleInternalScanResult, Observable<?>>() {
@@ -176,7 +176,7 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateMatchLost
+    private final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateMatchLost
             = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
         @Override
         public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
@@ -199,7 +199,7 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatchAndMatchLost
+    private final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> emulateFirstMatchAndMatchLost
             = new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
         @Override
         public Observable<RxBleInternalScanResult> apply(Observable<RxBleInternalScanResult> observable) {
