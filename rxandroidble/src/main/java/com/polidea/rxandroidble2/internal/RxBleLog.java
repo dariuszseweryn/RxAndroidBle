@@ -40,7 +40,7 @@ public class RxBleLog {
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("\\$\\d+$");
     private static final ThreadLocal<String> NEXT_TAG = new ThreadLocal<>();
 
-    private static LogOptions.Logger logcatLogger = new LogOptions.Logger() {
+    private static final LogOptions.Logger LOGCAT_LOGGER = new LogOptions.Logger() {
         @Override
         public void log(final int level, final String tag, final String msg) {
             Log.println(level, tag, msg);
@@ -53,7 +53,7 @@ public class RxBleLog {
             LogConstants.NONE,
             false,
             true,
-            logcatLogger
+            LOGCAT_LOGGER
     );
 
     private RxBleLog() {
@@ -99,7 +99,7 @@ public class RxBleLog {
     @Deprecated
     public static void setLogger(@Nullable final Logger logger) {
         LogOptions.Logger loggerToSet = logger == null
-                ? logcatLogger
+                ? LOGCAT_LOGGER
                 : new LogOptions.Logger() {
             @Override
             public void log(int level, String tag, String msg) {

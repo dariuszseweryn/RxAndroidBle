@@ -12,7 +12,7 @@ import bleshadow.javax.inject.Inject;
 
 public class IllegalOperationMessageCreator {
 
-    private CharacteristicPropertiesParser propertiesParser;
+    private final CharacteristicPropertiesParser propertiesParser;
 
     @Inject
     public IllegalOperationMessageCreator(CharacteristicPropertiesParser propertiesParser) {

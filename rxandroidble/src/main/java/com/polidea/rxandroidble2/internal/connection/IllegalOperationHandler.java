@@ -12,7 +12,7 @@ import com.polidea.rxandroidble2.internal.BleIllegalOperationException;
  */
 public abstract class IllegalOperationHandler {
 
-    protected IllegalOperationMessageCreator messageCreator;
+    protected final IllegalOperationMessageCreator messageCreator;
 
     IllegalOperationHandler(IllegalOperationMessageCreator messageCreator) {
         this.messageCreator = messageCreator;

@@ -26,7 +26,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     private final BluetoothDevice bluetoothDevice;
     private final Connector connector;
     private final BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay;
-    private AtomicBoolean isConnected = new AtomicBoolean(false);
+    private final AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
     RxBleDeviceImpl(
