@@ -125,7 +125,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
         return Single.create(new SingleOnSubscribe<BluetoothGatt>() {
 
             @Override
-            public void subscribe(final SingleEmitter<BluetoothGatt> emitter) throws Exception {
+            public void subscribe(final SingleEmitter<BluetoothGatt> emitter) {
                 final DisposableSingleObserver<BluetoothGatt> disposableGattObserver = getBluetoothGattAndChangeStatusToConnected()
                         // when the connected state will be emitted bluetoothGattProvider should contain valid Gatt
                         .delaySubscription(
@@ -133,8 +133,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                                         .getOnConnectionStateChange()
                                         .filter(new Predicate<RxBleConnection.RxBleConnectionState>() {
                                             @Override
-                                            public boolean test(RxBleConnection.RxBleConnectionState rxBleConnectionState)
-                                                    throws Exception {
+                                            public boolean test(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
                                                 return rxBleConnectionState == CONNECTED;
                                             }
                                         })

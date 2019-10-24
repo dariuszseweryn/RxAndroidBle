@@ -126,7 +126,7 @@ public class UUIDUtil {
 
         int currentPos = 0;
         int advertiseFlag = -1;
-        List<ParcelUuid> serviceUuids = new ArrayList<ParcelUuid>();
+        List<ParcelUuid> serviceUuids = new ArrayList<>();
         String localName = null;
         int txPowerLevel = Integer.MIN_VALUE;
 

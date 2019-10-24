@@ -158,20 +158,20 @@ import java.util.UUID;
                 }
             }
             if (in.readInt() == 1) {
-                ParcelUuid servcieDataUuid =
+                ParcelUuid serviceDataUuid =
                         in.readParcelable(ParcelUuid.class.getClassLoader());
                 if (in.readInt() == 1) {
                     int serviceDataLength = in.readInt();
                     byte[] serviceData = new byte[serviceDataLength];
                     in.readByteArray(serviceData);
                     if (in.readInt() == 0) {
-                        builder.setServiceData(servcieDataUuid, serviceData);
+                        builder.setServiceData(serviceDataUuid, serviceData);
                     } else {
                         int serviceDataMaskLength = in.readInt();
                         byte[] serviceDataMask = new byte[serviceDataMaskLength];
                         in.readByteArray(serviceDataMask);
                         builder.setServiceData(
-                                servcieDataUuid, serviceData, serviceDataMask);
+                                serviceDataUuid, serviceData, serviceDataMask);
                     }
                 }
             }

@@ -58,7 +58,7 @@ public class ConnectionPriorityChangeOperation extends SingleResponseOperation<L
                 return "CONNECTION_PRIORITY_BALANCED";
             case BluetoothGatt.CONNECTION_PRIORITY_HIGH:
             default:
-                return "CONNECTION_PRIORITY_BALANCED";
+                return "CONNECTION_PRIORITY_HIGH";
         }
     }
 }

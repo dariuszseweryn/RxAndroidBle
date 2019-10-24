@@ -67,7 +67,7 @@ public class RxBleGattCallback {
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
     }
 
-    private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -184,7 +184,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            LoggerUtil.logCallback("onMtuChanged", gatt, status, rssi);
+            LoggerUtil.logCallback("onReadRemoteRssi", gatt, status, rssi);
             nativeCallbackDispatcher.notifyNativeReadRssiCallback(gatt, rssi, status);
             super.onReadRemoteRssi(gatt, rssi, status);
 
@@ -290,7 +290,7 @@ public class RxBleGattCallback {
     }
 
     /**
-     * @return Observable that never emits onNexts.
+     * @return Observable that never emits onNext.
      * @throws BleDisconnectedException emitted in case of a disconnect that is a part of the normal flow
      * @throws BleGattException         emitted in case of connection was interrupted unexpectedly.
      */
@@ -371,7 +371,7 @@ public class RxBleGattCallback {
      * @param callbackHidden the object to be called
      */
     public void setHiddenNativeCallback(HiddenBluetoothGattCallback callbackHidden) {
-        nativeCallbackDispatcher.setNativeCallabackHidden(callbackHidden);
+        nativeCallbackDispatcher.setNativeCallbackHidden(callbackHidden);
     }
 
     private static class Output<T> {

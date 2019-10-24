@@ -35,7 +35,7 @@ class ServiceDiscoveryManager {
     private final BluetoothGatt bluetoothGatt;
     private final OperationsProvider operationProvider;
     private Single<RxBleDeviceServices> deviceServicesObservable;
-    private Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
+    private final Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
     private boolean hasCachedResults = false;
 
     @Inject
@@ -54,7 +54,7 @@ class ServiceDiscoveryManager {
             return deviceServicesObservable.doOnSubscribe(
                     new Consumer<Disposable>() {
                         @Override
-                        public void accept(Disposable disposable) throws Exception {
+                        public void accept(Disposable disposable) {
                             timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
                         }
                     });
@@ -68,7 +68,7 @@ class ServiceDiscoveryManager {
                 .switchIfEmpty(getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout()))
                 .doOnSuccess(Functions.actionConsumer(new Action() {
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         hasCachedResults = true;
                     }
                 }))

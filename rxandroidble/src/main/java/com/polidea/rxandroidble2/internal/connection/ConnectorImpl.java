@@ -39,7 +39,7 @@ public class ConnectorImpl implements Connector {
     public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
         return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
-            public ObservableSource<RxBleConnection> call() throws Exception {
+            public ObservableSource<RxBleConnection> call() {
                 final ConnectionComponent connectionComponent = connectionComponentBuilder
                         .autoConnect(options.autoConnect)
                         .suppressOperationChecks(options.suppressOperationCheck)
@@ -52,7 +52,7 @@ public class ConnectorImpl implements Connector {
                         .delaySubscription(enqueueConnectOperation(connectionComponent))
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
-                            public void accept(Disposable disposable) throws Exception {
+                            public void accept(Disposable disposable) {
                                 for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
                                     csa.onConnectionSubscribed();
                                 }
@@ -60,7 +60,7 @@ public class ConnectorImpl implements Connector {
                         })
                         .doFinally(new Action() {
                             @Override
-                            public void run() throws Exception {
+                            public void run() {
                                 for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
                                     csa.onConnectionUnsubscribed();
                                 }
@@ -75,7 +75,7 @@ public class ConnectorImpl implements Connector {
     private static Observable<RxBleConnection> obtainRxBleConnection(final ConnectionComponent connectionComponent) {
         return Observable.fromCallable(new Callable<RxBleConnection>() {
             @Override
-            public RxBleConnection call() throws Exception {
+            public RxBleConnection call() {
                 // BluetoothGatt is needed for RxBleConnection
                 // BluetoothGatt is produced by RxBleRadioOperationConnect
                 return connectionComponent.rxBleConnection();
