@@ -16,5 +16,8 @@
 #   public *;
 #}
 
-# hide warnings caused by Retrolamdba
--dontwarn java.lang.invoke.*
+# RxAndroidBle
+-keepclassmembers class * extends android.bluetooth.BluetoothGattCallback {
+    # This method is hidden in AOSP sources and therefore Proguard strips it by default
+    public void onConnectionUpdated(android.bluetooth.BluetoothGatt, int, int, int, int);
+}
