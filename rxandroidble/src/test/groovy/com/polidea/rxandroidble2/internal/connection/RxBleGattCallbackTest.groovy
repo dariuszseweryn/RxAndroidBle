@@ -7,6 +7,7 @@ import hkhc.electricspock.ElectricSpecification
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import org.robolectric.annotation.Config
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -15,6 +16,7 @@ import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.*
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
+@Config(manifest = Config.NONE)
 class RxBleGattCallbackTest extends ElectricSpecification {
 
     DisconnectionRouter mockDisconnectionRouter
