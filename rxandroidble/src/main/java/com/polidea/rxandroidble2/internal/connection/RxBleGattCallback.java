@@ -184,7 +184,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            LoggerUtil.logCallback("onMtuChanged", gatt, status, rssi);
+            LoggerUtil.logCallback("onReadRemoteRssi", gatt, status, rssi);
             nativeCallbackDispatcher.notifyNativeReadRssiCallback(gatt, rssi, status);
             super.onReadRemoteRssi(gatt, rssi, status);
 
