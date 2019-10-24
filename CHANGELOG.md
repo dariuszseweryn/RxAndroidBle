@@ -1,5 +1,10 @@
 Change Log
 ==========
+Version 1.10.3
+* Fixed `RxBleConnection.observeConnectionParametersUpdates()` not working in obfuscated apps. Added consumer `proguard-rules.pro` Proguard config file. (https://github.com/Polidea/RxAndroidBle/pull/634) 
+* Fixed log statement on reading RSSI of connection (https://github.com/Polidea/RxAndroidBle/pull/631)
+* Fixed log statement on setting `CONNECTION_PRIORITY_HIGH` (https://github.com/Polidea/RxAndroidBle/pull/623)
+
 Version 1.10.2
 * Fixed possible `UndeliverableException` when scan subscription is quickly disposed (https://github.com/Polidea/RxAndroidBle/pull/609)
 * Minor allocation decrease in `ScanSetupBuilderImplApi21` (https://github.com/Polidea/RxAndroidBle/pull/613)
