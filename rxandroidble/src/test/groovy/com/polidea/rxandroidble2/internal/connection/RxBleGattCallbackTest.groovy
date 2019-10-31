@@ -1,12 +1,24 @@
 package com.polidea.rxandroidble2.internal.connection
 
+import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED
+
 import android.bluetooth.*
+import com.polidea.rxandroidble2.ConnectionParameters
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback
+import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.exceptions.*
+import com.polidea.rxandroidble2.internal.util.ByteAssociation
+import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
 import hkhc.electricspock.ElectricSpecification
+import io.reactivex.Observable
+import io.reactivex.functions.Predicate
+import io.reactivex.functions.Function
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
+import java.util.function.Consumer
 import org.robolectric.annotation.Config
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -20,13 +32,37 @@ import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DIS
 class RxBleGattCallbackTest extends ElectricSpecification {
 
     DisconnectionRouter mockDisconnectionRouter
+
     PublishSubject mockDisconnectionSubject
+
     RxBleGattCallback objectUnderTest
-    @Shared def mockBluetoothGatt = Mock BluetoothGatt
-    @Shared def mockBluetoothGattCharacteristic = Mock BluetoothGattCharacteristic
-    @Shared def mockBluetoothGattDescriptor = Mock BluetoothGattDescriptor
-    @Shared def mockBluetoothDevice = Mock BluetoothDevice
-    @Shared def mockBluetoothDeviceMacAddress = "MacAddress"
+
+    @Shared
+    def mockBluetoothGatt = Mock BluetoothGatt
+
+    @Shared
+    def mockBluetoothGattCharacteristic = Mock BluetoothGattCharacteristic
+
+    @Shared
+    def mockBluetoothGattDescriptor = Mock BluetoothGattDescriptor
+
+    @Shared
+    def mockBluetoothDevice = Mock BluetoothDevice
+
+    @Shared
+    def mockBluetoothDeviceMacAddress = "MacAddress"
+
+    @Shared
+    def mockUuid0 = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
+    @Shared
+    def mockUuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001")
+
+    @Shared
+    def mockUuid2 = UUID.fromString("00000000-0000-0000-0000-000000000002")
+
+    @Shared
+    def mockUuid3 = UUID.fromString("00000000-0000-0000-0000-000000000003")
 
     def setupSpec() {
         mockBluetoothGatt.getDevice() >> mockBluetoothDevice
@@ -229,13 +265,41 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_FAILURE) }
         ]
         errorAssertion << [
-                { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } },
-                { (it as TestObserver).assertError { it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress } }
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattCharacteristicException && it.characteristic == mockBluetoothGattCharacteristic && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                }
         ]
     }
 
@@ -277,5 +341,192 @@ class RxBleGattCallbackTest extends ElectricSpecification {
                 { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(mockBluetoothGatt, status) },
                 { BluetoothGattCallback callback, int status -> (callback as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, status) }
         ]
+    }
+
+    def "notifications should maintain the original order after filtering"() {
+        given:
+        def testScheduler = new TestScheduler()
+        objectUnderTest = new RxBleGattCallback(testScheduler, Mock(BluetoothGattProvider), mockDisconnectionRouter,
+                new NativeCallbackDispatcher())
+
+        def testObserver = Observable.merge(
+                objectUnderTest.getOnCharacteristicChanged().filter({ it.second == 0 }),
+                objectUnderTest.getOnCharacteristicChanged().filter({ it.second == 1 })
+        )
+                .test()
+
+        objectUnderTest.getBluetoothGattCallback().onCharacteristicChanged(mockBluetoothGatt, mockCharacteristicWithId(1))
+        objectUnderTest.getBluetoothGattCallback().onCharacteristicChanged(mockBluetoothGatt, mockCharacteristicWithId(0))
+
+        when:
+        testScheduler.triggerActions()
+
+        then:
+        testObserver.assertValueAt(0, { it.second == 1 } as Predicate)
+        testObserver.assertValueAt(1, { it.second == 0 } as Predicate)
+    }
+
+    @Shared
+    def callbackTestCases = [
+            new CallbackTestCase(
+                    "Notification0",
+                    { RxBleGattCallback out -> out.getOnCharacteristicChanged().filter({ it.second == 0 }) },
+                    { BluetoothGattCallback bgc -> bgc.onCharacteristicChanged(mockBluetoothGatt, mockCharacteristicWithId(0)) },
+                    { it instanceof CharacteristicChangedEvent && it.second == 0 }
+            ),
+            new CallbackTestCase(
+                    "Notification1",
+                    { RxBleGattCallback out -> out.getOnCharacteristicChanged().filter({ it.second == 1 }) },
+                    { BluetoothGattCallback bgc -> bgc.onCharacteristicChanged(mockBluetoothGatt, mockCharacteristicWithId(1)) },
+                    { it instanceof CharacteristicChangedEvent && it.second == 1 }
+            ),
+            new CallbackTestCase(
+                    "CharacteristicRead",
+                    { RxBleGattCallback out -> out.getOnCharacteristicRead() },
+                    { BluetoothGattCallback bgc -> bgc.onCharacteristicRead(mockBluetoothGatt, mockCharacteristicWithUuid(mockUuid0), GATT_SUCCESS) },
+                    { it instanceof ByteAssociation && it.first == mockUuid0 }
+            ),
+            new CallbackTestCase(
+                    "CharacteristicWrite",
+                    { RxBleGattCallback out -> out.getOnCharacteristicWrite() },
+                    { BluetoothGattCallback bgc -> bgc.onCharacteristicWrite(mockBluetoothGatt, mockCharacteristicWithUuid(mockUuid1), GATT_SUCCESS) },
+                    { it instanceof ByteAssociation && it.first == mockUuid1 }
+            ),
+            new CallbackTestCase(
+                    "ConnectionState",
+                    { RxBleGattCallback out -> out.getOnConnectionStateChange() },
+                    { BluetoothGattCallback bgc -> bgc.onConnectionStateChange(mockBluetoothGatt, GATT_SUCCESS, STATE_CONNECTED) },
+                    { it instanceof RxBleConnection.RxBleConnectionState && it == CONNECTED }
+            ),
+            new CallbackTestCase(
+                    "DescriptorRead",
+                    { RxBleGattCallback out -> out.getOnDescriptorRead() },
+                    { BluetoothGattCallback bgc -> bgc.onDescriptorRead(mockBluetoothGatt, mockDescriptorWithUuid(mockUuid2), GATT_SUCCESS) },
+                    { it instanceof ByteAssociation && it.first.getUuid() == mockUuid2 }
+            ),
+            new CallbackTestCase(
+                    "DescriptorWrite",
+                    { RxBleGattCallback out -> out.getOnDescriptorWrite() },
+                    { BluetoothGattCallback bgc -> bgc.onDescriptorWrite(mockBluetoothGatt, mockDescriptorWithUuid(mockUuid3), GATT_SUCCESS) },
+                    { it instanceof ByteAssociation && it.first.getUuid() == mockUuid3 }
+            ),
+            new CallbackTestCase(
+                    "MTU",
+                    { RxBleGattCallback out -> out.getOnMtuChanged() },
+                    { BluetoothGattCallback bgc -> bgc.onMtuChanged(mockBluetoothGatt, 1337, GATT_SUCCESS) },
+                    { it instanceof Integer && it == 1337 }
+            ),
+            new CallbackTestCase(
+                    "RSSI",
+                    { RxBleGattCallback out -> out.getOnRssiRead() },
+                    { BluetoothGattCallback bgc -> bgc.onReadRemoteRssi(mockBluetoothGatt, 13373, GATT_SUCCESS) },
+                    { it instanceof Integer && it == 13373 }
+            ),
+            new CallbackTestCase(
+                    "ServiceDiscovery",
+                    { RxBleGattCallback out -> out.getOnServicesDiscovered() },
+                    { BluetoothGattCallback bgc -> bgc.onServicesDiscovered(mockBluetoothGatt, GATT_SUCCESS) },
+                    { it instanceof RxBleDeviceServices }
+            ),
+            new CallbackTestCase(
+                    "ConnectionParameters",
+                    { RxBleGattCallback out -> out.getConnectionParametersUpdates() },
+                    { BluetoothGattCallback bgc -> (bgc as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 2, 3, GATT_SUCCESS) },
+                    { it instanceof ConnectionParameters }
+            ),
+    ]
+
+    @Unroll
+    def "callbacks should maintain the original order (First call = #ctc1, Second call = #ctc0)"() {
+        given:
+        def testScheduler = new TestScheduler()
+        CallbackTestCase testCase0 = ctc0
+        CallbackTestCase testCase1 = ctc1
+        objectUnderTest = new RxBleGattCallback(testScheduler, Mock(BluetoothGattProvider), mockDisconnectionRouter,
+                new NativeCallbackDispatcher())
+
+        def testObserver = Observable.merge(
+                testCase0.getSubscriber().apply(objectUnderTest),
+                testCase1.getSubscriber().apply(objectUnderTest)
+        ).test()
+
+        // from now inverted order!
+        testCase1.getAction().accept(objectUnderTest.getBluetoothGattCallback())
+        testCase0.getAction().accept(objectUnderTest.getBluetoothGattCallback())
+
+        when:
+        testScheduler.triggerActions()
+
+        then:
+        testObserver.assertValueAt(0, (Predicate) testCase1.getPredicate())
+        testObserver.assertValueAt(1, (Predicate) testCase0.getPredicate())
+
+        where:
+        [ctc0, ctc1] << [callbackTestCases, callbackTestCases].combinations()
+    }
+
+    BluetoothGattCharacteristic mockCharacteristicWithId(Integer id) {
+        def characteristic = Mock(BluetoothGattCharacteristic)
+        characteristic.getUuid() >> UUID.randomUUID()
+        characteristic.getInstanceId() >> id
+        characteristic.getValue() >> []
+        return characteristic
+    }
+
+    BluetoothGattCharacteristic mockCharacteristicWithUuid(UUID uuid) {
+        def characteristic = Mock(BluetoothGattCharacteristic)
+        characteristic.getUuid() >> uuid
+        characteristic.getInstanceId() >> 0
+        characteristic.getValue() >> []
+        return characteristic
+    }
+
+    BluetoothGattDescriptor mockDescriptorWithUuid(UUID uuid) {
+        def descriptor = Mock(BluetoothGattDescriptor)
+        descriptor.getUuid() >> uuid
+        descriptor.getValue() >> []
+        return descriptor
+    }
+
+    static class CallbackTestCase {
+
+        private final String name
+
+        private final Function<RxBleGattCallback, Observable> subscriber
+
+        private final Consumer<BluetoothGattCallback> action
+
+        private final Predicate predicate
+
+        CallbackTestCase(
+                String name,
+                Function<RxBleGattCallback, Observable> subscriber,
+                Consumer<BluetoothGattCallback> action,
+                Predicate predicate
+        ) {
+            this.name = name
+            this.subscriber = subscriber
+            this.action = action
+            this.predicate = predicate
+        }
+
+        Function<RxBleGattCallback, Observable> getSubscriber() {
+            return subscriber
+        }
+
+        Consumer<BluetoothGattCallback> getAction() {
+            return action
+        }
+
+        Predicate getPredicate() {
+            return predicate
+        }
+
+        @Override
+        String toString() {
+            return "CallbackTestCase{" +
+                    "name='" + name + '\'' +
+                    '}'
+        }
     }
 }

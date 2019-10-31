@@ -29,6 +29,7 @@ import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.functions.Function;
+import java.util.concurrent.TimeUnit;
 
 
 @ConnectionScope
@@ -303,23 +304,23 @@ public class RxBleGattCallback {
      * Does NOT emit errors even if status != GATT_SUCCESS.
      */
     public Observable<RxBleConnectionState> getOnConnectionStateChange() {
-        return connectionStatePublishRelay.observeOn(callbackScheduler);
+        return connectionStatePublishRelay.delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
-        return withDisconnectionHandling(servicesDiscoveredOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(servicesDiscoveredOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<Integer> getOnMtuChanged() {
-        return withDisconnectionHandling(changedMtuOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(changedMtuOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
-        return withDisconnectionHandling(readCharacteristicOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readCharacteristicOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicWrite() {
-        return withDisconnectionHandling(writeCharacteristicOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(writeCharacteristicOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
@@ -327,23 +328,23 @@ public class RxBleGattCallback {
                 disconnectionRouter.<CharacteristicChangedEvent>asErrorOnlyObservable(),
                 changedCharacteristicSerializedPublishRelay
         )
-                .observeOn(callbackScheduler);
+                .delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorRead() {
-        return withDisconnectionHandling(readDescriptorOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readDescriptorOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorWrite() {
-        return withDisconnectionHandling(writeDescriptorOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(writeDescriptorOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<Integer> getOnRssiRead() {
-        return withDisconnectionHandling(readRssiOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readRssiOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ConnectionParameters> getConnectionParametersUpdates() {
-        return withDisconnectionHandling(updatedConnectionOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(updatedConnectionOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     /**
