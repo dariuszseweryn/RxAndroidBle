@@ -12,6 +12,7 @@ import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
+import io.reactivex.annotations.NonNull
 import io.reactivex.functions.Predicate
 import io.reactivex.functions.Function
 import io.reactivex.observers.TestObserver
@@ -519,7 +520,16 @@ class RxBleGattCallbackTest extends ElectricSpecification {
         }
 
         Predicate getPredicate() {
-            return predicate
+            return new Predicate() {
+
+                @Override
+                boolean test(@NonNull Object o) throws Exception {
+                    if (!CallbackTestCase.this.@predicate.test(o)) {
+                        throw new AssertionError("Unexpected emission found. (Emissions received in wrong order)")
+                    }
+                    return true
+                }
+            }
         }
 
         @Override
