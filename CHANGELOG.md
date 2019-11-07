@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.10.4-SNAPSHOT
+* Fixed location permission check for Android 10 (https://github.com/Polidea/RxAndroidBle/pull/640)
+
 Version 1.10.3
 * Fixed `RxBleConnection.observeConnectionParametersUpdates()` not working in obfuscated apps. Added consumer `proguard-rules.pro` Proguard config file. (https://github.com/Polidea/RxAndroidBle/pull/634) 
 * Fixed log statement on reading RSSI of connection (https://github.com/Polidea/RxAndroidBle/pull/631)

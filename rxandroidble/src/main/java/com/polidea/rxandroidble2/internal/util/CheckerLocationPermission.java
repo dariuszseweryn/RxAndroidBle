@@ -1,25 +1,36 @@
 package com.polidea.rxandroidble2.internal.util;
 
 
-import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
 
 import bleshadow.javax.inject.Inject;
+import bleshadow.javax.inject.Named;
+
+import com.polidea.rxandroidble2.ClientComponent;
 
 public class CheckerLocationPermission {
 
     private final Context context;
+    private final String[] scanPermissions;
 
     @Inject
-    public CheckerLocationPermission(Context context) {
+    CheckerLocationPermission(
+            Context context,
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[] scanPermissions
+    ) {
         this.context = context;
+        this.scanPermissions = scanPermissions;
     }
 
-    boolean isLocationPermissionGranted() {
-        return isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
-                || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    public boolean areScanPermissionsOk() {
+        for (String locationPermission : scanPermissions) {
+            if (isPermissionGranted(locationPermission)) {
+                return true;
+            }
+        }
+        return scanPermissions.length == 0;
     }
 
     /**
