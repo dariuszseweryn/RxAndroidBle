@@ -1,6 +1,6 @@
 Change Log
 ==========
-Version 1.10.4-SNAPSHOT
+Version 1.10.4
 * Fixed location permission check for Android 10 (https://github.com/Polidea/RxAndroidBle/pull/640)
 
 Version 1.10.3
