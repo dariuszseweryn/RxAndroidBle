@@ -303,7 +303,8 @@ If you would like to observe `BluetoothAdapter` state changes you can use `RxBle
 ### Permissions
 Android since API 23 (6.0 / Marshmallow) requires location permissions declared in the manifest for an app to run a BLE scan. RxAndroidBle already provides all the necessary bluetooth permissions for you in AndroidManifest.
 
-Runtime permissions required for running a BLE scan: 
+Runtime permissions required for running a BLE scan:
+
 | from API | to API (inclusive) | Acceptable runtime permissions |
 | --- | --- | --- |
 | 1 | 17 | (BLE functionality not available) |
