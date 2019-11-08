@@ -307,7 +307,7 @@ Runtime permissions required for running a BLE scan:
 
 | from API | to API (inclusive) | Acceptable runtime permissions |
 |:---:|:---:| --- |
-| 1 | 17 | (BLE functionality not available) |
+| 1 | 17 | (No BLE API/functionality in AOSP) |
 | 18 | 22 | (No runtime permissions needed) |
 | 23 | 28 | One of below:<br>- `android.permission.ACCESS_FINE_LOCATION`<br>- `android.permission.ACCESS_COARSE_LOCATION` |
 | 29 | current | - `android.permission.ACCESS_FINE_LOCATION` |
