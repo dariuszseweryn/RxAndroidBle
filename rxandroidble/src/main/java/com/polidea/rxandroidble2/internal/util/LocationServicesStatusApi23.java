@@ -28,7 +28,7 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
     }
 
     public boolean isLocationPermissionOk() {
-        return checkerLocationPermission.isLocationPermissionGranted();
+        return checkerLocationPermission.areScanPermissionsOk();
     }
 
     public boolean isLocationProviderOk() {
