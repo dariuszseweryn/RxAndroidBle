@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.LegacyScanOperation;
@@ -63,6 +64,7 @@ class RxBleClientImpl extends RxBleClient {
     private final LocationServicesStatus locationServicesStatus;
     private final Lazy<ClientStateObservable> lazyClientStateObservable;
     private final BackgroundScanner backgroundScanner;
+    private final Lazy<ScanPermissionsHelper> lazyScanPermissionsHelper;
 
     @Inject
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -77,7 +79,8 @@ class RxBleClientImpl extends RxBleClient {
                     Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
-                    BackgroundScanner backgroundScanner) {
+                    BackgroundScanner backgroundScanner,
+                    Lazy<ScanPermissionsHelper> lazyScanPermissionsHelper) {
         this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -91,6 +94,7 @@ class RxBleClientImpl extends RxBleClient {
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.clientComponentFinalizer = clientComponentFinalizer;
         this.backgroundScanner = backgroundScanner;
+        this.lazyScanPermissionsHelper = lazyScanPermissionsHelper;
     }
 
     @Override
@@ -256,5 +260,10 @@ class RxBleClientImpl extends RxBleClient {
         } else {
             return State.READY;
         }
+    }
+
+    @Override
+    public ScanPermissionsHelper getScanPermissionsHelper() {
+        return lazyScanPermissionsHelper.get();
     }
 }

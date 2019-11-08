@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble2.exceptions.BleScanException
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble2.internal.operations.Operation
 import com.polidea.rxandroidble2.internal.scan.*
@@ -48,6 +49,7 @@ class RxBleClientTest extends Specification {
     ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
     ScanPreconditionsVerifier mockScanPreconditionVerifier = Mock ScanPreconditionsVerifier
     InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
+    bleshadow.dagger.Lazy<ScanPermissionsHelper> mockLazyScanPermissionsHelper = Mock bleshadow.dagger.Lazy
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
     private static Date suggestedDateToRetry = new Date()
@@ -83,7 +85,8 @@ class RxBleClientTest extends Specification {
                 mockMapper,
                 new TestScheduler(),
                 Mock(ClientComponent.ClientComponentFinalizer),
-                backgroundScanner
+                backgroundScanner,
+                mockLazyScanPermissionsHelper
         )
     }
 
@@ -512,6 +515,15 @@ class RxBleClientTest extends Specification {
     def "should provide injected background scanner"() {
         expect:
         backgroundScanner == objectUnderTest.getBackgroundScanner()
+    }
+
+    def "should get ScanPermissionsHelper from Lazy when called .getScanPermissionsHelper()"() {
+
+        when:
+        objectUnderTest.getScanPermissionsHelper()
+
+        then:
+        1 * mockLazyScanPermissionsHelper.get() >> Mock(ScanPermissionsHelper)
     }
 
     def waitForThreadsToCompleteWork() {

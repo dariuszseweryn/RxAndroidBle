@@ -10,6 +10,7 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
@@ -368,5 +369,20 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public State getState() {
         return State.READY;
+    }
+
+    @Override
+    public ScanPermissionsHelper getScanPermissionsHelper() {
+        return new ScanPermissionsHelper() {
+            @Override
+            public boolean isScanRuntimePermissionGranted() {
+                return true;
+            }
+
+            @Override
+            public String[] getRecommendedScanRuntimePermissions() {
+                return new String[0];
+            }
+        };
     }
 }

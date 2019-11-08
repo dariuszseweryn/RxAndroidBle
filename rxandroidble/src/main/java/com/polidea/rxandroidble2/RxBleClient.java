@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
@@ -184,4 +185,11 @@ public abstract class RxBleClient {
      * @return the current state
      */
     public abstract State getState();
+
+    /**
+     * Returns a {@link ScanPermissionsHelper} which can give information permissions needed to run a BLE scan.
+     *
+     * @return a scan permission helper
+     */
+    public abstract ScanPermissionsHelper getScanPermissionsHelper();
 }

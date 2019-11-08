@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
 import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
@@ -27,6 +28,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueueImpl;
+import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission;
 import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23Factory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
@@ -328,6 +330,9 @@ public interface ClientComponent {
 
         @Binds
         abstract Function<RxBleInternalScanResult, ScanResult> provideScanResultMapper(InternalToExternalScanResultConverter mapper);
+
+        @Binds
+        abstract ScanPermissionsHelper bindScanPermissionsHelper(CheckerLocationPermission checkerLocationPermission);
     }
 
     LocationServicesOkObservable locationServicesOkObservable();

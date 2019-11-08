@@ -9,8 +9,9 @@ import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
 import com.polidea.rxandroidble2.ClientComponent;
+import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper;
 
-public class CheckerLocationPermission {
+public class CheckerLocationPermission implements ScanPermissionsHelper {
 
     private final Context context;
     private final String[] scanPermissions;
@@ -24,13 +25,19 @@ public class CheckerLocationPermission {
         this.scanPermissions = scanPermissions;
     }
 
-    public boolean areScanPermissionsOk() {
+    @Override
+    public boolean isScanRuntimePermissionGranted() {
         for (String locationPermission : scanPermissions) {
             if (isPermissionGranted(locationPermission)) {
                 return true;
             }
         }
         return scanPermissions.length == 0;
+    }
+
+    @Override
+    public String[] getRecommendedScanRuntimePermissions() {
+        return scanPermissions;
     }
 
     /**
