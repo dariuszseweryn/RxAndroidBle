@@ -312,7 +312,8 @@ Runtime permissions required for running a BLE scan:
 | 23 | 28 | One of below:<br>- `android.permission.ACCESS_FINE_LOCATION`<br>- `android.permission.ACCESS_COARSE_LOCATION` |
 | 29 | current | - `android.permission.ACCESS_FINE_LOCATION` |
 
-Google is checking these when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually in your `AndroidManifest` using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your permission does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
+#### Potential permission issues
+Google is checking `AndroidManifest` for declaring permissions when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your manifest does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. These permissions are only required on SDK 23+. If you need any of these permissions on a lower version of Android replace your statement with:
 ```xml
 <uses-permission
   android:name="android.permission.ACCESS_COARSE_LOCATION"
