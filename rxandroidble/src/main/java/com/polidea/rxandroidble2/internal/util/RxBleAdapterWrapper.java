@@ -72,6 +72,14 @@ public class RxBleAdapterWrapper {
             // if stopping the scan is not possible due to BluetoothLeScanner not accessible then it is probably stopped anyway
             return;
         }
+        if (!bluetoothAdapter.isEnabled()) {
+            // this situation seems to be a problem since API 29
+            RxBleLog.v(
+                    "BluetoothAdapter is disabled, calling BluetoothLeScanner.stopScan(ScanCallback) may cause IllegalStateException"
+            );
+            // if stopping the scan is not possible due to BluetoothAdapter turned off then it is probably stopped anyway
+            return;
+        }
         bluetoothLeScanner.stopScan(scanCallback);
     }
 
