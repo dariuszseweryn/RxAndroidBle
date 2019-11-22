@@ -3,7 +3,10 @@ package com.polidea.rxandroidble2.internal.serialization
 import com.polidea.rxandroidble2.internal.operations.Operation
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
+import io.reactivex.disposables.Disposable
 import io.reactivex.internal.schedulers.TrampolineScheduler
+import io.reactivex.schedulers.TestScheduler
+import java.util.concurrent.atomic.AtomicBoolean
 import spock.lang.Specification
 
 class FIFORunnableEntryTest extends Specification {
@@ -87,5 +90,24 @@ class FIFORunnableEntryTest extends Specification {
 
         then:
         1 * mockObservableEmitter.tryOnError(testException)
+    }
+
+    def "should run operation even if ObservableEmitter was unsubscribed at the time of subscription (race condition scenario)"() {
+
+        given:
+        AtomicBoolean operationWasRun = new AtomicBoolean(false)
+        TestScheduler testScheduler = new TestScheduler()
+        mockObservableEmitter.isDisposed() >>> [false, true]
+        mockObservableEmitter.setDisposable(_) >> { Disposable disposable -> disposable.dispose() }
+        mockOperation.run(_) >> Observable.fromCallable({
+            return operationWasRun.getAndSet(true)
+        })
+        objectUnderTest.run(mockQueueSemaphore, testScheduler)
+
+        when:
+        testScheduler.triggerActions()
+
+        then:
+        operationWasRun.get()
     }
 }
