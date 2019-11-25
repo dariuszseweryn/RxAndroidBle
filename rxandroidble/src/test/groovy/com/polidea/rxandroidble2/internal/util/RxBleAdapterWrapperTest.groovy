@@ -2,6 +2,7 @@ package com.polidea.rxandroidble2.internal.util
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import spock.lang.Specification
 
@@ -98,5 +99,20 @@ class RxBleAdapterWrapperTest extends Specification {
 
         then:
         notThrown(NullPointerException)
+    }
+
+    def "should not call BlueoothLeScanner.stopScan(ScanCallback) if bluetooth if disabled"() {
+
+        given:
+        def callback = Mock ScanCallback
+        def mockBluetoothLeScanner = Mock BluetoothLeScanner
+        mockAdapter.getBluetoothLeScanner() >> mockBluetoothLeScanner
+        mockAdapter.isEnabled() >> false
+
+        when:
+        objectUnderTest.stopLeScan(callback)
+
+        then:
+        0 * mockBluetoothLeScanner.stopScan(_)
     }
 }
