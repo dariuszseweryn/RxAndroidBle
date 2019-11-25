@@ -1,5 +1,10 @@
 Change Log
 ==========
+Version 1.10.5
+* Fixed possibly incorrect order of notifications and operation completions (https://github.com/Polidea/RxAndroidBle/pull/639)
+* Fixed possibility of library being stalled on operation cancelling (https://github.com/Polidea/RxAndroidBle/pull/650)
+* Fixed a silenced `IllegalStateException` after a scan is stopped because `BluetoothAdapter` being disabled (https://github.com/Polidea/RxAndroidBle/pull/649)   
+
 Version 1.10.4
 * Fixed location permission check for Android 10 (https://github.com/Polidea/RxAndroidBle/pull/640)
 
