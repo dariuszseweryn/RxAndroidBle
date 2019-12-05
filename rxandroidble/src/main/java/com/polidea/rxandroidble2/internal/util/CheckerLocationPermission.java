@@ -8,10 +8,10 @@ import android.os.Process;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import bleshadow.javax.inject.Singleton;
 import com.polidea.rxandroidble2.ClientComponent;
+import com.polidea.rxandroidble2.ClientScope;
 
-@Singleton
+@ClientScope
 public class CheckerLocationPermission {
 
     private final Context context;
