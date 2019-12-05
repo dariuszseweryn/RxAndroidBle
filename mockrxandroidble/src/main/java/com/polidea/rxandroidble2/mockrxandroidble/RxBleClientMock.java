@@ -369,4 +369,14 @@ public class RxBleClientMock extends RxBleClient {
     public State getState() {
         return State.READY;
     }
+
+    @Override
+    public boolean isScanRuntimePermissionGranted() {
+        return true;
+    }
+
+    @Override
+    public String[] getRecommendedScanRuntimePermissions() {
+        return new String[0];
+    }
 }

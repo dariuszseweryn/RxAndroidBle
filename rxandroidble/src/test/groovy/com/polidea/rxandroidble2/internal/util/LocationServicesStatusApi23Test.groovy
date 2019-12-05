@@ -46,7 +46,7 @@ class LocationServicesStatusApi23Test extends Specification {
 
         given:
         prepareObjectUnderTest()
-        mockCheckerLocationPermission.areScanPermissionsOk() >> permissionGranted
+        mockCheckerLocationPermission.isScanRuntimePermissionGranted() >> permissionGranted
 
         expect:
         objectUnderTest.isLocationPermissionOk() == permissionGranted

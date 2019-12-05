@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble2.internal.scan.ScanSetup;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission;
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
@@ -63,6 +64,7 @@ class RxBleClientImpl extends RxBleClient {
     private final LocationServicesStatus locationServicesStatus;
     private final Lazy<ClientStateObservable> lazyClientStateObservable;
     private final BackgroundScanner backgroundScanner;
+    private final CheckerLocationPermission checkerLocationPermission;
 
     @Inject
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -77,7 +79,8 @@ class RxBleClientImpl extends RxBleClient {
                     Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction,
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
-                    BackgroundScanner backgroundScanner) {
+                    BackgroundScanner backgroundScanner,
+                    CheckerLocationPermission checkerLocationPermission) {
         this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -91,6 +94,7 @@ class RxBleClientImpl extends RxBleClient {
         this.bluetoothInteractionScheduler = bluetoothInteractionScheduler;
         this.clientComponentFinalizer = clientComponentFinalizer;
         this.backgroundScanner = backgroundScanner;
+        this.checkerLocationPermission = checkerLocationPermission;
     }
 
     @Override
@@ -256,5 +260,15 @@ class RxBleClientImpl extends RxBleClient {
         } else {
             return State.READY;
         }
+    }
+
+    @Override
+    public boolean isScanRuntimePermissionGranted() {
+        return checkerLocationPermission.isScanRuntimePermissionGranted();
+    }
+
+    @Override
+    public String[] getRecommendedScanRuntimePermissions() {
+        return checkerLocationPermission.getRecommendedScanRuntimePermissions();
     }
 }
