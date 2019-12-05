@@ -42,11 +42,11 @@ class BackgroundScanActivity : AppCompatActivity() {
     }
 
     private fun onScanStartClick() {
-        if (isLocationPermissionGranted()) {
+        if (rxBleClient.isScanRuntimePermissionGranted) {
             scanBleDeviceInBackground()
         } else {
             hasClickedScan = true
-            requestLocationPermission()
+            requestLocationPermission(rxBleClient)
         }
     }
 
