@@ -3,11 +3,12 @@ package com.polidea.rxandroidble2
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.helpers.ScanPermissionsHelper
+
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble2.internal.operations.Operation
 import com.polidea.rxandroidble2.internal.scan.*
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable
 import com.polidea.rxandroidble2.internal.util.UUIDUtil
 import com.polidea.rxandroidble2.scan.BackgroundScanner
@@ -49,7 +50,7 @@ class RxBleClientTest extends Specification {
     ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
     ScanPreconditionsVerifier mockScanPreconditionVerifier = Mock ScanPreconditionsVerifier
     InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
-    bleshadow.dagger.Lazy<ScanPermissionsHelper> mockLazyScanPermissionsHelper = Mock bleshadow.dagger.Lazy
+    CheckerLocationPermission mockCheckerLocationPermission = Mock CheckerLocationPermission
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
     private static Date suggestedDateToRetry = new Date()
@@ -86,7 +87,7 @@ class RxBleClientTest extends Specification {
                 new TestScheduler(),
                 Mock(ClientComponent.ClientComponentFinalizer),
                 backgroundScanner,
-                mockLazyScanPermissionsHelper
+                mockCheckerLocationPermission
         )
     }
 
@@ -517,13 +518,35 @@ class RxBleClientTest extends Specification {
         backgroundScanner == objectUnderTest.getBackgroundScanner()
     }
 
-    def "should get ScanPermissionsHelper from Lazy when called .getScanPermissionsHelper()"() {
+    @Unroll
+    def "should pass call to CheckerLocationPermission when called .isScanRuntimePermissionGranted() and proxy back the result"() {
 
         when:
-        objectUnderTest.getScanPermissionsHelper()
+        def result = objectUnderTest.isScanRuntimePermissionGranted()
 
         then:
-        1 * mockLazyScanPermissionsHelper.get() >> Mock(ScanPermissionsHelper)
+        1 * mockCheckerLocationPermission.isScanRuntimePermissionGranted() >> expectedResult
+
+        and:
+        result == expectedResult
+
+        where:
+        expectedResult << [true, false]
+    }
+
+    def "should pass call to CheckerLocationPermission when called .getRecommendedScanRuntimePermissions() and proxy back the result"() {
+
+        given:
+        String[] resultRef = new String[0]
+
+        when:
+        def result = objectUnderTest.getRecommendedScanRuntimePermissions()
+
+        then:
+        1 * mockCheckerLocationPermission.getRecommendedScanRuntimePermissions() >> resultRef
+
+        and:
+        result == resultRef
     }
 
     def waitForThreadsToCompleteWork() {
