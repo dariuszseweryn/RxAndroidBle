@@ -55,7 +55,7 @@ class ScanActivity : AppCompatActivity() {
         if (isScanning) {
             scanDisposable?.dispose()
         } else {
-            if (isLocationPermissionGranted()) {
+            if (rxBleClient.isScanRuntimePermissionGranted) {
                 scanBleDevices()
                     .observeOn(AndroidSchedulers.mainThread())
                     .doFinally { dispose() }
@@ -63,7 +63,7 @@ class ScanActivity : AppCompatActivity() {
                     .let { scanDisposable = it }
             } else {
                 hasClickedScan = true
-                requestLocationPermission()
+                requestLocationPermission(rxBleClient)
             }
         }
         updateButtonUIState()

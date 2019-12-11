@@ -1,13 +1,9 @@
 package com.polidea.rxandroidble2.sample.util;
 
-import android.Manifest;
-import android.Manifest.permission;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import com.polidea.rxandroidble2.RxBleClient;
 
 public class LocationPermission {
 
@@ -15,34 +11,36 @@ public class LocationPermission {
         // Utility class
     }
 
-    private static final int REQUEST_PERMISSION_COARSE_LOCATION = 9358;
+    private static final int REQUEST_PERMISSION_BLE_SCAN = 9358;
 
-    public static boolean isLocationPermissionGranted(final Context context) {
-        if (Build.VERSION.SDK_INT < 23 /* Build.VERSION_CODES.M */) {
-            // It is not needed at all as there were no runtime permissions yet
-            return true;
-        }
-        return ContextCompat.checkSelfPermission(context, permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public static void requestLocationPermission(final Activity activity) {
+    public static void requestLocationPermission(final Activity activity, final RxBleClient client) {
         ActivityCompat.requestPermissions(
                 activity,
-                new String[]{permission.ACCESS_COARSE_LOCATION},
-                REQUEST_PERMISSION_COARSE_LOCATION
+                /*
+                 * the below would cause a ArrayIndexOutOfBoundsException on API < 23. Yet it should not be called then as runtime
+                 * permissions are not needed and RxBleClient.isScanRuntimePermissionGranted() returns `true`
+                 */
+                new String[]{client.getRecommendedScanRuntimePermissions()[0]},
+                REQUEST_PERMISSION_BLE_SCAN
         );
     }
 
     public static boolean isRequestLocationPermissionGranted(final int requestCode, final String[] permissions,
-                                                             final int[] grantResults) {
-        if (requestCode == REQUEST_PERMISSION_COARSE_LOCATION) {
-            for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)
+                                                             final int[] grantResults, RxBleClient client) {
+        if (requestCode != REQUEST_PERMISSION_BLE_SCAN) {
+            return false;
+        }
+
+        String[] recommendedScanRuntimePermissions = client.getRecommendedScanRuntimePermissions();
+        for (int i = 0; i < permissions.length; i++) {
+            for (String recommendedScanRuntimePermission : recommendedScanRuntimePermissions) {
+                if (permissions[i].equals(recommendedScanRuntimePermission)
                         && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 }

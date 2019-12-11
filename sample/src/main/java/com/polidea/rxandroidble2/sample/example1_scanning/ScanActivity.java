@@ -57,11 +57,11 @@ public class ScanActivity extends AppCompatActivity {
         if (isScanning()) {
             scanDisposable.dispose();
         } else {
-            if (LocationPermission.isLocationPermissionGranted(this)) {
+            if (rxBleClient.isScanRuntimePermissionGranted()) {
                 scanBleDevices();
             } else {
                 hasClickedScan = true;
-                LocationPermission.requestLocationPermission(this);
+                LocationPermission.requestLocationPermission(this, rxBleClient);
             }
         }
 
@@ -87,7 +87,7 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
             @NonNull final int[] grantResults) {
-        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults)
+        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults, rxBleClient)
                 && hasClickedScan) {
             hasClickedScan = false;
             scanBleDevices();
