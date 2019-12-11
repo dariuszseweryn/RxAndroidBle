@@ -68,7 +68,7 @@ scanSubscription.dispose();
 For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
 
 ### Observing client state
-On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. i.e. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted permission to use either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` and `Location Services` needs to be turned on.
+On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. e.g. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted [runtime permission](https://github.com/Polidea/RxAndroidBle#permissions) for either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION`, additionally `Location Services` need to be turned on.
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
@@ -301,13 +301,29 @@ Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `
 If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
 
 ### Permissions
-RxAndroidBle already provides all the necessary bluetooth permissions for you. Google is checking these when releasing to the Play Store. If you have ACCESS_COARSE_LOCATION set manually you may run into an issue where your permission does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. This permission is only required on SDK 23+. If you need this permission on a lower version of Android use:
+Android since API 23 (6.0 / Marshmallow) requires location permissions declared in the manifest for an app to run a BLE scan. RxAndroidBle already provides all the necessary bluetooth permissions for you in AndroidManifest.
 
+Runtime permissions required for running a BLE scan:
+
+| from API | to API (inclusive) | Acceptable runtime permissions |
+|:---:|:---:| --- |
+| 18 | 22 | (No runtime permissions needed) |
+| 23 | 28 | One of below:<br>- `android.permission.ACCESS_COARSE_LOCATION`<br>- `android.permission.ACCESS_FINE_LOCATION` |
+| 29 | current | - `android.permission.ACCESS_FINE_LOCATION` |
+
+#### Potential permission issues
+Google is checking `AndroidManifest` for declaring permissions when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your manifest does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. These permissions are only required on SDK 23+. If you need any of these permissions on a lower version of Android replace your statement with:
 ```xml
 <uses-permission
   android:name="android.permission.ACCESS_COARSE_LOCATION"
   android:maxSdkVersion="22"/>
 ```
+```xml
+<uses-permission
+  android:name="android.permission.ACCESS_FINE_LOCATION"
+  android:maxSdkVersion="22"/>
+```
+
 ## More examples
 
 Usage examples are located in:
@@ -320,7 +336,7 @@ Keep in mind that these are only _samples_ to show how the library can be used. 
 ### Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.10.4"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.10.5"
 ```
 ### Maven
 
@@ -328,7 +344,7 @@ implementation "com.polidea.rxandroidble2:rxandroidble:1.10.4"
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.10.4</version>
+  <version>1.10.5</version>
   <type>aar</type>
 </dependency>
 ```

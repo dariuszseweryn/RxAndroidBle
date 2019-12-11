@@ -1,47 +1,13 @@
-### Disclaimer
-Before you will post a new issue to the RxAndroidBle library consider if you are filling a bug/feature request or a general question 
-about:
-* Usage of RxJava
-* Usage of Bluetooth Low Energy
-* Usage of RxAndroidBle
-* Weird behaviour of the peripheral you are using
-* Other not directly related to a new feature request or a bug
+### Disclaimer (to save your and our time)
+You intend to post an issue that is not a bug report nor a feature request. Great! We are always happy and open to discuss how 
+the library or it's documentation can be improved.
 
-If any of the above points seems to match your use case — consider using Google or creating a question on www.stackoverflow.com with 
-a tag `rxandroidble` where it will be easier to access by other people with similar questions. Issues that are not bugs or feature requests
-will be closed.
+However if you are new to Bluetooth Low Energy and do not know how to accomplish what you want — this is not the best place to
+seek knowledge. It will be quicker for you and will save our time if you consider using Google first as there are plenty of
+very good articles out there.
 
-### Summary
+In case you are not very familiar with RxJava or how could you use RxAndroidBle in your use case you should search 
+www.stackoverflow.com for tag `rxandroidble` as there are already quite a few questions asked (and answered!) which could
+address your issue.
 
-### Library version
-`X.X.X`
-
-#### Preconditions
-
-#### Steps to reproduce actual result
-<br />1.
-<br />2.
-<br />3.
-
-#### Actual result
-// What you have experienced
-
-#### Expected result
-// A clear and concise description of what you expected to happen
-
-#### Minimum code snippet reproducing the issue
-
-#### Logs from the application running with settings:
-```java
-RxBleClient.updateLogOptions(new LogOptions.Builder()
-        .setLogLevel(LogConstants.DEBUG)
-        .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
-        .setUuidsLogSetting(LogConstants.UUIDS_FULL)
-        .setShouldLogAttributeValues(true)
-        .build()
-);
-```
-
-```
-// paste logs here
-```
+After reading the above disclaimer you can delete it. :)

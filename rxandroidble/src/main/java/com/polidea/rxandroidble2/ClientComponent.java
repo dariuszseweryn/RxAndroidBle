@@ -27,6 +27,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueueImpl;
+import com.polidea.rxandroidble2.internal.serialization.RxBleThreadFactory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23Factory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
@@ -48,6 +49,7 @@ import bleshadow.javax.inject.Provider;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.functions.Function;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
 @ClientScope
@@ -57,7 +59,6 @@ public interface ClientComponent {
     class NamedExecutors {
 
         public static final String BLUETOOTH_INTERACTION = "executor_bluetooth_interaction";
-        public static final String BLUETOOTH_CALLBACKS = "executor_bluetooth_callbacks";
         public static final String CONNECTION_QUEUE = "executor_connection_queue";
         private NamedExecutors() {
 
@@ -202,13 +203,6 @@ public interface ClientComponent {
         }
 
         @Provides
-        @Named(NamedExecutors.BLUETOOTH_CALLBACKS)
-        @ClientScope
-        static ExecutorService provideBluetoothCallbacksExecutorService() {
-            return Executors.newSingleThreadExecutor();
-        }
-
-        @Provides
         @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
         @ClientScope
         static Scheduler provideBluetoothInteractionScheduler(@Named(NamedExecutors.BLUETOOTH_INTERACTION) ExecutorService service) {
@@ -218,21 +212,21 @@ public interface ClientComponent {
         @Provides
         @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
         @ClientScope
-        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedExecutors.BLUETOOTH_CALLBACKS) ExecutorService service) {
-            return Schedulers.from(service);
+        static Scheduler provideBluetoothCallbacksScheduler() {
+            return RxJavaPlugins.createSingleScheduler(new RxBleThreadFactory());
         }
 
         @Provides
         static ClientComponentFinalizer provideFinalizationCloseable(
                 @Named(NamedExecutors.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
-                @Named(NamedExecutors.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService,
+                @Named(NamedSchedulers.BLUETOOTH_CALLBACKS) final Scheduler callbacksScheduler,
                 @Named(NamedExecutors.CONNECTION_QUEUE) final ExecutorService connectionQueueExecutorService
         ) {
             return new ClientComponentFinalizer() {
                 @Override
                 public void onFinalize() {
                     interactionExecutorService.shutdown();
-                    callbacksExecutorService.shutdown();
+                    callbacksScheduler.shutdown();
                     connectionQueueExecutorService.shutdown();
                 }
             };
