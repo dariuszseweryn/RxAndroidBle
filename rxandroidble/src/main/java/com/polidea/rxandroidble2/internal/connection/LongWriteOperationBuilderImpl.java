@@ -16,16 +16,16 @@ import io.reactivex.functions.Function;
 
 public final class LongWriteOperationBuilderImpl implements RxBleConnection.LongWriteOperationBuilder {
 
-    private final ConnectionOperationQueue operationQueue;
+    final ConnectionOperationQueue operationQueue;
     private final RxBleConnection rxBleConnection;
-    private final OperationsProvider operationsProvider;
+    final OperationsProvider operationsProvider;
 
     private Single<BluetoothGattCharacteristic> writtenCharacteristicObservable;
-    private PayloadSizeLimitProvider maxBatchSizeProvider;
-    private RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
-    private RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy = new NoRetryStrategy();
+    PayloadSizeLimitProvider maxBatchSizeProvider;
+    RxBleConnection.WriteOperationAckStrategy writeOperationAckStrategy = new ImmediateSerializedBatchAckStrategy();
+    RxBleConnection.WriteOperationRetryStrategy writeOperationRetryStrategy = new NoRetryStrategy();
 
-    private byte[] bytes;
+    byte[] bytes;
 
     @Inject
     LongWriteOperationBuilderImpl(

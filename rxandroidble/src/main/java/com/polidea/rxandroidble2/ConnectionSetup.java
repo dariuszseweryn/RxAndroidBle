@@ -33,7 +33,7 @@ public class ConnectionSetup {
      */
     public final Timeout operationTimeout;
 
-    private ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, Timeout operationTimeout) {
+    ConnectionSetup(boolean autoConnect, boolean suppressOperationCheck, Timeout operationTimeout) {
         this.autoConnect = autoConnect;
         this.suppressOperationCheck = suppressOperationCheck;
         this.operationTimeout = operationTimeout;

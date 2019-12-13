@@ -29,13 +29,13 @@ import io.reactivex.ObservableEmitter;
 public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, ScanCallback> {
 
     @NonNull
-    private final InternalScanResultCreator internalScanResultCreator;
+    final InternalScanResultCreator internalScanResultCreator;
     @NonNull
     private final AndroidScanObjectsConverter androidScanObjectsConverter;
     @NonNull
     private final ScanSettings scanSettings;
     @NonNull
-    private final EmulatedScanFilterMatcher emulatedScanFilterMatcher;
+    final EmulatedScanFilterMatcher emulatedScanFilterMatcher;
     @Nullable
     private final ScanFilter[] scanFilters;
 
@@ -113,7 +113,8 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
         rxBleAdapterWrapper.stopLeScan(scanCallback);
     }
 
-    @BleScanException.Reason private static int errorCodeToBleErrorCode(int errorCode) {
+    @BleScanException.Reason
+    static int errorCodeToBleErrorCode(int errorCode) {
         switch (errorCode) {
             case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
                 return BleScanException.SCAN_FAILED_ALREADY_STARTED;

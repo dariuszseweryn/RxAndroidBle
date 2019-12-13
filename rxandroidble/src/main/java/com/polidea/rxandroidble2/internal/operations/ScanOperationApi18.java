@@ -18,9 +18,9 @@ import io.reactivex.ObservableEmitter;
 public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, BluetoothAdapter.LeScanCallback> {
 
     @NonNull
-    private final InternalScanResultCreator scanResultCreator;
+    final InternalScanResultCreator scanResultCreator;
     @NonNull
-    private final EmulatedScanFilterMatcher scanFilterMatcher;
+    final EmulatedScanFilterMatcher scanFilterMatcher;
 
     public ScanOperationApi18(
             @NonNull RxBleAdapterWrapper rxBleAdapterWrapper,

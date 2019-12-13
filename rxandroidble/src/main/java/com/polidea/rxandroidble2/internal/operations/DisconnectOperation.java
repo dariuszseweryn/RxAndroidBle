@@ -130,7 +130,7 @@ public class DisconnectOperation extends QueueOperation<Void> {
 
     private static class DisconnectGattObservable extends Single<BluetoothGatt> {
 
-        private final BluetoothGatt bluetoothGatt;
+        final BluetoothGatt bluetoothGatt;
         private final RxBleGattCallback rxBleGattCallback;
         private final Scheduler disconnectScheduler;
 

@@ -23,7 +23,7 @@ import io.reactivex.functions.Predicate;
  */
 public class RxBleDeviceServices {
 
-    private final List<BluetoothGattService> bluetoothGattServices;
+    final List<BluetoothGattService> bluetoothGattServices;
 
     public RxBleDeviceServices(List<BluetoothGattService> bluetoothGattServices) {
         this.bluetoothGattServices = bluetoothGattServices;

@@ -50,15 +50,15 @@ class RxBleClientImpl extends RxBleClient {
 
     @Deprecated
     public static final String TAG = "RxBleClient";
-    private final ClientOperationQueue operationQueue;
+    final ClientOperationQueue operationQueue;
     private final UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
-    private final ScanSetupBuilder scanSetupBuilder;
-    private final ScanPreconditionsVerifier scanPreconditionVerifier;
-    private final Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
+    final ScanSetupBuilder scanSetupBuilder;
+    final ScanPreconditionsVerifier scanPreconditionVerifier;
+    final Function<RxBleInternalScanResult, ScanResult> internalToExternalScanResultMapFunction;
     private final ClientComponent.ClientComponentFinalizer clientComponentFinalizer;
-    private final Scheduler bluetoothInteractionScheduler;
-    private final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
+    final Scheduler bluetoothInteractionScheduler;
+    final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
     private final LocationServicesStatus locationServicesStatus;
@@ -160,7 +160,7 @@ class RxBleClientImpl extends RxBleClient {
         });
     }
 
-    private Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
+    Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
 
         synchronized (queuedScanOperations) {
@@ -179,7 +179,7 @@ class RxBleClientImpl extends RxBleClient {
      * This {@link Observable} will not emit values by design. It may only emit {@link BleScanException} if
      * bluetooth adapter is turned down.
      */
-    private <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
+    <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
         return rxBleAdapterStateObservable
                 .filter(new Predicate<BleAdapterState>() {
                     @Override
@@ -197,7 +197,7 @@ class RxBleClientImpl extends RxBleClient {
                 .toObservable();
     }
 
-    private RxBleScanResult convertToPublicScanResult(RxBleInternalScanResultLegacy scanResult) {
+    RxBleScanResult convertToPublicScanResult(RxBleInternalScanResultLegacy scanResult) {
         final BluetoothDevice bluetoothDevice = scanResult.getBluetoothDevice();
         final RxBleDevice bleDevice = getBleDevice(bluetoothDevice.getAddress());
         return new RxBleScanResult(bleDevice, scanResult.getRssi(), scanResult.getScanRecord());

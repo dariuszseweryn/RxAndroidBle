@@ -19,8 +19,8 @@ import io.reactivex.functions.Consumer;
 public class ByteArrayBatchObservable extends Flowable<byte[]> {
 
     @NonNull
-    private final ByteBuffer byteBuffer;
-    private final int maxBatchSize;
+    final ByteBuffer byteBuffer;
+    final int maxBatchSize;
 
     /**
      * Constructor

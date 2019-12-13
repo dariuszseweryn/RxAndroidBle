@@ -31,12 +31,12 @@ import io.reactivex.subjects.Subject;
 @ConnectionScope
 class ServiceDiscoveryManager {
 
-    private final ConnectionOperationQueue operationQueue;
-    private final BluetoothGatt bluetoothGatt;
-    private final OperationsProvider operationProvider;
+    final ConnectionOperationQueue operationQueue;
+    final BluetoothGatt bluetoothGatt;
+    final OperationsProvider operationProvider;
     private Single<RxBleDeviceServices> deviceServicesObservable;
-    private final Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
-    private boolean hasCachedResults = false;
+    final Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
+    boolean hasCachedResults = false;
 
     @Inject
     ServiceDiscoveryManager(ConnectionOperationQueue operationQueue, BluetoothGatt bluetoothGatt, OperationsProvider operationProvider) {
@@ -61,7 +61,7 @@ class ServiceDiscoveryManager {
         }
     }
 
-    private void reset() {
+    void reset() {
         hasCachedResults = false;
         this.deviceServicesObservable = getListOfServicesFromGatt()
                 .map(wrapIntoRxBleDeviceServices())

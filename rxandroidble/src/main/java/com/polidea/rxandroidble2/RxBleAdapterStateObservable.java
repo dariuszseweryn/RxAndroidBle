@@ -86,7 +86,7 @@ public class RxBleAdapterStateObservable extends Observable<RxBleAdapterStateObs
         bleAdapterStateObservable.subscribe(observer);
     }
 
-    private static BleAdapterState mapToBleAdapterState(int state) {
+    static BleAdapterState mapToBleAdapterState(int state) {
 
         switch (state) {
             case BluetoothAdapter.STATE_ON:

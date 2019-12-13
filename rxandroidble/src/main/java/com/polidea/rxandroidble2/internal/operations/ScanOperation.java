@@ -20,7 +20,7 @@ import io.reactivex.functions.Cancellable;
  */
 abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extends QueueOperation<SCAN_RESULT_TYPE> {
 
-    private final RxBleAdapterWrapper rxBleAdapterWrapper;
+    final RxBleAdapterWrapper rxBleAdapterWrapper;
 
     ScanOperation(RxBleAdapterWrapper rxBleAdapterWrapper) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;

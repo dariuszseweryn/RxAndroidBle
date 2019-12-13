@@ -21,9 +21,9 @@ import io.reactivex.ObservableEmitter;
 
 public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 
-    private final UUIDUtil uuidUtil;
+    final UUIDUtil uuidUtil;
     @Nullable
-    private final Set<UUID> filterUuids;
+    final Set<UUID> filterUuids;
 
     public LegacyScanOperation(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, final UUIDUtil uuidUtil) {
         super(rxBleAdapterWrapper);

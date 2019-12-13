@@ -15,7 +15,7 @@ import io.reactivex.functions.Action;
  */
 public class IllegalOperationChecker {
 
-    private final IllegalOperationHandler resultHandler;
+    final IllegalOperationHandler resultHandler;
 
     @Inject
     public IllegalOperationChecker(IllegalOperationHandler resultHandler) {

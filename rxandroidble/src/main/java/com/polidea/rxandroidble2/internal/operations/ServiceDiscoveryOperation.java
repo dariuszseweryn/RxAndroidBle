@@ -24,8 +24,8 @@ import io.reactivex.functions.Function;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
-    private final BluetoothGatt bluetoothGatt;
-    private final LoggerUtilBluetoothServices bleServicesLogger;
+    final BluetoothGatt bluetoothGatt;
+    final LoggerUtilBluetoothServices bleServicesLogger;
 
     ServiceDiscoveryOperation(
             RxBleGattCallback rxBleGattCallback,

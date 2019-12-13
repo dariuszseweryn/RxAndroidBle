@@ -23,7 +23,7 @@ import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationS
 
 public class ClientOperationQueueImpl implements ClientOperationQueue {
 
-    private final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
+    final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
 
     @Inject
     public ClientOperationQueueImpl(@Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) final Scheduler callbackScheduler) {

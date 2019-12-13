@@ -172,8 +172,8 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         return mShouldCheckLocationProviderState;
     }
 
-    private ScanSettings(int scanMode, int callbackType,
-                         long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean shouldCheckLocationServicesState) {
+    ScanSettings(int scanMode, int callbackType,
+                 long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean shouldCheckLocationServicesState) {
         mScanMode = scanMode;
         mCallbackType = callbackType;
         mReportDelayMillis = reportDelayMillis;
@@ -182,7 +182,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         mShouldCheckLocationProviderState = shouldCheckLocationServicesState;
     }
 
-    private ScanSettings(Parcel in) {
+    ScanSettings(Parcel in) {
         //noinspection WrongConstant
         mScanMode = in.readInt();
         //noinspection WrongConstant
