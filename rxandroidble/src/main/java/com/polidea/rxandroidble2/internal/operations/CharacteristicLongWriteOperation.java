@@ -54,7 +54,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     private final PayloadSizeLimitProvider batchSizeProvider;
     private final WriteOperationAckStrategy writeOperationAckStrategy;
     private final WriteOperationRetryStrategy writeOperationRetryStrategy;
-    private final byte[] bytesToWrite;
+    final byte[] bytesToWrite;
     private byte[] tempBatchArray;
 
     CharacteristicLongWriteOperation(
@@ -170,7 +170,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
                 });
     }
 
-    private byte[] getNextBatch(ByteBuffer byteBuffer, int batchSize) {
+    byte[] getNextBatch(ByteBuffer byteBuffer, int batchSize) {
         final int remainingBytes = byteBuffer.remaining();
         final int nextBatchSize = Math.min(remainingBytes, batchSize);
         if (tempBatchArray == null || tempBatchArray.length != nextBatchSize) {
@@ -180,7 +180,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
         return tempBatchArray;
     }
 
-    private void writeData(byte[] bytesBatch, IntSupplier batchIndexGetter) {
+    void writeData(byte[] bytesBatch, IntSupplier batchIndexGetter) {
         if (RxBleLog.isAtLeast(LogConstants.DEBUG)) {
             RxBleLog.d("Writing batch #%04d: %s", batchIndexGetter.get(), LoggerUtil.bytesToHex(bytesBatch));
         }

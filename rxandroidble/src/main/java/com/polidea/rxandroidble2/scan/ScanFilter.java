@@ -60,10 +60,10 @@ import java.util.UUID;
     private static final ScanFilter EMPTY = new ScanFilter.Builder().build();
 
 
-    private ScanFilter(String name, String deviceAddress, ParcelUuid uuid,
-                       ParcelUuid uuidMask, ParcelUuid serviceDataUuid,
-                       byte[] serviceData, byte[] serviceDataMask,
-                       int manufacturerId, byte[] manufacturerData, byte[] manufacturerDataMask) {
+    ScanFilter(String name, String deviceAddress, ParcelUuid uuid,
+               ParcelUuid uuidMask, ParcelUuid serviceDataUuid,
+               byte[] serviceData, byte[] serviceDataMask,
+               int manufacturerId, byte[] manufacturerData, byte[] manufacturerDataMask) {
         mDeviceName = name;
         mServiceUuid = uuid;
         mServiceUuidMask = uuidMask;

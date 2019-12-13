@@ -42,14 +42,14 @@ class NotificationAndIndicationManager {
 
     static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private final byte[] configEnableNotification;
-    private final byte[] configEnableIndication;
-    private final byte[] configDisable;
-    private final BluetoothGatt bluetoothGatt;
-    private final RxBleGattCallback gattCallback;
-    private final DescriptorWriter descriptorWriter;
+    final byte[] configEnableNotification;
+    final byte[] configEnableIndication;
+    final byte[] configDisable;
+    final BluetoothGatt bluetoothGatt;
+    final RxBleGattCallback gattCallback;
+    final DescriptorWriter descriptorWriter;
 
-    private final Map<CharacteristicNotificationId, ActiveCharacteristicNotification> activeNotificationObservableMap = new HashMap<>();
+    final Map<CharacteristicNotificationId, ActiveCharacteristicNotification> activeNotificationObservableMap = new HashMap<>();
 
     @Inject
     NotificationAndIndicationManager(
@@ -133,9 +133,9 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static Completable setCharacteristicNotification(final BluetoothGatt bluetoothGatt,
-                                                             final BluetoothGattCharacteristic characteristic,
-                                                             final boolean isNotificationEnabled) {
+    static Completable setCharacteristicNotification(final BluetoothGatt bluetoothGatt,
+                                                     final BluetoothGattCharacteristic characteristic,
+                                                     final boolean isNotificationEnabled) {
         return Completable.fromAction(new Action() {
             @Override
             public void run() {
@@ -149,7 +149,7 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static ObservableTransformer<Observable<byte[]>, Observable<byte[]>> setupModeTransformer(
+    static ObservableTransformer<Observable<byte[]>, Observable<byte[]>> setupModeTransformer(
             final DescriptorWriter descriptorWriter,
             final BluetoothGattCharacteristic characteristic,
             final byte[] value,
@@ -185,10 +185,10 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static CompletableTransformer teardownModeTransformer(final DescriptorWriter descriptorWriter,
-                                                                  final BluetoothGattCharacteristic characteristic,
-                                                                  final byte[] value,
-                                                                  final NotificationSetupMode mode) {
+    static CompletableTransformer teardownModeTransformer(final DescriptorWriter descriptorWriter,
+                                                          final BluetoothGattCharacteristic characteristic,
+                                                          final byte[] value,
+                                                          final NotificationSetupMode mode) {
         return new CompletableTransformer() {
             @Override
             public Completable apply(Completable completable) {
@@ -202,8 +202,8 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static Observable<byte[]> observeOnCharacteristicChangeCallbacks(RxBleGattCallback gattCallback,
-                                                                             final CharacteristicNotificationId characteristicId) {
+    static Observable<byte[]> observeOnCharacteristicChangeCallbacks(RxBleGattCallback gattCallback,
+                                                                     final CharacteristicNotificationId characteristicId) {
         return gattCallback.getOnCharacteristicChanged()
                 .filter(new Predicate<CharacteristicChangedEvent>() {
                     @Override
@@ -220,7 +220,7 @@ class NotificationAndIndicationManager {
     }
 
     @NonNull
-    private static Completable writeClientCharacteristicConfig(
+    static Completable writeClientCharacteristicConfig(
             final BluetoothGattCharacteristic bluetoothGattCharacteristic,
             final DescriptorWriter descriptorWriter,
             final byte[] value

@@ -51,11 +51,11 @@ import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RE
 public class RxBleConnectionImpl implements RxBleConnection {
 
     private final ConnectionOperationQueue operationQueue;
-    private final RxBleGattCallback gattCallback;
-    private final BluetoothGatt bluetoothGatt;
+    final RxBleGattCallback gattCallback;
+    final BluetoothGatt bluetoothGatt;
     private final OperationsProvider operationsProvider;
     private final Provider<LongWriteOperationBuilder> longWriteOperationBuilderProvider;
-    private final Scheduler callbackScheduler;
+    final Scheduler callbackScheduler;
     private final ServiceDiscoveryManager serviceDiscoveryManager;
     private final NotificationAndIndicationManager notificationIndicationManager;
     private final MtuProvider mtuProvider;

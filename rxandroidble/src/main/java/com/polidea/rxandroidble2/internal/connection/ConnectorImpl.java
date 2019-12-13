@@ -22,8 +22,8 @@ import io.reactivex.functions.Consumer;
 public class ConnectorImpl implements Connector {
 
     private final ClientOperationQueue clientOperationQueue;
-    private final ConnectionComponent.Builder connectionComponentBuilder;
-    private final Scheduler callbacksScheduler;
+    final ConnectionComponent.Builder connectionComponentBuilder;
+    final Scheduler callbacksScheduler;
 
     @Inject
     public ConnectorImpl(
@@ -72,7 +72,7 @@ public class ConnectorImpl implements Connector {
         });
     }
 
-    private static Observable<RxBleConnection> obtainRxBleConnection(final ConnectionComponent connectionComponent) {
+    static Observable<RxBleConnection> obtainRxBleConnection(final ConnectionComponent connectionComponent) {
         return Observable.fromCallable(new Callable<RxBleConnection>() {
             @Override
             public RxBleConnection call() {
@@ -83,11 +83,11 @@ public class ConnectorImpl implements Connector {
         });
     }
 
-    private static Observable<RxBleConnection> observeDisconnections(ConnectionComponent connectionComponent) {
+    static Observable<RxBleConnection> observeDisconnections(ConnectionComponent connectionComponent) {
         return connectionComponent.gattCallback().observeDisconnect();
     }
 
-    private Observable<BluetoothGatt> enqueueConnectOperation(ConnectionComponent connectionComponent) {
+    Observable<BluetoothGatt> enqueueConnectOperation(ConnectionComponent connectionComponent) {
         return clientOperationQueue.queue(connectionComponent.connectOperation());
     }
 }

@@ -23,8 +23,8 @@ public class LogOptions {
     @Nullable
     private final Logger logger;
 
-    private LogOptions(@Nullable Integer logLevel, @Nullable Integer macAddressLogSetting, @Nullable Integer uuidLogSetting,
-                       @Nullable Boolean shouldLogAttributeValues, @Nullable Boolean shouldLogScannedPeripherals, @Nullable Logger logger) {
+    LogOptions(@Nullable Integer logLevel, @Nullable Integer macAddressLogSetting, @Nullable Integer uuidLogSetting,
+               @Nullable Boolean shouldLogAttributeValues, @Nullable Boolean shouldLogScannedPeripherals, @Nullable Logger logger) {
         this.logLevel = logLevel;
         this.macAddressLogSetting = macAddressLogSetting;
         this.uuidLogSetting = uuidLogSetting;
