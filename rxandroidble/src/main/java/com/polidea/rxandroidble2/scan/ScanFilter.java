@@ -311,8 +311,8 @@ import java.util.UUID;
     }
 
     // Check if the uuid pattern is contained in a list of parcel uuids.
-    private boolean matchesServiceUuids(ParcelUuid uuid, ParcelUuid parcelUuidMask,
-                                        List<ParcelUuid> uuids) {
+    private static boolean matchesServiceUuids(ParcelUuid uuid, ParcelUuid parcelUuidMask,
+                                               List<ParcelUuid> uuids) {
         if (uuid == null) {
             return true;
         }
@@ -330,7 +330,7 @@ import java.util.UUID;
     }
 
     // Check if the uuid pattern matches the particular service uuid.
-    private boolean matchesServiceUuid(UUID uuid, UUID mask, UUID data) {
+    private static boolean matchesServiceUuid(UUID uuid, UUID mask, UUID data) {
         if (mask == null) {
             return uuid.equals(data);
         }
@@ -343,7 +343,7 @@ import java.util.UUID;
     }
 
     // Check whether the data pattern matches the parsed data.
-    private boolean matchesPartialData(byte[] data, byte[] dataMask, byte[] parsedData) {
+    private static boolean matchesPartialData(byte[] data, byte[] dataMask, byte[] parsedData) {
         if (parsedData == null || parsedData.length < data.length) {
             return false;
         }

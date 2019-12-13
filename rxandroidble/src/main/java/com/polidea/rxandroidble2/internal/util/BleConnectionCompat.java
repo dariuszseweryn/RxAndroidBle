@@ -96,7 +96,8 @@ public class BleConnectionCompat {
         }
     }
 
-    private boolean connectUsingReflection(BluetoothGatt bluetoothGatt, BluetoothGattCallback bluetoothGattCallback, boolean autoConnect)
+    private static boolean connectUsingReflection(BluetoothGatt bluetoothGatt, BluetoothGattCallback bluetoothGattCallback,
+                                                  boolean autoConnect)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         RxBleLog.v("Connecting using reflection");
         setAutoConnectValue(bluetoothGatt, autoConnect);
@@ -119,7 +120,7 @@ public class BleConnectionCompat {
         }
     }
 
-    private Object getIBluetoothGatt(Object iBluetoothManager)
+    private static Object getIBluetoothGatt(Object iBluetoothManager)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         if (iBluetoothManager == null) {
@@ -130,7 +131,7 @@ public class BleConnectionCompat {
         return getBluetoothGattMethod.invoke(iBluetoothManager);
     }
 
-    private Object getIBluetoothManager() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static Object getIBluetoothManager() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -142,13 +143,14 @@ public class BleConnectionCompat {
         return getBluetoothManagerMethod.invoke(bluetoothAdapter);
     }
 
-    private Method getMethodFromClass(Class<?> cls, String methodName) throws NoSuchMethodException {
+    private static Method getMethodFromClass(Class<?> cls, String methodName) throws NoSuchMethodException {
         Method method = cls.getDeclaredMethod(methodName);
         method.setAccessible(true);
         return method;
     }
 
-    private void setAutoConnectValue(BluetoothGatt bluetoothGatt, boolean autoConnect) throws NoSuchFieldException, IllegalAccessException {
+    private static void setAutoConnectValue(BluetoothGatt bluetoothGatt, boolean autoConnect)
+            throws NoSuchFieldException, IllegalAccessException {
         Field autoConnectField = bluetoothGatt.getClass().getDeclaredField("mAutoConnect");
         autoConnectField.setAccessible(true);
         autoConnectField.setBoolean(bluetoothGatt, autoConnect);

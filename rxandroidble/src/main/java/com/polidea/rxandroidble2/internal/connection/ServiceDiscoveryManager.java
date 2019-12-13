@@ -82,7 +82,7 @@ class ServiceDiscoveryManager {
     }
 
     @NonNull
-    private Function<List<BluetoothGattService>, RxBleDeviceServices> wrapIntoRxBleDeviceServices() {
+    private static Function<List<BluetoothGattService>, RxBleDeviceServices> wrapIntoRxBleDeviceServices() {
         return new Function<List<BluetoothGattService>, RxBleDeviceServices>() {
             @Override
             public RxBleDeviceServices apply(List<BluetoothGattService> bluetoothGattServices) {
