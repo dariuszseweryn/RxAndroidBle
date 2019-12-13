@@ -220,7 +220,7 @@ public class RxBleGattCallback {
         }
     };
 
-    private RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
+    private static RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
 
         switch (newState) {
             case BluetoothGatt.STATE_CONNECTING:
@@ -234,7 +234,7 @@ public class RxBleGattCallback {
         }
     }
 
-    private boolean propagateErrorIfOccurred(
+    private static boolean propagateErrorIfOccurred(
             Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattCharacteristic characteristic,
@@ -249,7 +249,7 @@ public class RxBleGattCallback {
         ));
     }
 
-    private boolean propagateErrorIfOccurred(
+    private static boolean propagateErrorIfOccurred(
             Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattDescriptor descriptor,
@@ -264,15 +264,15 @@ public class RxBleGattCallback {
         ));
     }
 
-    private boolean propagateErrorIfOccurred(Output<?> output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
+    private static boolean propagateErrorIfOccurred(Output<?> output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
         return isException(status) && propagateStatusError(output, new BleGattException(gatt, status, operationType));
     }
 
-    private boolean isException(int status) {
+    private static boolean isException(int status) {
         return status != BluetoothGatt.GATT_SUCCESS;
     }
 
-    private boolean propagateStatusError(Output<?> output, BleGattException exception) {
+    private static boolean propagateStatusError(Output<?> output, BleGattException exception) {
         output.errorRelay.accept(exception);
         return true;
     }

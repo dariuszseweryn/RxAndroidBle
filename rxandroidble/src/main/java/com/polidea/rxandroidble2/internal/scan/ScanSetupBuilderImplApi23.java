@@ -68,7 +68,7 @@ public class ScanSetupBuilderImplApi23 implements ScanSetupBuilder {
         );
     }
 
-    private boolean areFiltersSpecified(ScanFilter[] scanFilters) {
+    private static boolean areFiltersSpecified(ScanFilter[] scanFilters) {
         boolean scanFiltersEmpty = true;
         for (ScanFilter scanFilter : scanFilters) {
             scanFiltersEmpty &= scanFilter.isAllFieldsEmpty();

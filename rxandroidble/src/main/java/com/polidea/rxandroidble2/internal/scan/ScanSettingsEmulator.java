@@ -137,7 +137,7 @@ public class ScanSettingsEmulator {
         }
     }
 
-    private ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> splitByAddressAndForEach(
+    private static ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> splitByAddressAndForEach(
             final ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult> compose
     ) {
         return new ObservableTransformer<RxBleInternalScanResult, RxBleInternalScanResult>() {
@@ -161,7 +161,7 @@ public class ScanSettingsEmulator {
         };
     }
 
-    private Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatch() {
+    private static Function<RxBleInternalScanResult, RxBleInternalScanResult> toFirstMatch() {
         return new Function<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
             public RxBleInternalScanResult apply(RxBleInternalScanResult rxBleInternalScanResult) {
@@ -184,7 +184,7 @@ public class ScanSettingsEmulator {
         }
     };
 
-    private Function<RxBleInternalScanResult, RxBleInternalScanResult> toMatchLost() {
+    private static Function<RxBleInternalScanResult, RxBleInternalScanResult> toMatchLost() {
         return new Function<RxBleInternalScanResult, RxBleInternalScanResult>() {
             @Override
             public RxBleInternalScanResult apply(RxBleInternalScanResult rxBleInternalScanResult) {
