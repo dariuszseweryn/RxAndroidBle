@@ -1,5 +1,5 @@
 ext {
-    rxJavaVersion = '2.2.8'
+    rxJavaVersion = '2.2.17'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     shadowPluginVersion = '5.0.0'
@@ -8,22 +8,22 @@ ext {
             /* Library-only dependencies */
             rxjava                : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
             rxandroid             : 'io.reactivex.rxjava2:rxandroid:2.1.1',
-            rxrelay               : 'com.jakewharton.rxrelay2:rxrelay:2.1.0',
-            junit                 : 'junit:junit:4.12',
-            groovy                : 'org.codehaus.groovy:groovy:2.5.7',
+            rxrelay               : 'com.jakewharton.rxrelay2:rxrelay:2.1.1',
+            junit                 : 'junit:junit:4.13',
+            groovy                : 'org.codehaus.groovy:groovy:2.5.8',
             spock                 : ['org.spockframework:spock-core:1.2-groovy-2.5',
-                                     'cglib:cglib-nodep:3.2.12',
+                                     'cglib:cglib-nodep:3.3.0',
                                      'org.objenesis:objenesis:2.6'],
             electricspock         : 'com.github.hkhc:electricspock:0.9',
             dagger                : "com.google.dagger:dagger:$daggerVersion",
             dagger_compiler       : "com.google.dagger:dagger-compiler:$daggerVersion",
             /* Shared library-sample apps dependencies */
-            annotations           : "androidx.annotation:annotation:1.0.2",
+            annotations           : "androidx.annotation:annotation:1.1.0",
             robolectric           : 'org.robolectric:robolectric:3.8',
             /* Sample apps-only dependencies */
-            rxjava_replayingshare : 'com.jakewharton.rx2:replaying-share:2.1.1',
-            rxjava_binding        : 'com.jakewharton.rxbinding3:rxbinding:3.0.0-alpha2',
-            appcompat             : 'androidx.appcompat:appcompat:1.0.2',
+            rxjava_replayingshare : 'com.jakewharton.rx2:replaying-share:2.2.0',
+            rxjava_binding        : 'com.jakewharton.rxbinding3:rxbinding:3.1.0',
+            appcompat             : 'androidx.appcompat:appcompat:1.1.0',
             material_design       : 'com.google.android.material:material:1.0.0'
     ]
 }

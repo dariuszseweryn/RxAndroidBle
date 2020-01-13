@@ -3,12 +3,12 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.kotlin.android.extensions'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.polidea.rxandroidble.sample"
         minSdkVersion 18
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
     }
@@ -45,7 +45,7 @@ dependencies {
     // AndroidX
     implementation rootProject.ext.libs.appcompat
     implementation rootProject.ext.libs.material_design
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation rootProject.ext.libs.annotations
 
     // RxBinding
@@ -54,7 +54,7 @@ dependencies {
     // RxJava
     implementation rootProject.ext.libs.rxjava
     implementation rootProject.ext.libs.rxandroid
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.3.0'
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
 
     // Replaying share
     implementation rootProject.ext.libs.rxjava_replayingshare
