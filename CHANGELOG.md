@@ -1,5 +1,10 @@
 Change Log
 ==========
+Version 1.11.0
+* Added workaround for scans with settings match found and/or lost but no filters (https://github.com/Polidea/RxAndroidBle/pull/612)
+* Fixed typo in `BleCharacteristicNotFoundException` (https://github.com/Polidea/RxAndroidBle/pull/625)
+* Added scan permission helper functions (https://github.com/Polidea/RxAndroidBle/pull/642)
+
 Version 1.10.5
 * Fixed possibly incorrect order of notifications and operation completions (https://github.com/Polidea/RxAndroidBle/pull/639)
 * Fixed possibility of library being stalled on operation cancelling (https://github.com/Polidea/RxAndroidBle/pull/650)
