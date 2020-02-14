@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.7.1
+* Fixed location/scan permissions for Android 10
+
 Version 1.7.0
 * Added `QUICK_SETUP` mode for setting notifications/indications (https://github.com/Polidea/RxAndroidBle/pull/479)
 * Fixed possible `IllegalArgumentException` while parsing UUIDs from advertisements (https://github.com/Polidea/RxAndroidBle/pull/486) 
