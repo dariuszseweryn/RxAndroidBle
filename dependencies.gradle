@@ -1,6 +1,6 @@
 ext {
     supportVersion = '27.1.0'
-    rxJavaVersion = '1.3.3'
+    rxJavaVersion = '1.3.8'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     shadowPluginVersion = '2.0.2'
@@ -10,7 +10,7 @@ ext {
             support            : "com.android.support:support-v4:$supportVersion",
             support_annotations: "com.android.support:support-annotations:$supportVersion",
             rxjava             : ["io.reactivex:rxjava:$rxJavaVersion",
-                                  "com.artemzin.rxjava:proguard-rules:$rxJavaVersion.0"],
+                                  "com.artemzin.rxjava:proguard-rules:1.3.3.0"],
             rxandroid          : 'io.reactivex:rxandroid:1.2.1',
             rxrelay            : 'com.jakewharton.rxrelay:rxrelay:1.2.0',
             junit              : 'junit:junit:4.12',
