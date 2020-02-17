@@ -20,7 +20,7 @@ notifications:
 
 env:
   global:
-    - GRADLE_OPTS="-Xms128m"
+    - GRADLE_OPTS="-Xms256m"
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
