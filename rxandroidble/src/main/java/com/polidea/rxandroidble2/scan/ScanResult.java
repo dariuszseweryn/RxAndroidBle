@@ -13,7 +13,8 @@ public class ScanResult {
     private final ScanRecord scanRecord;
     private final android.bluetooth.le.ScanResult scanResult;
 
-    public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType, ScanRecord scanRecord, android.bluetooth.le.ScanResult scanResult) {
+    public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType,
+                      ScanRecord scanRecord, android.bluetooth.le.ScanResult scanResult) {
         this.bleDevice = bleDevice;
         this.rssi = rssi;
         this.timestampNanos = timestampNanos;
