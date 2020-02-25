@@ -32,21 +32,21 @@ public class InternalScanResultCreator {
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
         final ScanRecord scanRecordObj = uuidUtil.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
-                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED);
+                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, null);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord());
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                ScanCallbackType.CALLBACK_TYPE_BATCH);
+                ScanCallbackType.CALLBACK_TYPE_BATCH, result);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(int callbackType, ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord());
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                toScanCallbackType(callbackType));
+                toScanCallbackType(callbackType), result);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
