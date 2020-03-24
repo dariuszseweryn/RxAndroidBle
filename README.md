@@ -205,7 +205,7 @@ device.establishConnection(false)
 ```java
 device.establishConnection(false)
     .flatMapSingle(rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUuid)
-        .doOnNext(bytes -> {
+        .doOnSuccess(bytes -> {
             // Process read data.
         })
         .flatMap(bytes -> rxBleConnection.writeCharacteristic(characteristicUuid, bytesToWrite))
