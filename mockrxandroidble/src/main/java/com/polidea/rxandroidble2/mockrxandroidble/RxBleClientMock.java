@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
@@ -87,6 +88,7 @@ public class RxBleClientMock extends RxBleClient {
         private String deviceMacAddress;
         private byte[] scanRecord;
         private RxBleDeviceServices rxBleDeviceServices;
+        private BluetoothDevice bluetoothDevice;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
         /**
@@ -129,7 +131,8 @@ public class RxBleClientMock extends RxBleClient {
                     scanRecord,
                     rssi,
                     rxBleDeviceServices,
-                    characteristicNotificationSources);
+                    characteristicNotificationSources,
+                    bluetoothDevice);
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                 rxBleDeviceMock.addAdvertisedUUID(service.getUuid());
@@ -150,6 +153,14 @@ public class RxBleClientMock extends RxBleClient {
          */
         public DeviceBuilder deviceName(@NonNull String deviceName) {
             this.deviceName = deviceName;
+            return this;
+        }
+
+        /**
+         * Sets a bluetooth device. Calling this method is not required.
+         */
+        public DeviceBuilder bluetoothDevice(@NonNull BluetoothDevice bluetoothDevice) {
+            this.bluetoothDevice = bluetoothDevice;
             return this;
         }
 
