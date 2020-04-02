@@ -19,7 +19,7 @@ public class LoggerUtil {
     private final static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     public static String bytesToHex(byte[] bytes) {
-        if (bytes == null) return String.valueOf(null);
+        if (bytes == null) return "null";
 
         if (!RxBleLog.getShouldLogAttributeValues()) {
             return "[...]";
