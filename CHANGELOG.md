@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.11.1
+* Fixed `NullPointerException` when logging failed `BluetoothGattCharacteristic` initial reads (https://github.com/Polidea/RxAndroidBle/pull/679)
+* [mockclient] Added support for `BluetoothDevice` in `RxBleDeviceMock` (https://github.com/Polidea/RxAndroidBle/pull/676)
+
 Version 1.11.0
 * Added workaround for scans with settings match found and/or lost but no filters (https://github.com/Polidea/RxAndroidBle/pull/612)
 * Fixed typo in `BleCharacteristicNotFoundException` (https://github.com/Polidea/RxAndroidBle/pull/625)
