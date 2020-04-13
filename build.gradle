@@ -60,3 +60,32 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+apply plugin: 'maven-publish'
+
+def getArtificatId = { ->
+    return "rxandroidble"
+}
+
+publishing {
+    publications {
+        app(MavenPublication) {
+            groupId 'com.github.rxandroidble'
+            artifactId getArtificatId()
+            version "1.0"
+
+            artifact('/Users/rohan/repos/RxAndroidBle/rxandroidble/build/outputs/aar/rxandroidble-debug.aar') {}
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/proxyco/RxAndroidBle")
+            credentials {
+                username = System.getenv("GPR_USER")
+                password = System.getenv("GPR_API_KEY")
+            }
+        }
+    }
+}

@@ -418,3 +418,9 @@ Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELi
 ## Maintained by
 
 [![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
+
+## Publish
+- Make sure to set `GPR_USER` and `GPR_API_KEY` environmental variables, where USER is your Github username, and API_KEY is your personal access token for Github.
+- Increment the version of package deploy in build.gradle
+- Clean & Build the project locally with Android studio, then run
+- ./gradlew publish
