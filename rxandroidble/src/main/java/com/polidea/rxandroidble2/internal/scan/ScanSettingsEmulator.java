@@ -170,7 +170,8 @@ public class ScanSettingsEmulator {
                         rxBleInternalScanResult.getRssi(),
                         rxBleInternalScanResult.getTimestampNanos(),
                         rxBleInternalScanResult.getScanRecord(),
-                        ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH
+                        ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH,
+                        rxBleInternalScanResult.isConnectable()
                 );
             }
         };
@@ -193,7 +194,8 @@ public class ScanSettingsEmulator {
                         rxBleInternalScanResult.getRssi(),
                         rxBleInternalScanResult.getTimestampNanos(),
                         rxBleInternalScanResult.getScanRecord(),
-                        ScanCallbackType.CALLBACK_TYPE_MATCH_LOST
+                        ScanCallbackType.CALLBACK_TYPE_MATCH_LOST,
+                        rxBleInternalScanResult.isConnectable()
                 );
             }
         };

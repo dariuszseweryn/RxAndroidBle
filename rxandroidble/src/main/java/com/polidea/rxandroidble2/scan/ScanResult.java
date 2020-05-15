@@ -11,13 +11,16 @@ public class ScanResult {
     private final long timestampNanos;
     private final ScanCallbackType callbackType;
     private final ScanRecord scanRecord;
+    private final Boolean isConnectable;
 
-    public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType, ScanRecord scanRecord) {
+    public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType,
+                      ScanRecord scanRecord, Boolean isConnectable) {
         this.bleDevice = bleDevice;
         this.rssi = rssi;
         this.timestampNanos = timestampNanos;
         this.callbackType = callbackType;
         this.scanRecord = scanRecord;
+        this.isConnectable = isConnectable;
     }
 
     public RxBleDevice getBleDevice() {
@@ -40,6 +43,10 @@ public class ScanResult {
         return scanRecord;
     }
 
+    public Boolean isConnectable() {
+        return isConnectable;
+    }
+
     @Override
     public String toString() {
         return "ScanResult{"
@@ -48,6 +55,7 @@ public class ScanResult {
                 + ", timestampNanos=" + timestampNanos
                 + ", callbackType=" + callbackType
                 + ", scanRecord=" + LoggerUtil.bytesToHex(scanRecord.getBytes())
+                + ", isconnectable=" + isConnectable
                 + '}';
     }
 }

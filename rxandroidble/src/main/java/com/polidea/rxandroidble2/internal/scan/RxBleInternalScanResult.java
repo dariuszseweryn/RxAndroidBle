@@ -11,14 +11,16 @@ public class RxBleInternalScanResult {
     private final long timestampNanos;
     private final ScanRecord scanRecord;
     private final ScanCallbackType scanCallbackType;
+    private final Boolean isConnectable;
 
     public RxBleInternalScanResult(BluetoothDevice bluetoothDevice, int rssi, long timestampNanos, ScanRecord scanRecord,
-                                   ScanCallbackType scanCallbackType) {
+                                   ScanCallbackType scanCallbackType, Boolean isConnectable) {
         this.bluetoothDevice = bluetoothDevice;
         this.rssi = rssi;
         this.timestampNanos = timestampNanos;
         this.scanRecord = scanRecord;
         this.scanCallbackType = scanCallbackType;
+        this.isConnectable = isConnectable;
     }
 
     public BluetoothDevice getBluetoothDevice() {
@@ -39,5 +41,9 @@ public class RxBleInternalScanResult {
 
     public ScanCallbackType getScanCallbackType() {
         return scanCallbackType;
+    }
+
+    public Boolean isConnectable() {
+        return isConnectable;
     }
 }
