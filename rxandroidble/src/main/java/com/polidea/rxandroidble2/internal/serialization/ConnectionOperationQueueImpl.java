@@ -38,9 +38,9 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
     private final String deviceMacAddress;
     private final DisconnectionRouterOutput disconnectionRouterOutput;
     private DisposableObserver<BleException> disconnectionThrowableSubscription;
-    private final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
+    final OperationPriorityFifoBlockingQueue queue = new OperationPriorityFifoBlockingQueue();
     private final Future<?> runnableFuture;
-    private volatile boolean shouldRun = true;
+    volatile boolean shouldRun = true;
     private BleException disconnectionException = null;
 
     @Inject
@@ -89,7 +89,7 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
         });
     }
 
-    private synchronized void flushQueue() {
+    synchronized void flushQueue() {
         while (!queue.isEmpty()) {
             final FIFORunnableEntry<?> entryToFinish = queue.takeNow();
             entryToFinish.operationResultObserver.tryOnError(disconnectionException);
@@ -105,11 +105,11 @@ public class ConnectionOperationQueueImpl implements ConnectionOperationQueue, C
 
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void subscribe(ObservableEmitter<T> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<T> emitter) {
                 final FIFORunnableEntry entry = new FIFORunnableEntry<>(operation, emitter);
                 emitter.setCancellable(new Cancellable() {
                     @Override
-                    public void cancel() throws Exception {
+                    public void cancel() {
                         if (queue.remove(entry)) {
                             logOperationRemoved(operation);
                         }

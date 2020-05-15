@@ -9,7 +9,6 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import io.reactivex.Emitter;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.Cancellable;
 
@@ -21,7 +20,7 @@ import io.reactivex.functions.Cancellable;
  */
 abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extends QueueOperation<SCAN_RESULT_TYPE> {
 
-    private final RxBleAdapterWrapper rxBleAdapterWrapper;
+    final RxBleAdapterWrapper rxBleAdapterWrapper;
 
     ScanOperation(RxBleAdapterWrapper rxBleAdapterWrapper) {
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -35,7 +34,7 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
         try {
             emitter.setCancellable(new Cancellable() {
                 @Override
-                public void cancel() throws Exception {
+                public void cancel() {
                     RxBleLog.i("Scan operation is requested to stop.");
                     stopScan(rxBleAdapterWrapper, scanCallback);
                 }
@@ -67,21 +66,21 @@ abstract public class ScanOperation<SCAN_RESULT_TYPE, SCAN_CALLBACK_TYPE> extend
      * @return the scan callback type to use with {@link #startScan(RxBleAdapterWrapper, Object)}
      * and {@link #stopScan(RxBleAdapterWrapper, Object)}
      */
-    abstract SCAN_CALLBACK_TYPE createScanCallback(Emitter<SCAN_RESULT_TYPE> emitter);
+    abstract SCAN_CALLBACK_TYPE createScanCallback(ObservableEmitter<SCAN_RESULT_TYPE> emitter);
 
     /**
      * Function that should start the scan using passed {@link RxBleAdapterWrapper} and {@link SCAN_CALLBACK_TYPE} callback
      * @param rxBleAdapterWrapper the {@link RxBleAdapterWrapper} to use
-     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(Emitter)} to start
+     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(ObservableEmitter)} to start
      * @return true if successful
      */
     abstract boolean startScan(RxBleAdapterWrapper rxBleAdapterWrapper, SCAN_CALLBACK_TYPE scanCallback);
 
     /**
      * Method that should stop the scan for a given {@link SCAN_CALLBACK_TYPE} that was previously returned
-     * by {@link #createScanCallback(Emitter)}
+     * by {@link #createScanCallback(ObservableEmitter)}
      * @param rxBleAdapterWrapper the {@link RxBleAdapterWrapper} to use
-     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(Emitter)} to stop
+     * @param scanCallback the {@link SCAN_CALLBACK_TYPE} returned by {@link #createScanCallback(ObservableEmitter)} to stop
      */
     abstract void stopScan(RxBleAdapterWrapper rxBleAdapterWrapper, SCAN_CALLBACK_TYPE scanCallback);
 }

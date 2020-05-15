@@ -50,7 +50,7 @@ public class ConnectionPriorityChangeOperation extends SingleResponseOperation<L
                 + '}';
     }
 
-    private String connectionPriorityToString(int connectionPriority) {
+    private static String connectionPriorityToString(int connectionPriority) {
         switch (connectionPriority) {
             case BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER:
                 return "CONNECTION_PRIORITY_LOW_POWER";
@@ -58,7 +58,7 @@ public class ConnectionPriorityChangeOperation extends SingleResponseOperation<L
                 return "CONNECTION_PRIORITY_BALANCED";
             case BluetoothGatt.CONNECTION_PRIORITY_HIGH:
             default:
-                return "CONNECTION_PRIORITY_BALANCED";
+                return "CONNECTION_PRIORITY_HIGH";
         }
     }
 }

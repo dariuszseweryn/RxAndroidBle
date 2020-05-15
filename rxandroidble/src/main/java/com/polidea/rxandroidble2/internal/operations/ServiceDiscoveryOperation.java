@@ -25,8 +25,8 @@ import io.reactivex.functions.Function;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
 
-    private final BluetoothGatt bluetoothGatt;
-    private final LoggerUtilBluetoothServices bleServicesLogger;
+    final BluetoothGatt bluetoothGatt;
+    final LoggerUtilBluetoothServices bleServicesLogger;
 
     ServiceDiscoveryOperation(
             RxBleGattCallback rxBleGattCallback,
@@ -43,7 +43,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
         return rxBleGattCallback.getOnServicesDiscovered().firstOrError()
                 .doOnSuccess(new Consumer<RxBleDeviceServices>() {
                     @Override
-                    public void accept(RxBleDeviceServices rxBleDeviceServices) throws Exception {
+                    public void accept(RxBleDeviceServices rxBleDeviceServices) {
                         bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice());
                     }
                 });
@@ -95,7 +95,7 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
                                 public Single<RxBleDeviceServices> apply(Long delayedSeconds) {
                                     return Single.fromCallable(new Callable<RxBleDeviceServices>() {
                                         @Override
-                                        public RxBleDeviceServices call() throws Exception {
+                                        public RxBleDeviceServices call() {
                                             return new RxBleDeviceServices(bluetoothGatt.getServices());
                                         }
                                     });

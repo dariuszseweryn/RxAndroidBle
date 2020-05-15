@@ -39,7 +39,7 @@ import io.reactivex.functions.Action;
 @Deprecated
 public class ConnectionSharingAdapter implements ObservableTransformer<RxBleConnection, RxBleConnection> {
 
-    private final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
+    final AtomicReference<Observable<RxBleConnection>> connectionObservable = new AtomicReference<>();
 
     @Override
     public ObservableSource<RxBleConnection> apply(Observable<RxBleConnection> upstream) {

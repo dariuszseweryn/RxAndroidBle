@@ -44,8 +44,8 @@ dependencies {
     implementation project(path: ':rxandroidble')
     implementation rootProject.ext.libs.appcompat
     implementation rootProject.ext.libs.material_design
-    implementation 'com.jakewharton:butterknife:10.1.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
+    implementation 'com.jakewharton:butterknife:10.2.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
     implementation rootProject.ext.libs.rxandroid
     implementation rootProject.ext.libs.rxjava
     implementation rootProject.ext.libs.rxjava_binding

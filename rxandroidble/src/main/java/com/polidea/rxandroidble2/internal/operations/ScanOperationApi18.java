@@ -13,14 +13,14 @@ import com.polidea.rxandroidble2.internal.scan.InternalScanResultCreator;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
 
-import io.reactivex.Emitter;
+import io.reactivex.ObservableEmitter;
 
 public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, BluetoothAdapter.LeScanCallback> {
 
     @NonNull
-    private final InternalScanResultCreator scanResultCreator;
+    final InternalScanResultCreator scanResultCreator;
     @NonNull
-    private final EmulatedScanFilterMatcher scanFilterMatcher;
+    final EmulatedScanFilterMatcher scanFilterMatcher;
 
     public ScanOperationApi18(
             @NonNull RxBleAdapterWrapper rxBleAdapterWrapper,
@@ -34,7 +34,7 @@ public class ScanOperationApi18 extends ScanOperation<RxBleInternalScanResult, B
     }
 
     @Override
-    BluetoothAdapter.LeScanCallback createScanCallback(final Emitter<RxBleInternalScanResult> emitter) {
+    BluetoothAdapter.LeScanCallback createScanCallback(final ObservableEmitter<RxBleInternalScanResult> emitter) {
         return new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {

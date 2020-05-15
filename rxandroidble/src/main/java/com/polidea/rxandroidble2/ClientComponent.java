@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -26,6 +27,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi23;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueueImpl;
+import com.polidea.rxandroidble2.internal.serialization.RxBleThreadFactory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23Factory;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
@@ -47,6 +49,7 @@ import bleshadow.javax.inject.Provider;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.functions.Function;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
 @ClientScope
@@ -56,7 +59,6 @@ public interface ClientComponent {
     class NamedExecutors {
 
         public static final String BLUETOOTH_INTERACTION = "executor_bluetooth_interaction";
-        public static final String BLUETOOTH_CALLBACKS = "executor_bluetooth_callbacks";
         public static final String CONNECTION_QUEUE = "executor_connection_queue";
         private NamedExecutors() {
 
@@ -79,6 +81,7 @@ public interface ClientComponent {
         public static final String INT_TARGET_SDK = "target-sdk";
         public static final String INT_DEVICE_SDK = "device-sdk";
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
+        public static final String STRING_ARRAY_SCAN_PERMISSIONS = "scan-permissions";
         private PlatformConstants() {
 
         }
@@ -137,6 +140,28 @@ public interface ClientComponent {
         }
 
         @Provides
+        @Named(PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS)
+        static String[] provideRecommendedScanRuntimePermissionNames(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                @Named(PlatformConstants.INT_TARGET_SDK) int targetSdk
+        ) {
+            int sdkVersion = Math.min(deviceSdk, targetSdk);
+            if (sdkVersion < 23 /* pre Android M */) {
+                // Before API 23 (Android M) no runtime permissions are needed
+                return new String[]{};
+            }
+            if (sdkVersion < 29 /* pre Android 10 */) {
+                // Since API 23 (Android M) ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION allows for getting scan results
+                return new String[]{
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                };
+            }
+            // Since API 29 (Android 10) only ACCESS_FINE_LOCATION allows for getting scan results
+            return new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        }
+
+        @Provides
         static ContentResolver provideContentResolver(Context context) {
             return context.getContentResolver();
         }
@@ -178,13 +203,6 @@ public interface ClientComponent {
         }
 
         @Provides
-        @Named(NamedExecutors.BLUETOOTH_CALLBACKS)
-        @ClientScope
-        static ExecutorService provideBluetoothCallbacksExecutorService() {
-            return Executors.newSingleThreadExecutor();
-        }
-
-        @Provides
         @Named(NamedSchedulers.BLUETOOTH_INTERACTION)
         @ClientScope
         static Scheduler provideBluetoothInteractionScheduler(@Named(NamedExecutors.BLUETOOTH_INTERACTION) ExecutorService service) {
@@ -194,21 +212,21 @@ public interface ClientComponent {
         @Provides
         @Named(NamedSchedulers.BLUETOOTH_CALLBACKS)
         @ClientScope
-        static Scheduler provideBluetoothCallbacksScheduler(@Named(NamedExecutors.BLUETOOTH_CALLBACKS) ExecutorService service) {
-            return Schedulers.from(service);
+        static Scheduler provideBluetoothCallbacksScheduler() {
+            return RxJavaPlugins.createSingleScheduler(new RxBleThreadFactory());
         }
 
         @Provides
         static ClientComponentFinalizer provideFinalizationCloseable(
                 @Named(NamedExecutors.BLUETOOTH_INTERACTION) final ExecutorService interactionExecutorService,
-                @Named(NamedExecutors.BLUETOOTH_CALLBACKS) final ExecutorService callbacksExecutorService,
+                @Named(NamedSchedulers.BLUETOOTH_CALLBACKS) final Scheduler callbacksScheduler,
                 @Named(NamedExecutors.CONNECTION_QUEUE) final ExecutorService connectionQueueExecutorService
         ) {
             return new ClientComponentFinalizer() {
                 @Override
                 public void onFinalize() {
                     interactionExecutorService.shutdown();
-                    callbacksExecutorService.shutdown();
+                    callbacksScheduler.shutdown();
                     connectionQueueExecutorService.shutdown();
                 }
             };

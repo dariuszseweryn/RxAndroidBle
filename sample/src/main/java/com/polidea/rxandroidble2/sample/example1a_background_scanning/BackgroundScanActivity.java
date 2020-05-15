@@ -41,10 +41,10 @@ public class BackgroundScanActivity extends AppCompatActivity {
     @OnClick(R.id.scan_start_btn)
     public void onScanStartClick() {
         hasClickedScan = true;
-        if (LocationPermission.isLocationPermissionGranted(this)) {
+        if (rxBleClient.isScanRuntimePermissionGranted()) {
             scanBleDeviceInBackground();
         } else {
-            LocationPermission.requestLocationPermission(this);
+            LocationPermission.requestLocationPermission(this, rxBleClient);
         }
     }
 
@@ -72,7 +72,7 @@ public class BackgroundScanActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
             @NonNull final int[] grantResults) {
-        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults)
+        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults, rxBleClient)
                 && hasClickedScan) {
             hasClickedScan = false;
             scanBleDeviceInBackground();

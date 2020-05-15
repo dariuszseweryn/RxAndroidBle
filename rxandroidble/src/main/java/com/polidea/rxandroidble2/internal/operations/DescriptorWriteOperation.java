@@ -19,8 +19,8 @@ import static com.polidea.rxandroidble2.internal.util.ByteAssociationUtil.getByt
 
 public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
 
-    private BluetoothGattDescriptor bluetoothGattDescriptor;
-    private byte[] data;
+    private final BluetoothGattDescriptor bluetoothGattDescriptor;
+    private final byte[] data;
     private final int bluetoothGattCharacteristicDefaultWriteType;
 
     DescriptorWriteOperation(RxBleGattCallback rxBleGattCallback,

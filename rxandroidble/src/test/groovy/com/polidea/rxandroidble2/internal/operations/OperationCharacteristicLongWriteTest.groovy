@@ -19,9 +19,11 @@ import io.reactivex.Scheduler
 import io.reactivex.annotations.NonNull
 import io.reactivex.functions.Function
 import io.reactivex.observers.TestObserver
+import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.atomic.AtomicReference
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -542,6 +544,26 @@ class OperationCharacteristicLongWriteTest extends Specification {
         ]
     }
 
+    def "unsuccessful writeCharacteristic() should not pass error to RxJavaPlugins.onErrorHandler() if Observable was disposed"() {
+
+        given:
+        def capturedException = captureRxUnhandledExceptions()
+        def testScheduler = new TestScheduler()
+        givenWillWriteNextBatchImmediatelyAfterPrevious()
+        givenCharacteristicWriteOkButEventuallyFailsToStart(0)
+        prepareObjectUnderTest(1, byteArray(20), testScheduler)
+        objectUnderTest.run(mockQueueReleaseInterface).test().dispose()
+
+        when:
+        testScheduler.triggerActions()
+
+        then:
+        capturedException.get() == null
+
+        cleanup:
+        RxJavaPlugins.setErrorHandler(null)
+    }
+
     ////////////////////// Testing repetition logic implementation
 
     def "should emit repeat until ByteBuffer is empty"() {
@@ -750,11 +772,23 @@ class OperationCharacteristicLongWriteTest extends Specification {
         }
     }
 
+    private static AtomicReference<Throwable> captureRxUnhandledExceptions() {
+        AtomicReference<Throwable> unhandledExceptionAtomicReference = new AtomicReference<>()
+        RxJavaPlugins.setErrorHandler({ throwable ->
+            unhandledExceptionAtomicReference.set(throwable)
+        })
+        return unhandledExceptionAtomicReference
+    }
+
     private prepareObjectUnderTest(int maxBatchSize, byte[] testData) {
+        prepareObjectUnderTest(maxBatchSize, testData, immediateScheduler)
+    }
+
+    private prepareObjectUnderTest(int maxBatchSize, byte[] testData, Scheduler scheduler) {
         objectUnderTest = new CharacteristicLongWriteOperation(
                 mockGatt,
                 mockCallback,
-                immediateScheduler,
+                scheduler,
                 new MockOperationTimeoutConfiguration(10, timeoutScheduler),
                 mockCharacteristic,
                 { maxBatchSize },

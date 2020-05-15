@@ -31,12 +31,12 @@ import io.reactivex.subjects.Subject;
 @ConnectionScope
 class ServiceDiscoveryManager {
 
-    private final ConnectionOperationQueue operationQueue;
-    private final BluetoothGatt bluetoothGatt;
-    private final OperationsProvider operationProvider;
+    final ConnectionOperationQueue operationQueue;
+    final BluetoothGatt bluetoothGatt;
+    final OperationsProvider operationProvider;
     private Single<RxBleDeviceServices> deviceServicesObservable;
-    private Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
-    private boolean hasCachedResults = false;
+    final Subject<TimeoutConfiguration> timeoutBehaviorSubject = BehaviorSubject.<TimeoutConfiguration>create().toSerialized();
+    boolean hasCachedResults = false;
 
     @Inject
     ServiceDiscoveryManager(ConnectionOperationQueue operationQueue, BluetoothGatt bluetoothGatt, OperationsProvider operationProvider) {
@@ -54,21 +54,21 @@ class ServiceDiscoveryManager {
             return deviceServicesObservable.doOnSubscribe(
                     new Consumer<Disposable>() {
                         @Override
-                        public void accept(Disposable disposable) throws Exception {
+                        public void accept(Disposable disposable) {
                             timeoutBehaviorSubject.onNext(new TimeoutConfiguration(timeout, timeoutTimeUnit, Schedulers.computation()));
                         }
                     });
         }
     }
 
-    private void reset() {
+    void reset() {
         hasCachedResults = false;
         this.deviceServicesObservable = getListOfServicesFromGatt()
                 .map(wrapIntoRxBleDeviceServices())
                 .switchIfEmpty(getTimeoutConfiguration().flatMap(scheduleActualDiscoveryWithTimeout()))
                 .doOnSuccess(Functions.actionConsumer(new Action() {
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         hasCachedResults = true;
                     }
                 }))
@@ -82,7 +82,7 @@ class ServiceDiscoveryManager {
     }
 
     @NonNull
-    private Function<List<BluetoothGattService>, RxBleDeviceServices> wrapIntoRxBleDeviceServices() {
+    private static Function<List<BluetoothGattService>, RxBleDeviceServices> wrapIntoRxBleDeviceServices() {
         return new Function<List<BluetoothGattService>, RxBleDeviceServices>() {
             @Override
             public RxBleDeviceServices apply(List<BluetoothGattService> bluetoothGattServices) {

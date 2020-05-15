@@ -11,20 +11,20 @@ import androidx.annotation.Nullable;
 public class LogOptions {
 
     @Nullable
-    private Integer logLevel;
+    private final Integer logLevel;
     @Nullable
-    private Integer macAddressLogSetting;
+    private final Integer macAddressLogSetting;
     @Nullable
-    private Integer uuidLogSetting;
+    private final Integer uuidLogSetting;
     @Nullable
-    private Boolean shouldLogAttributeValues;
+    private final Boolean shouldLogAttributeValues;
     @Nullable
-    private Boolean shouldLogScannedPeripherals;
+    private final Boolean shouldLogScannedPeripherals;
     @Nullable
-    private Logger logger;
+    private final Logger logger;
 
-    private LogOptions(@Nullable Integer logLevel, @Nullable Integer macAddressLogSetting, @Nullable Integer uuidLogSetting,
-                       @Nullable Boolean shouldLogAttributeValues, @Nullable Boolean shouldLogScannedPeripherals, @Nullable Logger logger) {
+    LogOptions(@Nullable Integer logLevel, @Nullable Integer macAddressLogSetting, @Nullable Integer uuidLogSetting,
+               @Nullable Boolean shouldLogAttributeValues, @Nullable Boolean shouldLogScannedPeripherals, @Nullable Logger logger) {
         this.logLevel = logLevel;
         this.macAddressLogSetting = macAddressLogSetting;
         this.uuidLogSetting = uuidLogSetting;

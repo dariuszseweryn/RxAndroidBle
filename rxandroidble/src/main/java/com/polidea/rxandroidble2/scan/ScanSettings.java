@@ -19,7 +19,7 @@ import java.lang.annotation.RetentionPolicy;
  * https://code.google.com/p/android/issues/detail?id=178614
  * https://code.google.com/p/android/issues/detail?id=228428
  */
-public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
+public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<ScanSettings> {
 
     @IntDef({SCAN_MODE_OPPORTUNISTIC, SCAN_MODE_LOW_POWER, SCAN_MODE_BALANCED, SCAN_MODE_LOW_LATENCY})
     @Retention(RetentionPolicy.SOURCE)
@@ -104,7 +104,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
 
     /**
      * Match as many advertisement per filter as hw could allow, depends on current
-     * capability and availibility of the resources in hw
+     * capability and availability of the resources in hw
      */
     public static final int MATCH_NUM_MAX_ADVERTISEMENT = 3;
 
@@ -172,8 +172,8 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
         return mShouldCheckLocationProviderState;
     }
 
-    private ScanSettings(int scanMode, int callbackType,
-                         long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean shouldCheckLocationServicesState) {
+    ScanSettings(int scanMode, int callbackType,
+                 long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean shouldCheckLocationServicesState) {
         mScanMode = scanMode;
         mCallbackType = callbackType;
         mReportDelayMillis = reportDelayMillis;
@@ -182,7 +182,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
         mShouldCheckLocationProviderState = shouldCheckLocationServicesState;
     }
 
-    private ScanSettings(Parcel in) {
+    ScanSettings(Parcel in) {
         //noinspection WrongConstant
         mScanMode = in.readInt();
         //noinspection WrongConstant
@@ -222,6 +222,18 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
             return new ScanSettings(in);
         }
     };
+
+    @Override
+    public ScanSettings copyWithCallbackType(@CallbackType int callbackType) {
+        return new ScanSettings(
+                this.mScanMode,
+                callbackType,
+                this.mReportDelayMillis,
+                this.mMatchMode,
+                this.mNumOfMatchesPerFilter,
+                this.mShouldCheckLocationProviderState
+        );
+    }
 
     /**
      * Builder for {@link ScanSettings}.
@@ -278,7 +290,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension {
         }
 
         // Returns true if the callbackType is valid.
-        private boolean isValidCallbackType(int callbackType) {
+        private static boolean isValidCallbackType(int callbackType) {
             if (callbackType == CALLBACK_TYPE_ALL_MATCHES
                     || callbackType == CALLBACK_TYPE_FIRST_MATCH
                     || callbackType == CALLBACK_TYPE_MATCH_LOST) {

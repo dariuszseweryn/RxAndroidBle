@@ -30,6 +30,8 @@ class LocationServicesStatusApi23Test extends Specification {
     private def sdkVersionsPostM = [
             Build.VERSION_CODES.M,
             Build.VERSION_CODES.N,
+            Build.VERSION_CODES.O,
+            Build.VERSION_CODES.P,
             Build.VERSION_CODES.CUR_DEVELOPMENT,
     ]
 
@@ -40,11 +42,11 @@ class LocationServicesStatusApi23Test extends Specification {
     private def isAndroidWear = [true, false]
 
     @Unroll
-    def "isLocationPermissionOk should return value from CheckerLocationPermission.isLocationPermissionGranted (permissionGranted:#permissionGranted)"() {
+    def "isLocationPermissionOk should return value from CheckerLocationPermission.areScanPermissionsOk (permissionGranted:#permissionGranted)"() {
 
         given:
         prepareObjectUnderTest()
-        mockCheckerLocationPermission.isLocationPermissionGranted() >> permissionGranted
+        mockCheckerLocationPermission.isScanRuntimePermissionGranted() >> permissionGranted
 
         expect:
         objectUnderTest.isLocationPermissionOk() == permissionGranted

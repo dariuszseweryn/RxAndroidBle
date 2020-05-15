@@ -2,6 +2,8 @@ package com.polidea.rxandroidble2.mockrxandroidble;
 
 import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.Nullable;
+
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
@@ -37,6 +39,7 @@ public class RxBleDeviceMock implements RxBleDevice {
     private Integer rssi;
     private byte[] scanRecord;
     private List<UUID> advertisedUUIDs;
+    private BluetoothDevice bluetoothDevice;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     public RxBleDeviceMock(String name,
@@ -44,7 +47,8 @@ public class RxBleDeviceMock implements RxBleDevice {
                            byte[] scanRecord,
                            Integer rssi,
                            RxBleDeviceServices rxBleDeviceServices,
-                           Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
+                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
+                           @Nullable BluetoothDevice bluetoothDevice) {
         this.name = name;
         this.macAddress = macAddress;
         this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
@@ -53,6 +57,7 @@ public class RxBleDeviceMock implements RxBleDevice {
         this.rssi = rssi;
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
+        this.bluetoothDevice = bluetoothDevice;
     }
 
     public void addAdvertisedUUID(UUID advertisedUUID) {
@@ -117,7 +122,10 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public BluetoothDevice getBluetoothDevice() {
-        throw new UnsupportedOperationException("Mock does not support returning a BluetoothDevice.");
+        if (bluetoothDevice != null) {
+            return bluetoothDevice;
+        }
+        throw new IllegalStateException("Mock is not configured to return a BluetoothDevice");
     }
 
     @Override

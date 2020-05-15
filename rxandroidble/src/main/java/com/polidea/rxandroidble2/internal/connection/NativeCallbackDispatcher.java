@@ -90,7 +90,7 @@ class NativeCallbackDispatcher {
         }
     }
 
-    void setNativeCallabackHidden(HiddenBluetoothGattCallback callbackHidden) {
+    void setNativeCallbackHidden(HiddenBluetoothGattCallback callbackHidden) {
         this.nativeCallbackHidden = callbackHidden;
     }
 }

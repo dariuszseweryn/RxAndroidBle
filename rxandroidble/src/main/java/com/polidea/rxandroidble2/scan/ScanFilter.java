@@ -60,10 +60,10 @@ import java.util.UUID;
     private static final ScanFilter EMPTY = new ScanFilter.Builder().build();
 
 
-    private ScanFilter(String name, String deviceAddress, ParcelUuid uuid,
-                       ParcelUuid uuidMask, ParcelUuid serviceDataUuid,
-                       byte[] serviceData, byte[] serviceDataMask,
-                       int manufacturerId, byte[] manufacturerData, byte[] manufacturerDataMask) {
+    ScanFilter(String name, String deviceAddress, ParcelUuid uuid,
+               ParcelUuid uuidMask, ParcelUuid serviceDataUuid,
+               byte[] serviceData, byte[] serviceDataMask,
+               int manufacturerId, byte[] manufacturerData, byte[] manufacturerDataMask) {
         mDeviceName = name;
         mServiceUuid = uuid;
         mServiceUuidMask = uuidMask;
@@ -158,20 +158,20 @@ import java.util.UUID;
                 }
             }
             if (in.readInt() == 1) {
-                ParcelUuid servcieDataUuid =
+                ParcelUuid serviceDataUuid =
                         in.readParcelable(ParcelUuid.class.getClassLoader());
                 if (in.readInt() == 1) {
                     int serviceDataLength = in.readInt();
                     byte[] serviceData = new byte[serviceDataLength];
                     in.readByteArray(serviceData);
                     if (in.readInt() == 0) {
-                        builder.setServiceData(servcieDataUuid, serviceData);
+                        builder.setServiceData(serviceDataUuid, serviceData);
                     } else {
                         int serviceDataMaskLength = in.readInt();
                         byte[] serviceDataMask = new byte[serviceDataMaskLength];
                         in.readByteArray(serviceDataMask);
                         builder.setServiceData(
-                                servcieDataUuid, serviceData, serviceDataMask);
+                                serviceDataUuid, serviceData, serviceDataMask);
                     }
                 }
             }
@@ -311,8 +311,8 @@ import java.util.UUID;
     }
 
     // Check if the uuid pattern is contained in a list of parcel uuids.
-    private boolean matchesServiceUuids(ParcelUuid uuid, ParcelUuid parcelUuidMask,
-                                        List<ParcelUuid> uuids) {
+    private static boolean matchesServiceUuids(ParcelUuid uuid, ParcelUuid parcelUuidMask,
+                                               List<ParcelUuid> uuids) {
         if (uuid == null) {
             return true;
         }
@@ -330,7 +330,7 @@ import java.util.UUID;
     }
 
     // Check if the uuid pattern matches the particular service uuid.
-    private boolean matchesServiceUuid(UUID uuid, UUID mask, UUID data) {
+    private static boolean matchesServiceUuid(UUID uuid, UUID mask, UUID data) {
         if (mask == null) {
             return uuid.equals(data);
         }
@@ -343,7 +343,7 @@ import java.util.UUID;
     }
 
     // Check whether the data pattern matches the parsed data.
-    private boolean matchesPartialData(byte[] data, byte[] dataMask, byte[] parsedData) {
+    private static boolean matchesPartialData(byte[] data, byte[] dataMask, byte[] parsedData) {
         if (parsedData == null || parsedData.length < data.length) {
             return false;
         }

@@ -1,5 +1,31 @@
 Change Log
 ==========
+Version 1.11.1
+* Fixed `NullPointerException` when logging failed `BluetoothGattCharacteristic` initial reads (https://github.com/Polidea/RxAndroidBle/pull/679)
+* [mockclient] Added support for `BluetoothDevice` in `RxBleDeviceMock` (https://github.com/Polidea/RxAndroidBle/pull/676)
+
+Version 1.11.0
+* Added workaround for scans with settings match found and/or lost but no filters (https://github.com/Polidea/RxAndroidBle/pull/612)
+* Fixed typo in `BleCharacteristicNotFoundException` (https://github.com/Polidea/RxAndroidBle/pull/625)
+* Added scan permission helper functions (https://github.com/Polidea/RxAndroidBle/pull/642)
+
+Version 1.10.5
+* Fixed possibly incorrect order of notifications and operation completions (https://github.com/Polidea/RxAndroidBle/pull/639)
+* Fixed possibility of library being stalled on operation cancelling (https://github.com/Polidea/RxAndroidBle/pull/650)
+* Fixed a silenced `IllegalStateException` after a scan is stopped because `BluetoothAdapter` being disabled (https://github.com/Polidea/RxAndroidBle/pull/649)   
+
+Version 1.10.4
+* Fixed location permission check for Android 10 (https://github.com/Polidea/RxAndroidBle/pull/640)
+
+Version 1.10.3
+* Fixed `RxBleConnection.observeConnectionParametersUpdates()` not working in obfuscated apps. Added consumer `proguard-rules.pro` Proguard config file. (https://github.com/Polidea/RxAndroidBle/pull/634) 
+* Fixed log statement on reading RSSI of connection (https://github.com/Polidea/RxAndroidBle/pull/631)
+* Fixed log statement on setting `CONNECTION_PRIORITY_HIGH` (https://github.com/Polidea/RxAndroidBle/pull/623)
+
+Version 1.10.2
+* Fixed possible `UndeliverableException` when scan subscription is quickly disposed (https://github.com/Polidea/RxAndroidBle/pull/609)
+* Minor allocation decrease in `ScanSetupBuilderImplApi21` (https://github.com/Polidea/RxAndroidBle/pull/613)
+
 Version 1.10.1
 * Fixed `IllegalStateException` in `RxBleAdapterStateObservable` (https://github.com/Polidea/RxAndroidBle/pull/596)
 

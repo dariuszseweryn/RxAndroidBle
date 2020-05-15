@@ -1,26 +1,22 @@
 package com.polidea.rxandroidble2.samplekotlin.util
 
-import android.Manifest.permission
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import com.polidea.rxandroidble2.RxBleClient
 
-private const val REQUEST_PERMISSION_COARSE_LOCATION = 101
+private const val REQUEST_PERMISSION_BLE_SCAN = 101
 
-internal fun Context.isLocationPermissionGranted(): Boolean = when {
-    Build.VERSION.SDK_INT < Build.VERSION_CODES.M -> true // It is not needed at all as there were no runtime permissions yet
-    else -> ContextCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-}
-
-internal fun Activity.requestLocationPermission() =
-        ActivityCompat.requestPermissions(
-                this,
-                arrayOf(permission.ACCESS_COARSE_LOCATION),
-                REQUEST_PERMISSION_COARSE_LOCATION
-        )
+internal fun Activity.requestLocationPermission(client: RxBleClient) =
+    ActivityCompat.requestPermissions(
+        this,
+        /*
+         * the below would cause a ArrayIndexOutOfBoundsException on API < 23. Yet it should not be called then as runtime
+         * permissions are not needed and RxBleClient.isScanRuntimePermissionGranted() returns `true`
+         */
+        arrayOf(client.recommendedScanRuntimePermissions[0]),
+        REQUEST_PERMISSION_BLE_SCAN
+    )
 
 internal fun isLocationPermissionGranted(requestCode: Int, grantResults: IntArray) =
-        requestCode == REQUEST_PERMISSION_COARSE_LOCATION && grantResults[0] == PackageManager.PERMISSION_GRANTED
+    requestCode == REQUEST_PERMISSION_BLE_SCAN && grantResults[0] == PackageManager.PERMISSION_GRANTED

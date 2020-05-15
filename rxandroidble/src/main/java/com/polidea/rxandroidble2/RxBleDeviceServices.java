@@ -23,7 +23,7 @@ import io.reactivex.functions.Predicate;
  */
 public class RxBleDeviceServices {
 
-    private final List<BluetoothGattService> bluetoothGattServices;
+    final List<BluetoothGattService> bluetoothGattServices;
 
     public RxBleDeviceServices(List<BluetoothGattService> bluetoothGattServices) {
         this.bluetoothGattServices = bluetoothGattServices;
@@ -49,7 +49,7 @@ public class RxBleDeviceServices {
                 .filter(new Predicate<BluetoothGattService>() {
 
                     @Override
-                    public boolean test(BluetoothGattService bluetoothGattService) throws Exception {
+                    public boolean test(BluetoothGattService bluetoothGattService) {
                         return bluetoothGattService.getUuid().equals(serviceUuid);
                     }
                 })
@@ -71,7 +71,7 @@ public class RxBleDeviceServices {
     public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return Single.fromCallable(new Callable<BluetoothGattCharacteristic>() {
             @Override
-            public BluetoothGattCharacteristic call() throws Exception {
+            public BluetoothGattCharacteristic call() {
                 for (BluetoothGattService service : bluetoothGattServices) {
                     BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUuid);
                     if (characteristic != null) {

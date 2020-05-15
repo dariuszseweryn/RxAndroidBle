@@ -29,26 +29,27 @@ import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.functions.Function;
+import java.util.concurrent.TimeUnit;
 
 
 @ConnectionScope
 public class RxBleGattCallback {
 
     private final Scheduler callbackScheduler;
-    private final BluetoothGattProvider bluetoothGattProvider;
-    private final DisconnectionRouter disconnectionRouter;
-    private final NativeCallbackDispatcher nativeCallbackDispatcher;
-    private final PublishRelay<RxBleConnectionState> connectionStatePublishRelay = PublishRelay.create();
-    private final Output<RxBleDeviceServices> servicesDiscoveredOutput = new Output<>();
-    private final Output<ByteAssociation<UUID>> readCharacteristicOutput = new Output<>();
-    private final Output<ByteAssociation<UUID>> writeCharacteristicOutput = new Output<>();
-    private final Relay<CharacteristicChangedEvent>
+    final BluetoothGattProvider bluetoothGattProvider;
+    final DisconnectionRouter disconnectionRouter;
+    final NativeCallbackDispatcher nativeCallbackDispatcher;
+    final PublishRelay<RxBleConnectionState> connectionStatePublishRelay = PublishRelay.create();
+    final Output<RxBleDeviceServices> servicesDiscoveredOutput = new Output<>();
+    final Output<ByteAssociation<UUID>> readCharacteristicOutput = new Output<>();
+    final Output<ByteAssociation<UUID>> writeCharacteristicOutput = new Output<>();
+    final Relay<CharacteristicChangedEvent>
             changedCharacteristicSerializedPublishRelay = PublishRelay.<CharacteristicChangedEvent>create().toSerialized();
-    private final Output<ByteAssociation<BluetoothGattDescriptor>> readDescriptorOutput = new Output<>();
-    private final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
-    private final Output<Integer> readRssiOutput = new Output<>();
-    private final Output<Integer> changedMtuOutput = new Output<>();
-    private final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
+    final Output<ByteAssociation<BluetoothGattDescriptor>> readDescriptorOutput = new Output<>();
+    final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
+    final Output<Integer> readRssiOutput = new Output<>();
+    final Output<Integer> changedMtuOutput = new Output<>();
+    final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
         public Observable<?> apply(BleGattException bleGattException) {
@@ -67,7 +68,7 @@ public class RxBleGattCallback {
         this.nativeCallbackDispatcher = nativeCallbackDispatcher;
     }
 
-    private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -184,7 +185,7 @@ public class RxBleGattCallback {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            LoggerUtil.logCallback("onMtuChanged", gatt, status, rssi);
+            LoggerUtil.logCallback("onReadRemoteRssi", gatt, status, rssi);
             nativeCallbackDispatcher.notifyNativeReadRssiCallback(gatt, rssi, status);
             super.onReadRemoteRssi(gatt, rssi, status);
 
@@ -219,7 +220,7 @@ public class RxBleGattCallback {
         }
     };
 
-    private RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
+    static RxBleConnectionState mapConnectionStateToRxBleConnectionStatus(int newState) {
 
         switch (newState) {
             case BluetoothGatt.STATE_CONNECTING:
@@ -233,7 +234,7 @@ public class RxBleGattCallback {
         }
     }
 
-    private boolean propagateErrorIfOccurred(
+    static boolean propagateErrorIfOccurred(
             Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattCharacteristic characteristic,
@@ -248,7 +249,7 @@ public class RxBleGattCallback {
         ));
     }
 
-    private boolean propagateErrorIfOccurred(
+    static boolean propagateErrorIfOccurred(
             Output<?> output,
             BluetoothGatt gatt,
             BluetoothGattDescriptor descriptor,
@@ -263,15 +264,15 @@ public class RxBleGattCallback {
         ));
     }
 
-    private boolean propagateErrorIfOccurred(Output<?> output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
+    static boolean propagateErrorIfOccurred(Output<?> output, BluetoothGatt gatt, int status, BleGattOperationType operationType) {
         return isException(status) && propagateStatusError(output, new BleGattException(gatt, status, operationType));
     }
 
-    private boolean isException(int status) {
+    private static boolean isException(int status) {
         return status != BluetoothGatt.GATT_SUCCESS;
     }
 
-    private boolean propagateStatusError(Output<?> output, BleGattException exception) {
+    private static boolean propagateStatusError(Output<?> output, BleGattException exception) {
         output.errorRelay.accept(exception);
         return true;
     }
@@ -290,7 +291,7 @@ public class RxBleGattCallback {
     }
 
     /**
-     * @return Observable that never emits onNexts.
+     * @return Observable that never emits onNext.
      * @throws BleDisconnectedException emitted in case of a disconnect that is a part of the normal flow
      * @throws BleGattException         emitted in case of connection was interrupted unexpectedly.
      */
@@ -303,23 +304,23 @@ public class RxBleGattCallback {
      * Does NOT emit errors even if status != GATT_SUCCESS.
      */
     public Observable<RxBleConnectionState> getOnConnectionStateChange() {
-        return connectionStatePublishRelay.observeOn(callbackScheduler);
+        return connectionStatePublishRelay.delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<RxBleDeviceServices> getOnServicesDiscovered() {
-        return withDisconnectionHandling(servicesDiscoveredOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(servicesDiscoveredOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<Integer> getOnMtuChanged() {
-        return withDisconnectionHandling(changedMtuOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(changedMtuOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
-        return withDisconnectionHandling(readCharacteristicOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readCharacteristicOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicWrite() {
-        return withDisconnectionHandling(writeCharacteristicOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(writeCharacteristicOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<CharacteristicChangedEvent> getOnCharacteristicChanged() {
@@ -327,23 +328,23 @@ public class RxBleGattCallback {
                 disconnectionRouter.<CharacteristicChangedEvent>asErrorOnlyObservable(),
                 changedCharacteristicSerializedPublishRelay
         )
-                .observeOn(callbackScheduler);
+                .delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorRead() {
-        return withDisconnectionHandling(readDescriptorOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readDescriptorOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<BluetoothGattDescriptor>> getOnDescriptorWrite() {
-        return withDisconnectionHandling(writeDescriptorOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(writeDescriptorOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<Integer> getOnRssiRead() {
-        return withDisconnectionHandling(readRssiOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(readRssiOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ConnectionParameters> getConnectionParametersUpdates() {
-        return withDisconnectionHandling(updatedConnectionOutput).observeOn(callbackScheduler);
+        return withDisconnectionHandling(updatedConnectionOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     /**
@@ -371,7 +372,7 @@ public class RxBleGattCallback {
      * @param callbackHidden the object to be called
      */
     public void setHiddenNativeCallback(HiddenBluetoothGattCallback callbackHidden) {
-        nativeCallbackDispatcher.setNativeCallabackHidden(callbackHidden);
+        nativeCallbackDispatcher.setNativeCallbackHidden(callbackHidden);
     }
 
     private static class Output<T> {

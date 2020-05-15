@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
@@ -87,6 +88,7 @@ public class RxBleClientMock extends RxBleClient {
         private String deviceMacAddress;
         private byte[] scanRecord;
         private RxBleDeviceServices rxBleDeviceServices;
+        private BluetoothDevice bluetoothDevice;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
 
         /**
@@ -129,7 +131,8 @@ public class RxBleClientMock extends RxBleClient {
                     scanRecord,
                     rssi,
                     rxBleDeviceServices,
-                    characteristicNotificationSources);
+                    characteristicNotificationSources,
+                    bluetoothDevice);
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                 rxBleDeviceMock.addAdvertisedUUID(service.getUuid());
@@ -150,6 +153,14 @@ public class RxBleClientMock extends RxBleClient {
          */
         public DeviceBuilder deviceName(@NonNull String deviceName) {
             this.deviceName = deviceName;
+            return this;
+        }
+
+        /**
+         * Sets a bluetooth device. Calling this method is not required.
+         */
+        public DeviceBuilder bluetoothDevice(@NonNull BluetoothDevice bluetoothDevice) {
+            this.bluetoothDevice = bluetoothDevice;
             return this;
         }
 
@@ -306,7 +317,7 @@ public class RxBleClientMock extends RxBleClient {
         return createScanOperation(filterServiceUUIDs);
     }
 
-    private RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
+    private static RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
         return new RxBleScanResult(bleDevice, rssi, scanRecord);
     }
 
@@ -316,7 +327,7 @@ public class RxBleClientMock extends RxBleClient {
                 .filter(new Predicate<RxBleDeviceMock>() {
                     @Override
                     public boolean test(RxBleDeviceMock rxBleDevice) {
-                        return RxBleClientMock.this.filterDevice(rxBleDevice, filterServiceUUIDs);
+                        return RxBleClientMock.filterDevice(rxBleDevice, filterServiceUUIDs);
                     }
                 })
                 .map(new Function<RxBleDeviceMock, RxBleScanResult>() {
@@ -332,7 +343,7 @@ public class RxBleClientMock extends RxBleClient {
         return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
     }
 
-    private boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {
+    private static boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {
 
         if (filterServiceUUIDs == null || filterServiceUUIDs.length == 0) {
             return true;
@@ -368,5 +379,15 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public State getState() {
         return State.READY;
+    }
+
+    @Override
+    public boolean isScanRuntimePermissionGranted() {
+        return true;
+    }
+
+    @Override
+    public String[] getRecommendedScanRuntimePermissions() {
+        return new String[0];
     }
 }

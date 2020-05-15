@@ -16,8 +16,8 @@ import io.reactivex.schedulers.Schedulers;
 
 @TargetApi(19 /* Build.VERSION_CODES.KITKAT */)
 public class LocationServicesOkObservableApi23Factory {
-    private final Context context;
-    private final LocationServicesStatus locationServicesStatus;
+    final Context context;
+    final LocationServicesStatus locationServicesStatus;
 
     @Inject
     LocationServicesOkObservableApi23Factory(

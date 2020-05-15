@@ -34,7 +34,7 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
         return res;
     }
 
-    public void run(QueueSemaphore semaphore, Scheduler subscribeScheduler) {
+    public void run(final QueueSemaphore semaphore, final Scheduler subscribeScheduler) {
 
         if (operationResultObserver.isDisposed()) {
             LoggerUtil.logOperationSkippedBecauseDisposedWhenAboutToRun(operation);
@@ -48,33 +48,37 @@ class FIFORunnableEntry<T> implements Comparable<FIFORunnableEntry> {
          * on the main thread.
          */
 
-        operation.run(semaphore)
-                .subscribeOn(subscribeScheduler)
-                .unsubscribeOn(subscribeScheduler)
-                .subscribe(new Observer<T>() {
-                    @Override
-                    public void onSubscribe(Disposable disposable) {
-                        /*
-                         * We end up overwriting a disposable that was set to the observer in order to remove operation from queue.
-                         * This is ok since at this moment the operation is taken out of the queue anyway.
-                         */
-                        operationResultObserver.setDisposable(disposable);
-                    }
+        subscribeScheduler.scheduleDirect(new Runnable() {
+            @Override
+            public void run() {
+                operation.run(semaphore)
+                        .unsubscribeOn(subscribeScheduler)
+                        .subscribe(new Observer<T>() {
+                            @Override
+                            public void onSubscribe(final Disposable disposable) {
+                                /*
+                                 * We end up overwriting a disposable that was set to the observer in order to remove operation from queue.
+                                 * This is ok since at this moment the operation is taken out of the queue anyway.
+                                 */
+                                operationResultObserver.setDisposable(disposable);
+                            }
 
-                    @Override
-                    public void onNext(T item) {
-                        operationResultObserver.onNext(item);
-                    }
+                            @Override
+                            public void onNext(T item) {
+                                operationResultObserver.onNext(item);
+                            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        operationResultObserver.tryOnError(e);
-                    }
+                            @Override
+                            public void onError(Throwable e) {
+                                operationResultObserver.tryOnError(e);
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        operationResultObserver.onComplete();
-                    }
-                });
+                            @Override
+                            public void onComplete() {
+                                operationResultObserver.onComplete();
+                            }
+                        });
+            }
+        });
     }
 }

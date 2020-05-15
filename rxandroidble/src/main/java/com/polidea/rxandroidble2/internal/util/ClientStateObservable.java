@@ -28,9 +28,9 @@ import io.reactivex.functions.Predicate;
  */
 public class ClientStateObservable extends Observable<RxBleClient.State> {
 
-    private final RxBleAdapterWrapper rxBleAdapterWrapper;
-    private final Observable<RxBleAdapterStateObservable.BleAdapterState> bleAdapterStateObservable;
-    private final Observable<Boolean> locationServicesOkObservable;
+    final RxBleAdapterWrapper rxBleAdapterWrapper;
+    final Observable<RxBleAdapterStateObservable.BleAdapterState> bleAdapterStateObservable;
+    final Observable<Boolean> locationServicesOkObservable;
     private final LocationServicesStatus locationServicesStatus;
     private final Scheduler timerScheduler;
 
@@ -79,7 +79,7 @@ public class ClientStateObservable extends Observable<RxBleClient.State> {
     }
 
     @NonNull
-    private static Observable<RxBleClient.State> checkAdapterAndServicesState(
+    static Observable<RxBleClient.State> checkAdapterAndServicesState(
             RxBleAdapterWrapper rxBleAdapterWrapper,
             Observable<RxBleAdapterStateObservable.BleAdapterState> rxBleAdapterStateObservable,
             final Observable<Boolean> locationServicesOkObservable

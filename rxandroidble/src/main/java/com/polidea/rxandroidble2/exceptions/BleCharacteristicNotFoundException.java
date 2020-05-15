@@ -9,14 +9,30 @@ import java.util.UUID;
  */
 public class BleCharacteristicNotFoundException extends BleException {
 
-    private final UUID charactersisticUUID;
+    private final UUID characteristicUUID;
 
-    public BleCharacteristicNotFoundException(UUID charactersisticUUID) {
-        super("Characteristic not found with UUID " + charactersisticUUID);
-        this.charactersisticUUID = charactersisticUUID;
+    public BleCharacteristicNotFoundException(UUID characteristicUUID) {
+        super("Characteristic not found with UUID " + characteristicUUID);
+        this.characteristicUUID = characteristicUUID;
     }
 
+    /**
+     * Returns characteristic UUID that has not been found
+     * @deprecated Use {@link #getCharacteristicUUID()}
+     *
+     * @return the UUID
+     */
+    @Deprecated
     public UUID getCharactersisticUUID() {
-        return charactersisticUUID;
+        return characteristicUUID;
+    }
+
+    /**
+     * Returns characteristic UUID that has not been found
+     *
+     * @return the UUID
+     */
+    public UUID getCharacteristicUUID() {
+        return characteristicUUID;
     }
 }

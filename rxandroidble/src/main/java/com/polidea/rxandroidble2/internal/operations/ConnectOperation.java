@@ -39,13 +39,13 @@ import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableS
 
 public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
-    private final BluetoothDevice bluetoothDevice;
-    private final BleConnectionCompat connectionCompat;
-    private final RxBleGattCallback rxBleGattCallback;
-    private final BluetoothGattProvider bluetoothGattProvider;
-    private final TimeoutConfiguration connectTimeout;
-    private final boolean autoConnect;
-    private final ConnectionStateChangeListener connectionStateChangedAction;
+    final BluetoothDevice bluetoothDevice;
+    final BleConnectionCompat connectionCompat;
+    final RxBleGattCallback rxBleGattCallback;
+    final BluetoothGattProvider bluetoothGattProvider;
+    final TimeoutConfiguration connectTimeout;
+    final boolean autoConnect;
+    final ConnectionStateChangeListener connectionStateChangedAction;
 
     @Inject
     ConnectOperation(
@@ -100,7 +100,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
     }
 
     @NonNull
-    private Single<BluetoothGatt> prepareConnectionTimeoutError() {
+    Single<BluetoothGatt> prepareConnectionTimeoutError() {
         return Single.fromCallable(new Callable<BluetoothGatt>() {
             @Override
             public BluetoothGatt call() {
@@ -125,7 +125,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
         return Single.create(new SingleOnSubscribe<BluetoothGatt>() {
 
             @Override
-            public void subscribe(final SingleEmitter<BluetoothGatt> emitter) throws Exception {
+            public void subscribe(final SingleEmitter<BluetoothGatt> emitter) {
                 final DisposableSingleObserver<BluetoothGatt> disposableGattObserver = getBluetoothGattAndChangeStatusToConnected()
                         // when the connected state will be emitted bluetoothGattProvider should contain valid Gatt
                         .delaySubscription(
@@ -133,8 +133,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
                                         .getOnConnectionStateChange()
                                         .filter(new Predicate<RxBleConnection.RxBleConnectionState>() {
                                             @Override
-                                            public boolean test(RxBleConnection.RxBleConnectionState rxBleConnectionState)
-                                                    throws Exception {
+                                            public boolean test(RxBleConnection.RxBleConnectionState rxBleConnectionState) {
                                                 return rxBleConnectionState == CONNECTED;
                                             }
                                         })
@@ -164,7 +163,7 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
         });
     }
 
-    private Single<BluetoothGatt> getBluetoothGattAndChangeStatusToConnected() {
+    Single<BluetoothGatt> getBluetoothGattAndChangeStatusToConnected() {
         return Single.fromCallable(
                 new Callable<BluetoothGatt>() {
                     @Override
