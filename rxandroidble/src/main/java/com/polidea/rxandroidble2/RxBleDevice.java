@@ -17,6 +17,24 @@ import io.reactivex.Observable;
 public interface RxBleDevice {
 
     /**
+     * Bluetooth LE 1M PHY. Used to refer to LE 1M Physical Channel for advertising, scanning or
+     * connection.
+     */
+    int PHY_LE_1M = 1;
+
+    /**
+     * Bluetooth LE 2M PHY. Used to refer to LE 2M Physical Channel for advertising, scanning or
+     * connection.
+     */
+    int PHY_LE_2M = 2;
+
+    /**
+     * Bluetooth LE Coded PHY. Used to refer to LE Coded Physical Channel for advertising, scanning
+     * or connection.
+     */
+    int PHY_LE_CODED = 3;
+
+    /**
      * Observe changes to connection state of the device's {@link android.bluetooth.BluetoothGatt}.
      * This Observable will never emit errors.
      *
