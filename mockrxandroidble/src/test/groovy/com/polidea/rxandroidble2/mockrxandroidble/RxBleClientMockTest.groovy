@@ -214,30 +214,6 @@ public class RxBleClientMockTest extends ElectricSpecification {
         testSubscriber.assertEmpty()
     }
 
-    def "should not return filtered BluetoothDevice filtered on masked service data"() {
-        when:
-        def scanSettings = new ScanSettings.Builder().build()
-        def scanFilter = new ScanFilter.Builder().setServiceData(new ParcelUuid(serviceUUID), [0x10, 0x20] as byte[], [0xFF, 0xFF] as byte[]).build()
-        def testSubscriber = rxBleClient.scanBleDevices(scanSettings, scanFilter)
-                .test()
-
-        then:
-        testSubscriber.assertEmpty()
-    }
-
-    def "should return filtered BluetoothDevice filtered on masked service data"() {
-        when:
-        def scanSettings = new ScanSettings.Builder().build()
-        def scanFilter = new ScanFilter.Builder().setServiceData(new ParcelUuid(serviceUUID), [0x10, 0x20] as byte[], [0xF0, 0xF0] as byte[]).build()
-        def testSubscriber = rxBleClient.scanBleDevices(scanSettings, scanFilter)
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
-                .test()
-
-        then:
-        testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
-    }
-
     def "should return filtered BluetoothDevice filtered on device name"() {
         when:
         def scanSettings = new ScanSettings.Builder().build()
