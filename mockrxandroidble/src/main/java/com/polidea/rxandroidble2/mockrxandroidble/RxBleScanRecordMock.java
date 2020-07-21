@@ -51,7 +51,7 @@ public class RxBleScanRecordMock implements ScanRecord {
     /**
      * Builder class for {@link RxBleScanRecordMock}.
      */
-    public class Builder {
+    public static class Builder {
         private int advertiseFlags;
         private List<ParcelUuid> serviceUuids;
         private SparseArray<byte[]> manufacturerSpecificData;
