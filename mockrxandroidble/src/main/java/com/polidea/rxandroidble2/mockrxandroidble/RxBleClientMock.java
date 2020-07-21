@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.os.ParcelUuid;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -12,11 +14,15 @@ import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
+import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanFilter;
+import com.polidea.rxandroidble2.scan.ScanRecord;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +92,8 @@ public class RxBleClientMock extends RxBleClient {
         private int rssi = -1;
         private String deviceName;
         private String deviceMacAddress;
-        private byte[] scanRecord;
+        private byte[] legacyScanRecord;
+        private ScanRecord scanRecord;
         private RxBleDeviceServices rxBleDeviceServices;
         private BluetoothDevice bluetoothDevice;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
@@ -125,14 +132,25 @@ public class RxBleClientMock extends RxBleClient {
             if (this.rssi == -1) throw new IllegalStateException("Rssi is required. DeviceBuilder#rssi should be called.");
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required."
                     + " DeviceBuilder#deviceMacAddress should be called.");
-            if (this.scanRecord == null) throw new IllegalStateException("ScanRecord required. DeviceBuilder#scanRecord should be called.");
-            RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName,
-                    deviceMacAddress,
-                    scanRecord,
-                    rssi,
-                    rxBleDeviceServices,
-                    characteristicNotificationSources,
-                    bluetoothDevice);
+            if (this.scanRecord == null && this.legacyScanRecord == null) throw new IllegalStateException("ScanRecord required. DeviceBuilder#scanRecord should be called.");
+            RxBleDeviceMock rxBleDeviceMock;
+            if(scanRecord == null) {
+                 rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                        deviceMacAddress,
+                        legacyScanRecord,
+                        rssi,
+                        rxBleDeviceServices,
+                        characteristicNotificationSources,
+                        bluetoothDevice);
+            } else {
+                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                        deviceMacAddress,
+                        scanRecord,
+                        rssi,
+                        rxBleDeviceServices,
+                        characteristicNotificationSources,
+                        bluetoothDevice);
+            }
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                 rxBleDeviceMock.addAdvertisedUUID(service.getUuid());
@@ -177,7 +195,7 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Set a rssi that will be reported. Calling this method is not required.
+         * Set a rssi that will be reported. Calling this method is required.
          */
         public DeviceBuilder rssi(int rssi) {
             this.rssi = rssi;
@@ -185,9 +203,17 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Set a BLE scan record. Calling this method is not required.
+         * Set a BLE scan record. Calling either this method or the other scanRecord method is required.
          */
         public DeviceBuilder scanRecord(@NonNull byte[] scanRecord) {
+            this.legacyScanRecord = scanRecord;
+            return this;
+        }
+
+        /**
+         * Set a BLE scan record. Calling this method is required.
+         */
+        public DeviceBuilder scanRecord(@NonNull ScanRecord scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
@@ -317,7 +343,7 @@ public class RxBleClientMock extends RxBleClient {
         return createScanOperation(filterServiceUUIDs);
     }
 
-    private static RxBleScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
+    private static RxBleScanResult convertToPublicLegacyScanResult(RxBleDevice bleDevice, Integer rssi, byte[] scanRecord) {
         return new RxBleScanResult(bleDevice, rssi, scanRecord);
     }
 
@@ -340,7 +366,7 @@ public class RxBleClientMock extends RxBleClient {
 
     @NonNull
     private RxBleScanResult createRxBleScanResult(RxBleDeviceMock rxBleDeviceMock) {
-        return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
+        return convertToPublicLegacyScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getLegacyScanRecord());
     }
 
     private static boolean filterDevice(RxBleDevice rxBleDevice, @Nullable UUID[] filterServiceUUIDs) {
@@ -363,7 +389,112 @@ public class RxBleClientMock extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(ScanSettings scanSettings, ScanFilter... scanFilters) {
-        return Observable.error(new RuntimeException("not implemented")); // TODO [DS]
+        return createScanOperation(scanSettings, scanFilters);
+    }
+
+    private static ScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, ScanRecord scanRecord) {
+        return new ScanResult(bleDevice, rssi, System.currentTimeMillis()*1000000, ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH, scanRecord);
+    }
+
+    @NonNull
+    private ScanResult createScanResult(RxBleDeviceMock rxBleDeviceMock) {
+        return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
+    }
+
+    @NonNull
+    private Observable<ScanResult> createScanOperation(ScanSettings scanSettings, final ScanFilter... scanFilters) {
+        return discoveredDevicesSubject
+                .filter(new Predicate<RxBleDeviceMock>() {
+                    @Override
+                    public boolean test(RxBleDeviceMock rxBleDevice) {
+                        return RxBleClientMock.filterDevice(rxBleDevice, scanFilters);
+                    }
+                })
+                .map(new Function<RxBleDeviceMock, ScanResult>() {
+                    @Override
+                    public ScanResult apply(RxBleDeviceMock rxBleDeviceMock) {
+                        return RxBleClientMock.this.createScanResult(rxBleDeviceMock);
+                    }
+                });
+    }
+
+    private static boolean maskedDataEquals(@NonNull byte[] data1, @NonNull byte[] data2, @Nullable byte[] mask) {
+        if(mask == null) {
+            return Arrays.equals(data1, data2);
+        } else {
+            if(data1.length != data2.length || data1.length != mask.length) {
+                return false;
+            }
+            for(int i = 0; i < data1.length; i++) {
+                if((data1[i] & mask[i]) != (data2[i] & mask[i])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static byte[] getDataFromUUID(@NonNull UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
+    }
+
+    private static boolean filterDevice(RxBleDevice rxBleDevice, ScanFilter... scanFilters) {
+
+        if (scanFilters == null || scanFilters.length == 0) {
+            return true;
+        }
+        RxBleDeviceMock mock = (RxBleDeviceMock)rxBleDevice;
+
+        String mac = mock.getMacAddress();
+        String name = mock.getName();
+        List<UUID> advertisedUUIDs = mock.getAdvertisedUUIDs();
+        ScanRecord scanRecord = mock.getScanRecord();
+
+        for (ScanFilter filter : scanFilters) {
+            ParcelUuid serviceUUIDMask = filter.getServiceUuidMask();
+            ParcelUuid serviceUUID = filter.getServiceUuid();
+            if(serviceUUIDMask != null && serviceUUID != null) {
+                byte[] serviceUUIDMaskData = RxBleClientMock.getDataFromUUID(serviceUUIDMask.getUuid());
+                byte[] serviceUUIDData = RxBleClientMock.getDataFromUUID(serviceUUID.getUuid());
+                for (UUID uuid: advertisedUUIDs) {
+                    byte[] UUIDData = RxBleClientMock.getDataFromUUID(uuid);
+                    if(!RxBleClientMock.maskedDataEquals(serviceUUIDData, UUIDData, serviceUUIDMaskData)) {
+                        return false;
+                    }
+                }
+            } else if(serviceUUID != null && !advertisedUUIDs.contains(serviceUUID.getUuid())) {
+                return false;
+            }
+
+            if(filter.getDeviceAddress() != null && !filter.getDeviceAddress().equals(mac)) {
+                return false;
+            }
+
+            if(filter.getDeviceName() != null && !filter.getDeviceName().equals(name)) {
+                return false;
+            }
+
+            byte[] manuFilterData = filter.getManufacturerData();
+            if(manuFilterData != null) {
+                byte[] manuData = scanRecord.getManufacturerSpecificData(filter.getManufacturerId());
+                if(manuData == null || !RxBleClientMock.maskedDataEquals(manuData, manuFilterData, filter.getManufacturerDataMask())) {
+                    return false;
+                }
+            }
+            byte[] filterServiceData = filter.getServiceData();
+            ParcelUuid serviceDataUuid = filter.getServiceDataUuid();
+            if(serviceDataUuid != null && filterServiceData != null) {
+                byte[] serviceData = scanRecord.getServiceData(serviceDataUuid);
+                if(serviceData == null || !RxBleClientMock.maskedDataEquals(filterServiceData, serviceData, filter.getServiceDataMask())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override

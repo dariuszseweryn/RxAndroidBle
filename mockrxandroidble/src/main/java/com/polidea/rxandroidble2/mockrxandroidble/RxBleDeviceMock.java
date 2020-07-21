@@ -9,6 +9,7 @@ import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble2.scan.ScanRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,8 @@ public class RxBleDeviceMock implements RxBleDevice {
     private String name;
     private String macAddress;
     private Integer rssi;
-    private byte[] scanRecord;
+    private byte[] legacyScanRecord;
+    private ScanRecord scanRecord;
     private List<UUID> advertisedUUIDs;
     private BluetoothDevice bluetoothDevice;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
@@ -44,6 +46,24 @@ public class RxBleDeviceMock implements RxBleDevice {
     public RxBleDeviceMock(String name,
                            String macAddress,
                            byte[] scanRecord,
+                           Integer rssi,
+                           RxBleDeviceServices rxBleDeviceServices,
+                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
+                           @Nullable BluetoothDevice bluetoothDevice) {
+        this.name = name;
+        this.macAddress = macAddress;
+        this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
+                rssi,
+                characteristicNotificationSources);
+        this.rssi = rssi;
+        this.legacyScanRecord = scanRecord;
+        this.advertisedUUIDs = new ArrayList<>();
+        this.bluetoothDevice = bluetoothDevice;
+    }
+
+    public RxBleDeviceMock(String name,
+                           String macAddress,
+                           ScanRecord scanRecord,
                            Integer rssi,
                            RxBleDeviceServices rxBleDeviceServices,
                            Map<UUID, Observable<byte[]>> characteristicNotificationSources,
@@ -136,7 +156,11 @@ public class RxBleDeviceMock implements RxBleDevice {
         return rssi;
     }
 
-    public byte[] getScanRecord() {
+    public byte[] getLegacyScanRecord() {
+        return legacyScanRecord;
+    }
+
+    public ScanRecord getScanRecord() {
         return scanRecord;
     }
 
