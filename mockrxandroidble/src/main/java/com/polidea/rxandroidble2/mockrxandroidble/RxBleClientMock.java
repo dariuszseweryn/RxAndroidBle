@@ -447,11 +447,20 @@ public class RxBleClientMock extends RxBleClient {
             return true;
         }
         RxBleDeviceMock mock = (RxBleDeviceMock)rxBleDevice;
+        ScanRecord scanRecord = mock.getScanRecord();
+        if(scanRecord == null) {
+            return false;
+        }
 
         String mac = mock.getMacAddress();
         String name = mock.getName();
-        List<UUID> advertisedUUIDs = mock.getAdvertisedUUIDs();
-        ScanRecord scanRecord = mock.getScanRecord();
+        Set<UUID> advertisedUUIDs = new HashSet<>(mock.getAdvertisedUUIDs());
+        List<ParcelUuid> scanRecordAdvertisedUUIDs = scanRecord.getServiceUuids();
+        if(scanRecordAdvertisedUUIDs != null) {
+            for (ParcelUuid uuid : scanRecordAdvertisedUUIDs) {
+                advertisedUUIDs.add(uuid.getUuid());
+            }
+        }
 
         for (ScanFilter filter : scanFilters) {
             ParcelUuid serviceUUIDMask = filter.getServiceUuidMask();
@@ -459,11 +468,16 @@ public class RxBleClientMock extends RxBleClient {
             if(serviceUUIDMask != null && serviceUUID != null) {
                 byte[] serviceUUIDMaskData = RxBleClientMock.getDataFromUUID(serviceUUIDMask.getUuid());
                 byte[] serviceUUIDData = RxBleClientMock.getDataFromUUID(serviceUUID.getUuid());
+                boolean found = false;
                 for (UUID uuid: advertisedUUIDs) {
                     byte[] UUIDData = RxBleClientMock.getDataFromUUID(uuid);
-                    if(!RxBleClientMock.maskedDataEquals(serviceUUIDData, UUIDData, serviceUUIDMaskData)) {
-                        return false;
+                    if(RxBleClientMock.maskedDataEquals(serviceUUIDData, UUIDData, serviceUUIDMaskData)) {
+                        found = true;
+                        break;
                     }
+                }
+                if(!found) {
+                    return false;
                 }
             } else if(serviceUUID != null && !advertisedUUIDs.contains(serviceUUID.getUuid())) {
                 return false;
