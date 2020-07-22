@@ -56,7 +56,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
                         .addManufacturerSpecificData(0x2211, [0x33, 0x44] as byte[])
                         .addServiceData(new ParcelUuid(serviceUUID), [0x11, 0x22] as byte[])
                         .setTxPowerLevel(12)
-                        .setDeviceName("TestDevice")
+                        .setDeviceName("TestDeviceAdv")
                         .build()
                 )
                 .rssi(rssi)
@@ -279,7 +279,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def "should return filtered BluetoothDevice filtered on device name"() {
         when:
         def scanSettings = new ScanSettings.Builder().build()
-        def scanFilter = new ScanFilter.Builder().setDeviceName("TestDevice").build()
+        def scanFilter = new ScanFilter.Builder().setDeviceName("TestDeviceAdv").build()
         def testSubscriber = rxBleClient.scanBleDevices(scanSettings, scanFilter)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
@@ -292,7 +292,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def "should not return filtered BluetoothDevice filtered on device name"() {
         when:
         def scanSettings = new ScanSettings.Builder().build()
-        def scanFilter = new ScanFilter.Builder().setDeviceName("TestDevicee").build()
+        def scanFilter = new ScanFilter.Builder().setDeviceName("TestDeviceAdvv").build()
         def testSubscriber = rxBleClient.scanBleDevices(scanSettings, scanFilter)
                 .test()
 

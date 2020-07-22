@@ -453,7 +453,7 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         String mac = mock.getMacAddress();
-        String name = mock.getName();
+        String name = scanRecord.getDeviceName();
         Set<UUID> advertisedUUIDs = new HashSet<>(mock.getAdvertisedUUIDs());
         List<ParcelUuid> scanRecordAdvertisedUUIDs = scanRecord.getServiceUuids();
         if(scanRecordAdvertisedUUIDs != null) {
