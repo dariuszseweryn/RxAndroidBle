@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.os.ParcelUuid;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,8 +12,6 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
-import com.polidea.rxandroidble2.scan.ScanResultInterface;
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanFilter;
@@ -407,8 +404,8 @@ public class RxBleClientMock extends RxBleClient {
                 .filter(new Predicate<ScanResult>() {
                     @Override
                     public boolean test(ScanResult scanResult) {
-                        for(ScanFilter filter : scanFilters) {
-                            if(!filter.matches(scanResult)) {
+                        for (ScanFilter filter : scanFilters) {
+                            if (!filter.matches(scanResult)) {
                                 return false;
                             }
                         }
