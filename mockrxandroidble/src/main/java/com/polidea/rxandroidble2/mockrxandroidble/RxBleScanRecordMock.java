@@ -1,17 +1,12 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
-import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.RxBleScanResult;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
