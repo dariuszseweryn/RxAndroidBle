@@ -1,14 +1,12 @@
 package com.polidea.rxandroidble2.scan;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.ScanFilterInterface;
 import java.util.Arrays;
 import java.util.List;
@@ -258,14 +256,13 @@ import java.util.UUID;
      * Check if the scan filter matches a {@code scanResult}. A scan result is considered as a match
      * if it matches all the field filters.
      */
-    public boolean matches(RxBleInternalScanResult scanResult) {
+    public boolean matches(ScanResultInterface scanResult) {
         if (scanResult == null) {
             return false;
         }
-        BluetoothDevice device = scanResult.getBluetoothDevice();
+        String address = scanResult.getAddress();
         // Device match.
-        if (mDeviceAddress != null
-                && (device == null || !mDeviceAddress.equals(device.getAddress()))) {
+        if (mDeviceAddress != null && !mDeviceAddress.equals(address)) {
             return false;
         }
 
@@ -278,7 +275,7 @@ import java.util.UUID;
 
         // Local name match.
         if (mDeviceName != null) {
-            if (!(mDeviceName.equals(scanRecord.getDeviceName()) || mDeviceName.equals(device.getName()))) {
+            if (!mDeviceName.equals(scanRecord.getDeviceName())) {
                 return false;
             }
         }

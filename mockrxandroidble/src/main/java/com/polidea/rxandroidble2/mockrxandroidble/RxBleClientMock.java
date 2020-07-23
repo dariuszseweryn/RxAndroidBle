@@ -13,6 +13,8 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
+import com.polidea.rxandroidble2.scan.ScanResultInterface;
+import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanFilter;
@@ -393,13 +395,26 @@ public class RxBleClientMock extends RxBleClient {
         return createScanOperation(scanSettings, scanFilters);
     }
 
-    private static ScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, ScanRecord scanRecord) {
-        return new ScanResult(
-                bleDevice,
-                rssi,
-                System.currentTimeMillis() * 1000000,
-                ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH,
-                scanRecord);
+    @NonNull
+    private Observable<ScanResult> createScanOperation(ScanSettings scanSettings, final ScanFilter... scanFilters) {
+        return discoveredDevicesSubject
+                .map(new Function<RxBleDeviceMock, ScanResult>() {
+                    @Override
+                    public ScanResult apply(RxBleDeviceMock rxBleDeviceMock) {
+                        return RxBleClientMock.this.createScanResult(rxBleDeviceMock);
+                    }
+                })
+                .filter(new Predicate<ScanResult>() {
+                    @Override
+                    public boolean test(ScanResult scanResult) {
+                        for(ScanFilter filter : scanFilters) {
+                            if(!filter.matches(scanResult)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
     }
 
     @NonNull
@@ -408,20 +423,13 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @NonNull
-    private Observable<ScanResult> createScanOperation(ScanSettings scanSettings, final ScanFilter... scanFilters) {
-        return discoveredDevicesSubject
-                .filter(new Predicate<RxBleDeviceMock>() {
-                    @Override
-                    public boolean test(RxBleDeviceMock rxBleDevice) {
-                        return RxBleClientMock.filterDevice(rxBleDevice, scanFilters);
-                    }
-                })
-                .map(new Function<RxBleDeviceMock, ScanResult>() {
-                    @Override
-                    public ScanResult apply(RxBleDeviceMock rxBleDeviceMock) {
-                        return RxBleClientMock.this.createScanResult(rxBleDeviceMock);
-                    }
-                });
+    private static ScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, ScanRecord scanRecord) {
+        return new ScanResult(
+                bleDevice,
+                rssi,
+                System.currentTimeMillis() * 1000000,
+                ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH,
+                scanRecord);
     }
 
     private static boolean maskedDataEquals(@NonNull byte[] data1, @NonNull byte[] data2, @Nullable byte[] mask) {
@@ -445,76 +453,6 @@ public class RxBleClientMock extends RxBleClient {
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return bb.array();
-    }
-
-    private static boolean filterDevice(RxBleDevice rxBleDevice, ScanFilter... scanFilters) {
-
-        if (scanFilters == null || scanFilters.length == 0) {
-            return true;
-        }
-        RxBleDeviceMock mock = (RxBleDeviceMock) rxBleDevice;
-        ScanRecord scanRecord = mock.getScanRecord();
-        if (scanRecord == null) {
-            return false;
-        }
-
-        String mac = mock.getMacAddress();
-        String name = scanRecord.getDeviceName();
-        Set<UUID> advertisedUUIDs = new HashSet<>(mock.getAdvertisedUUIDs());
-        List<ParcelUuid> scanRecordAdvertisedUUIDs = scanRecord.getServiceUuids();
-        if (scanRecordAdvertisedUUIDs != null) {
-            for (ParcelUuid uuid : scanRecordAdvertisedUUIDs) {
-                advertisedUUIDs.add(uuid.getUuid());
-            }
-        }
-
-        for (ScanFilter filter : scanFilters) {
-            ParcelUuid serviceUUIDMask = filter.getServiceUuidMask();
-            ParcelUuid serviceUUID = filter.getServiceUuid();
-            if (serviceUUIDMask != null && serviceUUID != null) {
-                byte[] serviceUUIDMaskData = RxBleClientMock.getDataFromUUID(serviceUUIDMask.getUuid());
-                byte[] serviceUUIDData = RxBleClientMock.getDataFromUUID(serviceUUID.getUuid());
-                boolean found = false;
-                for (UUID uuid : advertisedUUIDs) {
-                    byte[] uuidData = RxBleClientMock.getDataFromUUID(uuid);
-                    if (RxBleClientMock.maskedDataEquals(serviceUUIDData, uuidData, serviceUUIDMaskData)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            } else if (serviceUUID != null && !advertisedUUIDs.contains(serviceUUID.getUuid())) {
-                return false;
-            }
-
-            if (filter.getDeviceAddress() != null && !filter.getDeviceAddress().equals(mac)) {
-                return false;
-            }
-
-            if (filter.getDeviceName() != null && !filter.getDeviceName().equals(name)) {
-                return false;
-            }
-
-            byte[] manuFilterData = filter.getManufacturerData();
-            if (manuFilterData != null) {
-                byte[] manuData = scanRecord.getManufacturerSpecificData(filter.getManufacturerId());
-                if (manuData == null || !RxBleClientMock.maskedDataEquals(manuData, manuFilterData, filter.getManufacturerDataMask())) {
-                    return false;
-                }
-            }
-            byte[] filterServiceData = filter.getServiceData();
-            ParcelUuid serviceDataUuid = filter.getServiceDataUuid();
-            if (serviceDataUuid != null && filterServiceData != null) {
-                byte[] serviceData = scanRecord.getServiceData(serviceDataUuid);
-                if (serviceData == null || !RxBleClientMock.maskedDataEquals(filterServiceData, serviceData, filter.getServiceDataMask())) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     @Override
