@@ -204,7 +204,7 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Set a BLE scan record. Calling either this method or the other scanRecord method is required.
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord) scanRecord} method is required.
          */
         public DeviceBuilder scanRecord(@NonNull byte[] scanRecord) {
             this.legacyScanRecord = scanRecord;
