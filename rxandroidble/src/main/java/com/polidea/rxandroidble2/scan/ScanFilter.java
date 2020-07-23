@@ -271,11 +271,9 @@ import java.util.UUID;
 
         ScanRecord scanRecord = scanResult.getScanRecord();
 
-        // Scan record is null but there exist filters on it.
-        if (scanRecord == null
-                && (mDeviceName != null || mServiceUuid != null || mManufacturerData != null
-                || mServiceData != null)) {
-            return false;
+        // if scan record is null we cannot continue. For filter to pass, remaining filter properties must be empty
+        if (scanRecord == null) {
+            return mDeviceName == null && mServiceUuid == null && mManufacturerData == null && mServiceData == null;
         }
 
         // Local name match.
