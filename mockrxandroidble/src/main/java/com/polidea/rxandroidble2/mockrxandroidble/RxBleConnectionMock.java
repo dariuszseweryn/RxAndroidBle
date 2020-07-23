@@ -28,6 +28,7 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
@@ -58,14 +59,25 @@ public class RxBleConnectionMock implements RxBleConnection {
     private int rssi;
     private int currentMtu = 23;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
-
+    private Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks;
+    private Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks;
+    private Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks;
+    private Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks;
 
     public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices,
                                int rssi,
-                               Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
+                               Map<UUID, Observable<byte[]>> characteristicNotificationSources,
+                               Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks,
+                               Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks,
+                               Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks,
+                               Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks) {
         this.rxBleDeviceServices = rxBleDeviceServices;
         this.rssi = rssi;
         this.characteristicNotificationSources = characteristicNotificationSources;
+        this.characteristicReadCallbacks = characteristicReadCallbacks;
+        this.characteristicWriteCallbacks = characteristicWriteCallbacks;
+        this.descriptorReadCallbacks = descriptorReadCallbacks;
+        this.descriptorWriteCallbacks = descriptorWriteCallbacks;
     }
 
     @Override
@@ -115,29 +127,71 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Single<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
-        return getCharacteristic(characteristicUuid).map(new Function<BluetoothGattCharacteristic, byte[]>() {
+        final Function<BluetoothGattCharacteristic, Single<byte[]>> readCallback = characteristicReadCallbacks.get(characteristicUuid);
+        Single<BluetoothGattCharacteristic> characteristic = getCharacteristic(characteristicUuid);
+        if (readCallback == null) {
+            return characteristic.map(new Function<BluetoothGattCharacteristic, byte[]>() {
+                @Override
+                public byte[] apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) throws Exception {
+                    return bluetoothGattCharacteristic.getValue();
+                }
+            });
+        }
+        return characteristic.flatMap(new Function<BluetoothGattCharacteristic, SingleSource<? extends byte[]>>() {
             @Override
-            public byte[] apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) throws Exception {
-                return bluetoothGattCharacteristic.getValue();
+            public SingleSource<? extends byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                return Single.just(characteristic).flatMap(readCallback).doOnSuccess(new Consumer<byte[]>() {
+                    @Override
+                    public void accept(byte[] bytes) throws Exception {
+                        characteristic.setValue(bytes);
+                    }
+                });
             }
         });
     }
 
     @Override
-    public Single<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
-        return Single.just(characteristic.getValue());
+    public Single<byte[]> readCharacteristic(@NonNull final BluetoothGattCharacteristic characteristic) {
+        Function<BluetoothGattCharacteristic, Single<byte[]>> readCallback = characteristicReadCallbacks.get(characteristic.getUuid());
+        if (readCallback == null) {
+            return Single.just(characteristic.getValue());
+        }
+        return Single.just(characteristic).flatMap(readCallback).doOnSuccess(new Consumer<byte[]>() {
+            @Override
+            public void accept(byte[] bytes) throws Exception {
+                characteristic.setValue(bytes);
+            }
+        });
     }
 
     @Override
     public Single<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
                                              @NonNull final UUID descriptorUuid) {
-        return discoverServices()
+        final Single<BluetoothGattDescriptor> descriptor = discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
                     @Override
                     public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
                         return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
                     }
-                })
+                });
+        Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>> descriptorCallbacks = descriptorReadCallbacks.get(characteristicUuid);
+        if (descriptorCallbacks != null) {
+            final Function<BluetoothGattDescriptor, Single<byte[]>> readCallback = descriptorCallbacks.get(descriptorUuid);
+            if (readCallback != null) {
+                return descriptor.flatMap(new Function<BluetoothGattDescriptor, SingleSource<? extends byte[]>>() {
+                    @Override
+                    public SingleSource<? extends byte[]> apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        return Single.just(descriptor).flatMap(readCallback).doOnSuccess(new Consumer<byte[]>() {
+                            @Override
+                            public void accept(byte[] bytes) throws Exception {
+                                descriptor.setValue(bytes);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        return descriptor
                 .map(new Function<BluetoothGattDescriptor, byte[]>() {
                     @Override
                     public byte[] apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
@@ -147,7 +201,20 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
+    public Single<byte[]> readDescriptor(@NonNull final BluetoothGattDescriptor descriptor) {
+        Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>> descriptorCallbacks = descriptorReadCallbacks
+                .get(descriptor.getCharacteristic().getUuid());
+        if (descriptorCallbacks != null) {
+            Function<BluetoothGattDescriptor, Single<byte[]>> readCallback = descriptorCallbacks.get(descriptor.getUuid());
+            if (readCallback != null) {
+                return Single.just(descriptor).flatMap(readCallback).doOnSuccess(new Consumer<byte[]>() {
+                    @Override
+                    public void accept(byte[] bytes) throws Exception {
+                        descriptor.setValue(bytes);
+                    }
+                });
+            }
+        }
         return Single.just(descriptor.getValue());
     }
 
@@ -255,9 +322,60 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
-        bluetoothGattCharacteristic.setValue(data);
-        return Single.just(data);
+    public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic,
+                                              @NonNull final byte[] data) {
+        final BiFunction<BluetoothGattCharacteristic, byte[], Completable> writeCallback = characteristicWriteCallbacks
+                .get(bluetoothGattCharacteristic.getUuid());
+        if (writeCallback == null) {
+            bluetoothGattCharacteristic.setValue(data);
+            return Single.just(data);
+        }
+        // wrap characteristic in single so exceptions from writeCallback are handled for us
+        return Single.just(bluetoothGattCharacteristic)
+                .flatMap(new Function<BluetoothGattCharacteristic, SingleSource<byte[]>>() {
+                    @Override
+                    public SingleSource<byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                        return writeCallback
+                                .apply(characteristic, data)
+                                .toSingleDefault(data)
+                                .doOnSuccess(new Consumer<byte[]>() {
+                            @Override
+                            public void accept(byte[] bytes) throws Exception {
+                                        characteristic.setValue(bytes);
+                                    }
+                                });
+                    }
+                });
+    }
+
+    @Override
+    public Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull final byte[] data) {
+        final BiFunction<BluetoothGattCharacteristic, byte[], Completable> writeCallback = characteristicWriteCallbacks
+                .get(characteristicUuid);
+        Single<BluetoothGattCharacteristic> characteristic = getCharacteristic(characteristicUuid);
+        if (writeCallback == null) {
+            return characteristic.map(new Function<BluetoothGattCharacteristic, byte[]>() {
+                        @Override
+                        public byte[] apply(BluetoothGattCharacteristic characteristic) {
+                            characteristic.setValue(data);
+                            return data;
+                        }
+                    });
+        }
+        return characteristic.flatMap(new Function<BluetoothGattCharacteristic, SingleSource<byte[]>>() {
+            @Override
+            public SingleSource<byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                return writeCallback
+                        .apply(characteristic, data)
+                        .toSingleDefault(data)
+                        .doOnSuccess(new Consumer<byte[]>() {
+                    @Override
+                    public void accept(byte[] bytes) throws Exception {
+                                characteristic.setValue(bytes);
+                            }
+                        });
+            }
+        });
     }
 
     @Override
@@ -355,38 +473,63 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull final byte[] data) {
-        return getCharacteristic(characteristicUuid)
-                .map(new Function<BluetoothGattCharacteristic, byte[]>() {
-                    @Override
-                    public byte[] apply(BluetoothGattCharacteristic characteristic) {
-                         characteristic.setValue(data);
-                         return data;
-                    }
-                });
-    }
-
-    @Override
     public Completable writeDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
                                               @NonNull final UUID descriptorUuid, @NonNull final byte[] data) {
-        return discoverServices()
+        Single<BluetoothGattDescriptor> descriptor = discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
                     @Override
                     public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
                         return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
                     }
-                })
-                .doOnSuccess(new Consumer<BluetoothGattDescriptor>() {
+                });
+        Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>> descriptorCallbacks = descriptorWriteCallbacks
+                .get(characteristicUuid);
+        if (descriptorCallbacks != null) {
+            final BiFunction<BluetoothGattDescriptor, byte[], Completable> writeCallback = descriptorCallbacks.get(descriptorUuid);
+            if (writeCallback != null) {
+                return descriptor.flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
+                            @Override
+                            public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        return writeCallback.apply(descriptor, data).doOnComplete(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                descriptor.setValue(data);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        return descriptor.doOnSuccess(new Consumer<BluetoothGattDescriptor>() {
                     @Override
                     public void accept(BluetoothGattDescriptor bluetoothGattDescriptor) throws Exception {
                         bluetoothGattDescriptor.setValue(data);
                     }
                 })
-                .toCompletable();
+                .ignoreElement();
     }
 
     @Override
     public Completable writeDescriptor(@NonNull final BluetoothGattDescriptor descriptor, @NonNull final byte[] data) {
+        Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>> descriptorCallbacks = descriptorWriteCallbacks
+                .get(descriptor.getCharacteristic().getUuid());
+        if (descriptorCallbacks != null) {
+            final BiFunction<BluetoothGattDescriptor, byte[], Completable> writeCallback = descriptorCallbacks.get(descriptor.getUuid());
+            if (writeCallback != null) {
+                // wrap descriptor in single so exceptions from writeCallback are handled for us
+                return Single.just(descriptor).flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
+                    @Override
+                    public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        return writeCallback.apply(descriptor, data).doOnComplete(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                descriptor.setValue(data);
+                            }
+                        });
+                    }
+                });
+            }
+        }
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {

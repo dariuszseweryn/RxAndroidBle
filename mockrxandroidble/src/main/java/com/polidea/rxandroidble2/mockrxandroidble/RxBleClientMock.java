@@ -30,7 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.subjects.ReplaySubject;
@@ -97,6 +100,11 @@ public class RxBleClientMock extends RxBleClient {
         private RxBleDeviceServices rxBleDeviceServices;
         private BluetoothDevice bluetoothDevice;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
+        private Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks;
+        private Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks;
+        private Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks;
+        private Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks;
+        RxBleConnectionMock connectionMock;
 
         /**
          * Build a new {@link RxBleDevice}.
@@ -108,6 +116,10 @@ public class RxBleClientMock extends RxBleClient {
         public DeviceBuilder() {
             this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<BluetoothGattService>());
             this.characteristicNotificationSources = new HashMap<>();
+            this.characteristicReadCallbacks = new HashMap<>();
+            this.characteristicWriteCallbacks = new HashMap<>();
+            this.descriptorReadCallbacks = new HashMap<>();
+            this.descriptorWriteCallbacks = new HashMap<>();
         }
 
         /**
@@ -143,14 +155,25 @@ public class RxBleClientMock extends RxBleClient {
                         rxBleDeviceServices,
                         characteristicNotificationSources,
                         bluetoothDevice);
-            } else {
+            } else if (connectionMock == null) {
                 rxBleDeviceMock = new RxBleDeviceMock(deviceName,
                         deviceMacAddress,
                         scanRecord,
                         rssi,
                         rxBleDeviceServices,
                         characteristicNotificationSources,
+                        characteristicReadCallbacks,
+                        characteristicWriteCallbacks,
+                        descriptorReadCallbacks,
+                        descriptorWriteCallbacks,
                         bluetoothDevice);
+            } else {
+                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                        deviceMacAddress,
+                        scanRecord,
+                        rssi,
+                        bluetoothDevice,
+                        connectionMock);
             }
 
             for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
@@ -196,6 +219,75 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
+         * Set a {@link Function} that will be used to handle characteristic reads for characteristics with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public DeviceBuilder characteristicReadCallback(@NonNull UUID characteristicUUID,
+                                                        @NonNull Function<BluetoothGattCharacteristic, Single<byte[]>> readCallback) {
+            characteristicReadCallbacks.put(characteristicUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle characteristic writes for characteristics with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public DeviceBuilder characteristicWriteCallback(@NonNull UUID characteristicUUID,
+                                                         @NonNull BiFunction<
+                                                                     BluetoothGattCharacteristic,
+                                                                     byte[],
+                                                                     Completable
+                                                                 > writeCallback) {
+            characteristicWriteCallbacks.put(characteristicUUID, writeCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor reads for descriptors with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public DeviceBuilder descriptorReadCallback(@NonNull UUID characteristicUUID,
+                                                    @NonNull UUID descriptorUUID,
+                                                    @NonNull Function<BluetoothGattDescriptor,
+                                                            Single<byte[]>> readCallback) {
+            Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>> descriptorCallbacks = descriptorReadCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorReadCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor writes for descriptors with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public DeviceBuilder descriptorWriteCallback(@NonNull UUID characteristicUUID,
+                                                     @NonNull UUID descriptorUUID,
+                                                     @NonNull BiFunction<BluetoothGattDescriptor, byte[], Completable> writeCallback) {
+            Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>> descriptorCallbacks = descriptorWriteCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorWriteCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, writeCallback);
+            return this;
+        }
+
+        /**
          * Set a rssi that will be reported. Calling this method is required.
          */
         public DeviceBuilder rssi(int rssi) {
@@ -218,6 +310,11 @@ public class RxBleClientMock extends RxBleClient {
             this.scanRecord = scanRecord;
             return this;
         }
+
+        public DeviceBuilder connection(@NonNull RxBleConnectionMock connectionMock) {
+            this.connectionMock = connectionMock;
+            return this;
+        }
     }
 
     public static class CharacteristicsBuilder {
@@ -230,6 +327,49 @@ public class RxBleClientMock extends RxBleClient {
          */
         public CharacteristicsBuilder() {
             this.bluetoothGattCharacteristics = new ArrayList<>();
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic}
+         *
+         * @param characteristic        The characteristic to add
+         */
+        public CharacteristicsBuilder addCharacteristic(BluetoothGattCharacteristic characteristic) {
+            this.bluetoothGattCharacteristics.add(characteristic);
+            return this;
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        int properties,
+                                                        List<BluetoothGattDescriptor> descriptors) {
+            BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, properties, 0);
+            for (BluetoothGattDescriptor descriptor : descriptors) {
+                characteristic.addDescriptor(descriptor);
+            }
+            characteristic.setValue(data);
+            return addCharacteristic(characteristic);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        int properties) {
+            return addCharacteristic(uuid, data, properties, new ArrayList<BluetoothGattDescriptor>());
         }
 
         /**
@@ -250,20 +390,38 @@ public class RxBleClientMock extends RxBleClient {
          *
          * @param uuid        characteristic UUID
          * @param data        locally stored value of the characteristic
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        BluetoothGattDescriptor... descriptors) {
+            return addCharacteristic(uuid, data, 0, descriptors);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
          * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
          * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
          */
         public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
                                                         @NonNull byte[] data,
                                                         int properties,
-                                                        List<BluetoothGattDescriptor> descriptors) {
-            BluetoothGattCharacteristic characteristic = new BluetoothGattCharacteristic(uuid, properties, 0);
-            for (BluetoothGattDescriptor descriptor : descriptors) {
-                characteristic.addDescriptor(descriptor);
-            }
-            characteristic.setValue(data);
-            this.bluetoothGattCharacteristics.add(characteristic);
-            return this;
+                                                        BluetoothGattDescriptor... descriptors) {
+            return addCharacteristic(uuid, data, properties, Arrays.asList(descriptors));
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data) {
+            return addCharacteristic(uuid, data, 0);
         }
 
         /**
@@ -287,6 +445,16 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
+         * Adds a {@link BluetoothGattDescriptor}.
+         *
+         * @param descriptor the descriptor
+         */
+        public DescriptorsBuilder addDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
+            bluetoothGattDescriptors.add(descriptor);
+            return this;
+        }
+
+        /**
          * Adds a {@link BluetoothGattDescriptor} with specified parameters.
          *
          * @param uuid descriptor UUID
@@ -295,8 +463,7 @@ public class RxBleClientMock extends RxBleClient {
         public DescriptorsBuilder addDescriptor(@NonNull UUID uuid, @NonNull byte[] data) {
             BluetoothGattDescriptor bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, 0);
             bluetoothGattDescriptor.setValue(data);
-            bluetoothGattDescriptors.add(bluetoothGattDescriptor);
-            return this;
+            return addDescriptor(bluetoothGattDescriptor);
         }
 
         /**

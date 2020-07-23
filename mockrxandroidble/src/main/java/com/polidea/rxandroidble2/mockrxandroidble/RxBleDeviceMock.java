@@ -1,6 +1,8 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 
 import androidx.annotation.Nullable;
 
@@ -12,16 +14,21 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.subjects.BehaviorSubject;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
@@ -54,7 +61,11 @@ public class RxBleDeviceMock implements RxBleDevice {
         this.macAddress = macAddress;
         this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
                 rssi,
-                characteristicNotificationSources);
+                characteristicNotificationSources,
+                new HashMap<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>>(),
+                new HashMap<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>>(),
+                new HashMap<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>>(),
+                new HashMap<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>>());
         this.rssi = rssi;
         this.legacyScanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
@@ -65,18 +76,45 @@ public class RxBleDeviceMock implements RxBleDevice {
                            String macAddress,
                            ScanRecord scanRecord,
                            Integer rssi,
-                           RxBleDeviceServices rxBleDeviceServices,
-                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
-                           @Nullable BluetoothDevice bluetoothDevice) {
+                           @Nullable BluetoothDevice bluetoothDevice,
+                           RxBleConnectionMock connectionMock
+    ) {
         this.name = name;
         this.macAddress = macAddress;
-        this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
-                rssi,
-                characteristicNotificationSources);
+        this.rxBleConnection = connectionMock;
         this.rssi = rssi;
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
         this.bluetoothDevice = bluetoothDevice;
+    }
+
+    public RxBleDeviceMock(String name,
+                           String macAddress,
+                           ScanRecord scanRecord,
+                           Integer rssi,
+                           RxBleDeviceServices rxBleDeviceServices,
+                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
+                           Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks,
+                           Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks,
+                           Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks,
+                           Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks,
+                           @Nullable BluetoothDevice bluetoothDevice) {
+        this(
+                name,
+                macAddress,
+                scanRecord,
+                rssi,
+                bluetoothDevice,
+                new RxBleConnectionMock(
+                    rxBleDeviceServices,
+                    rssi,
+                    characteristicNotificationSources,
+                    characteristicReadCallbacks,
+                    characteristicWriteCallbacks,
+                    descriptorReadCallbacks,
+                    descriptorWriteCallbacks
+                )
+        );
     }
 
     public void addAdvertisedUUID(UUID advertisedUUID) {
