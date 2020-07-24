@@ -30,17 +30,6 @@ class ScanFilterTest extends Specification {
         objectUnderTest.matches(mockInternalScanResult)
     }
 
-    def "should match by device name if the name is present in BluetoothDevice"() {
-
-        given:
-        String name = "xxx"
-        mockBluetoothDevice.getName() >> name
-        objectUnderTest = new ScanFilter.Builder().setDeviceName(name).build()
-
-        expect:
-        objectUnderTest.matches(mockInternalScanResult)
-    }
-
     def "should not match by device name if the name is not present in BluetoothDevice nor ScanRecord"() {
 
         given:
