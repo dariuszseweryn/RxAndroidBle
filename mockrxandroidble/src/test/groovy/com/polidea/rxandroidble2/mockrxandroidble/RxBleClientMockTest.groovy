@@ -537,13 +537,10 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def "should write descriptor data via callback"() {
         given:
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .take(1)
                 .flatMapCompletable { rxBleConnection -> rxBleConnection.writeDescriptor(serviceUUID, characteristicUUID, descriptorUUID, "ConfigCB".getBytes()) }
-        .doOnComplete({
-            printf("Test")
-        })
                 .test()
 
         when:
@@ -556,9 +553,9 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def "should fail to write descriptor data via callback"() {
         given:
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .take(1)
                 .flatMapCompletable { rxBleConnection -> rxBleConnection.writeDescriptor(serviceUUID, characteristicUUID, descriptorUUID, "ConfigCB".getBytes()) }
                 .test()
 
