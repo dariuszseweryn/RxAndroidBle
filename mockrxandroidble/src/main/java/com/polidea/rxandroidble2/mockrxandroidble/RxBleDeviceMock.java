@@ -1,7 +1,10 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleConnection;
@@ -12,6 +15,7 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,6 +81,139 @@ public class RxBleDeviceMock implements RxBleDevice {
         this.scanRecord = scanRecord;
         this.advertisedUUIDs = new ArrayList<>();
         this.bluetoothDevice = bluetoothDevice;
+    }
+
+    public static class Builder {
+
+        private int rssi = -1;
+        private String deviceName;
+        private String deviceMacAddress;
+        private byte[] legacyScanRecord;
+        private ScanRecord scanRecord;
+        private RxBleDeviceServices rxBleDeviceServices;
+        private BluetoothDevice bluetoothDevice;
+        private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
+
+        /**
+         * Build a new {@link RxBleDevice}.
+         * <p>
+         * Calling {@link #scanRecord}, {@link #rssi} and {@link #deviceMacAddress}
+         * is required before calling {@link #build()}. All other methods
+         * are optional.
+         */
+        public Builder() {
+            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<BluetoothGattService>());
+            this.characteristicNotificationSources = new HashMap<>();
+        }
+
+        /**
+         * Add a {@link BluetoothGattService} to the device. Calling this method is not required.
+         *
+         * @param uuid            service UUID
+         * @param characteristics characteristics that the service should report. Use {@link RxBleClientMock.CharacteristicsBuilder} to create them.
+         */
+        public Builder addService(@NonNull UUID uuid, @NonNull List<BluetoothGattCharacteristic> characteristics) {
+            BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                bluetoothGattService.addCharacteristic(characteristic);
+            }
+            rxBleDeviceServices.getBluetoothGattServices().add(bluetoothGattService);
+            return this;
+        }
+
+        /**
+         * Create the {@link RxBleDeviceMock} instance using the configured values.
+         */
+        public RxBleDevice build() {
+            if (this.rssi == -1) throw new IllegalStateException("Rssi is required. Builder#rssi should be called.");
+            if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required."
+                    + " Builder#deviceMacAddress should be called.");
+            if (this.scanRecord == null && this.legacyScanRecord == null)
+                throw new IllegalStateException("ScanRecord required. Builder#scanRecord should be called.");
+            RxBleDeviceMock rxBleDeviceMock;
+            if (scanRecord == null) {
+                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                        deviceMacAddress,
+                        legacyScanRecord,
+                        rssi,
+                        rxBleDeviceServices,
+                        characteristicNotificationSources,
+                        bluetoothDevice);
+            } else {
+                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                        deviceMacAddress,
+                        scanRecord,
+                        rssi,
+                        rxBleDeviceServices,
+                        characteristicNotificationSources,
+                        bluetoothDevice);
+            }
+
+            for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
+                rxBleDeviceMock.addAdvertisedUUID(service.getUuid());
+            }
+            return rxBleDeviceMock;
+        }
+
+        /**
+         * Set a device mac address. Calling this method is required.
+         */
+        public Builder deviceMacAddress(@NonNull String deviceMacAddress) {
+            this.deviceMacAddress = deviceMacAddress;
+            return this;
+        }
+
+        /**
+         * Set a device name. Calling this method is not required.
+         */
+        public Builder deviceName(@NonNull String deviceName) {
+            this.deviceName = deviceName;
+            return this;
+        }
+
+        /**
+         * Sets a bluetooth device. Calling this method is not required.
+         */
+        public Builder bluetoothDevice(@NonNull BluetoothDevice bluetoothDevice) {
+            this.bluetoothDevice = bluetoothDevice;
+            return this;
+        }
+
+        /**
+         * Set an {@link Observable} that will be used to fire characteristic change notifications. It will be subscribed to after
+         * a call to {@link com.polidea.rxandroidble2.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
+         *
+         * @param characteristicUUID UUID of the characteristic that will be observed for notifications
+         * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications
+         */
+        public Builder notificationSource(@NonNull UUID characteristicUUID, @NonNull Observable<byte[]> sourceObservable) {
+            characteristicNotificationSources.put(characteristicUUID, sourceObservable);
+            return this;
+        }
+
+        /**
+         * Set a rssi that will be reported. Calling this method is required.
+         */
+        public Builder rssi(int rssi) {
+            this.rssi = rssi;
+            return this;
+        }
+
+        /**
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord) scanRecord} method is required.
+         */
+        public Builder scanRecord(@NonNull byte[] scanRecord) {
+            this.legacyScanRecord = scanRecord;
+            return this;
+        }
+
+        /**
+         * Set a BLE scan record. Calling this method is required.
+         */
+        public Builder scanRecord(@NonNull ScanRecord scanRecord) {
+            this.scanRecord = scanRecord;
+            return this;
+        }
     }
 
     public void addAdvertisedUUID(UUID advertisedUUID) {
