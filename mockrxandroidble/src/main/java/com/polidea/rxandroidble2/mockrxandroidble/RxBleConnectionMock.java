@@ -656,6 +656,10 @@ public class RxBleConnectionMock implements RxBleConnection {
         private RxBleDeviceServices rxBleDeviceServices;
         private int rssi;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources = new HashMap<>();
+        private Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks = new HashMap<>();
+        private Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks = new HashMap<>();
+        private Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks = new HashMap<>();
+        private Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks = new HashMap<>();
 
         public Builder() {
 
@@ -666,7 +670,11 @@ public class RxBleConnectionMock implements RxBleConnection {
             return new RxBleConnectionMock(
                     rxBleDeviceServices,
                     rssi,
-                    characteristicNotificationSources
+                    characteristicNotificationSources,
+                    characteristicReadCallbacks,
+                    characteristicWriteCallbacks,
+                    descriptorReadCallbacks,
+                    descriptorWriteCallbacks
             );
         }
 
@@ -704,6 +712,71 @@ public class RxBleConnectionMock implements RxBleConnection {
          */
         public Builder notificationSource(@NonNull UUID characteristicUUID, @NonNull Observable<byte[]> sourceObservable) {
             characteristicNotificationSources.put(characteristicUUID, sourceObservable);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle characteristic reads for characteristics with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public Builder characteristicReadCallback(@NonNull UUID characteristicUUID,
+                                                  @NonNull Function<BluetoothGattCharacteristic,
+                                                  Single<byte[]>> readCallback) {
+            characteristicReadCallbacks.put(characteristicUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle characteristic writes for characteristics with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public Builder characteristicWriteCallback(@NonNull UUID characteristicUUID,
+                                                   @NonNull BiFunction<BluetoothGattCharacteristic, byte[], Completable> writeCallback) {
+            characteristicWriteCallbacks.put(characteristicUUID, writeCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor reads for descriptors with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public Builder descriptorReadCallback(@NonNull UUID characteristicUUID,
+                                              @NonNull UUID descriptorUUID,
+                                              @NonNull Function<BluetoothGattDescriptor, Single<byte[]>> readCallback) {
+            Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>> descriptorCallbacks = descriptorReadCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorReadCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor writes for descriptors with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public Builder descriptorWriteCallback(@NonNull UUID characteristicUUID,
+                                               @NonNull UUID descriptorUUID,
+                                               @NonNull BiFunction<BluetoothGattDescriptor, byte[], Completable> writeCallback) {
+            Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>> descriptorCallbacks = descriptorWriteCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorWriteCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, writeCallback);
             return this;
         }
     }

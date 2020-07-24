@@ -89,33 +89,6 @@ public class RxBleDeviceMock implements RxBleDevice {
         this.bluetoothDevice = bluetoothDevice;
     }
 
-    public RxBleDeviceMock(String name,
-                           String macAddress,
-                           ScanRecord scanRecord,
-                           RxBleDeviceServices rxBleDeviceServices,
-                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
-                           Map<UUID, Function<BluetoothGattCharacteristic, Single<byte[]>>> characteristicReadCallbacks,
-                           Map<UUID, BiFunction<BluetoothGattCharacteristic, byte[], Completable>> characteristicWriteCallbacks,
-                           Map<UUID, Map<UUID, Function<BluetoothGattDescriptor, Single<byte[]>>>> descriptorReadCallbacks,
-                           Map<UUID, Map<UUID, BiFunction<BluetoothGattDescriptor, byte[], Completable>>> descriptorWriteCallbacks,
-                           @Nullable BluetoothDevice bluetoothDevice) {
-        this(
-                name,
-                macAddress,
-                scanRecord,
-                bluetoothDevice,
-                new RxBleConnectionMock(
-                    rxBleDeviceServices,
-                    rssi,
-                    characteristicNotificationSources,
-                    characteristicReadCallbacks,
-                    characteristicWriteCallbacks,
-                    descriptorReadCallbacks,
-                    descriptorWriteCallbacks
-                )
-        );
-    }
-
     public static class Builder {
 
         private String deviceName;

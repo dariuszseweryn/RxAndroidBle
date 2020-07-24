@@ -24,10 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.subjects.ReplaySubject;
