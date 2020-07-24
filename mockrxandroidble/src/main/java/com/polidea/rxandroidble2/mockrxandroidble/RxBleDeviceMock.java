@@ -68,31 +68,27 @@ public class RxBleDeviceMock implements RxBleDevice {
     public RxBleDeviceMock(String name,
                            String macAddress,
                            ScanRecord scanRecord,
-                           Integer rssi,
-                           RxBleDeviceServices rxBleDeviceServices,
-                           Map<UUID, Observable<byte[]>> characteristicNotificationSources,
-                           @Nullable BluetoothDevice bluetoothDevice) {
+                           @Nullable BluetoothDevice bluetoothDevice,
+                           RxBleConnectionMock connectionMock
+    ) {
         this.name = name;
         this.macAddress = macAddress;
-        this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
-                rssi,
-                characteristicNotificationSources);
-        this.rssi = rssi;
+        this.rxBleConnection = connectionMock;
+        this.rssi = connectionMock.getRssi();
         this.scanRecord = scanRecord;
-        this.advertisedUUIDs = new ArrayList<>();
+        this.advertisedUUIDs = connectionMock.getServiceUuids();
         this.bluetoothDevice = bluetoothDevice;
     }
 
     public static class Builder {
 
-        private int rssi = -1;
         private String deviceName;
         private String deviceMacAddress;
         private byte[] legacyScanRecord;
         private ScanRecord scanRecord;
-        private RxBleDeviceServices rxBleDeviceServices;
         private BluetoothDevice bluetoothDevice;
-        private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
+        RxBleConnectionMock connectionMock;
+        RxBleConnectionMock.Builder connectionMockBuilder;
 
         /**
          * Build a new {@link RxBleDevice}.
@@ -102,57 +98,54 @@ public class RxBleDeviceMock implements RxBleDevice {
          * are optional.
          */
         public Builder() {
-            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<BluetoothGattService>());
-            this.characteristicNotificationSources = new HashMap<>();
-        }
-
-        /**
-         * Add a {@link BluetoothGattService} to the device. Calling this method is not required.
-         *
-         * @param uuid            service UUID
-         * @param characteristics characteristics that the service should report. Use {@link RxBleClientMock.CharacteristicsBuilder} to create them.
-         */
-        public Builder addService(@NonNull UUID uuid, @NonNull List<BluetoothGattCharacteristic> characteristics) {
-            BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
-            for (BluetoothGattCharacteristic characteristic : characteristics) {
-                bluetoothGattService.addCharacteristic(characteristic);
-            }
-            rxBleDeviceServices.getBluetoothGattServices().add(bluetoothGattService);
-            return this;
+            this.connectionMockBuilder = new RxBleConnectionMock.Builder();
         }
 
         /**
          * Create the {@link RxBleDeviceMock} instance using the configured values.
          */
         public RxBleDevice build() {
-            if (this.rssi == -1) throw new IllegalStateException("Rssi is required. Builder#rssi should be called.");
             if (this.deviceMacAddress == null) throw new IllegalStateException("DeviceMacAddress required."
-                    + " Builder#deviceMacAddress should be called.");
+                    + " DeviceBuilder#deviceMacAddress should be called.");
             if (this.scanRecord == null && this.legacyScanRecord == null)
-                throw new IllegalStateException("ScanRecord required. Builder#scanRecord should be called.");
-            RxBleDeviceMock rxBleDeviceMock;
+                throw new IllegalStateException("ScanRecord required. DeviceBuilder#scanRecord should be called.");
+
+            RxBleConnectionMock connMock = connectionMock == null ? connectionMockBuilder.build() : connectionMock;
+            // legacy
             if (scanRecord == null) {
-                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
+                RxBleDeviceMock rxBleDeviceMock = new RxBleDeviceMock(deviceName,
                         deviceMacAddress,
                         legacyScanRecord,
-                        rssi,
-                        rxBleDeviceServices,
-                        characteristicNotificationSources,
+                        connMock.getRssi(),
+                        connMock.getRxBleDeviceServices(),
+                        connMock.getCharacteristicNotificationSources(),
                         bluetoothDevice);
-            } else {
-                rxBleDeviceMock = new RxBleDeviceMock(deviceName,
-                        deviceMacAddress,
-                        scanRecord,
-                        rssi,
-                        rxBleDeviceServices,
-                        characteristicNotificationSources,
-                        bluetoothDevice);
+                for (UUID service : connMock.getServiceUuids()) {
+                    rxBleDeviceMock.addAdvertisedUUID(service);
+                }
+                return rxBleDeviceMock;
             }
+            return new RxBleDeviceMock(deviceName,
+                    deviceMacAddress,
+                    scanRecord,
+                    bluetoothDevice,
+                    connMock
+                    );
+        }
 
-            for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
-                rxBleDeviceMock.addAdvertisedUUID(service.getUuid());
-            }
-            return rxBleDeviceMock;
+        /**
+         * Add a {@link BluetoothGattService} to the device. Calling this method is not required.
+         *
+         * @param uuid            service UUID
+         * @param characteristics characteristics that the service should report. Use {@link RxBleClientMock.CharacteristicsBuilder} to
+         *                        create them.
+         * @deprecated Use {@link #connection(RxBleConnectionMock connectionMock)} and
+         *             {@link RxBleConnectionMock.Builder#addService(UUID uuid, List characteristics)}
+         */
+        @Deprecated
+        public Builder addService(@NonNull UUID uuid, @NonNull List<BluetoothGattCharacteristic> characteristics) {
+            connectionMockBuilder.addService(uuid, characteristics);
+            return this;
         }
 
         /**
@@ -185,17 +178,22 @@ public class RxBleDeviceMock implements RxBleDevice {
          *
          * @param characteristicUUID UUID of the characteristic that will be observed for notifications
          * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications
+         * @deprecated Use {@link #connectionMock} and
+         *             {@link RxBleConnectionMock.Builder#notificationSource(UUID characteristicUUID, Observable sourceObservable)}
          */
+        @Deprecated
         public Builder notificationSource(@NonNull UUID characteristicUUID, @NonNull Observable<byte[]> sourceObservable) {
-            characteristicNotificationSources.put(characteristicUUID, sourceObservable);
+            connectionMockBuilder.notificationSource(characteristicUUID, sourceObservable);
             return this;
         }
 
         /**
          * Set a rssi that will be reported. Calling this method is required.
+         * @deprecated Use {@link #connectionMock} and {@link RxBleConnectionMock.Builder#rssi(int rssi)}
          */
+        @Deprecated
         public Builder rssi(int rssi) {
-            this.rssi = rssi;
+            connectionMockBuilder.rssi(rssi);
             return this;
         }
 
@@ -212,6 +210,11 @@ public class RxBleDeviceMock implements RxBleDevice {
          */
         public Builder scanRecord(@NonNull ScanRecord scanRecord) {
             this.scanRecord = scanRecord;
+            return this;
+        }
+
+        public Builder connection(@NonNull RxBleConnectionMock connectionMock) {
+            this.connectionMock = connectionMock;
             return this;
         }
     }

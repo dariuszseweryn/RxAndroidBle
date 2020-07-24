@@ -1,16 +1,13 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.RxBleScanResult;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
@@ -22,10 +19,8 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -90,10 +85,10 @@ public class RxBleClientMock extends RxBleClient {
      * Device builder class.
      * @deprecated Use {@link RxBleDeviceMock.Builder}
      */
-//    @Deprecated
-//    public static class DeviceBuilder extends RxBleDeviceMock.Builder {
-//
-//    }
+    @Deprecated
+    public static class DeviceBuilder extends RxBleDeviceMock.Builder {
+
+    }
 
     public static class CharacteristicsBuilder {
 

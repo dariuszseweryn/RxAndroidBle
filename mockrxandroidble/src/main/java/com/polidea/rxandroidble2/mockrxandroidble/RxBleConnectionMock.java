@@ -3,6 +3,8 @@ package com.polidea.rxandroidble2.mockrxandroidble;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.NonNull;
+
+import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
 import com.polidea.rxandroidble2.ConnectionParameters;
@@ -15,7 +17,9 @@ import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -27,7 +31,9 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
@@ -89,6 +95,30 @@ public class RxBleConnectionMock implements RxBleConnection {
     @Override
     public int getMtu() {
         return currentMtu;
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    RxBleDeviceServices getRxBleDeviceServices() {
+        return rxBleDeviceServices;
+    }
+
+    List<BluetoothGattService> getBluetoothGattServices() {
+        return rxBleDeviceServices.getBluetoothGattServices();
+    }
+
+    List<UUID> getServiceUuids() {
+        List<UUID> uuids = new ArrayList<>();
+        for (BluetoothGattService service : getBluetoothGattServices()) {
+            uuids.add(service.getUuid());
+        }
+        return uuids;
+    }
+
+    Map<UUID, Observable<byte[]>> getCharacteristicNotificationSources() {
+        return characteristicNotificationSources;
     }
 
     @Override
@@ -418,7 +448,7 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     private void dismissCharacteristicNotification(UUID characteristicUuid, NotificationSetupMode setupMode, boolean isIndication) {
         notificationObservableMap.remove(characteristicUuid);
-        setupCharacteristicNotification(characteristicUuid, setupMode, false, isIndication)
+        final Disposable subscribe = setupCharacteristicNotification(characteristicUuid, setupMode, false, isIndication)
                 .subscribe(
                         Functions.EMPTY_ACTION,
                         Functions.emptyConsumer()
@@ -444,7 +474,6 @@ public class RxBleConnectionMock implements RxBleConnection {
                 });
     }
 
-    @NonNull
     private Observable<byte[]> observeOnCharacteristicChangeCallbacks(UUID characteristicUuid) {
         return characteristicNotificationSources.get(characteristicUuid);
     }
@@ -479,5 +508,61 @@ public class RxBleConnectionMock implements RxBleConnection {
     @Override
     public <T> Observable<T> queue(@NonNull RxBleCustomOperation<T> operation, Priority priority) {
         throw new UnsupportedOperationException("Mock does not support queuing custom operation.");
+    }
+
+    public static class Builder {
+        private RxBleDeviceServices rxBleDeviceServices;
+        private int rssi;
+        private Map<UUID, Observable<byte[]>> characteristicNotificationSources = new HashMap<>();
+
+        public Builder() {
+
+        }
+
+        public RxBleConnectionMock build() {
+            if (this.rssi == -1) throw new IllegalStateException("Rssi is required. DeviceBuilder#rssi should be called.");
+            return new RxBleConnectionMock(
+                    rxBleDeviceServices,
+                    rssi,
+                    characteristicNotificationSources
+            );
+        }
+
+        /**
+         * Set a rssi that will be reported. Calling this method is required.
+         */
+        public Builder rssi(int rssi) {
+            this.rssi = rssi;
+            this.rxBleDeviceServices = new RxBleDeviceServices(new ArrayList<BluetoothGattService>());
+            return this;
+        }
+
+        /**
+         * Add a {@link BluetoothGattService} to the device. Calling this method is not required.
+         *
+         * @param uuid            service UUID
+         * @param characteristics characteristics that the service should report. Use {@link RxBleClientMock.CharacteristicsBuilder} to
+         *                        create them.
+         */
+        public Builder addService(@NonNull UUID uuid, @NonNull List<BluetoothGattCharacteristic> characteristics) {
+            BluetoothGattService bluetoothGattService = new BluetoothGattService(uuid, 0);
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                bluetoothGattService.addCharacteristic(characteristic);
+            }
+            rxBleDeviceServices.getBluetoothGattServices().add(bluetoothGattService);
+            return this;
+        }
+
+        /**
+         * Set an {@link Observable} that will be used to fire characteristic change notifications. It will be subscribed to after
+         * a call to {@link com.polidea.rxandroidble2.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
+         *
+         * @param characteristicUUID UUID of the characteristic that will be observed for notifications
+         * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications
+         */
+        public Builder notificationSource(@NonNull UUID characteristicUUID, @NonNull Observable<byte[]> sourceObservable) {
+            characteristicNotificationSources.put(characteristicUUID, sourceObservable);
+            return this;
+        }
     }
 }
