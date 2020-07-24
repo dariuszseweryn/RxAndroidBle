@@ -301,7 +301,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return the BluetoothDevice mtu"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -335,7 +335,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return services list"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -352,7 +352,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return characteristic data"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -366,7 +366,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return descriptor data"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -380,7 +380,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return notification data"() {
         given:
-        def testSubscriber = rxBleClient.scanBleDevices(null)
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
