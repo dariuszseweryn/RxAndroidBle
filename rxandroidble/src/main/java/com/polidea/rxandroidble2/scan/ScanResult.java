@@ -1,10 +1,11 @@
 package com.polidea.rxandroidble2.scan;
 
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 
-public class ScanResult {
+public class ScanResult implements ScanResultInterface {
 
     private final RxBleDevice bleDevice;
     private final int rssi;
@@ -32,7 +33,8 @@ public class ScanResult {
         return timestampNanos;
     }
 
-    public ScanCallbackType getCallbackType() {
+    @Override
+    public ScanCallbackType getScanCallbackType() {
         return callbackType;
     }
 
@@ -40,7 +42,12 @@ public class ScanResult {
         return scanRecord;
     }
 
+    public String getAddress() {
+        return bleDevice == null ? null : bleDevice.getMacAddress();
+    }
+
     @Override
+    @NonNull
     public String toString() {
         return "ScanResult{"
                 + "bleDevice=" + bleDevice

@@ -1,10 +1,12 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 import android.bluetooth.BluetoothDevice;
+
+import com.polidea.rxandroidble2.scan.ScanResultInterface;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
-public class RxBleInternalScanResult {
+public class RxBleInternalScanResult implements ScanResultInterface {
 
     private final BluetoothDevice bluetoothDevice;
     private final int rssi;
@@ -25,19 +27,28 @@ public class RxBleInternalScanResult {
         return bluetoothDevice;
     }
 
+    @Override
     public int getRssi() {
         return rssi;
     }
 
+    @Override
     public ScanRecord getScanRecord() {
         return scanRecord;
     }
 
+    @Override
     public long getTimestampNanos() {
         return timestampNanos;
     }
 
+    @Override
     public ScanCallbackType getScanCallbackType() {
         return scanCallbackType;
+    }
+
+    @Override
+    public String getAddress() {
+        return bluetoothDevice.getAddress();
     }
 }

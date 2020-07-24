@@ -115,7 +115,6 @@ public class RxBleScanRecordMock implements ScanRecord {
          * @throws IllegalArgumentException If the scan record cannot be built.
          */
         public RxBleScanRecordMock build() {
-            // TODO: compile to bytes
             bytes = new byte[0];
             return new RxBleScanRecordMock(
                     advertiseFlags,
@@ -175,6 +174,7 @@ public class RxBleScanRecordMock implements ScanRecord {
 
     @Override
     public byte[] getBytes() {
-        return bytes;
+        // TODO: Compile scan record to bytes in {@link #build()}
+        throw new RuntimeException("not implemented");
     }
 }
