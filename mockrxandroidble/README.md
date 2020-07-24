@@ -15,7 +15,17 @@ RxBleClient rxBleClientMock = new RxBleClientMock.Builder()
     .addDevice(new RxBleClientMock.DeviceBuilder() // <-- creating device mock, there can me multiple of them
         .deviceMacAddress(macAddress)
         .deviceName(deviceName)
-        .scanRecord(scanRecordBytes)
+        .scanRecord(
+            new RxBleScanRecordMock.Builder()
+                .setAdvertiseFlags(1)
+                .addServiceUuid(new ParcelUuid(serviceUUID))
+                .addServiceUuid(new ParcelUuid(serviceUUID2))
+                .addManufacturerSpecificData(0x2211, [0x33, 0x44] as byte[])
+                .addServiceData(new ParcelUuid(serviceUUID), [0x11, 0x22] as byte[])
+                .setTxPowerLevel(12)
+                .setDeviceName("TestDeviceAdv")
+                .build()
+        )
         .rssi(rssiValue)
         .addService( // <-- adding service mocks to the device, there can be multiple of them
             serviceUUID,
