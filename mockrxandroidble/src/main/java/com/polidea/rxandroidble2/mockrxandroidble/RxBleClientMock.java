@@ -213,7 +213,7 @@ public class RxBleClientMock extends RxBleClient {
         /**
          * Set a BLE scan record. Calling this method is required.
          */
-        public DeviceBuilder scanRecord(@NonNull ScanRecord scanRecord) {
+        public DeviceBuilder scanRecord(@NonNull RxBleScanRecordMock scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
