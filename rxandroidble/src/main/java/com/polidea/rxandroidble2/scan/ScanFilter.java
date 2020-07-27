@@ -6,6 +6,8 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
+
+import com.polidea.rxandroidble2.internal.ScanResultInterface;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.ScanFilterInterface;
 import java.util.Arrays;
@@ -268,16 +270,17 @@ import java.util.UUID;
 
         ScanRecord scanRecord = scanResult.getScanRecord();
 
-        // if scan record is null we cannot continue. For filter to pass, remaining filter properties must be empty
-        if (scanRecord == null) {
-            return mDeviceName == null && mServiceUuid == null && mManufacturerData == null && mServiceData == null;
-        }
-
         // Local name match.
         if (mDeviceName != null) {
-            if (!mDeviceName.equals(scanRecord.getDeviceName())) {
+            if (!mDeviceName.equals(scanResult.getDeviceName())
+                    && (scanRecord == null || !mDeviceName.equals(scanRecord.getDeviceName()))) {
                 return false;
             }
+        }
+
+        // if scan record is null we cannot continue. For filter to pass, remaining filter properties must be empty
+        if (scanRecord == null) {
+            return mServiceUuid == null && mManufacturerData == null && mServiceData == null;
         }
 
         // UUID match.

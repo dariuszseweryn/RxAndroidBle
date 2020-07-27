@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.internal.scan;
 
-import com.polidea.rxandroidble2.scan.ScanResultInterface;
+import com.polidea.rxandroidble2.internal.ScanResultInterface;
 
 public interface ScanFilterInterface {
 

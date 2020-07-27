@@ -346,7 +346,7 @@ public class RxBleClientMock extends RxBleClient {
                     @Override
                     public boolean test(ScanResult scanResult) {
                         for (ScanFilter filter : scanFilters) {
-                            if (!filter.matches(scanResult)) {
+                            if (!filter.matches((RxBleScanResultMock) scanResult)) {
                                 return false;
                             }
                         }
@@ -356,13 +356,13 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @NonNull
-    private ScanResult createScanResult(RxBleDeviceMock rxBleDeviceMock) {
+    private RxBleScanResultMock createScanResult(RxBleDeviceMock rxBleDeviceMock) {
         return convertToPublicScanResult(rxBleDeviceMock, rxBleDeviceMock.getRssi(), rxBleDeviceMock.getScanRecord());
     }
 
     @NonNull
-    private static ScanResult convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, ScanRecord scanRecord) {
-        return new ScanResult(
+    private static RxBleScanResultMock convertToPublicScanResult(RxBleDevice bleDevice, Integer rssi, ScanRecord scanRecord) {
+        return new RxBleScanResultMock(
                 bleDevice,
                 rssi,
                 System.currentTimeMillis() * 1000000,
