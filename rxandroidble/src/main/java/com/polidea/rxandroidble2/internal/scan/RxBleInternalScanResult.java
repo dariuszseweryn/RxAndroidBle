@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.internal.scan;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.polidea.rxandroidble2.scan.ScanResultInterface;
+import com.polidea.rxandroidble2.internal.ScanResultInterface;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
@@ -51,4 +51,11 @@ public class RxBleInternalScanResult implements ScanResultInterface {
     public String getAddress() {
         return bluetoothDevice.getAddress();
     }
+
+    @Override
+    public String getDeviceName() {
+        BluetoothDevice device = getBluetoothDevice();
+        return device == null ? null : device.getName();
+    }
+
 }

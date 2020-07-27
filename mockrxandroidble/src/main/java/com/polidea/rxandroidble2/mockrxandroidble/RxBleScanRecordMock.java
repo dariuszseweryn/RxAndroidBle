@@ -24,7 +24,6 @@ public class RxBleScanRecordMock implements ScanRecord {
     private Map<ParcelUuid, byte[]> serviceData;
     private int txPowerLevel;
     private String deviceName;
-    private byte[] bytes;
 
     public RxBleScanRecordMock(
         int advertiseFlags,
@@ -32,15 +31,15 @@ public class RxBleScanRecordMock implements ScanRecord {
         SparseArray<byte[]> manufacturerSpecificData,
         Map<ParcelUuid, byte[]> serviceData,
         int txPowerLevel,
-        String deviceName,
-        byte[] bytes) {
+        String deviceName) {
         this.advertiseFlags = advertiseFlags;
         this.serviceUuids = serviceUuids;
         this.manufacturerSpecificData = manufacturerSpecificData;
         this.serviceData = serviceData;
         this.txPowerLevel = txPowerLevel;
         this.deviceName = deviceName;
-        this.bytes = bytes;
+
+        // TODO: construct bytes from scan record properties
     }
 
     /**
@@ -53,7 +52,6 @@ public class RxBleScanRecordMock implements ScanRecord {
         private Map<ParcelUuid, byte[]> serviceData;
         private int txPowerLevel;
         private String deviceName;
-        private byte[] bytes;
 
         public Builder() {
             serviceUuids = new ArrayList<ParcelUuid>();
@@ -115,15 +113,13 @@ public class RxBleScanRecordMock implements ScanRecord {
          * @throws IllegalArgumentException If the scan record cannot be built.
          */
         public RxBleScanRecordMock build() {
-            bytes = new byte[0];
             return new RxBleScanRecordMock(
                     advertiseFlags,
                     serviceUuids,
                     manufacturerSpecificData,
                     serviceData,
                     txPowerLevel,
-                    deviceName,
-                    bytes
+                    deviceName
                     );
         }
     }
@@ -174,7 +170,7 @@ public class RxBleScanRecordMock implements ScanRecord {
 
     @Override
     public byte[] getBytes() {
-        // TODO: Compile scan record to bytes in {@link #build()}
+        // TODO: Compile scan record to bytes in constructor
         throw new RuntimeException("not implemented");
     }
 }
