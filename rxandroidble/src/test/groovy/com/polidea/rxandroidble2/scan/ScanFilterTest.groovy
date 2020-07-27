@@ -1,7 +1,8 @@
 package com.polidea.rxandroidble2.scan
 
-import android.bluetooth.BluetoothDevice
+import android.os.ParcelUuid
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class ScanFilterTest extends Specification {
@@ -11,10 +12,6 @@ class ScanFilterTest extends Specification {
     ScanRecord mockScanRecord = Mock ScanRecord
 
     ScanFilter objectUnderTest
-
-    def setup() {
-        mockInternalScanResult.getScanRecord() >> mockScanRecord
-    }
 
     def "should match by device name if the name is present in ScanRecord"() {
 
@@ -61,6 +58,7 @@ class ScanFilterTest extends Specification {
         !objectUnderTest.matches(mockInternalScanResult)
     }
 
+    @Ignore
     def "should match by service uuid"() {
 
         given:
