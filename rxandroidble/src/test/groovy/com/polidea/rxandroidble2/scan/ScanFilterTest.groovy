@@ -4,11 +4,11 @@ import android.os.Build
 import android.os.ParcelUuid
 import com.polidea.rxandroidble2.BuildConfig
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult
+import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
-import spock.lang.Specification
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-class ScanFilterTest extends Specification {
+public class ScanFilterTest extends ElectricSpecification {
 
     RxBleInternalScanResult mockInternalScanResult = Mock RxBleInternalScanResult
 
@@ -114,7 +114,7 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data = [0x12, 0x34] as byte[]
+        byte[] data = [0x12, 0x34] as byte[]
         givenScanRecordWith serviceData: data
         objectUnderTest = new ScanFilter.Builder().setServiceData(uuid, data).build()
 
@@ -126,10 +126,10 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data = [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
+        byte[] data = [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
         givenScanRecordWith serviceData: data
-        objectUnderTest = new ScanFilter.Builder().setServiceData(uuid, data).build()
+        objectUnderTest = new ScanFilter.Builder().setServiceData(uuid, data2).build()
 
         expect:
         !objectUnderTest.matches(mockInternalScanResult)
@@ -139,9 +139,9 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data =  [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
-        mask =  [0x12, 0xFF] as byte[]
+        byte[] data =  [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
+        byte[] mask =  [0x12, 0x00] as byte[]
         givenScanRecordWith serviceData: data
         objectUnderTest = new ScanFilter.Builder().setServiceData(uuid, data2, mask).build()
 
@@ -153,9 +153,9 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data =  [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
-        mask =  [0x12, 0x00] as byte[]
+        byte[] data =  [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
+        byte[] mask =  [0x12, 0xFF] as byte[]
         givenScanRecordWith serviceData: data
         objectUnderTest = new ScanFilter.Builder().setServiceData(uuid, data2, mask).build()
 
@@ -167,7 +167,7 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data = [0x12, 0x34] as byte[]
+        byte[] data = [0x12, 0x34] as byte[]
         givenScanRecordWith manufacturerSpecificData: data
         objectUnderTest = new ScanFilter.Builder().setManufacturerData(0, data).build()
 
@@ -179,8 +179,8 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data = [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
+        byte[] data = [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
         givenScanRecordWith manufacturerSpecificData: data
         objectUnderTest = new ScanFilter.Builder().setManufacturerData(0, data2).build()
 
@@ -192,9 +192,9 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data =  [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
-        mask =  [0x12, 0xFF] as byte[]
+        byte[] data =  [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
+        byte[] mask =  [0x12, 0x00] as byte[]
         givenScanRecordWith manufacturerSpecificData: data
         objectUnderTest = new ScanFilter.Builder().setManufacturerData(0, data2, mask).build()
 
@@ -206,9 +206,9 @@ class ScanFilterTest extends Specification {
 
         given:
         ParcelUuid uuid = ParcelUuid.fromString("00001234-0000-0000-8000-000000000000")
-        data =  [0x12, 0x34] as byte[]
-        data2 = [0x12, 0x56] as byte[]
-        mask =  [0x12, 0x00] as byte[]
+        byte[] data =  [0x12, 0x34] as byte[]
+        byte[] data2 = [0x12, 0x56] as byte[]
+        byte[] mask =  [0x12, 0xFF] as byte[]
         givenScanRecordWith manufacturerSpecificData: data
         objectUnderTest = new ScanFilter.Builder().setManufacturerData(0, data2, mask).build()
 
