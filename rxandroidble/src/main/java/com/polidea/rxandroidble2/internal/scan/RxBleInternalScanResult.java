@@ -2,7 +2,7 @@ package com.polidea.rxandroidble2.internal.scan;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.polidea.rxandroidble2.scan.ScanResultInterface;
+import com.polidea.rxandroidble2.internal.ScanResultInterface;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 

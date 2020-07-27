@@ -1,4 +1,7 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble2.internal;
+
+import com.polidea.rxandroidble2.scan.ScanCallbackType;
+import com.polidea.rxandroidble2.scan.ScanRecord;
 
 public interface ScanResultInterface {
     /**

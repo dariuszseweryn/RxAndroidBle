@@ -6,6 +6,8 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
+
+import com.polidea.rxandroidble2.internal.ScanResultInterface;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.ScanFilterInterface;
 import java.util.Arrays;
