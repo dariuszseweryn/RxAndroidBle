@@ -46,6 +46,11 @@ public class ScanResult implements ScanResultInterface {
         return bleDevice == null ? null : bleDevice.getMacAddress();
     }
 
+    public String getDeviceName() {
+        RxBleDevice device = getBleDevice();
+        return device == null ? null : device.getName();
+    }
+
     @Override
     @NonNull
     public String toString() {

@@ -51,4 +51,11 @@ public class RxBleInternalScanResult implements ScanResultInterface {
     public String getAddress() {
         return bluetoothDevice.getAddress();
     }
+
+    @Override
+    public String getDeviceName() {
+        BluetoothDevice device = getBluetoothDevice();
+        return device == null ? null : device.getName();
+    }
+
 }

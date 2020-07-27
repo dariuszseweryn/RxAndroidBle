@@ -8,14 +8,11 @@ class ScanFilterTest extends Specification {
 
     RxBleInternalScanResult mockInternalScanResult = Mock RxBleInternalScanResult
 
-    BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
-
     ScanRecord mockScanRecord = Mock ScanRecord
 
     ScanFilter objectUnderTest
 
     def setup() {
-        mockInternalScanResult.getBluetoothDevice() >> mockBluetoothDevice
         mockInternalScanResult.getScanRecord() >> mockScanRecord
     }
 
@@ -24,6 +21,17 @@ class ScanFilterTest extends Specification {
         given:
         String name = "xxx"
         givenScanRecordWith deviceName: name
+        objectUnderTest = new ScanFilter.Builder().setDeviceName(name).build()
+
+        expect:
+        objectUnderTest.matches(mockInternalScanResult)
+    }
+
+    def "should match by device name if the name is present in BluetoothDevice"() {
+
+        given:
+        String name = "xxx"
+        mockInternalScanResult.getDeviceName() >> name
         objectUnderTest = new ScanFilter.Builder().setDeviceName(name).build()
 
         expect:

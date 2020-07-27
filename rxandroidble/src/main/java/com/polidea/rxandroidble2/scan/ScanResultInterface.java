@@ -7,6 +7,11 @@ public interface ScanResultInterface {
     String getAddress();
 
     /**
+     * Get the device name from the device (not from scan record)
+     */
+    String getDeviceName();
+
+    /**
      * Get the RSSI of the scan result
      */
     int getRssi();

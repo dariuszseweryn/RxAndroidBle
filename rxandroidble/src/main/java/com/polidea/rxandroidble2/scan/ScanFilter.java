@@ -275,7 +275,7 @@ import java.util.UUID;
 
         // Local name match.
         if (mDeviceName != null) {
-            if (!mDeviceName.equals(scanRecord.getDeviceName())) {
+            if (!mDeviceName.equals(scanRecord.getDeviceName()) && !mDeviceName.equals(scanResult.getDeviceName())) {
                 return false;
             }
         }
