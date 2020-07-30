@@ -207,7 +207,7 @@ public class RxBleDeviceMock implements RxBleDevice {
         }
 
         /**
-         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord) scanRecord} method is required.
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord)} method is required.
          */
         public Builder scanRecord(@NonNull byte[] scanRecord) {
             this.legacyScanRecord = scanRecord;
@@ -215,13 +215,16 @@ public class RxBleDeviceMock implements RxBleDevice {
         }
 
         /**
-         * Set a BLE scan record. Calling this method is required.
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(byte[])}} method is required.
          */
         public Builder scanRecord(@NonNull ScanRecord scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
 
+        /**
+         * Set a BLE connection mock. Calling this method is required.
+         */
         public Builder connection(@NonNull RxBleConnectionMock connectionMock) {
             this.connectionMock = connectionMock;
             return this;
