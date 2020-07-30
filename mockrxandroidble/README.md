@@ -38,21 +38,15 @@ RxBleClient rxBleClientMock = new RxBleClientMock.Builder()
                             .addDescriptor(descriptorUUID, descriptorData) // <-- adding descriptor mocks
                             .build() // to the characteristic, there can be multiple of them
                     ).build()
-            ).characteristicReadCallback(characteristicUUID, new Function<BluetoothGattCharacteristic, Single<byte[]>>() {
-                @Override
-                public Single<byte[]> apply(BluetoothGattCharacteristic characteristic) throws Exception {
-                    return Single.just(characteristicValue);
-                }
+            ).characteristicReadCallback(characteristicUUID, (characteristic) -> {
+                return Single.just(characteristicValue);
             })
-            .characteristicWriteCallback(characteristicUUID, new BiFunction<BluetoothGattCharacteristic, byte[], Completable>() {
-                @Override
-                public Completable apply(BluetoothGattCharacteristic characteristic, byte[] bytes) throws Exception {
-                    if(!writeData(characteristic, bytes)) {
-                        throw new BleGattCharacteristicException(null, characteristic, 0x80, BleGattOperationType.CHARACTERISTIC_WRITE);
-                        
-                    }
-                    return Completable.complete();
+            .characteristicWriteCallback(characteristicUUID, (characteristic, bytes) -> {
+                if(!writeData(characteristic, bytes)) {
+                    throw new BleGattCharacteristicException(null, characteristic, 0x80, BleGattOperationType.CHARACTERISTIC_WRITE);
+                    
                 }
+                return Completable.complete();
             }).build()
         ).build()
     ).build();
