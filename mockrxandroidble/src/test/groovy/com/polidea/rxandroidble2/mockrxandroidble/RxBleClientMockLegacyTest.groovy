@@ -4,15 +4,15 @@ import android.os.Build
 import android.os.ParcelUuid
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble2.scan.ScanFilter
+import com.polidea.rxandroidble2.scan.ScanSettings
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleClientMockTest extends ElectricSpecification {
+public class RxBleClientMockLegacyTest extends ElectricSpecification {
 
     def serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
     def serviceUUID2 = UUID.fromString("00001235-0000-0000-8000-000000000000")
@@ -24,8 +24,28 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def RxBleClient rxBleClient
     def PublishSubject characteristicNotificationSubject = PublishSubject.create()
 
+    def createDeviceWithLegacyScanRecord(deviceName, macAddress, rssi) {
+        new RxBleClientMock.DeviceBuilder()
+                .deviceMacAddress(macAddress)
+                .deviceName(deviceName)
+                .scanRecord("ScanRecord".getBytes())
+                .rssi(rssi)
+                .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
+                .addService(
+                serviceUUID,
+                new RxBleClientMock.CharacteristicsBuilder()
+                        .addCharacteristic(
+                        characteristicUUID,
+                        characteristicData,
+                        new RxBleClientMock.DescriptorsBuilder()
+                                .addDescriptor(descriptorUUID, descriptorData)
+                                .build()
+                ).build()
+        ).build()
+    }
+
     def createDevice(deviceName, macAddress, rssi) {
-        new RxBleDeviceMock.Builder()
+        new RxBleClientMock.DeviceBuilder()
                 .deviceMacAddress(macAddress)
                 .deviceName(deviceName)
                 .scanRecord(
@@ -39,19 +59,18 @@ public class RxBleClientMockTest extends ElectricSpecification {
                         .setDeviceName("TestDeviceAdv")
                         .build()
                 )
-                .connection(new RxBleConnectionMock.Builder()
-                        .rssi(rssi)
-                        .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
-                        .addService(serviceUUID,
-                                new RxBleClientMock.CharacteristicsBuilder()
-                                        .addCharacteristic(
-                                                characteristicUUID,
-                                                characteristicData,
-                                                new RxBleClientMock.DescriptorsBuilder()
-                                                        .addDescriptor(descriptorUUID, descriptorData)
-                                                        .build()
-                                        ).build()
-                        ).build()
+                .rssi(rssi)
+                .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
+                .addService(
+                        serviceUUID,
+                        new RxBleClientMock.CharacteristicsBuilder()
+                                .addCharacteristic(
+                                        characteristicUUID,
+                                        characteristicData,
+                                        new RxBleClientMock.DescriptorsBuilder()
+                                                .addDescriptor(descriptorUUID, descriptorData)
+                                                .build()
+                                ).build()
                 ).build()
     }
 
@@ -60,6 +79,21 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .addDevice(
                 createDevice("TestDevice", "AA:BB:CC:DD:EE:FF", 42)
         ).build()
+    }
+
+    def "should return filtered BluetoothDevice with legacy filter"() {
+        when:
+        rxBleClient = new RxBleClientMock.Builder()
+                .addDevice(
+                        createDeviceWithLegacyScanRecord("TestDevice", "AA:BB:CC:DD:EE:FF", 42)
+                ).build()
+        def testSubscriber = rxBleClient.scanBleDevices(serviceUUID)
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice().getMacAddress() }
+                .test()
+
+        then:
+        testSubscriber.assertValue("AA:BB:CC:DD:EE:FF")
     }
 
     def "should return filtered BluetoothDevice filtered on service UUID"() {
@@ -301,7 +335,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return the BluetoothDevice mtu"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -335,7 +369,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return services list"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -352,7 +386,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return characteristic data"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -366,7 +400,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return descriptor data"() {
         when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -380,7 +414,7 @@ public class RxBleClientMockTest extends ElectricSpecification {
 
     def "should return notification data"() {
         given:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+        def testSubscriber = rxBleClient.scanBleDevices(null)
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }

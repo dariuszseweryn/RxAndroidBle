@@ -12,30 +12,33 @@ Here's an example:
 
 ```java
 RxBleClient rxBleClientMock = new RxBleClientMock.Builder()
-    .addDevice(new RxBleClientMock.DeviceBuilder() // <-- creating device mock, there can me multiple of them
+    .addDevice(new RxBleDeviceMock.Builder() // <-- creating device mock, there can me multiple of them
         .deviceMacAddress(macAddress)
         .deviceName(deviceName)
-        .scanRecord(
-            new RxBleScanRecordMock.Builder()
-                .setAdvertiseFlags(1)
-                .addServiceUuid(new ParcelUuid(serviceUUID))
-                .addServiceUuid(new ParcelUuid(serviceUUID2))
-                .addManufacturerSpecificData(0x2211, [0x33, 0x44] as byte[])
-                .addServiceData(new ParcelUuid(serviceUUID), [0x11, 0x22] as byte[])
-                .setTxPowerLevel(12)
-                .setDeviceName("TestDeviceAdv")
-                .build()
+        .scanRecord(new RxBleScanRecordMock.Builder()
+            .setAdvertiseFlags(1)
+            .addServiceUuid(new ParcelUuid(serviceUUID))
+            .addServiceUuid(new ParcelUuid(serviceUUID2))
+            .addManufacturerSpecificData(0x2211, [0x33, 0x44] as byte[])
+            .addServiceData(new ParcelUuid(serviceUUID), [0x11, 0x22] as byte[])
+            .setTxPowerLevel(12)
+            .setDeviceName("TestDeviceAdv")
+            .build()
         )
-        .rssi(rssiValue)
-        .addService( // <-- adding service mocks to the device, there can be multiple of them
-            serviceUUID,
-            new RxBleClientMock.CharacteristicsBuilder()
-                .addCharacteristic( // <-- adding characteristic mocks to the service, there can be multiple of them
-                    characteristicUUID,
-                    characteristicDataBytes,
-                    new RxBleClientMock.DescriptorsBuilder()
-                        .addDescriptor(descriptorUUID, descriptorDataBytes) // <-- adding descriptor mocks
-                    	.build() // to the characteristic, there can be multiple of them
+        .connection(new RxBleConnectionMock.Builder() // <-- creating connection mock
+            .rssi(rssi)
+            .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
+            .addService( // <-- adding service mocks to the device, there can be multiple of them
+                serviceUUID,
+                new RxBleClientMock.CharacteristicsBuilder()
+                    .addCharacteristic( // <-- adding characteristic mocks to the service, there can be multiple of them
+                        characteristicUUID,
+                        characteristicData,
+                        new RxBleClientMock.DescriptorsBuilder()
+                            .addDescriptor(descriptorUUID, descriptorData) // <-- adding descriptor mocks
+                            .build() // to the characteristic, there can be multiple of them
+                    ).build()
+            ).build()
         ).build()
     ).build();
 
