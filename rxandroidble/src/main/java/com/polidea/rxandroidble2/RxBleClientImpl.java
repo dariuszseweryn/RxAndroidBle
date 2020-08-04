@@ -20,7 +20,6 @@ import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission;
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.internal.util.UUIDUtil;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
@@ -51,7 +50,8 @@ class RxBleClientImpl extends RxBleClient {
     @Deprecated
     public static final String TAG = "RxBleClient";
     final ClientOperationQueue operationQueue;
-    private final UUIDUtil uuidUtil;
+    @SuppressWarnings("deprecation")
+    private final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     final ScanSetupBuilder scanSetupBuilder;
     final ScanPreconditionsVerifier scanPreconditionVerifier;
@@ -67,10 +67,11 @@ class RxBleClientImpl extends RxBleClient {
     private final CheckerLocationPermission checkerLocationPermission;
 
     @Inject
+    @SuppressWarnings("deprecation")
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
                     ClientOperationQueue operationQueue,
                     Observable<BleAdapterState> adapterStateObservable,
-                    UUIDUtil uuidUtil,
+                    com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil,
                     LocationServicesStatus locationServicesStatus,
                     Lazy<ClientStateObservable> lazyClientStateObservable,
                     RxBleDeviceProvider rxBleDeviceProvider,
@@ -150,6 +151,7 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
         return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
             @Override

@@ -13,7 +13,6 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.ClientScope;
 import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.util.UUIDUtil;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 import bleshadow.javax.inject.Inject;
@@ -22,10 +21,12 @@ import bleshadow.javax.inject.Inject;
 @ClientScope
 public class InternalScanResultCreator {
 
-    private final UUIDUtil uuidUtil;
+    @SuppressWarnings("deprecation")
+    private final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil;
 
     @Inject
-    public InternalScanResultCreator(UUIDUtil uuidUtil) {
+    @SuppressWarnings("deprecation")
+    public InternalScanResultCreator(com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil) {
         this.uuidUtil = uuidUtil;
     }
 

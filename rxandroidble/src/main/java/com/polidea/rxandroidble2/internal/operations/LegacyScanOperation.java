@@ -10,7 +10,6 @@ import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.internal.util.UUIDUtil;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,11 +20,15 @@ import io.reactivex.ObservableEmitter;
 
 public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLegacy, BluetoothAdapter.LeScanCallback> {
 
-    final UUIDUtil uuidUtil;
+    @SuppressWarnings("deprecation")
+    final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil;
     @Nullable
     final Set<UUID> filterUuids;
 
-    public LegacyScanOperation(UUID[] filterServiceUUIDs, RxBleAdapterWrapper rxBleAdapterWrapper, final UUIDUtil uuidUtil) {
+    @SuppressWarnings("deprecation")
+    public LegacyScanOperation(UUID[] filterServiceUUIDs,
+                               RxBleAdapterWrapper rxBleAdapterWrapper,
+                               final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil) {
         super(rxBleAdapterWrapper);
 
         this.uuidUtil = uuidUtil;

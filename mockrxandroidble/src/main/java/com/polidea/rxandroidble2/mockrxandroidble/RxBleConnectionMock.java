@@ -131,6 +131,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<? extends BluetoothGattCharacteristic>>() {

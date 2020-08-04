@@ -38,10 +38,12 @@ public class RxBleAdapterWrapper {
         return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
     }
 
+    @SuppressWarnings("deprecation")
     public boolean startLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         return bluetoothAdapter.startLeScan(leScanCallback);
     }
 
+    @SuppressWarnings("deprecation")
     public void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         bluetoothAdapter.stopLeScan(leScanCallback);
     }
