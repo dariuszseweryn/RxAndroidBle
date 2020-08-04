@@ -412,7 +412,7 @@ public class RxBleConnectionMock implements RxBleConnection {
                         bluetoothGattDescriptor.setValue(data);
                     }
                 })
-                .toCompletable();
+                .ignoreElement();
     }
 
     @Override
