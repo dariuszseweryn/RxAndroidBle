@@ -48,7 +48,7 @@ class ConnectionExampleActivity : AppCompatActivity() {
 
         val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         title = getString(R.string.mac_address, macAddress)
-        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
 
         // How to listen for connection state changes
         // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
