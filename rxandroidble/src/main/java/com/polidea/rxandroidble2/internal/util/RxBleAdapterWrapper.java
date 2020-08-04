@@ -27,6 +27,9 @@ public class RxBleAdapterWrapper {
     }
 
     public BluetoothDevice getRemoteDevice(String macAddress) {
+        if (bluetoothAdapter == null) {
+            return null;
+        }
         return bluetoothAdapter.getRemoteDevice(macAddress);
     }
 
@@ -40,31 +43,49 @@ public class RxBleAdapterWrapper {
 
     @SuppressWarnings("deprecation")
     public boolean startLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+        if (bluetoothAdapter == null) {
+            return false;
+        }
         return bluetoothAdapter.startLeScan(leScanCallback);
     }
 
     @SuppressWarnings("deprecation")
     public void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+        if (bluetoothAdapter == null) {
+            return;
+        }
         bluetoothAdapter.stopLeScan(leScanCallback);
     }
 
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public void startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, ScanCallback scanCallback) {
+        if (bluetoothAdapter == null) {
+            return;
+        }
         bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, scanSettings, scanCallback);
     }
 
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public int startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, PendingIntent callbackIntent) {
+        if (bluetoothAdapter == null) {
+            return ScanCallback.SCAN_FAILED_INTERNAL_ERROR;
+        }
         return bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, scanSettings, callbackIntent);
     }
 
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public void stopLeScan(PendingIntent callbackIntent) {
+        if (bluetoothAdapter == null) {
+            return;
+        }
         bluetoothAdapter.getBluetoothLeScanner().stopScan(callbackIntent);
     }
 
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public void stopLeScan(ScanCallback scanCallback) {
+        if (bluetoothAdapter == null) {
+            return;
+        }
         if (!bluetoothAdapter.isEnabled()) {
             // this situation seems to be a problem since API 29
             RxBleLog.v(
@@ -88,6 +109,9 @@ public class RxBleAdapterWrapper {
     }
 
     public Set<BluetoothDevice> getBondedDevices() {
+        if (bluetoothAdapter == null) {
+            return null;
+        }
         return bluetoothAdapter.getBondedDevices();
     }
 }
