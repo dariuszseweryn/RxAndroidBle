@@ -38,15 +38,16 @@ RxBleClient rxBleClientMock = new RxBleClientMock.Builder()
                             .addDescriptor(descriptorUUID, descriptorData) // <-- adding descriptor mocks
                             .build() // to the characteristic, there can be multiple of them
                     ).build()
-            ).characteristicReadCallback(characteristicUUID, (characteristic) -> {
-                return Single.just(characteristicValue);
+            ).characteristicReadCallback(characteristicUUID, (device, characteristic, result) -> {
+                result.success(characteristicValue);
             })
-            .characteristicWriteCallback(characteristicUUID, (characteristic, bytes) -> {
-                if(!writeData(characteristic, bytes)) {
-                    throw new BleGattCharacteristicException(null, characteristic, 0x80, BleGattOperationType.CHARACTERISTIC_WRITE);
-                    
+            .characteristicWriteCallback(characteristicUUID, (device, characteristic, bytes, result) -> {
+                if(writeData(characteristic, bytes)) {
+                    result.success();
+                } else {
+                    result.failure(0x80);
+                    // can also use result.disconnect(0x80); 
                 }
-                return Completable.complete();
             }).build()
         ).build()
     ).build();

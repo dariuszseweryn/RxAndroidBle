@@ -4,16 +4,19 @@ import android.os.Build
 import android.os.ParcelUuid
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
+import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results.RxBleGattReadResultMock
+import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results.RxBleGattWriteResultMock
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.subjects.PublishSubject
+import org.junit.runner.notification.Failure
 import org.robolectric.annotation.Config
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
@@ -30,28 +33,10 @@ public class RxBleClientMockTest extends ElectricSpecification {
     RxBleClient rxBleClient
     PublishSubject characteristicNotificationSubject = PublishSubject.create()
 
-    PublishSubject<byte[]> characteristicReadSubject = PublishSubject.create()
-    PublishSubject<Boolean> characteristicWriteSubject = PublishSubject.create()
-    PublishSubject<byte[]> descriptorReadSubject = PublishSubject.create()
-    PublishSubject<Boolean> descriptorWriteSubject = PublishSubject.create()
-
-    Single<byte[]> processReadSubject(PublishSubject<byte[]> subject) {
-        subject.take(1).singleOrError()
-    }
-
-    Completable processWriteSubject(PublishSubject<Boolean> subject, BleGattOperationType type) {
-        subject.take(1).flatMapCompletable({ shouldSucceed ->
-            if(!shouldSucceed) {
-                if(type == BleGattOperationType.CHARACTERISTIC_WRITE) {
-                    throw new BleGattCharacteristicException(null, null, 0x80, type);
-                } else {
-                    throw new BleGattDescriptorException(null, null, 0x80, type);
-                }
-            }
-            Completable.complete();
-        })
-    }
-
+    PublishSubject<RxBleGattReadResultMock> characteristicReadSubject = PublishSubject.create()
+    PublishSubject<RxBleGattWriteResultMock> characteristicWriteSubject = PublishSubject.create()
+    PublishSubject<RxBleGattReadResultMock> descriptorReadSubject = PublishSubject.create()
+    PublishSubject<RxBleGattWriteResultMock> descriptorWriteSubject = PublishSubject.create()
 
     def createDevice(deviceName, macAddress, rssi) {
         new RxBleDeviceMock.Builder()
@@ -87,17 +72,17 @@ public class RxBleClientMockTest extends ElectricSpecification {
                                                         .build()
                                         ).build()
                         )
-                        .characteristicReadCallback(characteristicUUID, {characteristic ->
-                            processReadSubject(characteristicReadSubject)
+                        .characteristicReadCallback(characteristicUUID, { device, characteristic, result ->
+                            characteristicReadSubject.onNext(result)
                         })
-                        .characteristicWriteCallback(characteristicUUID, { characteristic, bytes ->
-                            processWriteSubject(characteristicWriteSubject, BleGattOperationType.CHARACTERISTIC_WRITE)
+                        .characteristicWriteCallback(characteristicUUID, { device, characteristic, bytes, result ->
+                            characteristicWriteSubject.onNext(result)
                         })
-                        .descriptorReadCallback(characteristicUUID, descriptorUUID, { descriptor ->
-                            processReadSubject(descriptorReadSubject)
+                        .descriptorReadCallback(characteristicUUID, descriptorUUID, { device, descriptor, result ->
+                            descriptorReadSubject.onNext(result)
                         })
-                        .descriptorWriteCallback(characteristicUUID, descriptorUUID, { descriptor, bytes ->
-                            processWriteSubject(descriptorWriteSubject, BleGattOperationType.DESCRIPTOR_WRITE)
+                        .descriptorWriteCallback(characteristicUUID, descriptorUUID, { device, descriptor, bytes, result ->
+                            descriptorWriteSubject.onNext(result)
                         })
                         .build()
                 ).build()
@@ -413,7 +398,8 @@ public class RxBleClientMockTest extends ElectricSpecification {
     }
 
     def "should return characteristic data via callback"() {
-        given:
+        when:
+        characteristicReadSubject.take(1).subscribe { result -> result.success("PolideaCB".getBytes()) }
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -421,16 +407,14 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .flatMapSingle { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
                 .map { data -> new String(data) }
                 .test()
-
-        when:
-        characteristicReadSubject.onNext("PolideaCB".getBytes())
 
         then:
         testSubscriber.assertValue("PolideaCB")
     }
 
     def "should throw characteristic read error via callback"() {
-        given:
+        when:
+        characteristicReadSubject.take(1).subscribe { result -> result.failure(0x80) }
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -439,15 +423,32 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .map { data -> new String(data) }
                 .test()
 
+        then:
+        testSubscriber.assertError { throwable ->
+            return BleGattCharacteristicException.class.isInstance(throwable) && ((BleGattCharacteristicException) throwable).getStatus() == 0x80
+        }
+    }
+
+    def "should throw characteristic read disconnection via callback"() {
         when:
-        characteristicReadSubject.onError(new Throwable("read error"))
+        characteristicReadSubject.take(1).subscribe { result -> result.disconnect(0x80) }
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .flatMapSingle { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
+                .map { data -> new String(data) }
+                .test()
 
         then:
-        testSubscriber.assertErrorMessage("read error")
+        testSubscriber.assertError { throwable ->
+            return BleDisconnectedException.class.isInstance(throwable) && ((BleDisconnectedException) throwable).state == 0x80
+        }
     }
 
     def "should write characteristic data via callback"() {
-        given:
+        when:
+        characteristicWriteSubject.take(1).subscribe { result -> result.success() }
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -455,16 +456,14 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .flatMapSingle { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, "PolideaCB".getBytes()) }
                 .map { data -> new String(data) }
                 .test()
-
-        when:
-        characteristicWriteSubject.onNext(Boolean.TRUE);
 
         then:
         testSubscriber.assertValue("PolideaCB")
     }
 
     def "should fail to write characteristic data via callback"() {
-        given:
+        when:
+        characteristicWriteSubject.take(1).subscribe { result -> result.failure(0x80) }
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -473,16 +472,26 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .map { data -> new String(data) }
                 .test()
 
+        then:
+        testSubscriber.assertError({ throwable ->
+            return BleGattCharacteristicException.class.isInstance(throwable) && ((BleGattCharacteristicException) throwable).getStatus() == 0x80
+        })
+    }
+
+    def "should fail to write characteristic data due to disconnection via callback"() {
         when:
-        characteristicWriteSubject.onNext(Boolean.FALSE);
+        characteristicWriteSubject.take(1).subscribe { result -> result.disconnect(0x80) }
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .flatMapSingle { rxBleConnection -> rxBleConnection.writeCharacteristic(characteristicUUID, "PolideaCB".getBytes()) }
+                .map { data -> new String(data) }
+                .test()
 
         then:
         testSubscriber.assertError({ throwable ->
-            if (!BleGattCharacteristicException.class.isInstance(throwable)) {
-                return false;
-            }
-            BleGattCharacteristicException e = (BleGattCharacteristicException) throwable;
-            return e.getStatus() == 0x80
+            return BleDisconnectedException.class.isInstance(throwable) && ((BleDisconnectedException) throwable).state == 0x80
         })
     }
 
@@ -501,7 +510,8 @@ public class RxBleClientMockTest extends ElectricSpecification {
     }
 
     def "should return descriptor data via callback"() {
-        given:
+        when:
+        descriptorReadSubject.take(1).subscribe({ result -> result.success("ConfigCB".getBytes()) })
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -509,16 +519,14 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .flatMapSingle { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
                 .map { data -> new String(data) }
                 .test()
-
-        when:
-        descriptorReadSubject.onNext("ConfigCB".getBytes())
 
         then:
         testSubscriber.assertValue("ConfigCB")
     }
 
     def "should throw descriptor read error via callback"() {
-        given:
+        when:
+        descriptorReadSubject.take(1).subscribe({ result -> result.failure(0x80) })
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .take(1)
                 .map { scanResult -> scanResult.getBleDevice() }
@@ -527,31 +535,46 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .map { data -> new String(data) }
                 .test()
 
+        then:
+        testSubscriber.assertError({ throwable ->
+            return BleGattDescriptorException.class.isInstance(throwable) && ((BleGattDescriptorException) throwable).getStatus() == 0x80
+        })
+    }
+
+    def "should throw descriptor read disconnection error via callback"() {
         when:
-        descriptorReadSubject.onError(new Throwable("read error"))
+        descriptorReadSubject.take(1).subscribe({ result -> result.disconnect(0x80) })
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+                .take(1)
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .flatMapSingle { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
+                .map { data -> new String(data) }
+                .test()
 
         then:
-        testSubscriber.assertErrorMessage("read error")
+        testSubscriber.assertError({ throwable ->
+            return BleDisconnectedException.class.isInstance(throwable) && ((BleDisconnectedException) throwable).state == 0x80
+        })
     }
 
     def "should write descriptor data via callback"() {
-        given:
+        when:
+        descriptorWriteSubject.take(1).subscribe({ result -> result.success() })
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
                 .take(1)
                 .flatMapCompletable { rxBleConnection -> rxBleConnection.writeDescriptor(serviceUUID, characteristicUUID, descriptorUUID, "ConfigCB".getBytes()) }
                 .test()
-
-        when:
-        descriptorWriteSubject.onNext(Boolean.TRUE);
 
         then:
         testSubscriber.assertComplete();
     }
 
     def "should fail to write descriptor data via callback"() {
-        given:
+        when:
+        descriptorWriteSubject.take(1).subscribe({ result -> result.failure(0x80) })
         def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
                 .map { scanResult -> scanResult.getBleDevice() }
                 .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
@@ -559,16 +582,25 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 .flatMapCompletable { rxBleConnection -> rxBleConnection.writeDescriptor(serviceUUID, characteristicUUID, descriptorUUID, "ConfigCB".getBytes()) }
                 .test()
 
+        then:
+        testSubscriber.assertError({ throwable ->
+            return BleGattDescriptorException.class.isInstance(throwable) && ((BleGattDescriptorException) throwable).getStatus() == 0x80
+        })
+    }
+
+    def "should fail to write descriptor data via callback due to disconnection"() {
         when:
-        descriptorWriteSubject.onNext(Boolean.FALSE);
+        descriptorWriteSubject.take(1).subscribe({ result -> result.disconnect(0x80) })
+        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
+                .map { scanResult -> scanResult.getBleDevice() }
+                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
+                .take(1)
+                .flatMapCompletable { rxBleConnection -> rxBleConnection.writeDescriptor(serviceUUID, characteristicUUID, descriptorUUID, "ConfigCB".getBytes()) }
+                .test()
 
         then:
         testSubscriber.assertError({ throwable ->
-            if (!BleGattDescriptorException.class.isInstance(throwable)) {
-                return false;
-            }
-            BleGattDescriptorException e = (BleGattDescriptorException) throwable;
-            return e.getStatus() == 0x80
+            return BleDisconnectedException.class.isInstance(throwable) && ((BleDisconnectedException) throwable).state == 0x80
         })
     }
 
