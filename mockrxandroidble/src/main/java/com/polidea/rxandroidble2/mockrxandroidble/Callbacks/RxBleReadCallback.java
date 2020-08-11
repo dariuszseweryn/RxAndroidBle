@@ -7,7 +7,8 @@ import io.reactivex.annotations.NonNull;
 
 /**
  * A generic interface for a user callback for handling read requests
- * @param <T> The type of attribute ({@link android.bluetooth.BluetoothGattCharacteristic} or {@link android.bluetooth.BluetoothGattDescriptor})
+ * @param <T> The type of attribute ({@link android.bluetooth.BluetoothGattCharacteristic} or
+ * {@link android.bluetooth.BluetoothGattDescriptor})
  */
 public interface RxBleReadCallback<T> {
     /**
