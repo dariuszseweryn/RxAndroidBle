@@ -8,7 +8,7 @@ import com.polidea.rxandroidble2.mockrxandroidble.RxBleDeviceMock;
 /**
  * An interface for a user callback for handling characteristic read requests
  */
-public interface RxBleCharacteristicReadCallback extends RxBleReadCallback<BluetoothGattCharacteristic> {
+public interface RxBleCharacteristicReadCallback {
 
     /**
      * Handles a read on a GATT characteristic
@@ -17,6 +17,5 @@ public interface RxBleCharacteristicReadCallback extends RxBleReadCallback<Bluet
      * @param result the result handler
      * @throws Exception on error
      */
-    @Override
     void handle(RxBleDeviceMock device, BluetoothGattCharacteristic characteristic, RxBleGattReadResultMock result) throws Exception;
 }
