@@ -7,16 +7,13 @@ import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.subjects.PublishSubject
-import org.junit.runner.notification.Failure
 import org.robolectric.annotation.Config
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
