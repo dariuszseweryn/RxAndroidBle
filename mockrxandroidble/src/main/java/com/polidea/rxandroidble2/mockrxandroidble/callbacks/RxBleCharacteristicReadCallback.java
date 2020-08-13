@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.mockrxandroidble.Callbacks;
+package com.polidea.rxandroidble2.mockrxandroidble.callbacks;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results.RxBleGattReadResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleDeviceMock;
 
 /**

@@ -13,10 +13,10 @@ import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleCharacteristicReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleCharacteristicWriteCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleDescriptorReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleDescriptorWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
 import java.util.HashMap;

@@ -20,12 +20,12 @@ import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results.RxBleGattReadResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results.RxBleGattWriteResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleCharacteristicReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleCharacteristicWriteCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleDescriptorReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.Callbacks.RxBleDescriptorWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;

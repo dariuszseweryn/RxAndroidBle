@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.mockrxandroidble.Callbacks.Results;
+package com.polidea.rxandroidble2.mockrxandroidble.callbacks.results;
 
 /**
  * An interface for the user to respond to a read request
