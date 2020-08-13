@@ -21,8 +21,8 @@ import bleshadow.javax.inject.Inject;
 public class RxBleAdapterWrapper {
 
     private final BluetoothAdapter bluetoothAdapter;
-    
-    private static BleException NULL_BLUETOOTH_ADAPTER = new BleException("bluetoothAdapter is null");
+
+    private static BleException nullBluetoothAdapter = new BleException("bluetoothAdapter is null");
 
     @Inject
     public RxBleAdapterWrapper(@Nullable BluetoothAdapter bluetoothAdapter) {
@@ -31,7 +31,7 @@ public class RxBleAdapterWrapper {
 
     public BluetoothDevice getRemoteDevice(String macAddress) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         return bluetoothAdapter.getRemoteDevice(macAddress);
     }
@@ -47,7 +47,7 @@ public class RxBleAdapterWrapper {
     @SuppressWarnings("deprecation")
     public boolean startLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         return bluetoothAdapter.startLeScan(leScanCallback);
     }
@@ -55,7 +55,7 @@ public class RxBleAdapterWrapper {
     @SuppressWarnings("deprecation")
     public void stopLegacyLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         bluetoothAdapter.stopLeScan(leScanCallback);
     }
@@ -63,7 +63,7 @@ public class RxBleAdapterWrapper {
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public void startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, ScanCallback scanCallback) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, scanSettings, scanCallback);
     }
@@ -71,7 +71,7 @@ public class RxBleAdapterWrapper {
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public int startLeScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, PendingIntent callbackIntent) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         return bluetoothAdapter.getBluetoothLeScanner().startScan(scanFilters, scanSettings, callbackIntent);
     }
@@ -79,7 +79,7 @@ public class RxBleAdapterWrapper {
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public void stopLeScan(PendingIntent callbackIntent) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         bluetoothAdapter.getBluetoothLeScanner().stopScan(callbackIntent);
     }
@@ -87,7 +87,7 @@ public class RxBleAdapterWrapper {
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public void stopLeScan(ScanCallback scanCallback) {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         if (!bluetoothAdapter.isEnabled()) {
             // this situation seems to be a problem since API 29
@@ -113,7 +113,7 @@ public class RxBleAdapterWrapper {
 
     public Set<BluetoothDevice> getBondedDevices() {
         if (bluetoothAdapter == null) {
-            throw NULL_BLUETOOTH_ADAPTER;
+            throw nullBluetoothAdapter;
         }
         return bluetoothAdapter.getBondedDevices();
     }
