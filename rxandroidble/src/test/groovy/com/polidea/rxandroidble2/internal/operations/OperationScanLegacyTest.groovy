@@ -6,7 +6,6 @@ import androidx.annotation.Nullable
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
-import com.polidea.rxandroidble2.internal.util.UUIDUtil
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -16,7 +15,6 @@ import java.util.concurrent.atomic.AtomicReference
 public class OperationScanLegacyTest extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
-    UUIDUtil mockUUIDUtil = Mock UUIDUtil
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     LegacyScanOperation objectUnderTest

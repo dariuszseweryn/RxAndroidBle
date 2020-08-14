@@ -21,17 +21,13 @@ import bleshadow.javax.inject.Inject;
 @ClientScope
 public class InternalScanResultCreator {
 
-    @SuppressWarnings("deprecation")
-    private final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil;
-
     @Inject
-    @SuppressWarnings("deprecation")
-    public InternalScanResultCreator(com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil) {
-        this.uuidUtil = uuidUtil;
+    public InternalScanResultCreator() {
+
     }
 
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
-        final ScanRecord scanRecordObj = uuidUtil.parseFromBytes(scanRecord);
+        final ScanRecord scanRecordObj = ScanRecordImplCompat.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
                 ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED);
     }

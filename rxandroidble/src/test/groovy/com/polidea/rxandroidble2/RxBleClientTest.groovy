@@ -10,7 +10,6 @@ import com.polidea.rxandroidble2.internal.scan.*
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
 import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable
-import com.polidea.rxandroidble2.internal.util.UUIDUtil
 import com.polidea.rxandroidble2.scan.BackgroundScanner
 import com.polidea.rxandroidble2.scan.ScanSettings
 import io.reactivex.Observable
@@ -31,7 +30,6 @@ class RxBleClientTest extends Specification {
     DummyOperationQueue dummyQueue = new DummyOperationQueue()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
-    UUIDUtil uuidParserSpy = Spy UUIDUtil
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
@@ -77,7 +75,6 @@ class RxBleClientTest extends Specification {
                 bleAdapterWrapperSpy,
                 queue,
                 adapterStateObservable.asObservable(),
-                uuidParserSpy,
                 locationServicesStatusMock,
                 mockLazyClientStateObservable,
                 mockDeviceProvider,

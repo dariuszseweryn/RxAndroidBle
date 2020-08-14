@@ -26,6 +26,8 @@ import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import io.reactivex.functions.Consumer;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,8 +52,6 @@ class RxBleClientImpl extends RxBleClient {
     @Deprecated
     public static final String TAG = "RxBleClient";
     final ClientOperationQueue operationQueue;
-    @SuppressWarnings("deprecation")
-    private final com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil;
     private final RxBleDeviceProvider rxBleDeviceProvider;
     final ScanSetupBuilder scanSetupBuilder;
     final ScanPreconditionsVerifier scanPreconditionVerifier;
@@ -71,7 +71,6 @@ class RxBleClientImpl extends RxBleClient {
     RxBleClientImpl(RxBleAdapterWrapper rxBleAdapterWrapper,
                     ClientOperationQueue operationQueue,
                     Observable<BleAdapterState> adapterStateObservable,
-                    com.polidea.rxandroidble2.internal.util.UUIDUtil uuidUtil,
                     LocationServicesStatus locationServicesStatus,
                     Lazy<ClientStateObservable> lazyClientStateObservable,
                     RxBleDeviceProvider rxBleDeviceProvider,
@@ -82,7 +81,6 @@ class RxBleClientImpl extends RxBleClient {
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
                     BackgroundScanner backgroundScanner,
                     CheckerLocationPermission checkerLocationPermission) {
-        this.uuidUtil = uuidUtil;
         this.operationQueue = operationQueue;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleAdapterStateObservable = adapterStateObservable;
@@ -162,8 +160,13 @@ class RxBleClientImpl extends RxBleClient {
         });
     }
 
+    private Set<UUID> toDistinctSet(@Nullable UUID[] uuids) {
+        if (uuids == null) uuids = new UUID[0];
+        return new HashSet<>(Arrays.asList(uuids));
+    }
+
     Observable<RxBleScanResult> initializeScan(@Nullable UUID[] filterServiceUUIDs) {
-        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+        final Set<UUID> filteredUUIDs = toDistinctSet(filterServiceUUIDs);
 
         synchronized (queuedScanOperations) {
             Observable<RxBleScanResult> matchingQueuedScan = queuedScanOperations.get(filteredUUIDs);
@@ -206,9 +209,9 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     private Observable<RxBleScanResult> createScanOperationApi18(@Nullable final UUID[] filterServiceUUIDs) {
-        final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
+        final Set<UUID> filteredUUIDs = toDistinctSet(filterServiceUUIDs);
         final LegacyScanOperation
-                scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
+                scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper);
         return operationQueue.queue(scanOperation)
                 .doFinally(new Action() {
                     @Override
