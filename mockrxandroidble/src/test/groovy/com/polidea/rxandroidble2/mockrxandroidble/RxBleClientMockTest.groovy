@@ -9,6 +9,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
+import com.polidea.rxandroidble2.BuildConfig
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends ElectricSpecification {
