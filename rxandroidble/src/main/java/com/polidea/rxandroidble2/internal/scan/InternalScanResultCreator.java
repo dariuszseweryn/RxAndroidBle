@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.ClientScope;
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 import bleshadow.javax.inject.Inject;
@@ -21,13 +22,15 @@ import bleshadow.javax.inject.Inject;
 @ClientScope
 public class InternalScanResultCreator {
 
-    @Inject
-    public InternalScanResultCreator() {
+    private final ScanRecordParser scanRecordParser;
 
+    @Inject
+    public InternalScanResultCreator(ScanRecordParser scanRecordParser) {
+        this.scanRecordParser = scanRecordParser;
     }
 
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
-        final ScanRecord scanRecordObj = ScanRecordImplCompat.parseFromBytes(scanRecord);
+        final ScanRecord scanRecordObj = scanRecordParser.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
                 ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED);
     }

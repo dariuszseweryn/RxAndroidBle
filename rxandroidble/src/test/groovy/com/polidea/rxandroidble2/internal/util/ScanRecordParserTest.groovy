@@ -1,11 +1,27 @@
 package com.polidea.rxandroidble2.internal.util
 
-import spock.lang.Specification
+import android.os.Build
+import com.polidea.rxandroidble2.BuildConfig
+import hkhc.electricspock.ElectricSpecification
+import org.robolectric.annotation.Config
 
-class UUIDUtilTest extends Specification {
+@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
+class ScanRecordParserTest extends ElectricSpecification {
 
     static final UNKNOWN_DATA_TYPE = 0xfa
-    UUIDUtil objectUnderTest = new UUIDUtil()
+    ScanRecordParser objectUnderTest = new ScanRecordParser()
+
+    def "should extract 16-bit UUIDs"() {
+
+        given:
+        def advertisement = [ 0x03, 0x02, 0xad, 0xde ] as byte[]
+
+        when:
+        def result = objectUnderTest.extractUUIDs(advertisement)
+
+        then:
+        result.get(0).toString() == "0000dead-0000-1000-8000-00805f9b34fb"
+    }
 
     def "should extract 32-bit UUIDs"() {
 

@@ -9,8 +9,8 @@ import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResultLegacy;
-import com.polidea.rxandroidble2.internal.scan.ScanRecordImplCompat;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,10 +23,14 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
     @Nullable
     final Set<UUID> filterUuids;
 
-    @SuppressWarnings("deprecation")
+    final ScanRecordParser scanRecordParser;
+
     public LegacyScanOperation(UUID[] filterServiceUUIDs,
-                               RxBleAdapterWrapper rxBleAdapterWrapper) {
+                               RxBleAdapterWrapper rxBleAdapterWrapper,
+                               ScanRecordParser scanRecordParser) {
         super(rxBleAdapterWrapper);
+
+        this.scanRecordParser = scanRecordParser;
         if (filterServiceUUIDs != null && filterServiceUUIDs.length > 0) {
             this.filterUuids = new HashSet<>(filterServiceUUIDs.length);
             Collections.addAll(filterUuids, filterServiceUUIDs);
@@ -48,7 +52,7 @@ public class LegacyScanOperation extends ScanOperation<RxBleInternalScanResultLe
                             LoggerUtil.bytesToHex(scanRecord)
                     );
                 }
-                if (filterUuids == null || ScanRecordImplCompat.extractUUIDs(scanRecord).containsAll(filterUuids)) {
+                if (filterUuids == null || scanRecordParser.extractUUIDs(scanRecord).containsAll(filterUuids)) {
                     emitter.onNext(new RxBleInternalScanResultLegacy(device, rssi, scanRecord));
                 }
             }

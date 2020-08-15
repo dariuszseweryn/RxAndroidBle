@@ -6,6 +6,7 @@ import androidx.annotation.Nullable
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
+import com.polidea.rxandroidble2.internal.util.ScanRecordParser
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 public class OperationScanLegacyTest extends Specification {
 
     RxBleAdapterWrapper mockAdapterWrapper = Mock RxBleAdapterWrapper
+    ScanRecordParser mockScanRecordParser = Mock ScanRecordParser
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     LegacyScanOperation objectUnderTest
@@ -24,7 +26,7 @@ public class OperationScanLegacyTest extends Specification {
     }
 
     def prepareObjectUnderTest(RxBleAdapterWrapper adapterWrapper) {
-        objectUnderTest = new LegacyScanOperation(null, adapterWrapper, mockUUIDUtil)
+        objectUnderTest = new LegacyScanOperation(null, adapterWrapper, mockScanRecordParser)
     }
 
     def "should call RxBleAdapterWrapper.startScan() when run()"() {
