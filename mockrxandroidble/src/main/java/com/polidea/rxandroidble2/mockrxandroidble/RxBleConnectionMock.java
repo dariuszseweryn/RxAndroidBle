@@ -13,9 +13,19 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
+import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +47,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.internal.functions.Functions;
-
+import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.subjects.SingleSubject;
 
 public class RxBleConnectionMock implements RxBleConnection {
 
@@ -63,14 +74,30 @@ public class RxBleConnectionMock implements RxBleConnection {
     private int rssi;
     private int currentMtu = 23;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
-
+    private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
+    private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
+    private Map<UUID, Map<UUID, RxBleDescriptorReadCallback>> descriptorReadCallbacks;
+    private Map<UUID, Map<UUID, RxBleDescriptorWriteCallback>> descriptorWriteCallbacks;
+    private RxBleDeviceMock deviceMock;
 
     public RxBleConnectionMock(RxBleDeviceServices rxBleDeviceServices,
                                int rssi,
-                               Map<UUID, Observable<byte[]>> characteristicNotificationSources) {
+                               Map<UUID, Observable<byte[]>> characteristicNotificationSources,
+                               Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks,
+                               Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks,
+                               Map<UUID, Map<UUID, RxBleDescriptorReadCallback>> descriptorReadCallbacks,
+                               Map<UUID, Map<UUID, RxBleDescriptorWriteCallback>> descriptorWriteCallbacks) {
         this.rxBleDeviceServices = rxBleDeviceServices;
         this.rssi = rssi;
         this.characteristicNotificationSources = characteristicNotificationSources;
+        this.characteristicReadCallbacks = characteristicReadCallbacks;
+        this.characteristicWriteCallbacks = characteristicWriteCallbacks;
+        this.descriptorReadCallbacks = descriptorReadCallbacks;
+        this.descriptorWriteCallbacks = descriptorWriteCallbacks;
+    }
+
+    void setDeviceMock(RxBleDeviceMock deviceMock) {
+        this.deviceMock = deviceMock;
     }
 
     @Override
@@ -142,41 +169,120 @@ public class RxBleConnectionMock implements RxBleConnection {
                 });
     }
 
+    private BleDisconnectedException handleDisconnection(int status) {
+        BleDisconnectedException e = new BleDisconnectedException(deviceMock.getMacAddress(), status);
+        deviceMock.disconnectWithException(e);
+        return e;
+    }
+
     @Override
     public Single<byte[]> readCharacteristic(@NonNull UUID characteristicUuid) {
-        return getCharacteristic(characteristicUuid).map(new Function<BluetoothGattCharacteristic, byte[]>() {
+        return getCharacteristic(characteristicUuid).flatMap(new Function<BluetoothGattCharacteristic, SingleSource<? extends byte[]>>() {
             @Override
-            public byte[] apply(BluetoothGattCharacteristic bluetoothGattCharacteristic) throws Exception {
-                return bluetoothGattCharacteristic.getValue();
+            public SingleSource<? extends byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                return readCharacteristic(characteristic);
             }
         });
     }
 
     @Override
-    public Single<byte[]> readCharacteristic(@NonNull BluetoothGattCharacteristic characteristic) {
-        return Single.just(characteristic.getValue());
+    public Single<byte[]> readCharacteristic(@NonNull final BluetoothGattCharacteristic characteristic) {
+        final RxBleCharacteristicReadCallback readCallback = characteristicReadCallbacks.get(characteristic.getUuid());
+        if (readCallback == null) {
+            return Single.just(characteristic.getValue());
+        }
+        return Single.just(characteristic).flatMap(new Function<BluetoothGattCharacteristic, SingleSource<? extends byte[]>>() {
+            @Override
+            public SingleSource<? extends byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                final SingleSubject<byte[]> subj = SingleSubject.create();
+                readCallback.handle(deviceMock, characteristic, new RxBleGattReadResultMock() {
+                    @Override
+                    public void success(byte[] data) {
+                        characteristic.setValue(data);
+                        subj.onSuccess(data);
+                    }
+
+                    @Override
+                    public void failure(int status) {
+                        subj.onError(
+                                new BleGattCharacteristicException(null,
+                                        characteristic,
+                                        status,
+                                        BleGattOperationType.CHARACTERISTIC_READ)
+                        );
+                    }
+
+                    @Override
+                    public void disconnect(int status) {
+                        subj.onError(handleDisconnection(status));
+                    }
+                });
+                return subj;
+            }
+        }).doOnSuccess(new Consumer<byte[]>() {
+            @Override
+            public void accept(byte[] bytes) throws Exception {
+                characteristic.setValue(bytes);
+            }
+        });
     }
 
     @Override
     public Single<byte[]> readDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
                                              @NonNull final UUID descriptorUuid) {
         return discoverServices()
-                .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
-                    @Override
-                    public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
-                        return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
-                    }
-                })
-                .map(new Function<BluetoothGattDescriptor, byte[]>() {
-                    @Override
-                    public byte[] apply(BluetoothGattDescriptor bluetoothGattDescriptor) {
-                        return bluetoothGattDescriptor.getValue();
-                    }
-                });
+            .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
+                @Override
+                public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
+                    return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
+                }
+            })
+            .flatMap(new Function<BluetoothGattDescriptor, SingleSource<? extends byte[]>>() {
+                @Override
+                public SingleSource<? extends byte[]> apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                    return readDescriptor(descriptor);
+                }
+            });
     }
 
     @Override
-    public Single<byte[]> readDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
+    public Single<byte[]> readDescriptor(@NonNull final BluetoothGattDescriptor descriptor) {
+        Map<UUID, RxBleDescriptorReadCallback> descriptorCallbacks = descriptorReadCallbacks
+                .get(descriptor.getCharacteristic().getUuid());
+        if (descriptorCallbacks != null) {
+            final RxBleDescriptorReadCallback readCallback = descriptorCallbacks.get(descriptor.getUuid());
+            if (readCallback != null) {
+                return Single.just(descriptor).flatMap(new Function<BluetoothGattDescriptor, SingleSource<? extends byte[]>>() {
+                    @Override
+                    public SingleSource<? extends byte[]> apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        final SingleSubject<byte[]> subj = SingleSubject.create();
+                        readCallback.handle(deviceMock, descriptor, new RxBleGattReadResultMock() {
+                            @Override
+                            public void success(byte[] data) {
+                                descriptor.setValue(data);
+                                subj.onSuccess(data);
+                            }
+
+                            @Override
+                            public void failure(int status) {
+                                subj.onError(
+                                        new BleGattDescriptorException(null,
+                                                descriptor,
+                                                status,
+                                                BleGattOperationType.DESCRIPTOR_READ)
+                                );
+                            }
+
+                            @Override
+                            public void disconnect(int status) {
+                                subj.onError(handleDisconnection(status));
+                            }
+                        });
+                        return subj;
+                    }
+                });
+            }
+        }
         return Single.just(descriptor.getValue());
     }
 
@@ -284,9 +390,55 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic, @NonNull byte[] data) {
-        bluetoothGattCharacteristic.setValue(data);
-        return Single.just(data);
+    public Single<byte[]> writeCharacteristic(@NonNull BluetoothGattCharacteristic bluetoothGattCharacteristic,
+                                              @NonNull final byte[] data) {
+        final RxBleCharacteristicWriteCallback writeCallback = characteristicWriteCallbacks
+                .get(bluetoothGattCharacteristic.getUuid());
+        if (writeCallback == null) {
+            bluetoothGattCharacteristic.setValue(data);
+            return Single.just(data);
+        }
+        // wrap characteristic in single so exceptions from writeCallback are handled for us
+        return Single.just(bluetoothGattCharacteristic)
+                .flatMap(new Function<BluetoothGattCharacteristic, SingleSource<byte[]>>() {
+                    @Override
+                    public SingleSource<byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                        final SingleSubject<byte[]> subj = SingleSubject.create();
+                        writeCallback.handle(deviceMock, characteristic, data, new RxBleGattWriteResultMock() {
+                            @Override
+                            public void success() {
+                                characteristic.setValue(data);
+                                subj.onSuccess(data);
+                            }
+
+                            @Override
+                            public void failure(int status) {
+                                subj.onError(
+                                        new BleGattCharacteristicException(null,
+                                                characteristic,
+                                                status,
+                                                BleGattOperationType.CHARACTERISTIC_WRITE)
+                                );
+                            }
+
+                            @Override
+                            public void disconnect(int status) {
+                                subj.onError(handleDisconnection(status));
+                            }
+                        });
+                        return subj;
+                    }
+                });
+    }
+
+    @Override
+    public Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull final byte[] data) {
+        return getCharacteristic(characteristicUuid).flatMap(new Function<BluetoothGattCharacteristic, SingleSource<byte[]>>() {
+            @Override
+            public SingleSource<byte[]> apply(final BluetoothGattCharacteristic characteristic) throws Exception {
+                return writeCharacteristic(characteristic, data);
+            }
+        });
     }
 
     @Override
@@ -384,38 +536,58 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<byte[]> writeCharacteristic(@NonNull UUID characteristicUuid, @NonNull final byte[] data) {
-        return getCharacteristic(characteristicUuid)
-                .map(new Function<BluetoothGattCharacteristic, byte[]>() {
-                    @Override
-                    public byte[] apply(BluetoothGattCharacteristic characteristic) {
-                         characteristic.setValue(data);
-                         return data;
-                    }
-                });
-    }
-
-    @Override
     public Completable writeDescriptor(@NonNull final UUID serviceUuid, @NonNull final UUID characteristicUuid,
                                               @NonNull final UUID descriptorUuid, @NonNull final byte[] data) {
         return discoverServices()
-                .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
-                    @Override
-                    public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
-                        return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
-                    }
-                })
-                .doOnSuccess(new Consumer<BluetoothGattDescriptor>() {
-                    @Override
-                    public void accept(BluetoothGattDescriptor bluetoothGattDescriptor) throws Exception {
-                        bluetoothGattDescriptor.setValue(data);
-                    }
-                })
-                .toCompletable();
+            .flatMap(new Function<RxBleDeviceServices, SingleSource<BluetoothGattDescriptor>>() {
+                @Override
+                public SingleSource<BluetoothGattDescriptor> apply(RxBleDeviceServices rxBleDeviceServices) {
+                    return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
+                }
+            }).flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
+                        @Override
+                        public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                    return writeDescriptor(descriptor, data);
+                }
+            });
     }
 
     @Override
     public Completable writeDescriptor(@NonNull final BluetoothGattDescriptor descriptor, @NonNull final byte[] data) {
+        Map<UUID, RxBleDescriptorWriteCallback> descriptorCallbacks = descriptorWriteCallbacks
+                .get(descriptor.getCharacteristic().getUuid());
+        if (descriptorCallbacks != null) {
+            final RxBleDescriptorWriteCallback writeCallback = descriptorCallbacks.get(descriptor.getUuid());
+            if (writeCallback != null) {
+                // wrap descriptor in single so exceptions from writeCallback are handled for us
+                return Single.just(descriptor).flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
+                    @Override
+                    public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        final CompletableSubject subj = CompletableSubject.create();
+                        writeCallback.handle(deviceMock, descriptor, data, new RxBleGattWriteResultMock() {
+                            @Override
+                            public void success() {
+                                descriptor.setValue(data);
+                                subj.onComplete();
+                            }
+
+                            @Override
+                            public void failure(int status) {
+                                subj.onError(
+                                        new BleGattDescriptorException(null, descriptor, status, BleGattOperationType.DESCRIPTOR_WRITE)
+                                );
+                            }
+
+                            @Override
+                            public void disconnect(int status) {
+                                subj.onError(handleDisconnection(status));
+                            }
+                        });
+                        return subj;
+                    }
+                });
+            }
+        }
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -513,6 +685,10 @@ public class RxBleConnectionMock implements RxBleConnection {
         private RxBleDeviceServices rxBleDeviceServices;
         private int rssi;
         private Map<UUID, Observable<byte[]>> characteristicNotificationSources = new HashMap<>();
+        private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks = new HashMap<>();
+        private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks = new HashMap<>();
+        private Map<UUID, Map<UUID, RxBleDescriptorReadCallback>> descriptorReadCallbacks = new HashMap<>();
+        private Map<UUID, Map<UUID, RxBleDescriptorWriteCallback>> descriptorWriteCallbacks = new HashMap<>();
 
         public Builder() {
 
@@ -523,7 +699,11 @@ public class RxBleConnectionMock implements RxBleConnection {
             return new RxBleConnectionMock(
                     rxBleDeviceServices,
                     rssi,
-                    characteristicNotificationSources
+                    characteristicNotificationSources,
+                    characteristicReadCallbacks,
+                    characteristicWriteCallbacks,
+                    descriptorReadCallbacks,
+                    descriptorWriteCallbacks
             );
         }
 
@@ -561,6 +741,70 @@ public class RxBleConnectionMock implements RxBleConnection {
          */
         public Builder notificationSource(@NonNull UUID characteristicUUID, @NonNull Observable<byte[]> sourceObservable) {
             characteristicNotificationSources.put(characteristicUUID, sourceObservable);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle characteristic reads for characteristics with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public Builder characteristicReadCallback(@NonNull UUID characteristicUUID,
+                                                  @NonNull RxBleCharacteristicReadCallback readCallback) {
+            characteristicReadCallbacks.put(characteristicUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle characteristic writes for characteristics with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public Builder characteristicWriteCallback(@NonNull UUID characteristicUUID,
+                                                   @NonNull RxBleCharacteristicWriteCallback writeCallback) {
+            characteristicWriteCallbacks.put(characteristicUUID, writeCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor reads for descriptors with a given UUID. The
+         * function should return a Single which will emit the read data when complete. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param readCallback The callback
+         */
+        public Builder descriptorReadCallback(@NonNull UUID characteristicUUID,
+                                              @NonNull UUID descriptorUUID,
+                                              @NonNull RxBleDescriptorReadCallback readCallback) {
+            Map<UUID, RxBleDescriptorReadCallback> descriptorCallbacks = descriptorReadCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorReadCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, readCallback);
+            return this;
+        }
+
+        /**
+         * Set a {@link Function} that will be used to handle descriptor writes for descriptors with a given UUID. The
+         * function should return a Completable that completes when the write completes. Calling this method is not required.
+         * @param characteristicUUID UUID of the characteristic that the descriptor is used in
+         * @param descriptorUUID UUID of the descriptor that the callback will handle reads for
+         * @param writeCallback The callback
+         */
+        public Builder descriptorWriteCallback(@NonNull UUID characteristicUUID,
+                                               @NonNull UUID descriptorUUID,
+                                               @NonNull RxBleDescriptorWriteCallback writeCallback) {
+            Map<UUID, RxBleDescriptorWriteCallback> descriptorCallbacks = descriptorWriteCallbacks
+                    .get(characteristicUUID);
+            if (descriptorCallbacks == null) {
+                descriptorCallbacks = new HashMap<>();
+                descriptorWriteCallbacks.put(characteristicUUID, descriptorCallbacks);
+            }
+            descriptorCallbacks.put(descriptorUUID, writeCallback);
             return this;
         }
     }

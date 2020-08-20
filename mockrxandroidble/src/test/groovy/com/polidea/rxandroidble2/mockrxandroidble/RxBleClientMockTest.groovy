@@ -7,7 +7,6 @@ import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import org.robolectric.annotation.Config
 
@@ -17,12 +16,11 @@ public class RxBleClientMockTest extends ElectricSpecification {
     def serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
     def serviceUUID2 = UUID.fromString("00001235-0000-0000-8000-000000000000")
     def characteristicUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
-    def characteristicNotifiedUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
+    def characteristicUUIDNoCallback = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fc")
     def characteristicData = "Polidea".getBytes()
     def descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb")
     def descriptorData = "Config".getBytes()
-    def RxBleClient rxBleClient
-    def PublishSubject characteristicNotificationSubject = PublishSubject.create()
+    RxBleClient rxBleClient
 
     def createDevice(deviceName, macAddress, rssi) {
         new RxBleDeviceMock.Builder()
@@ -41,7 +39,6 @@ public class RxBleClientMockTest extends ElectricSpecification {
                 )
                 .connection(new RxBleConnectionMock.Builder()
                         .rssi(rssi)
-                        .notificationSource(characteristicNotifiedUUID, characteristicNotificationSubject)
                         .addService(serviceUUID,
                                 new RxBleClientMock.CharacteristicsBuilder()
                                         .addCharacteristic(
@@ -50,8 +47,15 @@ public class RxBleClientMockTest extends ElectricSpecification {
                                                 new RxBleClientMock.DescriptorsBuilder()
                                                         .addDescriptor(descriptorUUID, descriptorData)
                                                         .build()
+                                        ).addCharacteristic(
+                                                characteristicUUIDNoCallback,
+                                                characteristicData,
+                                                new RxBleClientMock.DescriptorsBuilder()
+                                                        .addDescriptor(descriptorUUID, descriptorData)
+                                                        .build()
                                         ).build()
-                        ).build()
+                        )
+                        .build()
                 ).build()
     }
 
@@ -299,19 +303,6 @@ public class RxBleClientMockTest extends ElectricSpecification {
         testSubscriber.assertValue(42)
     }
 
-    def "should return the BluetoothDevice mtu"() {
-        when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMapSingle { rxBleConnection -> rxBleConnection.requestMtu(72) }
-                .test()
-
-        then:
-        testSubscriber.assertValue(72)
-    }
-
     def "should return BluetoothDevices that were added on the fly"() {
         given:
         def discoverableDevicesSubject = PublishSubject.create()
@@ -331,69 +322,6 @@ public class RxBleClientMockTest extends ElectricSpecification {
         testNameSubscriber.assertValues("TestDevice", "SecondDevice")
         testAddressSubscriber.assertValues("AA:BB:CC:DD:EE:FF", "AA:BB:CC:DD:EE:00")
         testRssiSubscriber.assertValues(42, 17)
-    }
-
-    def "should return services list"() {
-        when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMapSingle { rxBleConnection ->
-            rxBleConnection.discoverServices()
-                    .map { rxBleDeviceServices -> rxBleDeviceServices.getBluetoothGattServices() }
-                    .map { servicesList -> servicesList.size() }
-        }
-        .test()
-
-        then:
-        testSubscriber.assertValue(1)
-    }
-
-    def "should return characteristic data"() {
-        when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMapSingle { rxBleConnection -> rxBleConnection.readCharacteristic(characteristicUUID) }
-                .map { data -> new String(data) }
-                .test()
-
-        then:
-        testSubscriber.assertValue("Polidea")
-    }
-
-    def "should return descriptor data"() {
-        when:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMapSingle { rxBleConnection -> rxBleConnection.readDescriptor(serviceUUID, characteristicUUID, descriptorUUID) }
-                .map { data -> new String(data) }
-                .test()
-
-        then:
-        testSubscriber.assertValue("Config")
-    }
-
-    def "should return notification data"() {
-        given:
-        def testSubscriber = rxBleClient.scanBleDevices(new ScanSettings.Builder().build())
-                .take(1)
-                .map { scanResult -> scanResult.getBleDevice() }
-                .flatMap { rxBleDevice -> rxBleDevice.establishConnection(false) }
-                .flatMap { rxBleConnection -> rxBleConnection.setupNotification(characteristicNotifiedUUID) }
-                .flatMap({ Observable<byte[]> observable -> observable })
-                .map { new String(it) }
-                .test()
-
-        when:
-        characteristicNotificationSubject.onNext("NotificationData".getBytes())
-
-        then:
-        testSubscriber.assertValue("NotificationData")
     }
 
     def "should emit correct connection state values when connected"() {
