@@ -38,7 +38,17 @@ RxBleClient rxBleClientMock = new RxBleClientMock.Builder()
                             .addDescriptor(descriptorUUID, descriptorData) // <-- adding descriptor mocks
                             .build() // to the characteristic, there can be multiple of them
                     ).build()
-            ).build()
+            ).characteristicReadCallback(characteristicUUID, (device, characteristic, result) -> {
+                result.success(characteristicValue);
+            })
+            .characteristicWriteCallback(characteristicUUID, (device, characteristic, bytes, result) -> {
+                if(writeData(characteristic, bytes)) {
+                    result.success();
+                } else {
+                    result.failure(0x80);
+                    // can also use result.disconnect(0x80); 
+                }
+            }).build()
         ).build()
     ).build();
 
