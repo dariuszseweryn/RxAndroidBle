@@ -24,7 +24,7 @@ class DeviceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device)
 
-        macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
+        macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)!!
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 
         connect.setOnClickListener { startActivity(ConnectionExampleActivity.newInstance(this, macAddress)) }

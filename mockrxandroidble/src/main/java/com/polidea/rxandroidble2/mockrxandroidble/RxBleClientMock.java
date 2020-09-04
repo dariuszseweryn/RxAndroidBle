@@ -280,6 +280,7 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Observable<RxBleScanResult> scanBleDevices(@Nullable UUID... filterServiceUUIDs) {
         return createScanOperation(filterServiceUUIDs);
     }

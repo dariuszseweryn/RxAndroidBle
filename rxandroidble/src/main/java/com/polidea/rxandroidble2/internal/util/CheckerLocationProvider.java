@@ -22,6 +22,7 @@ public class CheckerLocationProvider {
         this.locationManager = locationManager;
     }
 
+    @SuppressWarnings("deprecation")
     public boolean isLocationProviderEnabled() {
         if (Build.VERSION.SDK_INT >= 19 /* Build.VERSION_CODES.KITKAT */) {
             try {

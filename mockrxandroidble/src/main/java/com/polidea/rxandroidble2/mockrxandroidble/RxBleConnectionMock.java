@@ -158,6 +158,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Single<BluetoothGattCharacteristic> getCharacteristic(@NonNull final UUID characteristicUuid) {
         return discoverServices()
                 .flatMap(new Function<RxBleDeviceServices, SingleSource<? extends BluetoothGattCharacteristic>>() {
@@ -545,11 +546,11 @@ public class RxBleConnectionMock implements RxBleConnection {
                     return rxBleDeviceServices.getDescriptor(serviceUuid, characteristicUuid, descriptorUuid);
                 }
             }).flatMapCompletable(new Function<BluetoothGattDescriptor, Completable>() {
-                        @Override
-                        public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
-                    return writeDescriptor(descriptor, data);
-                }
-            });
+                    @Override
+                    public Completable apply(final BluetoothGattDescriptor descriptor) throws Exception {
+                        return writeDescriptor(descriptor, data);
+                    }
+                });
     }
 
     @Override

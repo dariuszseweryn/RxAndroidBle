@@ -22,8 +22,8 @@ public class ObservableUtil {
         return Observable.<T>never().startWith(onNext);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> identityTransformer() {
-        //noinspection unchecked
         return (ObservableTransformer<T, T>) IDENTITY_TRANSFORMER;
     }
 }

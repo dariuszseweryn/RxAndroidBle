@@ -31,6 +31,7 @@ import bleshadow.javax.inject.Inject;
  * This class may change in later releases.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public class UUIDUtil {
 
     // The following data type values are assigned by Bluetooth SIG.

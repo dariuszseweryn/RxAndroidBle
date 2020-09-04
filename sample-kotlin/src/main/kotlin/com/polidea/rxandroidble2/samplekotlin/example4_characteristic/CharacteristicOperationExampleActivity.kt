@@ -61,7 +61,7 @@ class CharacteristicOperationExampleActivity : AppCompatActivity() {
 
         val macAddress = intent.getStringExtra(EXTRA_MAC_ADDRESS)
         characteristicUuid = intent.getSerializableExtra(EXTRA_CHARACTERISTIC_UUID) as UUID
-        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress)
+        bleDevice = SampleApplication.rxBleClient.getBleDevice(macAddress!!)
         connectionObservable = prepareConnectionObservable()
         supportActionBar!!.subtitle = getString(R.string.mac_address, macAddress)
 

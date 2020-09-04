@@ -277,8 +277,8 @@ public class RxBleGattCallback {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> Observable<T> withDisconnectionHandling(Output<T> output) {
-        //noinspection unchecked
         return Observable.merge(
                 disconnectionRouter.<T>asErrorOnlyObservable(),
                 output.valueRelay,
