@@ -3,11 +3,11 @@ apply plugin: 'groovyx.android'
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion rootProject.ext.maxSDKVersion
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 29
+        minSdkVersion rootProject.ext.minSDKVersion
+        targetSdkVersion rootProject.ext.maxSDKVersion
         versionCode 1
         versionName VERSION_NAME
     }
