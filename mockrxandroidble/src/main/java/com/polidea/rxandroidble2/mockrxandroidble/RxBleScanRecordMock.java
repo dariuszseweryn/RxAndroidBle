@@ -20,6 +20,7 @@ public class RxBleScanRecordMock implements ScanRecord {
 
     private int advertiseFlags;
     private List<ParcelUuid> serviceUuids;
+    private List<ParcelUuid> serviceSolicitationUuids;
     private SparseArray<byte[]> manufacturerSpecificData;
     private Map<ParcelUuid, byte[]> serviceData;
     private int txPowerLevel;
@@ -28,12 +29,14 @@ public class RxBleScanRecordMock implements ScanRecord {
     public RxBleScanRecordMock(
         int advertiseFlags,
         List<ParcelUuid> serviceUuids,
+        List<ParcelUuid> serviceSolicitationUuids,
         SparseArray<byte[]> manufacturerSpecificData,
         Map<ParcelUuid, byte[]> serviceData,
         int txPowerLevel,
         String deviceName) {
         this.advertiseFlags = advertiseFlags;
         this.serviceUuids = serviceUuids;
+        this.serviceSolicitationUuids = serviceSolicitationUuids;
         this.manufacturerSpecificData = manufacturerSpecificData;
         this.serviceData = serviceData;
         this.txPowerLevel = txPowerLevel;
@@ -48,6 +51,7 @@ public class RxBleScanRecordMock implements ScanRecord {
     public static class Builder {
         private int advertiseFlags;
         private List<ParcelUuid> serviceUuids;
+        private List<ParcelUuid> serviceSolicitationUuids;
         private SparseArray<byte[]> manufacturerSpecificData;
         private Map<ParcelUuid, byte[]> serviceData;
         private int txPowerLevel;
@@ -55,6 +59,7 @@ public class RxBleScanRecordMock implements ScanRecord {
 
         public Builder() {
             serviceUuids = new ArrayList<ParcelUuid>();
+            serviceSolicitationUuids = new ArrayList<ParcelUuid>();
             manufacturerSpecificData = new SparseArray<>();
             serviceData = new HashMap<>();
         }
@@ -72,6 +77,14 @@ public class RxBleScanRecordMock implements ScanRecord {
          */
         public Builder addServiceUuid(ParcelUuid uuid) {
             serviceUuids.add(uuid);
+            return this;
+        }
+
+        /**
+         * Add a service solicitation UUID
+         */
+        public Builder addServiceSolicitionUuid(ParcelUuid uuid) {
+            serviceSolicitationUuids.add(uuid);
             return this;
         }
 
@@ -116,6 +129,7 @@ public class RxBleScanRecordMock implements ScanRecord {
             return new RxBleScanRecordMock(
                     advertiseFlags,
                     serviceUuids,
+                    serviceSolicitationUuids,
                     manufacturerSpecificData,
                     serviceData,
                     txPowerLevel,
@@ -133,6 +147,12 @@ public class RxBleScanRecordMock implements ScanRecord {
     @Override
     public List<ParcelUuid> getServiceUuids() {
         return serviceUuids;
+    }
+
+    @Nullable
+    @Override
+    public List<ParcelUuid> getServiceSolicitationUuids() {
+        return serviceSolicitationUuids;
     }
 
     @Override

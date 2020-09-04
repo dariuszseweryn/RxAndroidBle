@@ -1,7 +1,10 @@
 package com.polidea.rxandroidble2.scan;
 
+import android.os.Build;
 import android.os.ParcelUuid;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import android.util.SparseArray;
 
 import java.util.List;
@@ -21,6 +24,14 @@ public interface ScanRecord {
      */
     @Nullable
     List<ParcelUuid> getServiceUuids();
+
+    /**
+     * Returns a list of service solicitation UUIDs within the advertisement that are used to identify the
+     * bluetooth GATT services the peripheral requires on the Central.
+     */
+    @RequiresApi(29 /* Build.VERSION_CODES.Q */)
+    @Nullable
+    List<ParcelUuid> getServiceSolicitationUuids();
 
     /**
      * Returns a sparse array of manufacturer identifier and its corresponding manufacturer specific

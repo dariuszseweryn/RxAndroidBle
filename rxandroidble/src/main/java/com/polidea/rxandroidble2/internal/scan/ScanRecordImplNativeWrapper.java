@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
+import android.os.Build;
 import android.os.ParcelUuid;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -29,6 +30,13 @@ public class ScanRecordImplNativeWrapper implements ScanRecord {
     @Override
     public List<ParcelUuid> getServiceUuids() {
         return nativeScanRecord.getServiceUuids();
+    }
+
+    @RequiresApi(29 /* Build.VERSION_CODES.Q */)
+    @Nullable
+    @Override
+    public List<ParcelUuid> getServiceSolicitationUuids() {
+        return nativeScanRecord.getServiceSolicitationUuids();
     }
 
     @Override
