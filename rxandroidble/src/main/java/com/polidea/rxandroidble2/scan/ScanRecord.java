@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble2.scan;
 
-import android.os.Build;
 import android.os.ParcelUuid;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
