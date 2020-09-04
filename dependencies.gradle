@@ -5,7 +5,7 @@ ext {
     shadowPluginVersion = '5.0.0'
     daggerVersion = '2.15'
     minSDKVersion = 18
-    maxSDKVersion = 30
+    targetSDKVersion = 30
     libs = [
             /* Library-only dependencies */
             rxjava                : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
