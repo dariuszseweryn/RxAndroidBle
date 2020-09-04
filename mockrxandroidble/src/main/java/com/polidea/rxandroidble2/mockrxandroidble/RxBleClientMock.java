@@ -103,16 +103,13 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
-         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         * Adds a {@link BluetoothGattCharacteristic}
          *
-         * @param uuid        characteristic UUID
-         * @param data        locally stored value of the characteristic
-         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         * @param characteristic        The characteristic to add
          */
-        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
-                                                        @NonNull byte[] data,
-                                                        List<BluetoothGattDescriptor> descriptors) {
-            return addCharacteristic(uuid, data, 0, descriptors);
+        public CharacteristicsBuilder addCharacteristic(BluetoothGattCharacteristic characteristic) {
+            this.bluetoothGattCharacteristics.add(characteristic);
+            return this;
         }
 
         /**
@@ -132,8 +129,72 @@ public class RxBleClientMock extends RxBleClient {
                 characteristic.addDescriptor(descriptor);
             }
             characteristic.setValue(data);
-            this.bluetoothGattCharacteristics.add(characteristic);
-            return this;
+            return addCharacteristic(characteristic);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        int properties) {
+            return addCharacteristic(uuid, data, properties, new ArrayList<BluetoothGattDescriptor>());
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        List<BluetoothGattDescriptor> descriptors) {
+            return addCharacteristic(uuid, data, 0, descriptors);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        BluetoothGattDescriptor... descriptors) {
+            return addCharacteristic(uuid, data, 0, descriptors);
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         * @param properties  OR-ed {@link BluetoothGattCharacteristic} property constants
+         * @param descriptors list of characteristic descriptors. Use {@link DescriptorsBuilder} to create them.
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data,
+                                                        int properties,
+                                                        BluetoothGattDescriptor... descriptors) {
+            return addCharacteristic(uuid, data, properties, Arrays.asList(descriptors));
+        }
+
+        /**
+         * Adds a {@link BluetoothGattCharacteristic} with specified parameters.
+         *
+         * @param uuid        characteristic UUID
+         * @param data        locally stored value of the characteristic
+         */
+        public CharacteristicsBuilder addCharacteristic(@NonNull UUID uuid,
+                                                        @NonNull byte[] data) {
+            return addCharacteristic(uuid, data, 0);
         }
 
         /**
@@ -157,6 +218,16 @@ public class RxBleClientMock extends RxBleClient {
         }
 
         /**
+         * Adds a {@link BluetoothGattDescriptor}.
+         *
+         * @param descriptor the descriptor
+         */
+        public DescriptorsBuilder addDescriptor(@NonNull BluetoothGattDescriptor descriptor) {
+            bluetoothGattDescriptors.add(descriptor);
+            return this;
+        }
+
+        /**
          * Adds a {@link BluetoothGattDescriptor} with specified parameters.
          *
          * @param uuid descriptor UUID
@@ -165,8 +236,7 @@ public class RxBleClientMock extends RxBleClient {
         public DescriptorsBuilder addDescriptor(@NonNull UUID uuid, @NonNull byte[] data) {
             BluetoothGattDescriptor bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, 0);
             bluetoothGattDescriptor.setValue(data);
-            bluetoothGattDescriptors.add(bluetoothGattDescriptor);
-            return this;
+            return addDescriptor(bluetoothGattDescriptor);
         }
 
         /**

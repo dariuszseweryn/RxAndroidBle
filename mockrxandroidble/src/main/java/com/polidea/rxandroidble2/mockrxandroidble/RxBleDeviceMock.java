@@ -12,9 +12,14 @@ import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +31,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.ReplaySubject;
 
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;
@@ -33,6 +39,7 @@ import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DIS
 
 public class RxBleDeviceMock implements RxBleDevice {
 
+    private ReplaySubject<RxBleConnection> connectionSubject;
     private RxBleConnection rxBleConnection;
     private BehaviorSubject<RxBleConnection.RxBleConnectionState> connectionStateBehaviorSubject = BehaviorSubject.createDefault(
             DISCONNECTED
@@ -46,6 +53,19 @@ public class RxBleDeviceMock implements RxBleDevice {
     private BluetoothDevice bluetoothDevice;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
+    private RxBleDeviceMock(String name,
+                            String macAddress,
+                            @Nullable BluetoothDevice bluetoothDevice,
+                            RxBleConnectionMock connectionMock) {
+        this.name = name;
+        this.macAddress = macAddress;
+        this.rssi = connectionMock.getRssi();
+        this.advertisedUUIDs = connectionMock.getServiceUuids();
+        this.bluetoothDevice = bluetoothDevice;
+        this.rxBleConnection = connectionMock;
+        connectionMock.setDeviceMock(this);
+    }
+
     public RxBleDeviceMock(String name,
                            String macAddress,
                            byte[] scanRecord,
@@ -53,15 +73,20 @@ public class RxBleDeviceMock implements RxBleDevice {
                            RxBleDeviceServices rxBleDeviceServices,
                            Map<UUID, Observable<byte[]>> characteristicNotificationSources,
                            @Nullable BluetoothDevice bluetoothDevice) {
-        this.name = name;
-        this.macAddress = macAddress;
-        this.rxBleConnection = new RxBleConnectionMock(rxBleDeviceServices,
-                rssi,
-                characteristicNotificationSources);
-        this.rssi = rssi;
+        this(
+                name,
+                macAddress,
+                bluetoothDevice,
+                new RxBleConnectionMock(
+                        rxBleDeviceServices,
+                        rssi,
+                        characteristicNotificationSources,
+                        new HashMap<UUID, RxBleCharacteristicReadCallback>(),
+                        new HashMap<UUID, RxBleCharacteristicWriteCallback>(),
+                        new HashMap<UUID, Map<UUID, RxBleDescriptorReadCallback>>(),
+                        new HashMap<UUID, Map<UUID, RxBleDescriptorWriteCallback>>())
+                );
         this.legacyScanRecord = scanRecord;
-        this.advertisedUUIDs = new ArrayList<>();
-        this.bluetoothDevice = bluetoothDevice;
     }
 
     public RxBleDeviceMock(String name,
@@ -70,13 +95,13 @@ public class RxBleDeviceMock implements RxBleDevice {
                            @Nullable BluetoothDevice bluetoothDevice,
                            RxBleConnectionMock connectionMock
     ) {
-        this.name = name;
-        this.macAddress = macAddress;
-        this.rxBleConnection = connectionMock;
-        this.rssi = connectionMock.getRssi();
+        this(
+                name,
+                macAddress,
+                bluetoothDevice,
+                connectionMock
+        );
         this.scanRecord = scanRecord;
-        this.advertisedUUIDs = connectionMock.getServiceUuids();
-        this.bluetoothDevice = bluetoothDevice;
     }
 
     public static class Builder {
@@ -197,7 +222,7 @@ public class RxBleDeviceMock implements RxBleDevice {
         }
 
         /**
-         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord) scanRecord} method is required.
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(ScanRecord)} method is required.
          */
         public Builder scanRecord(@NonNull byte[] scanRecord) {
             this.legacyScanRecord = scanRecord;
@@ -205,13 +230,16 @@ public class RxBleDeviceMock implements RxBleDevice {
         }
 
         /**
-         * Set a BLE scan record. Calling this method is required.
+         * Set a BLE scan record. Calling either this method or the other {@link #scanRecord(byte[])}} method is required.
          */
         public Builder scanRecord(@NonNull ScanRecord scanRecord) {
             this.scanRecord = scanRecord;
             return this;
         }
 
+        /**
+         * Set a BLE connection mock. Calling this method is required.
+         */
         public Builder connection(@NonNull RxBleConnectionMock connectionMock) {
             this.connectionMock = connectionMock;
             return this;
@@ -261,7 +289,20 @@ public class RxBleDeviceMock implements RxBleDevice {
     }
 
     private Observable<RxBleConnection> emitConnectionWithoutCompleting() {
-        return Observable.<RxBleConnection>never().startWith(rxBleConnection);
+        connectionSubject = ReplaySubject.createWithSize(1);
+        connectionSubject.onNext(rxBleConnection);
+        return connectionSubject.doFinally(new Action() {
+            @Override
+            public void run() throws Exception {
+                connectionSubject = null;
+            }
+        });
+    }
+
+    public void disconnectWithException(BleException exception) {
+        if (connectionSubject != null) {
+            connectionSubject.onError(exception);
+        }
     }
 
     public List<UUID> getAdvertisedUUIDs() {
