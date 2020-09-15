@@ -6,9 +6,9 @@ import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.Timeout
 import com.polidea.rxandroidble2.internal.operations.ConnectOperation
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 

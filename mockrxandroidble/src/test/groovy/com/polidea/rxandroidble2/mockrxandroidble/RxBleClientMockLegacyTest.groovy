@@ -7,8 +7,8 @@ import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import com.polidea.rxandroidble2.BuildConfig
 

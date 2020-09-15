@@ -8,14 +8,14 @@ import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificati
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import spock.lang.Unroll
 
-import static io.reactivex.Observable.just
+import static io.reactivex.rxjava3.core.Observable.just
 
 @Config(manifest = Config.NONE)
 class NotificationAndIndicationManagerTest extends ElectricSpecification {

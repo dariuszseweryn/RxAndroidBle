@@ -2,8 +2,8 @@ package com.polidea.rxandroidble2.internal.util
 
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable
 import com.polidea.rxandroidble2.RxBleClient
-import io.reactivex.schedulers.TestScheduler
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.schedulers.TestScheduler
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 

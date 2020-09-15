@@ -9,8 +9,8 @@ import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListen
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 

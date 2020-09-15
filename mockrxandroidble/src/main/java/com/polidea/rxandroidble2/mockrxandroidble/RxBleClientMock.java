@@ -27,7 +27,7 @@ import java.util.UUID;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
-import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
 
 /**
  * A mocked {@link RxBleClient}. Callers supply device parameters such as services,

@@ -3,9 +3,9 @@ package com.polidea.rxandroidble2.extensions
 import android.bluetooth.BluetoothGattService
 import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.RxBleScanResult
-import io.reactivex.observers.BaseTestConsumer
-import io.reactivex.observers.TestObserver
-import io.reactivex.subscribers.TestSubscriber
+import io.reactivex.rxjava3.observers.BaseTestConsumer
+import io.reactivex.rxjava3.observers.TestObserver
+import io.reactivex.rxjava3.subscribers.TestSubscriber
 
 class TestSubscriberExtension {
 

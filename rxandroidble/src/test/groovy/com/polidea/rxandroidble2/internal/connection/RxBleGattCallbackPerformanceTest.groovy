@@ -4,8 +4,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import io.reactivex.Observable
-import io.reactivex.schedulers.TestScheduler
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.TestScheduler
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification

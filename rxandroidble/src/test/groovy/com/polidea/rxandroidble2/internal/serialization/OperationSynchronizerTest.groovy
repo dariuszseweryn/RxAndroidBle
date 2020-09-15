@@ -1,9 +1,9 @@
 package com.polidea.rxandroidble2.internal.serialization
 
 import com.polidea.rxandroidble2.MockOperation
-import io.reactivex.ObservableEmitter
-import io.reactivex.Scheduler
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.schedulers.Schedulers
 import spock.lang.Specification
 
 import java.util.concurrent.Executors
@@ -180,7 +180,7 @@ class OperationSynchronizerTest extends Specification {
     }
 
     private static void waitForOperationsToFinishRunning(MockOperation... operations) {
-        io.reactivex.Observable<MockOperation> observable
+        io.reactivex.rxjava3.core.Observable<MockOperation> observable
         for (MockOperation mockOperation : operations) {
             if (observable == null) {
                 observable = mockOperation.getFinishedRunningObservable()

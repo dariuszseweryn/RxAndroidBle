@@ -6,8 +6,8 @@ import com.polidea.rxandroidble2.exceptions.BleException
 import com.polidea.rxandroidble2.internal.Priority
 import com.polidea.rxandroidble2.internal.QueueOperation
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
-import io.reactivex.ObservableEmitter
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 public class MockOperation extends QueueOperation<Object> {
 
@@ -53,7 +53,7 @@ public class MockOperation extends QueueOperation<Object> {
         return new BleDisconnectedException("MockDeviceAddress")
     }
 
-    public io.reactivex.Observable<MockOperation> getFinishedRunningObservable() {
+    public io.reactivex.rxjava3.core.Observable<MockOperation> getFinishedRunningObservable() {
         behaviorSubject
     }
 }

@@ -10,12 +10,12 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.annotations.NonNull
-import io.reactivex.schedulers.TestScheduler
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.core.ObservableOnSubscribe
+import io.reactivex.rxjava3.annotations.NonNull
+import io.reactivex.rxjava3.schedulers.TestScheduler
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit

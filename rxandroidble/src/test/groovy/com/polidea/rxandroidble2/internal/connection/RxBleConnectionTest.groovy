@@ -11,20 +11,20 @@ import com.polidea.rxandroidble2.internal.operations.ReadRssiOperation
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.Scheduler
-import io.reactivex.Single
-import io.reactivex.functions.Predicate
-import io.reactivex.schedulers.TestScheduler
-import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.functions.Predicate
+import io.reactivex.rxjava3.schedulers.TestScheduler
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.TimeUnit
 
-import static io.reactivex.Observable.just
+import static io.reactivex.rxjava3.core.Observable.just
 
 class RxBleConnectionTest extends Specification {
 
@@ -130,7 +130,7 @@ class RxBleConnectionTest extends Specification {
         testSubscriber.assertErrorMessage("GATT exception from MAC address null, with type BleGattOperation{description='READ_RSSI'}")
         testSubscriber.assertError(new Predicate<BleGattCannotStartException>() {
             @Override
-            boolean test(@io.reactivex.annotations.NonNull BleGattCannotStartException throwable) throws Exception {
+            boolean test(@io.reactivex.rxjava3.annotations.NonNull BleGattCannotStartException throwable) throws Exception {
                 return throwable.bleGattOperationType == BleGattOperationType.READ_RSSI
             }
         })

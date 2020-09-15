@@ -14,7 +14,7 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
-import io.reactivex.plugins.RxJavaPlugins
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import spock.lang.Specification
 import spock.lang.Unroll
 

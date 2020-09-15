@@ -8,8 +8,8 @@ import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import com.polidea.rxandroidble2.BuildConfig
 

@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.Disposable
 import org.robolectric.annotation.Config
 
 import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*

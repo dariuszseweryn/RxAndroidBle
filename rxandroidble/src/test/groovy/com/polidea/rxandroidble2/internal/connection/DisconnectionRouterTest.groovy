@@ -8,7 +8,7 @@ import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import hkhc.electricspock.ElectricSpecification
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import spock.lang.Shared
 import spock.lang.Unroll

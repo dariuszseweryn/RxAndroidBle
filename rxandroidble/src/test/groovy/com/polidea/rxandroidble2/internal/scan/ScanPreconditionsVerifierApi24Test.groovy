@@ -1,8 +1,8 @@
 package com.polidea.rxandroidble2.internal.scan
 
 import com.polidea.rxandroidble2.exceptions.BleScanException
-import io.reactivex.Scheduler
-import io.reactivex.schedulers.TestScheduler
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.schedulers.TestScheduler
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit

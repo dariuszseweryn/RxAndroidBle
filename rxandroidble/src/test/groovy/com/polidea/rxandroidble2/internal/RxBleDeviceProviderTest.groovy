@@ -21,7 +21,7 @@ class RxBleDeviceProviderTest extends Specification {
         private final String macAddress;
 
         @Override
-        io.reactivex.Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
+        io.reactivex.rxjava3.core.Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges() {
             throw UnsupportedOperationException()
         }
 
@@ -31,16 +31,16 @@ class RxBleDeviceProviderTest extends Specification {
         }
 
         @Override
-        io.reactivex.Observable<RxBleConnection> establishConnection(boolean autoConnect) {
+        io.reactivex.rxjava3.core.Observable<RxBleConnection> establishConnection(boolean autoConnect) {
             throw UnsupportedOperationException()
         }
 
         @Override
-        io.reactivex.Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeoutSetup) {
+        io.reactivex.rxjava3.core.Observable<RxBleConnection> establishConnection(boolean autoConnect, Timeout operationTimeoutSetup) {
             establishConnection(autoConnect)
         }
 //        @Override
-        io.reactivex.Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
+        io.reactivex.rxjava3.core.Observable<RxBleConnection> establishConnection(ConnectionSetup options) {
             throw UnsupportedOperationException()
         }
 

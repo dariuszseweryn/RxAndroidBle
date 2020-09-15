@@ -1,11 +1,11 @@
 package com.polidea.rxandroidble2.internal.serialization
 
 import com.polidea.rxandroidble2.internal.operations.Operation
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.disposables.Disposable
-import io.reactivex.internal.schedulers.TrampolineScheduler
-import io.reactivex.schedulers.TestScheduler
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.internal.schedulers.TrampolineScheduler
+import io.reactivex.rxjava3.schedulers.TestScheduler
 import java.util.concurrent.atomic.AtomicBoolean
 import spock.lang.Specification
 

@@ -4,8 +4,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 

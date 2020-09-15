@@ -6,8 +6,8 @@ import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.internal.operations.OperationsProvider
 import com.polidea.rxandroidble2.internal.operations.ServiceDiscoveryOperation
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
