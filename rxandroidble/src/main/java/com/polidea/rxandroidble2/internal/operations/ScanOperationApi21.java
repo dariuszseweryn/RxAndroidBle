@@ -78,8 +78,9 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
                 }
                 final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(callbackType, result);
                 if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                    if (scanEmitter != null) {
-                        scanEmitter.onNext(internalScanResult);
+                    ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                    if (refScanEmitter != null) {
+                        refScanEmitter.onNext(internalScanResult);
                     }
                 }
             }
@@ -89,8 +90,9 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
                 for (ScanResult result : results) {
                     final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(result);
                     if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                        if (scanEmitter != null) {
-                            scanEmitter.onNext(internalScanResult);
+                        ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                        if (refScanEmitter != null) {
+                            refScanEmitter.onNext(internalScanResult);
                         }
                     }
                 }
@@ -98,8 +100,9 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
 
             @Override
             public void onScanFailed(int errorCode) {
-                if (scanEmitter != null) {
-                    scanEmitter.tryOnError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
+                ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                if (refScanEmitter != null) {
+                    refScanEmitter.tryOnError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
                 }
             }
         };
