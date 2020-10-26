@@ -60,7 +60,7 @@ public interface RxBleDevice {
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This includes when the adpater
-     *                                         is turned off. This also includes when the connection was released as a part of expected 
+     *                                         is turned off. This also includes when the connection was released as a part of expected
      *                                         behavior (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
      * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
      *                                         The exception contains detailed explanation of the error source (type of operation) and
@@ -97,7 +97,7 @@ public interface RxBleDevice {
      * @return Observable emitting the connection.
      * @throws BleDisconnectedException        emitted when the BLE link has been disconnected either when the connection
      *                                         was already established or was in pending connection state. This includes when the adpater
-     *                                         is turned off. This also includes when the connection was released as a part of expected 
+     *                                         is turned off. This also includes when the connection was released as a part of expected
      *                                         behavior (with {@link android.bluetooth.BluetoothGatt#GATT_SUCCESS} state).
      * @throws BleGattException                emitted when the BLE link has been interrupted as a result of an error.
      *                                         The exception contains detailed explanation of the error source (type of operation) and
