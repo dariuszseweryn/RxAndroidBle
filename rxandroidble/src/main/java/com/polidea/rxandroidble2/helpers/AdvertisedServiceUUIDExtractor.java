@@ -12,13 +12,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * @deprecated Use {@link com.polidea.rxandroidble2.internal.util.ScanRecordParser} instead
- */
-@Deprecated
 public class AdvertisedServiceUUIDExtractor {
 
-    private ScanRecordParser parser;
+    private final ScanRecordParser parser;
 
     public AdvertisedServiceUUIDExtractor() {
         parser = new ScanRecordParser();

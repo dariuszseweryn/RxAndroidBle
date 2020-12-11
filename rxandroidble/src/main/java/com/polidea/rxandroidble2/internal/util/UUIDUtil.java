@@ -16,7 +16,7 @@ import java.util.UUID;
  * Internal helper class for extracting list of Service UUIDs from Advertisement data
  *
  * @link http://stackoverflow.com/questions/31668791/how-can-i-read-uuids-from-advertisement-data-ios-overflow-area-in-android
- * @deprecated use {@link com.polidea.rxandroidble2.internal.util.ScanRecordParser} instead.
+ * @deprecated use {@link com.polidea.rxandroidble2.helpers.AdvertisedServiceUUIDExtractor} instead.
  * This class may change in later releases.
  */
 @Deprecated
