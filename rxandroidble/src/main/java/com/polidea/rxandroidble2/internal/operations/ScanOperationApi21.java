@@ -38,6 +38,8 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
     final EmulatedScanFilterMatcher emulatedScanFilterMatcher;
     @Nullable
     private final ScanFilter[] scanFilters;
+    @Nullable
+    private ObservableEmitter<RxBleInternalScanResult> scanEmitter;
 
 
     public ScanOperationApi21(
@@ -54,10 +56,12 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
         this.emulatedScanFilterMatcher = emulatedScanFilterMatcher;
         this.scanFilters = offloadedScanFilters;
         this.androidScanObjectsConverter = androidScanObjectsConverter;
+        scanEmitter = null;
     }
 
     @Override
     ScanCallback createScanCallback(final ObservableEmitter<RxBleInternalScanResult> emitter) {
+        scanEmitter = emitter;
         return new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
@@ -74,7 +78,10 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
                 }
                 final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(callbackType, result);
                 if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                    emitter.onNext(internalScanResult);
+                    ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                    if (refScanEmitter != null) {
+                        refScanEmitter.onNext(internalScanResult);
+                    }
                 }
             }
 
@@ -83,14 +90,20 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
                 for (ScanResult result : results) {
                     final RxBleInternalScanResult internalScanResult = internalScanResultCreator.create(result);
                     if (emulatedScanFilterMatcher.matches(internalScanResult)) {
-                        emitter.onNext(internalScanResult);
+                        ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                        if (refScanEmitter != null) {
+                            refScanEmitter.onNext(internalScanResult);
+                        }
                     }
                 }
             }
 
             @Override
             public void onScanFailed(int errorCode) {
-                emitter.tryOnError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
+                ObservableEmitter<RxBleInternalScanResult> refScanEmitter = scanEmitter;
+                if (refScanEmitter != null) {
+                    refScanEmitter.tryOnError(new BleScanException(errorCodeToBleErrorCode(errorCode)));
+                }
             }
         };
     }
@@ -111,6 +124,10 @@ public class ScanOperationApi21 extends ScanOperation<RxBleInternalScanResult, S
     @Override
     void stopScan(RxBleAdapterWrapper rxBleAdapterWrapper, ScanCallback scanCallback) {
         rxBleAdapterWrapper.stopLeScan(scanCallback);
+        if (scanEmitter != null) {
+            scanEmitter.onComplete();
+            scanEmitter = null;
+        }
     }
 
     @BleScanException.Reason
