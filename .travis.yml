@@ -3,7 +3,7 @@ language: android
 android:
   components:
     - tools
-    - build-tools-30.0.1
+    - build-tools-30.0.3
     - android-30
     - extra-android-m2repository
   licenses:
