@@ -322,12 +322,6 @@ public class RxBleConnectionMock implements RxBleConnection {
                         dismissCharacteristicNotification(characteristicUuid, setupMode, false);
                     }
                 })
-                .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
-                    @Override
-                    public Observable<byte[]> apply(Observable<byte[]> notificationDescriptorData) {
-                        return observeOnCharacteristicChangeCallbacks(characteristicUuid);
-                    }
-                })
                 .replay(1)
                 .refCount();
         notificationObservableMap.put(characteristicUuid, newObservable);
@@ -369,12 +363,6 @@ public class RxBleConnectionMock implements RxBleConnection {
                     @Override
                     public void run() {
                         dismissCharacteristicNotification(characteristicUuid, setupMode, true);
-                    }
-                })
-                .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
-                    @Override
-                    public Observable<byte[]> apply(Observable<byte[]> notificationDescriptorData) {
-                        return observeOnCharacteristicChangeCallbacks(characteristicUuid);
                     }
                 })
                 .replay(1)
