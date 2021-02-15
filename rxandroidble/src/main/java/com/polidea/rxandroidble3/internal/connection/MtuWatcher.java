@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
-import com.polidea.rxandroidble2.exceptions.BleGattException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;

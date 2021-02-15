@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
-import com.polidea.rxandroidble2.ConnectionParameters;
+import com.polidea.rxandroidble3.ConnectionParameters;
 
 
 public class ConnectionParametersImpl implements ConnectionParameters {

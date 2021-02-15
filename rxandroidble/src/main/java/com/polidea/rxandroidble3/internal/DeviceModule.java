@@ -1,18 +1,18 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 import android.bluetooth.BluetoothDevice;
 
 import com.jakewharton.rxrelay3.BehaviorRelay;
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ClientComponent.NamedSchedulers;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.internal.connection.ConnectionComponent;
-import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener;
-import com.polidea.rxandroidble2.internal.connection.Connector;
-import com.polidea.rxandroidble2.internal.connection.ConnectorImpl;
-import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.ClientComponent.NamedSchedulers;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.internal.connection.ConnectionComponent;
+import com.polidea.rxandroidble3.internal.connection.ConnectionStateChangeListener;
+import com.polidea.rxandroidble3.internal.connection.Connector;
+import com.polidea.rxandroidble3.internal.connection.ConnectorImpl;
+import com.polidea.rxandroidble3.internal.operations.TimeoutConfiguration;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
 
 import java.util.concurrent.TimeUnit;
 

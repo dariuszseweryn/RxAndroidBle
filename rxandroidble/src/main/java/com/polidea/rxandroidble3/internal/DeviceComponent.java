@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
-import static com.polidea.rxandroidble2.internal.DeviceModule.MAC_ADDRESS;
+import static com.polidea.rxandroidble3.internal.DeviceModule.MAC_ADDRESS;
 
-import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble3.RxBleDevice;
 
 import bleshadow.dagger.BindsInstance;
 import bleshadow.dagger.Subcomponent;

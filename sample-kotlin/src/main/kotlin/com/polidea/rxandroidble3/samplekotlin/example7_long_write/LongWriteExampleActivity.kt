@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.samplekotlin.example7_long_write
+package com.polidea.rxandroidble3.samplekotlin.example7_long_write
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.Observables

@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.internal.operations.ScanOperationApi21;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.internal.operations.ScanOperationApi21;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import bleshadow.javax.inject.Inject;
 

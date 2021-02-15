@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example3_discovery;
+package com.polidea.rxandroidble3.sample.example3_discovery;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,12 +8,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.sample.example4_characteristic.CharacteristicOperationExampleActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

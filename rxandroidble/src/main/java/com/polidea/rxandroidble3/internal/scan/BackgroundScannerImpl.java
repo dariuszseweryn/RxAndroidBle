@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -8,13 +8,13 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.scan.BackgroundScanner;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanResult;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.scan.BackgroundScanner;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanResult;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import java.util.ArrayList;
 import java.util.List;

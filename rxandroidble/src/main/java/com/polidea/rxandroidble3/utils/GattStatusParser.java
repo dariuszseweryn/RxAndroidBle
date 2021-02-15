@@ -27,7 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.polidea.rxandroidble2.utils;
+package com.polidea.rxandroidble3.utils;
 
 import android.annotation.SuppressLint;
 

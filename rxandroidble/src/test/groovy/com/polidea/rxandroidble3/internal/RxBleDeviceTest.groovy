@@ -1,22 +1,22 @@
-package com.polidea.rxandroidble2.internal
+package com.polidea.rxandroidble3.internal
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import com.jakewharton.rxrelay3.BehaviorRelay
-import com.polidea.rxandroidble2.ConnectionSetup
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException
-import com.polidea.rxandroidble2.exceptions.BleGattException
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType
-import com.polidea.rxandroidble2.internal.connection.Connector
+import com.polidea.rxandroidble3.ConnectionSetup
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
+import com.polidea.rxandroidble3.exceptions.BleAlreadyConnectedException
+import com.polidea.rxandroidble3.exceptions.BleGattException
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType
+import com.polidea.rxandroidble3.internal.connection.Connector
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.*
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.*
 
 class RxBleDeviceTest extends Specification {
 

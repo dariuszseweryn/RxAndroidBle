@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 
 import android.content.ContentResolver;
@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi;
 
 import bleshadow.javax.inject.Inject;
 
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 
 public class CheckerLocationProvider {
 

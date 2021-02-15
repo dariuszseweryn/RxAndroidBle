@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException;
-import com.polidea.rxandroidble2.exceptions.BleDescriptorNotFoundException;
-import com.polidea.rxandroidble2.exceptions.BleServiceNotFoundException;
+import com.polidea.rxandroidble3.exceptions.BleCharacteristicNotFoundException;
+import com.polidea.rxandroidble3.exceptions.BleDescriptorNotFoundException;
+import com.polidea.rxandroidble3.exceptions.BleServiceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;

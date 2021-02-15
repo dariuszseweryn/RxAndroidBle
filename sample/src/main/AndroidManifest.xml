@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-    package="com.polidea.rxandroidble2.sample"
+    package="com.polidea.rxandroidble3.sample"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name="com.polidea.rxandroidble2.sample.SampleApplication"
+        android:name="com.polidea.rxandroidble3.sample.SampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.polidea.rxandroidble2.sample.example1_scanning.ScanActivity"
+            android:name="com.polidea.rxandroidble3.sample.example1_scanning.ScanActivity"
             android:label="@string/title_example1">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -18,24 +18,24 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name="com.polidea.rxandroidble2.sample.example1a_background_scanning.ScanReceiver"/>
+        <receiver android:name="com.polidea.rxandroidble3.sample.example1a_background_scanning.ScanReceiver"/>
         <activity
-            android:name="com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity"
+            android:name="com.polidea.rxandroidble3.sample.example1a_background_scanning.BackgroundScanActivity"
             android:label="@string/title_example1">
         </activity>
         <activity
-            android:name="com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity"
+            android:name="com.polidea.rxandroidble3.sample.example2_connection.ConnectionExampleActivity"
             android:label="@string/title_example2"/>
         <activity
-            android:name="com.polidea.rxandroidble2.sample.example3_discovery.ServiceDiscoveryExampleActivity"
+            android:name="com.polidea.rxandroidble3.sample.example3_discovery.ServiceDiscoveryExampleActivity"
             android:label="@string/title_example3"/>
         <activity
-            android:name="com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity"
+            android:name="com.polidea.rxandroidble3.sample.example4_characteristic.CharacteristicOperationExampleActivity"
             android:label="@string/title_example4"/>
         <activity
             android:name=".example4_characteristic.advanced.AdvancedCharacteristicOperationExampleActivity"
             android:label="@string/title_example4"/>
-        <activity android:name="com.polidea.rxandroidble2.sample.DeviceActivity"/>
+        <activity android:name="com.polidea.rxandroidble3.sample.DeviceActivity"/>
 
         <service android:name=".DeviceService"/>
     </application>

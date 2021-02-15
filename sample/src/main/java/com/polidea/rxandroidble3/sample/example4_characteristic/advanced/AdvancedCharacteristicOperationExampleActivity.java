@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
+package com.polidea.rxandroidble3.sample.example4_characteristic.advanced;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,11 +13,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.jakewharton.rxbinding4.view.RxView;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.util.HexString;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.sample.util.HexString;
 
 import java.util.UUID;
 
@@ -32,7 +32,7 @@ import io.reactivex.rxjava3.disposables.Disposable;
  * This activity allows for connecting to a device and interact with a given characteristic.
  * <p>
  * It may be used as a direct replacement for
- * {@link com.polidea.rxandroidble2.sample.example4_characteristic.CharacteristicOperationExampleActivity}
+ * {@link com.polidea.rxandroidble3.sample.example4_characteristic.CharacteristicOperationExampleActivity}
  * <p>
  * When the connection is not established only the "CONNECT" button is active.
  * When the user clicks on the "CONNECT" button the connection is established and other buttons are enabled according to the properties

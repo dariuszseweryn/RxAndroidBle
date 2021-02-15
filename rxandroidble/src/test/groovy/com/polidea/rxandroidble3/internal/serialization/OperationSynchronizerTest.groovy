@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.serialization
+package com.polidea.rxandroidble3.internal.serialization
 
-import com.polidea.rxandroidble2.MockOperation
+import com.polidea.rxandroidble3.MockOperation
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -11,7 +11,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 
-import static com.polidea.rxandroidble2.internal.Priority.NORMAL
+import static com.polidea.rxandroidble3.internal.Priority.NORMAL
 
 class OperationSynchronizerTest extends Specification {
     public static final String THREAD_NAME = "queue-test-thread"

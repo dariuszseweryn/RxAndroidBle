@@ -61,7 +61,7 @@ Get MockRxAndroidBle via Maven:
 
 ```xml
 <dependency>
-  <groupId>com.polidea.rxandroidble2</groupId>
+  <groupId>com.polidea.rxandroidble3</groupId>
   <artifactId>mockclient</artifactId>
   <version>1.12.1</version>
   <type>aar</type>
@@ -71,7 +71,7 @@ Get MockRxAndroidBle via Maven:
 or via Gradle
 
 ```groovy
-implementation "com.polidea.rxandroidble2:mockclient:1.12.1"
+implementation "com.polidea.rxandroidble3:mockclient:1.12.1"
 ```
 
 ### License

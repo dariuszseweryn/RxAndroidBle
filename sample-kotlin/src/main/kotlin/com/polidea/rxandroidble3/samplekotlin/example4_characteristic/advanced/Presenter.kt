@@ -1,14 +1,14 @@
-package com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced
+package com.polidea.rxandroidble3.samplekotlin.example4_characteristic.advanced
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
-import com.polidea.rxandroidble2.NotificationSetupMode
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced.Type.INDICATE
-import com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced.Type.NOTIFY
-import com.polidea.rxandroidble2.samplekotlin.util.hasProperty
+import com.polidea.rxandroidble3.NotificationSetupMode
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
+import com.polidea.rxandroidble3.samplekotlin.example4_characteristic.advanced.Type.INDICATE
+import com.polidea.rxandroidble3.samplekotlin.example4_characteristic.advanced.Type.NOTIFY
+import com.polidea.rxandroidble3.samplekotlin.util.hasProperty
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableTransformer
 import io.reactivex.rxjava3.core.Single

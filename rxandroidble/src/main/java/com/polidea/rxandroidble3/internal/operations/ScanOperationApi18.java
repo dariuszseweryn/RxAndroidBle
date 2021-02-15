@@ -1,17 +1,17 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.scan.EmulatedScanFilterMatcher;
-import com.polidea.rxandroidble2.internal.scan.InternalScanResultCreator;
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.scan.EmulatedScanFilterMatcher;
+import com.polidea.rxandroidble3.internal.scan.InternalScanResultCreator;
+import com.polidea.rxandroidble3.internal.scan.RxBleInternalScanResult;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
 
 import io.reactivex.rxjava3.core.ObservableEmitter;
 

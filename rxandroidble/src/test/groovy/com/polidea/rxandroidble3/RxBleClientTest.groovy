@@ -1,19 +1,19 @@
-package com.polidea.rxandroidble2
+package com.polidea.rxandroidble3
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
-import com.polidea.rxandroidble2.exceptions.BleScanException
+import com.polidea.rxandroidble3.exceptions.BleScanException
 
-import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
-import com.polidea.rxandroidble2.internal.operations.Operation
-import com.polidea.rxandroidble2.internal.scan.*
-import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
-import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission
-import com.polidea.rxandroidble2.internal.util.ClientStateObservable
-import com.polidea.rxandroidble2.internal.util.ScanRecordParser
-import com.polidea.rxandroidble2.scan.BackgroundScanner
-import com.polidea.rxandroidble2.scan.ScanSettings
+import com.polidea.rxandroidble3.internal.RxBleDeviceProvider
+import com.polidea.rxandroidble3.internal.operations.Operation
+import com.polidea.rxandroidble3.internal.scan.*
+import com.polidea.rxandroidble3.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble3.internal.util.CheckerLocationPermission
+import com.polidea.rxandroidble3.internal.util.ClientStateObservable
+import com.polidea.rxandroidble3.internal.util.ScanRecordParser
+import com.polidea.rxandroidble3.scan.BackgroundScanner
+import com.polidea.rxandroidble3.scan.ScanSettings
 import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
 import io.reactivex.rxjava3.annotations.NonNull
@@ -24,7 +24,7 @@ import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.schedulers.TestScheduler
 import spock.lang.Unroll
 
-import static com.polidea.rxandroidble2.exceptions.BleScanException.*
+import static com.polidea.rxandroidble3.exceptions.BleScanException.*
 
 @SuppressWarnings("GrDeprecatedAPIUsage")
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)

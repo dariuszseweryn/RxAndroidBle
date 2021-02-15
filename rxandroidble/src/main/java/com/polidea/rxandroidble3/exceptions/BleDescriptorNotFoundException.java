@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.exceptions;
+package com.polidea.rxandroidble3.exceptions;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
 import android.annotation.SuppressLint;
@@ -7,14 +7,14 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.NotificationSetupMode;
-import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException;
-import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
-import com.polidea.rxandroidble2.internal.util.ActiveCharacteristicNotification;
-import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
-import com.polidea.rxandroidble2.internal.util.CharacteristicNotificationId;
-import com.polidea.rxandroidble2.internal.util.ObservableUtil;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.NotificationSetupMode;
+import com.polidea.rxandroidble3.exceptions.BleCannotSetCharacteristicNotificationException;
+import com.polidea.rxandroidble3.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble3.internal.util.ActiveCharacteristicNotification;
+import com.polidea.rxandroidble3.internal.util.CharacteristicChangedEvent;
+import com.polidea.rxandroidble3.internal.util.CharacteristicNotificationId;
+import com.polidea.rxandroidble3.internal.util.ObservableUtil;
 
 import io.reactivex.rxjava3.functions.Supplier;
 import java.util.Arrays;

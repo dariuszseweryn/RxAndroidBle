@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.helpers;
+package com.polidea.rxandroidble3.helpers;
 
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
+import com.polidea.rxandroidble3.internal.util.ScanRecordParser;
 
 import java.util.Arrays;
 import java.util.HashSet;

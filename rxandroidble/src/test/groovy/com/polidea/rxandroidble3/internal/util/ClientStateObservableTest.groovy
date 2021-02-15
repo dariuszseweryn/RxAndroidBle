@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.util
+package com.polidea.rxandroidble3.internal.util
 
-import com.polidea.rxandroidble2.RxBleAdapterStateObservable
-import com.polidea.rxandroidble2.RxBleClient
+import com.polidea.rxandroidble3.RxBleAdapterStateObservable
+import com.polidea.rxandroidble3.RxBleClient
 import io.reactivex.rxjava3.schedulers.TestScheduler
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import spock.lang.Specification
@@ -9,7 +9,7 @@ import spock.lang.Unroll
 
 import java.util.concurrent.TimeUnit
 
-import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
+import static com.polidea.rxandroidble3.RxBleAdapterStateObservable.BleAdapterState.*
 
 class ClientStateObservableTest extends Specification {
     def adapterWrapperMock = Mock RxBleAdapterWrapper

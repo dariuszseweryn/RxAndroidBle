@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.mockrxandroidble;
+package com.polidea.rxandroidble3.mockrxandroidble;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -7,17 +7,17 @@ import android.bluetooth.BluetoothGattService;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.Timeout;
-import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
-import com.polidea.rxandroidble2.scan.ScanRecord;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.Timeout;
+import com.polidea.rxandroidble3.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
+import com.polidea.rxandroidble3.scan.ScanRecord;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +34,9 @@ import io.reactivex.rxjava3.functions.Supplier;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
 
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.CONNECTED;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.CONNECTING;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
 public class RxBleDeviceMock implements RxBleDevice {
 
@@ -199,7 +199,7 @@ public class RxBleDeviceMock implements RxBleDevice {
 
         /**
          * Set an {@link Observable} that will be used to fire characteristic change notifications. It will be subscribed to after
-         * a call to {@link com.polidea.rxandroidble2.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
+         * a call to {@link com.polidea.rxandroidble3.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
          *
          * @param characteristicUUID UUID of the characteristic that will be observed for notifications
          * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications

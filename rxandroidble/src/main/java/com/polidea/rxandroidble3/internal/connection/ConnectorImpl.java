@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ConnectionSetup;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.ConnectionSetup;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.internal.serialization.ClientOperationQueue;
 
 import java.util.Set;
 import java.util.concurrent.Callable;

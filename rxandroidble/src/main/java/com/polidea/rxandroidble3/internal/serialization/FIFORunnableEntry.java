@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.serialization;
+package com.polidea.rxandroidble3.internal.serialization;
 
 
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.internal.operations.Operation;
+import com.polidea.rxandroidble3.internal.operations.Operation;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.reactivex.rxjava3.core.ObservableEmitter;

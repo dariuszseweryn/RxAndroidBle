@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.mockrxandroidble;
+package com.polidea.rxandroidble3.mockrxandroidble;
 
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.internal.ScanResultInterface;
-import com.polidea.rxandroidble2.scan.ScanCallbackType;
-import com.polidea.rxandroidble2.scan.ScanRecord;
-import com.polidea.rxandroidble2.scan.ScanResult;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.internal.ScanResultInterface;
+import com.polidea.rxandroidble3.scan.ScanCallbackType;
+import com.polidea.rxandroidble3.scan.ScanRecord;
+import com.polidea.rxandroidble3.scan.ScanResult;
 
 public class RxBleScanResultMock extends ScanResult implements ScanResultInterface {
     public RxBleScanResultMock(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType, ScanRecord scanRecord) {

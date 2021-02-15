@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.samplekotlin.example1_scanning
+package com.polidea.rxandroidble3.samplekotlin.example1_scanning
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.polidea.rxandroidble2.samplekotlin.example1_scanning.ScanResultsAdapter.ViewHolder
-import com.polidea.rxandroidble2.scan.ScanResult
+import com.polidea.rxandroidble3.samplekotlin.example1_scanning.ScanResultsAdapter.ViewHolder
+import com.polidea.rxandroidble3.scan.ScanResult
 
 internal class ScanResultsAdapter(
     private val onClickListener: (ScanResult) -> Unit

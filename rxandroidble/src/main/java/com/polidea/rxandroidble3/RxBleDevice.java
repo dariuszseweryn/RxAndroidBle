@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
@@ -6,10 +6,10 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
-import com.polidea.rxandroidble2.exceptions.BleGattException;
+import com.polidea.rxandroidble3.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleGattCallbackTimeoutException;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
 
 import io.reactivex.rxjava3.core.Observable;
 
@@ -26,7 +26,7 @@ public interface RxBleDevice {
      * It is not meant to be a trigger for reconnecting a particular device—for this purpose one should react on the errors emitted from
      * {@link #establishConnection(boolean)}
      *
-     * @return observable that will emit {@link com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState} changes
+     * @return observable that will emit {@link com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState} changes
      */
     Observable<RxBleConnection.RxBleConnectionState> observeConnectionStateChanges();
 
@@ -53,7 +53,7 @@ public interface RxBleDevice {
      *
      * @param autoConnect Flag related to
      *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
-     *                    If false, the connection will fail with {@link com.polidea.rxandroidble2.exceptions.BleGattException} if
+     *                    If false, the connection will fail with {@link com.polidea.rxandroidble3.exceptions.BleGattException} if
      *                    the device is not in range after a 30-second timeout. If true, the connection will be pending indefinitely.
      *                    Unlike the native Android API, if set to true and the connection is lost there will NOT be any attempt to
      *                    reconnect unless explicitly resubscribed.
@@ -87,7 +87,7 @@ public interface RxBleDevice {
      * @param autoConnect      Flag related to
      *                         {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)}
      *                         autoConnect flag.
-     *                         If false, the connection will fail with {@link com.polidea.rxandroidble2.exceptions.BleGattException} if
+     *                         If false, the connection will fail with {@link com.polidea.rxandroidble3.exceptions.BleGattException} if
      *                         the device is not in range after a 30-second timeout. If true, the connection will be pending indefinitely.
      *                         Unlike the native Android API, if set to true and the connection is lost there will NOT be any attempt to
      *                         reconnect unless explicitly resubscribed.

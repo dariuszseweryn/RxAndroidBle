@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothGatt;
 

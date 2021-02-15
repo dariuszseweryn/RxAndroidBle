@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example1_scanning;
+package com.polidea.rxandroidble3.sample.example1_scanning;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,17 +8,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.Button;
 
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity;
-import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler;
-import com.polidea.rxandroidble2.sample.util.LocationPermission;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanResult;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.RxBleClient;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.sample.example1a_background_scanning.BackgroundScanActivity;
+import com.polidea.rxandroidble3.sample.util.ScanExceptionHandler;
+import com.polidea.rxandroidble3.sample.util.LocationPermission;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanResult;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

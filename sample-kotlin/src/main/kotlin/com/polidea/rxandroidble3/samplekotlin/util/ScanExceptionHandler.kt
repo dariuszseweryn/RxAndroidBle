@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.samplekotlin.util
+package com.polidea.rxandroidble3.samplekotlin.util
 
 import android.app.Activity
 import android.util.Log
-import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.samplekotlin.R
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.samplekotlin.R
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit

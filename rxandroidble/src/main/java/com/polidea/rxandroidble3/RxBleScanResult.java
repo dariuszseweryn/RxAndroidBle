@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
 
 /**
  * Represents a scan result from Bluetooth LE scan.

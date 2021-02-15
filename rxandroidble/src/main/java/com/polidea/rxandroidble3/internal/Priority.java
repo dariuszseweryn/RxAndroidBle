@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 
 /**

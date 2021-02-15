@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example3_discovery
+package com.polidea.rxandroidble3.samplekotlin.example3_discovery
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
-import com.polidea.rxandroidble2.RxBleDeviceServices
-import com.polidea.rxandroidble2.samplekotlin.R
-import com.polidea.rxandroidble2.samplekotlin.example3_discovery.DiscoveryResultsAdapter.ViewHolder
+import com.polidea.rxandroidble3.RxBleDeviceServices
+import com.polidea.rxandroidble3.samplekotlin.R
+import com.polidea.rxandroidble3.samplekotlin.example3_discovery.DiscoveryResultsAdapter.ViewHolder
 import java.util.UUID
 
 internal class DiscoveryResultsAdapter(

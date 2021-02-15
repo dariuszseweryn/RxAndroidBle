@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
-import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble3.internal.operations.OperationsProvider;
+import com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueue;
 
 import bleshadow.javax.inject.Inject;
 import io.reactivex.rxjava3.core.Completable;

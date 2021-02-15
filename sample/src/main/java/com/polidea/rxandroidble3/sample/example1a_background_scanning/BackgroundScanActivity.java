@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example1a_background_scanning;
+package com.polidea.rxandroidble3.sample.example1a_background_scanning;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -9,14 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler;
-import com.polidea.rxandroidble2.sample.util.LocationPermission;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.RxBleClient;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.sample.util.ScanExceptionHandler;
+import com.polidea.rxandroidble3.sample.util.LocationPermission;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;

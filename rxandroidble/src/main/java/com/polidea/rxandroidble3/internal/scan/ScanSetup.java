@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.internal.operations.Operation;
+import com.polidea.rxandroidble3.internal.operations.Operation;
 
 import io.reactivex.rxjava3.core.ObservableTransformer;
 

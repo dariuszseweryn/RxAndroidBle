@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example1a_background_scanning;
+package com.polidea.rxandroidble3.sample.example1a_background_scanning;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,10 +6,10 @@ import android.content.Intent;
 import androidx.annotation.RequiresApi;
 import android.util.Log;
 
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.scan.BackgroundScanner;
-import com.polidea.rxandroidble2.scan.ScanResult;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.scan.BackgroundScanner;
+import com.polidea.rxandroidble3.scan.ScanResult;
 
 import java.util.List;
 

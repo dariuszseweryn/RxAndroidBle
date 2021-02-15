@@ -1,15 +1,15 @@
-package com.polidea.rxandroidble2.internal.logger;
+package com.polidea.rxandroidble3.internal.logger;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
-import com.polidea.rxandroidble2.utils.StandardUUIDsParser;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.util.CharacteristicPropertiesParser;
+import com.polidea.rxandroidble3.utils.StandardUUIDsParser;
 
 import bleshadow.javax.inject.Inject;
 

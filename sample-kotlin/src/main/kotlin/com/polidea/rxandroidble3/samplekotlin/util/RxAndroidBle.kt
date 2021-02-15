@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.samplekotlin.util
+package com.polidea.rxandroidble3.samplekotlin.util
 
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
 
 /**
  * Returns `true` if connection state is [CONNECTED][RxBleConnection.RxBleConnectionState.CONNECTED].

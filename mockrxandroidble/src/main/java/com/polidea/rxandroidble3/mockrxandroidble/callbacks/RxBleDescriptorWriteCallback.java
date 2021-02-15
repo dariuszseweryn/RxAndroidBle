@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.mockrxandroidble.callbacks;
+package com.polidea.rxandroidble3.mockrxandroidble.callbacks;
 
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.RxBleDeviceMock;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
+import com.polidea.rxandroidble3.mockrxandroidble.RxBleDeviceMock;
 
 /**
  * An interface for a user callback for handling descriptor write requests

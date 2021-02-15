@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.utils;
+package com.polidea.rxandroidble3.utils;
 
-import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleConnection;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,7 +34,7 @@ import io.reactivex.rxjava3.functions.Action;
  * @deprecated As of RxAndroidBLE 1.6.0, the connection sharing adapter is deprecated. Consider implementing your own way of maintaining the
  * connection state or use ReplayingShare (http://github.com/JakeWharton/RxReplayingShare)
  *
- * @see com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException
+ * @see com.polidea.rxandroidble3.exceptions.BleAlreadyConnectedException
  */
 @Deprecated
 public class ConnectionSharingAdapter implements ObservableTransformer<RxBleConnection, RxBleConnection> {

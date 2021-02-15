@@ -1,16 +1,16 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
 import android.bluetooth.*
 import androidx.annotation.NonNull
-import com.polidea.rxandroidble2.*
-import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException
-import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType
-import com.polidea.rxandroidble2.internal.operations.OperationsProviderImpl
-import com.polidea.rxandroidble2.internal.operations.ReadRssiOperation
-import com.polidea.rxandroidble2.internal.util.ByteAssociation
-import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
-import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices
+import com.polidea.rxandroidble3.*
+import com.polidea.rxandroidble3.exceptions.BleCharacteristicNotFoundException
+import com.polidea.rxandroidble3.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType
+import com.polidea.rxandroidble3.internal.operations.OperationsProviderImpl
+import com.polidea.rxandroidble3.internal.operations.ReadRssiOperation
+import com.polidea.rxandroidble3.internal.util.ByteAssociation
+import com.polidea.rxandroidble3.internal.util.MockOperationTimeoutConfiguration
+import com.polidea.rxandroidble3.internal.logger.LoggerUtilBluetoothServices
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler

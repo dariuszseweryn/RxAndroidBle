@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import com.polidea.rxandroidble2.NotificationSetupMode
-import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException
-import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException
-import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
+import com.polidea.rxandroidble3.NotificationSetupMode
+import com.polidea.rxandroidble3.exceptions.BleCannotSetCharacteristicNotificationException
+import com.polidea.rxandroidble3.exceptions.BleConflictingNotificationAlreadySetException
+import com.polidea.rxandroidble3.internal.util.CharacteristicChangedEvent
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable

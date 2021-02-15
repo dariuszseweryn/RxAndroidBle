@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble3.scan;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -7,9 +7,9 @@ import android.os.ParcelUuid;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.internal.ScanResultInterface;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.scan.ScanFilterInterface;
+import com.polidea.rxandroidble3.internal.ScanResultInterface;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.scan.ScanFilterInterface;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;

@@ -1,21 +1,21 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.SingleResponseOperation;
-import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.SingleResponseOperation;
+import com.polidea.rxandroidble3.internal.connection.ConnectionModule;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
 
 import bleshadow.javax.inject.Named;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
 import io.reactivex.rxjava3.core.Single;
 
-import static com.polidea.rxandroidble2.internal.util.ByteAssociationUtil.descriptorPredicate;
-import static com.polidea.rxandroidble2.internal.util.ByteAssociationUtil.getBytesFromAssociation;
+import static com.polidea.rxandroidble3.internal.util.ByteAssociationUtil.descriptorPredicate;
+import static com.polidea.rxandroidble3.internal.util.ByteAssociationUtil.getBytesFromAssociation;
 
 public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
 

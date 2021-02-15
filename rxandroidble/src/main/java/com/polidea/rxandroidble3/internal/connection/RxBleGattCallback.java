@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -7,19 +7,19 @@ import android.bluetooth.BluetoothGattDescriptor;
 
 import com.jakewharton.rxrelay3.PublishRelay;
 import com.jakewharton.rxrelay3.Relay;
-import com.polidea.rxandroidble2.ConnectionParameters;
-import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
-import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
-import com.polidea.rxandroidble2.exceptions.BleGattException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.util.ByteAssociation;
-import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
+import com.polidea.rxandroidble3.ConnectionParameters;
+import com.polidea.rxandroidble3.HiddenBluetoothGattCallback;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble3.exceptions.BleGattDescriptorException;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.util.ByteAssociation;
+import com.polidea.rxandroidble3.internal.util.CharacteristicChangedEvent;
 
 import java.util.UUID;
 
@@ -349,7 +349,7 @@ public class RxBleGattCallback {
 
     /**
      * A native callback allows to omit RxJava's abstraction on the {@link BluetoothGattCallback}.
-     * It's intended to be used only with a {@link com.polidea.rxandroidble2.RxBleCustomOperation} in a performance
+     * It's intended to be used only with a {@link com.polidea.rxandroidble3.RxBleCustomOperation} in a performance
      * critical implementations. If you don't know if your operation is performance critical it's likely that you shouldn't use this API
      * and stick with the RxJava.
      * <p>

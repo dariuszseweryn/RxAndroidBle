@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
-import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleException;
 
 import io.reactivex.rxjava3.core.Observable;
 
 /**
  * Interface to output disconnection error causes. It is used for instance to notify when the
- * {@link com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue} should terminate because of a connection error
+ * {@link com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueue} should terminate because of a connection error
  */
 public interface DisconnectionRouterOutput {
 

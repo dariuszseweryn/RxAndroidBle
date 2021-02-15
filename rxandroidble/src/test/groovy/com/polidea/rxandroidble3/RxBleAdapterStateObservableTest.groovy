@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2
+package com.polidea.rxandroidble3
 
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
@@ -8,7 +8,7 @@ import hkhc.electricspock.ElectricSpecification
 import io.reactivex.rxjava3.disposables.Disposable
 import org.robolectric.annotation.Config
 
-import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
+import static com.polidea.rxandroidble3.RxBleAdapterStateObservable.BleAdapterState.*
 
 @Config(manifest = Config.NONE)
 class RxBleAdapterStateObservableTest extends ElectricSpecification {

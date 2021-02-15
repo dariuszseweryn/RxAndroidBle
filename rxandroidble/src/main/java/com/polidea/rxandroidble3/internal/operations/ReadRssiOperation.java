@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.SingleResponseOperation;
-import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.SingleResponseOperation;
+import com.polidea.rxandroidble3.internal.connection.ConnectionModule;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;

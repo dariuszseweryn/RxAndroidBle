@@ -1,17 +1,17 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.Nullable;
 
 import com.jakewharton.rxrelay3.BehaviorRelay;
-import com.polidea.rxandroidble2.ConnectionSetup;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.Timeout;
-import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
-import com.polidea.rxandroidble2.internal.connection.Connector;
+import com.polidea.rxandroidble3.ConnectionSetup;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.Timeout;
+import com.polidea.rxandroidble3.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble3.internal.connection.Connector;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import bleshadow.javax.inject.Inject;

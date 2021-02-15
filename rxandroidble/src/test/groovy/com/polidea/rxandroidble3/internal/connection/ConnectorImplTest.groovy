@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
 import android.bluetooth.BluetoothGatt
-import com.polidea.rxandroidble2.ConnectionSetup
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.Timeout
-import com.polidea.rxandroidble2.internal.operations.ConnectOperation
-import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble3.ConnectionSetup
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.Timeout
+import com.polidea.rxandroidble3.internal.operations.ConnectOperation
+import com.polidea.rxandroidble3.internal.serialization.ClientOperationQueue
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject

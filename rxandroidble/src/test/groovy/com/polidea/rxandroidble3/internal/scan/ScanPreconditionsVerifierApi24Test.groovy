@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.scan
+package com.polidea.rxandroidble3.internal.scan
 
-import com.polidea.rxandroidble2.exceptions.BleScanException
+import com.polidea.rxandroidble3.exceptions.BleScanException
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.schedulers.TestScheduler
 import spock.lang.Specification

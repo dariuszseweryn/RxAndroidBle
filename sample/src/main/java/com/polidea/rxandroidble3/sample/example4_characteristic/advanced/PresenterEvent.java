@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
+package com.polidea.rxandroidble3.sample.example4_characteristic.advanced;
 
 
 import androidx.annotation.NonNull;

@@ -1,30 +1,30 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.RxBleConnection.WriteOperationAckStrategy;
-import com.polidea.rxandroidble2.RxBleConnection.WriteOperationRetryStrategy;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
-import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
-import com.polidea.rxandroidble2.exceptions.BleGattException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
-import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble2.internal.util.ByteAssociation;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.RxBleConnection.WriteOperationAckStrategy;
+import com.polidea.rxandroidble3.RxBleConnection.WriteOperationRetryStrategy;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleGattCallbackTimeoutException;
+import com.polidea.rxandroidble3.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble3.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.QueueOperation;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.connection.ConnectionModule;
+import com.polidea.rxandroidble3.internal.connection.PayloadSizeLimitProvider;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.util.ByteAssociation;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.util.QueueReleasingEmitterWrapper;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -42,7 +42,7 @@ import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.observers.DisposableObserver;
 
-import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableObserverFromEmitter;
+import static com.polidea.rxandroidble3.internal.util.DisposableUtil.disposableObserverFromEmitter;
 
 public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
 

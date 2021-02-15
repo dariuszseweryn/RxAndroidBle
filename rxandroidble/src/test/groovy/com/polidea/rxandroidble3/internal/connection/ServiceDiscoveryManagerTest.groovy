@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
-import com.polidea.rxandroidble2.RxBleDeviceServices
-import com.polidea.rxandroidble2.internal.operations.OperationsProvider
-import com.polidea.rxandroidble2.internal.operations.ServiceDiscoveryOperation
-import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue
+import com.polidea.rxandroidble3.RxBleDeviceServices
+import com.polidea.rxandroidble3.internal.operations.OperationsProvider
+import com.polidea.rxandroidble3.internal.operations.ServiceDiscoveryOperation
+import com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueue
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification

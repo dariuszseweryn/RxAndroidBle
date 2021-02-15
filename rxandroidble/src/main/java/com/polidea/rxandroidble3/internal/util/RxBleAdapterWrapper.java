@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -11,8 +11,8 @@ import android.bluetooth.le.ScanSettings;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 import java.util.List;
 import java.util.Set;
 

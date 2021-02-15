@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal
+package com.polidea.rxandroidble3.internal
 
 import android.bluetooth.BluetoothDevice
-import com.polidea.rxandroidble2.ConnectionSetup
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.Timeout
-import com.polidea.rxandroidble2.internal.cache.DeviceComponentCache
+import com.polidea.rxandroidble3.ConnectionSetup
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
+import com.polidea.rxandroidble3.Timeout
+import com.polidea.rxandroidble3.internal.cache.DeviceComponentCache
 import spock.lang.Specification
 
 import bleshadow.javax.inject.Provider;

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.internal.util.LocationServicesStatus;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
 
 import bleshadow.javax.inject.Inject;
 

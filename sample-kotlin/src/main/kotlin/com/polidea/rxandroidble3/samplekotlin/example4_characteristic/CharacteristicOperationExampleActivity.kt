@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example4_characteristic
+package com.polidea.rxandroidble3.samplekotlin.example4_characteristic
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
@@ -7,14 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.jakewharton.rx3.ReplayingShare
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.samplekotlin.R
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.util.hasProperty
-import com.polidea.rxandroidble2.samplekotlin.util.isConnected
-import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
-import com.polidea.rxandroidble2.samplekotlin.util.toHex
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
+import com.polidea.rxandroidble3.samplekotlin.R
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.samplekotlin.util.hasProperty
+import com.polidea.rxandroidble3.samplekotlin.util.isConnected
+import com.polidea.rxandroidble3.samplekotlin.util.showSnackbarShort
+import com.polidea.rxandroidble3.samplekotlin.util.toHex
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable

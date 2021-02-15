@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble3.scan;
 
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
 
 public class ScanResult {
 

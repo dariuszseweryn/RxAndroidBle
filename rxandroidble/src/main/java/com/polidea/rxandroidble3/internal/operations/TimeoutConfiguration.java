@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import java.util.concurrent.TimeUnit;
 

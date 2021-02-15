@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble2.internal.BleIllegalOperationException;
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.BleIllegalOperationException;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 
 import bleshadow.javax.inject.Inject;
 

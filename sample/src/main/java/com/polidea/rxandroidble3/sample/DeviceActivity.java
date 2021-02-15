@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.sample;
+package com.polidea.rxandroidble3.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.polidea.rxandroidble2.sample.example2_connection.ConnectionExampleActivity;
-import com.polidea.rxandroidble2.sample.example3_discovery.ServiceDiscoveryExampleActivity;
+import com.polidea.rxandroidble3.sample.example2_connection.ConnectionExampleActivity;
+import com.polidea.rxandroidble3.sample.example3_discovery.ServiceDiscoveryExampleActivity;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;

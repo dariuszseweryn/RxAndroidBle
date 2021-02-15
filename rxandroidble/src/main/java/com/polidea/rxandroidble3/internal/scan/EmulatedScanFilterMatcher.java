@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
 import androidx.annotation.Nullable;

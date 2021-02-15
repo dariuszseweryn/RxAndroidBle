@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2
+package com.polidea.rxandroidble3
 
-import com.polidea.rxandroidble2.internal.util.DisposableUtil
+import com.polidea.rxandroidble3.internal.util.DisposableUtil
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe

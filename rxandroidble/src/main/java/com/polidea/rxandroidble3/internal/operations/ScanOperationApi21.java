@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 
 import android.bluetooth.le.ScanCallback;
@@ -8,17 +8,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.scan.AndroidScanObjectsConverter;
-import com.polidea.rxandroidble2.internal.scan.EmulatedScanFilterMatcher;
-import com.polidea.rxandroidble2.internal.scan.InternalScanResultCreator;
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.scan.AndroidScanObjectsConverter;
+import com.polidea.rxandroidble3.internal.scan.EmulatedScanFilterMatcher;
+import com.polidea.rxandroidble3.internal.scan.InternalScanResultCreator;
+import com.polidea.rxandroidble3.internal.scan.RxBleInternalScanResult;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import java.util.Arrays;
 import java.util.List;

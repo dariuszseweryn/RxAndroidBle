@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.util;
+package com.polidea.rxandroidble3.sample.util;
 
 public class HexString {
 

@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.exceptions.BleScanException;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;

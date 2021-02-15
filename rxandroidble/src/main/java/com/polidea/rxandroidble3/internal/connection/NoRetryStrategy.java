@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
-import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleConnection;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Function;

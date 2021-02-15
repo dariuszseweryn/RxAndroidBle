@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -8,7 +8,7 @@ import android.content.IntentFilter;
 import androidx.annotation.NonNull;
 
 import bleshadow.javax.inject.Inject;
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.ObservableOnSubscribe;

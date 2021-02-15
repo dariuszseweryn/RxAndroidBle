@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.serialization
+package com.polidea.rxandroidble3.internal.serialization
 
-import com.polidea.rxandroidble2.internal.operations.Operation
+import com.polidea.rxandroidble3.internal.operations.Operation
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.disposables.Disposable

@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.LogOptions;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.LogOptions;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerSetup;
+import com.polidea.rxandroidble3.internal.logger.LoggerSetup;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.regex.Matcher;
@@ -64,7 +64,7 @@ public class RxBleLog {
      * Simple logging interface for log messages from RxAndroidBle
      *
      * @see #setLogger(Logger)
-     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
+     * @deprecated use {@link com.polidea.rxandroidble3.RxBleClient#updateLogOptions(LogOptions)}
      */
     public interface Logger {
 
@@ -94,7 +94,7 @@ public class RxBleLog {
      * </pre>
      * </code>
      *
-     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
+     * @deprecated use {@link com.polidea.rxandroidble3.RxBleClient#updateLogOptions(LogOptions)}
      */
     @Deprecated
     public static void setLogger(@Nullable final Logger logger) {
@@ -114,7 +114,7 @@ public class RxBleLog {
      * Old method to set log level. It updates only the log level value. The rest of log settings remain unchanged.
      *
      * @param logLevel the log level
-     * @deprecated use {@link com.polidea.rxandroidble2.RxBleClient#updateLogOptions(LogOptions)}
+     * @deprecated use {@link com.polidea.rxandroidble3.RxBleClient#updateLogOptions(LogOptions)}
      */
     @Deprecated
     public static void setLogLevel(@LogLevel int logLevel) {

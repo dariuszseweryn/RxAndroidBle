@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example2_connection;
+package com.polidea.rxandroidble3.sample.example2_connection;
 
 import android.annotation.TargetApi;
 import android.os.Bundle;
@@ -9,11 +9,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

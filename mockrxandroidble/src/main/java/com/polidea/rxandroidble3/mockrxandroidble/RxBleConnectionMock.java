@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.mockrxandroidble;
+package com.polidea.rxandroidble3.mockrxandroidble;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -7,25 +7,25 @@ import androidx.annotation.NonNull;
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
-import com.polidea.rxandroidble2.ConnectionParameters;
-import com.polidea.rxandroidble2.NotificationSetupMode;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleCustomOperation;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
-import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.Priority;
-import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
-import com.polidea.rxandroidble2.internal.util.ObservableUtil;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
+import com.polidea.rxandroidble3.ConnectionParameters;
+import com.polidea.rxandroidble3.NotificationSetupMode;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleCustomOperation;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleGattCharacteristicException;
+import com.polidea.rxandroidble3.exceptions.BleGattDescriptorException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.Priority;
+import com.polidea.rxandroidble3.internal.connection.ImmediateSerializedBatchAckStrategy;
+import com.polidea.rxandroidble3.internal.util.ObservableUtil;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -723,7 +723,7 @@ public class RxBleConnectionMock implements RxBleConnection {
 
         /**
          * Set an {@link Observable} that will be used to fire characteristic change notifications. It will be subscribed to after
-         * a call to {@link com.polidea.rxandroidble2.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
+         * a call to {@link com.polidea.rxandroidble3.RxBleConnection#setupNotification(UUID)}. Calling this method is not required.
          *
          * @param characteristicUUID UUID of the characteristic that will be observed for notifications
          * @param sourceObservable   Observable that will be subscribed to in order to receive characteristic change notifications

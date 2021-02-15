@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.scan
+package com.polidea.rxandroidble3.internal.scan
 
 import spock.lang.Specification
 import spock.lang.Unroll

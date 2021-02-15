@@ -1,17 +1,17 @@
-package com.polidea.rxandroidble2.mockrxandroidble
+package com.polidea.rxandroidble3.mockrxandroidble
 
 import android.os.Build
-import com.polidea.rxandroidble2.RxBleClient
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
-import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
-import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
+import com.polidea.rxandroidble3.RxBleClient
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble3.exceptions.BleGattCharacteristicException
+import com.polidea.rxandroidble3.exceptions.BleGattDescriptorException
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
+import com.polidea.rxandroidble3.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
-import com.polidea.rxandroidble2.BuildConfig
+import com.polidea.rxandroidble3.BuildConfig
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleConnectionMockTest extends ElectricSpecification {

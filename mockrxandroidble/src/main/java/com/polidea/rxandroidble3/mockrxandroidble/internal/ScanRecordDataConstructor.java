@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.mockrxandroidble.internal;
+package com.polidea.rxandroidble3.mockrxandroidble.internal;
 
 import android.os.ParcelUuid;
 import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.scan.ScanRecord;
+import com.polidea.rxandroidble3.scan.ScanRecord;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;

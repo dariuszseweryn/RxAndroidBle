@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2
+package com.polidea.rxandroidble3
 
-import com.polidea.rxandroidble2.internal.util.LocationServicesStatus
+import com.polidea.rxandroidble3.internal.util.LocationServicesStatus
 
 class MockLocationServicesStatus implements LocationServicesStatus {
     boolean isLocationPermissionOk = true

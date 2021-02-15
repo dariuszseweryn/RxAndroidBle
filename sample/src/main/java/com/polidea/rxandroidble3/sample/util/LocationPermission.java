@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.sample.util;
+package com.polidea.rxandroidble3.sample.util;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
-import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble3.RxBleClient;
 
 public class LocationPermission {
 

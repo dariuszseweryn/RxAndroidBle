@@ -1,21 +1,21 @@
-package com.polidea.rxandroidble2.internal.operations
+package com.polidea.rxandroidble3.internal.operations
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.internal.connection.BluetoothGattProvider
-import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
-import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.internal.connection.BluetoothGattProvider
+import com.polidea.rxandroidble3.internal.connection.ConnectionStateChangeListener
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface
+import com.polidea.rxandroidble3.internal.util.MockOperationTimeoutConfiguration
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static android.bluetooth.BluetoothProfile.*
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.*
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.*
 
 public class OperationDisconnectTest extends Specification {
 

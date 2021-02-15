@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 
 import android.content.Context;
@@ -8,8 +8,8 @@ import android.os.Process;
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ClientScope;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.ClientScope;
 
 @ClientScope
 public class CheckerLocationPermission {

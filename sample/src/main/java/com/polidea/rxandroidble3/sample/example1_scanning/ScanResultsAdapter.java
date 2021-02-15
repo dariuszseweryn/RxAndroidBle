@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example1_scanning;
+package com.polidea.rxandroidble3.sample.example1_scanning;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble3.RxBleDevice;
 
-import com.polidea.rxandroidble2.scan.ScanResult;
+import com.polidea.rxandroidble3.scan.ScanResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

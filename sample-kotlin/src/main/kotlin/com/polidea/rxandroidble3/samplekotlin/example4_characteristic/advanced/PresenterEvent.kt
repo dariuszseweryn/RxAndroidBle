@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced
+package com.polidea.rxandroidble3.samplekotlin.example4_characteristic.advanced
 
 /**
  * Operation type for result or error.

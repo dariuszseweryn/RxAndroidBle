@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
-import com.polidea.rxandroidble2.exceptions.BleScanException;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
 
 public interface ScanPreconditionsVerifier {
 

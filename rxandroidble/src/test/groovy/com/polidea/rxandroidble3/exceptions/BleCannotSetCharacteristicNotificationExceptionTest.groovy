@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.exceptions
+package com.polidea.rxandroidble3.exceptions
 
 import android.bluetooth.BluetoothGattCharacteristic
 import spock.lang.Specification
@@ -22,7 +22,7 @@ class BleCannotSetCharacteristicNotificationExceptionTest extends Specification 
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException: " +
+                "com.polidea.rxandroidble3.exceptions.BleCannotSetCharacteristicNotificationException: " +
                 "Cannot set local notification (code 1) with characteristic UUID 00000000-0000-0001-0000-000000000002"
     }
 }

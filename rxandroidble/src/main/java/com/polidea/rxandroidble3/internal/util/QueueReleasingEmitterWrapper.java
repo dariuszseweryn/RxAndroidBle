@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 
-import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.QueueOperation;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

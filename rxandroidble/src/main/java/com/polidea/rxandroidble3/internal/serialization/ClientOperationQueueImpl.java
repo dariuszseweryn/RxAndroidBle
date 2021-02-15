@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.serialization;
+package com.polidea.rxandroidble3.internal.serialization;
 
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.operations.Operation;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.operations.Operation;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
@@ -15,11 +15,11 @@ import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
-import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationFinished;
-import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationQueued;
-import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRemoved;
-import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationRunning;
-import static com.polidea.rxandroidble2.internal.logger.LoggerUtil.logOperationStarted;
+import static com.polidea.rxandroidble3.internal.logger.LoggerUtil.logOperationFinished;
+import static com.polidea.rxandroidble3.internal.logger.LoggerUtil.logOperationQueued;
+import static com.polidea.rxandroidble3.internal.logger.LoggerUtil.logOperationRemoved;
+import static com.polidea.rxandroidble3.internal.logger.LoggerUtil.logOperationRunning;
+import static com.polidea.rxandroidble3.internal.logger.LoggerUtil.logOperationStarted;
 
 public class ClientOperationQueueImpl implements ClientOperationQueue {
 

@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.Timeout;
-import com.polidea.rxandroidble2.internal.operations.ConnectOperation;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.Timeout;
+import com.polidea.rxandroidble3.internal.operations.ConnectOperation;
 import bleshadow.dagger.BindsInstance;
 import bleshadow.dagger.Subcomponent;
 import bleshadow.javax.inject.Named;

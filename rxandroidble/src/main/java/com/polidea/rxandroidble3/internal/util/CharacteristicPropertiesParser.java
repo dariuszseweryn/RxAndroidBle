@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.internal.BluetoothGattCharacteristicProperty;
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 
 public class CharacteristicPropertiesParser {
 

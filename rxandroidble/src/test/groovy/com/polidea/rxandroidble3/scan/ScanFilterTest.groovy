@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.scan
+package com.polidea.rxandroidble3.scan
 
 import android.os.Build
 import android.os.ParcelUuid
-import com.polidea.rxandroidble2.BuildConfig
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult
+import com.polidea.rxandroidble3.BuildConfig
+import com.polidea.rxandroidble3.internal.scan.RxBleInternalScanResult
 import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
 

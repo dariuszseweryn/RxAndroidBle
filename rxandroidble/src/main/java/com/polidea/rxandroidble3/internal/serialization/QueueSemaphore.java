@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.serialization;
+package com.polidea.rxandroidble3.internal.serialization;
 
 
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class QueueSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface {

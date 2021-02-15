@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.scan
+package com.polidea.rxandroidble3.internal.scan
 
 import android.app.PendingIntent
 import android.bluetooth.le.BluetoothLeScanner
@@ -6,14 +6,14 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.os.Build
-import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
-import com.polidea.rxandroidble2.scan.ScanFilter
-import com.polidea.rxandroidble2.scan.ScanSettings
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper
+import com.polidea.rxandroidble3.scan.ScanFilter
+import com.polidea.rxandroidble3.scan.ScanSettings
 import hkhc.electricspock.ElectricSpecification
 import org.robolectric.annotation.Config
 
-import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_ALL_MATCHES
+import static com.polidea.rxandroidble3.scan.ScanCallbackType.CALLBACK_TYPE_ALL_MATCHES
 
 @Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
 class BackgroundScannerTest extends ElectricSpecification {

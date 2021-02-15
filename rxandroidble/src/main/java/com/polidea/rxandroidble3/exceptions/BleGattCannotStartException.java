@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.exceptions;
+package com.polidea.rxandroidble3.exceptions;
 
 import android.bluetooth.BluetoothGatt;
 
 /**
- * An exception emitted from {@link com.polidea.rxandroidble2.RxBleConnection} functions when the underlying {@link BluetoothGatt}
+ * An exception emitted from {@link com.polidea.rxandroidble3.RxBleConnection} functions when the underlying {@link BluetoothGatt}
  * returns `false` from {@link BluetoothGatt#readRemoteRssi()} or other functions associated with device interaction.
  */
 public class BleGattCannotStartException extends BleGattException {

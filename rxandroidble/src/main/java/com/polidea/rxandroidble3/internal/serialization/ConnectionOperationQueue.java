@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.serialization;
+package com.polidea.rxandroidble3.internal.serialization;
 
-import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleException;
 
 /**
  * {@inheritDoc}

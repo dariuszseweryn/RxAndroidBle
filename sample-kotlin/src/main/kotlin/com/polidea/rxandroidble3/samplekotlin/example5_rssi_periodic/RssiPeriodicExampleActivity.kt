@@ -1,16 +1,16 @@
-package com.polidea.rxandroidble2.samplekotlin.example5_rssi_periodic
+package com.polidea.rxandroidble3.samplekotlin.example5_rssi_periodic
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.samplekotlin.R
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.util.isConnected
-import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.RxBleDevice
+import com.polidea.rxandroidble3.samplekotlin.R
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.samplekotlin.util.isConnected
+import com.polidea.rxandroidble3.samplekotlin.util.showSnackbarShort
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable

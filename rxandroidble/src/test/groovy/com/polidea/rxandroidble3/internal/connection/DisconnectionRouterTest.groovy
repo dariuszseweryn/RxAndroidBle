@@ -1,19 +1,19 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import com.polidea.rxandroidble2.RxBleAdapterStateObservable
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
-import com.polidea.rxandroidble2.exceptions.BleGattException
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
+import com.polidea.rxandroidble3.RxBleAdapterStateObservable
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException
+import com.polidea.rxandroidble3.exceptions.BleGattException
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
 import spock.lang.Shared
 import spock.lang.Unroll
 
-import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
+import static com.polidea.rxandroidble3.RxBleAdapterStateObservable.BleAdapterState.*
 
 @Config(manifest = Config.NONE)
 class DisconnectionRouterTest extends ElectricSpecification {

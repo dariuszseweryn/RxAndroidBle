@@ -1,18 +1,18 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
 
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
-import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleGattCallbackTimeoutException;
+import com.polidea.rxandroidble3.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.operations.TimeoutConfiguration;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.util.QueueReleasingEmitterWrapper;
 
 import java.util.concurrent.TimeUnit;
 

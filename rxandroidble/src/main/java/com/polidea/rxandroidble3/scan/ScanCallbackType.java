@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble3.scan;
 
 
 public enum ScanCallbackType {

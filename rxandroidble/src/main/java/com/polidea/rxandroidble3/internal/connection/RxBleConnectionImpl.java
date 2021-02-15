@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -7,21 +7,21 @@ import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.ConnectionParameters;
-import com.polidea.rxandroidble2.NotificationSetupMode;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleCustomOperation;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.internal.Priority;
-import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
-import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble2.internal.util.ByteAssociation;
-import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.ConnectionParameters;
+import com.polidea.rxandroidble3.NotificationSetupMode;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleCustomOperation;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.internal.Priority;
+import com.polidea.rxandroidble3.internal.QueueOperation;
+import com.polidea.rxandroidble3.internal.operations.OperationsProvider;
+import com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.util.ByteAssociation;
+import com.polidea.rxandroidble3.internal.util.QueueReleasingEmitterWrapper;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.logger;
+package com.polidea.rxandroidble3.internal.logger;
 
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.LogOptions;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.LogOptions;
 
 public class LoggerSetup {
 

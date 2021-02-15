@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 import android.os.ParcelUuid;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import android.util.SparseArray;
 
-import com.polidea.rxandroidble2.scan.ScanRecord;
+import com.polidea.rxandroidble3.scan.ScanRecord;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning
+package com.polidea.rxandroidble3.samplekotlin.example1a_background_scanning
 
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -7,8 +7,8 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
 
 private const val SCAN_REQUEST_CODE = 42
 

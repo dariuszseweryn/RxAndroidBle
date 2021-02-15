@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example5_rssi_periodic;
+package com.polidea.rxandroidble3.sample.example5_rssi_periodic;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,11 +6,11 @@ import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

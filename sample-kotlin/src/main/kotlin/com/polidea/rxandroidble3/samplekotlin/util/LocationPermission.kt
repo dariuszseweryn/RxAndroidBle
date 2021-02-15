@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.samplekotlin.util
+package com.polidea.rxandroidble3.samplekotlin.util
 
 import android.app.Activity
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import com.polidea.rxandroidble2.RxBleClient
+import com.polidea.rxandroidble3.RxBleClient
 
 private const val REQUEST_PERMISSION_BLE_SCAN = 101
 

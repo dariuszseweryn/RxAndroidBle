@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.sample.util;
+package com.polidea.rxandroidble3.sample.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import com.polidea.rxandroidble2.exceptions.BleScanException;
-import com.polidea.rxandroidble2.sample.R;
+import com.polidea.rxandroidble3.exceptions.BleScanException;
+import com.polidea.rxandroidble3.sample.R;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;

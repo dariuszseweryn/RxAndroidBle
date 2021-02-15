@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.internal.connection.PayloadSizeLimitProvider;
 
 import java.util.concurrent.TimeUnit;
 

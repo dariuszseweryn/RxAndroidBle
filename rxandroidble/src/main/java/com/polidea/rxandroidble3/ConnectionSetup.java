@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 
-import com.polidea.rxandroidble2.internal.BleIllegalOperationException;
+import com.polidea.rxandroidble3.internal.BleIllegalOperationException;
 
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +18,7 @@ public class ConnectionSetup {
      * {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect flag.
      * In case of auto connect is enabled the observable will wait with the emission of RxBleConnection. Without
      * auto connect flag set to true the connection will fail
-     * with {@link com.polidea.rxandroidble2.exceptions.BleGattException} if the device is not in range.
+     * with {@link com.polidea.rxandroidble3.exceptions.BleGattException} if the device is not in range.
      */
     public final boolean autoConnect;
     /**
@@ -55,7 +55,7 @@ public class ConnectionSetup {
          *                    {@link android.bluetooth.BluetoothDevice#connectGatt(Context, boolean, BluetoothGattCallback)} autoConnect
          *                    flag. In case of auto connect is enabled the observable will wait with the emission of RxBleConnection.
          *                    Without auto connect flag set to true the connection will fail
-         *                    with {@link com.polidea.rxandroidble2.exceptions.BleGattException} if the device is not in range after a
+         *                    with {@link com.polidea.rxandroidble3.exceptions.BleGattException} if the device is not in range after a
          *                    30 seconds timeout.
          * @return this builder instance
          */

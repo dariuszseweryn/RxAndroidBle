@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
 
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

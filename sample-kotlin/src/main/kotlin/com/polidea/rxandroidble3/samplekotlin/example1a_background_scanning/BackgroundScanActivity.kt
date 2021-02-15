@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning
+package com.polidea.rxandroidble3.samplekotlin.example1a_background_scanning
 
 import android.app.PendingIntent
 import android.content.Context
@@ -7,15 +7,15 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.samplekotlin.R
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.util.isLocationPermissionGranted
-import com.polidea.rxandroidble2.samplekotlin.util.requestLocationPermission
-import com.polidea.rxandroidble2.samplekotlin.util.showError
-import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
-import com.polidea.rxandroidble2.scan.ScanFilter
-import com.polidea.rxandroidble2.scan.ScanSettings
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.samplekotlin.R
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.samplekotlin.util.isLocationPermissionGranted
+import com.polidea.rxandroidble3.samplekotlin.util.requestLocationPermission
+import com.polidea.rxandroidble3.samplekotlin.util.showError
+import com.polidea.rxandroidble3.samplekotlin.util.showSnackbarShort
+import com.polidea.rxandroidble3.scan.ScanFilter
+import com.polidea.rxandroidble3.scan.ScanSettings
 import kotlinx.android.synthetic.main.activity_example1a.scan_start_btn
 import kotlinx.android.synthetic.main.activity_example1a.scan_stop_btn
 

@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble3.scan;
 
 
 import android.bluetooth.le.BluetoothLeScanner;
 import android.os.Parcel;
 import android.os.Parcelable;
 import androidx.annotation.IntDef;
-import com.polidea.rxandroidble2.internal.scan.ExternalScanSettingsExtension;
+import com.polidea.rxandroidble3.internal.scan.ExternalScanSettingsExtension;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -280,7 +280,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
 
         /**
          * {@inheritDoc}
-         * If set to true and Location Services are off a {@link com.polidea.rxandroidble2.exceptions.BleScanException} will be emitted.
+         * If set to true and Location Services are off a {@link com.polidea.rxandroidble3.exceptions.BleScanException} will be emitted.
          * <p>Default: true.</p>
          */
         @Override

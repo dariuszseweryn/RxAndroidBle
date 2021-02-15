@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
-import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleConnection;
 
 public interface ConnectionStateChangeListener {
 

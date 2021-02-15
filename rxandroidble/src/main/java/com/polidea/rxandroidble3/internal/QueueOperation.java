@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.internal;
+package com.polidea.rxandroidble3.internal;
 
 import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.internal.operations.Operation;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.internal.operations.Operation;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.util.QueueReleasingEmitterWrapper;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;

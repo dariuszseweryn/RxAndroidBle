@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
@@ -6,18 +6,18 @@ import android.bluetooth.BluetoothProfile;
 import android.os.DeadObjectException;
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.internal.DeviceModule;
-import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.connection.BluetoothGattProvider;
-import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.internal.DeviceModule;
+import com.polidea.rxandroidble3.internal.QueueOperation;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.connection.BluetoothGattProvider;
+import com.polidea.rxandroidble3.internal.connection.ConnectionStateChangeListener;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
@@ -30,8 +30,8 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED;
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTING;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.DISCONNECTED;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.DISCONNECTING;
 
 public class DisconnectOperation extends QueueOperation<Void> {
 

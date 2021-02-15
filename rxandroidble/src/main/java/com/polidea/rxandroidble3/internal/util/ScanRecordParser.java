@@ -1,14 +1,14 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 import android.os.ParcelUuid;
 import android.util.SparseArray;
 
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.scan.ScanRecordImplCompat;
-import com.polidea.rxandroidble2.scan.ScanRecord;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.scan.ScanRecordImplCompat;
+import com.polidea.rxandroidble3.scan.ScanRecord;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

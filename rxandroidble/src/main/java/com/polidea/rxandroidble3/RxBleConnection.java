@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -8,16 +8,16 @@ import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException;
-import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException;
-import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException;
-import com.polidea.rxandroidble2.exceptions.BleGattException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.Priority;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOperation;
+import com.polidea.rxandroidble3.exceptions.BleCannotSetCharacteristicNotificationException;
+import com.polidea.rxandroidble3.exceptions.BleCharacteristicNotFoundException;
+import com.polidea.rxandroidble3.exceptions.BleConflictingNotificationAlreadySetException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleGattCannotStartException;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.Priority;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.internal.operations.CharacteristicLongWriteOperation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -305,7 +305,7 @@ public interface RxBleConnection {
      * NOTE: due to stateful nature of characteristics if one will setupIndication() before setupNotification()
      * the notification will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      * <p>
-     * The characteristic can be retrieved from {@link com.polidea.rxandroidble2.RxBleDeviceServices} emitted from
+     * The characteristic can be retrieved from {@link com.polidea.rxandroidble3.RxBleDeviceServices} emitted from
      * {@link RxBleConnection#discoverServices()}
      *
      * @param characteristic Characteristic for notification setup.
@@ -358,7 +358,7 @@ public interface RxBleConnection {
      * NOTE: due to stateful nature of characteristics if one will setupNotification() before setupIndication()
      * the indication will not be set up and will emit an BleCharacteristicNotificationOfOtherTypeAlreadySetException
      * <p>
-     * The characteristic can be retrieved from {@link com.polidea.rxandroidble2.RxBleDeviceServices} emitted from
+     * The characteristic can be retrieved from {@link com.polidea.rxandroidble3.RxBleDeviceServices} emitted from
      * {@link RxBleConnection#discoverServices()}
      *
      * @param characteristic Characteristic for indication setup.

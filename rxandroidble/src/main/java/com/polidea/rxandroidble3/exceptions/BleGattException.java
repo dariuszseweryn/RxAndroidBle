@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.exceptions;
+package com.polidea.rxandroidble3.exceptions;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.utils.GattStatusParser;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.utils.GattStatusParser;
 
 /**
  * Exception emitted when the BLE link has been interrupted as a result of an error. The exception contains
@@ -14,7 +14,7 @@ import com.polidea.rxandroidble2.utils.GattStatusParser;
  * the <a href="https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h">
  * Android system</a>.
  *
- * @see com.polidea.rxandroidble2.RxBleDevice#establishConnection(boolean)
+ * @see com.polidea.rxandroidble3.RxBleDevice#establishConnection(boolean)
  */
 public class BleGattException extends BleException {
 

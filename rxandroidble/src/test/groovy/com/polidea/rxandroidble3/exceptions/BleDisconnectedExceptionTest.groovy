@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.exceptions
+package com.polidea.rxandroidble3.exceptions
 
 import spock.lang.Specification
 
@@ -16,7 +16,7 @@ class BleDisconnectedExceptionTest extends Specification {
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble2.exceptions.BleDisconnectedException: Disconnected from MAC='XX:XX:XX:XX:XX:XX' with status -1 (UNKNOWN)"
+                "com.polidea.rxandroidble3.exceptions.BleDisconnectedException: Disconnected from MAC='XX:XX:XX:XX:XX:XX' with status -1 (UNKNOWN)"
     }
 
     def "toString should include message with status"() {
@@ -28,6 +28,6 @@ class BleDisconnectedExceptionTest extends Specification {
 
         then:
         assert objectUnderTest.toString() ==
-                "com.polidea.rxandroidble2.exceptions.BleDisconnectedException: Disconnected from MAC='XX:XX:XX:XX:XX:XX' with status $expectedStatus (GATT_INTERNAL_ERROR)"
+                "com.polidea.rxandroidble3.exceptions.BleDisconnectedException: Disconnected from MAC='XX:XX:XX:XX:XX:XX' with status $expectedStatus (GATT_INTERNAL_ERROR)"
     }
 }

@@ -1,14 +1,14 @@
-package com.polidea.rxandroidble2;
+package com.polidea.rxandroidble3;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.scan.BackgroundScanner;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanResult;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.scan.BackgroundScanner;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanResult;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import java.util.Set;
 import java.util.UUID;
@@ -116,7 +116,7 @@ public abstract class RxBleClient {
      *
      * @param filterServiceUUIDs Filtering settings. Scan results are only filtered by exported services.
      *                           All specified UUIDs must be present in the advertisement data to match the filter.
-     * @throws com.polidea.rxandroidble2.exceptions.BleScanException emits in case of error starting the scan
+     * @throws com.polidea.rxandroidble3.exceptions.BleScanException emits in case of error starting the scan
      * @deprecated use {@link #scanBleDevices(ScanSettings, ScanFilter...)} instead
      */
     @Deprecated

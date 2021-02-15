@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.example4_characteristic.advanced
+package com.polidea.rxandroidble3.samplekotlin.example4_characteristic.advanced
 
 import android.content.Context
 import android.content.Intent
@@ -9,10 +9,10 @@ import android.widget.Button
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import com.jakewharton.rxbinding4.view.clicks
-import com.polidea.rxandroidble2.samplekotlin.R
-import com.polidea.rxandroidble2.samplekotlin.SampleApplication
-import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
-import com.polidea.rxandroidble2.samplekotlin.util.toHex
+import com.polidea.rxandroidble3.samplekotlin.R
+import com.polidea.rxandroidble3.samplekotlin.SampleApplication
+import com.polidea.rxandroidble3.samplekotlin.util.showSnackbarShort
+import com.polidea.rxandroidble3.samplekotlin.util.toHex
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableTransformer
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -38,7 +38,7 @@ private const val EXTRA_CHARACTERISTIC_UUID = "extra_uuid"
  * This activity allows for connecting to a device and interact with a given characteristic.
  *
  * It may be used as a direct replacement for
- * [CharacteristicOperationExampleActivity][com.polidea.rxandroidble2.samplekotlin.example4_characteristic.CharacteristicOperationExampleActivity]
+ * [CharacteristicOperationExampleActivity][com.polidea.rxandroidble3.samplekotlin.example4_characteristic.CharacteristicOperationExampleActivity]
  *
  * When the connection is not established only the "CONNECT" button is active.
  * When the user clicks on the "CONNECT" button the connection is established and other buttons are enabled according to the properties

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.samplekotlin.util
+package com.polidea.rxandroidble3.samplekotlin.util
 
 import android.app.Activity
 import androidx.annotation.StringRes

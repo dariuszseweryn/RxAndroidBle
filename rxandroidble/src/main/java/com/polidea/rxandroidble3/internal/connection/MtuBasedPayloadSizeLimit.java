@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleConnection;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;

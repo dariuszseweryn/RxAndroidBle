@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.sample;
+package com.polidea.rxandroidble3.sample;
 
 import android.app.Application;
 import android.content.Context;
 
 import android.util.Log;
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.LogOptions;
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.LogOptions;
+import com.polidea.rxandroidble3.RxBleClient;
+import com.polidea.rxandroidble3.exceptions.BleException;
 import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 

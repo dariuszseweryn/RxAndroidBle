@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.mockrxandroidble;
+package com.polidea.rxandroidble3.mockrxandroidble;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -6,15 +6,15 @@ import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.RxBleScanResult;
-import com.polidea.rxandroidble2.scan.BackgroundScanner;
-import com.polidea.rxandroidble2.scan.ScanCallbackType;
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanRecord;
-import com.polidea.rxandroidble2.scan.ScanResult;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.RxBleClient;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.RxBleScanResult;
+import com.polidea.rxandroidble3.scan.BackgroundScanner;
+import com.polidea.rxandroidble3.scan.ScanCallbackType;
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanRecord;
+import com.polidea.rxandroidble3.scan.ScanResult;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

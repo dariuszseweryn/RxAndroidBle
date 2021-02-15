@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.cache;
+package com.polidea.rxandroidble3.internal.cache;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.ClientScope;
-import com.polidea.rxandroidble2.internal.DeviceComponent;
+import com.polidea.rxandroidble3.ClientScope;
+import com.polidea.rxandroidble3.internal.DeviceComponent;
 
 import java.util.ArrayList;
 import java.util.Collection;

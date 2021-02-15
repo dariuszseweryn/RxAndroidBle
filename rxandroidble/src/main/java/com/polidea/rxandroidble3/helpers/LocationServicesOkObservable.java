@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.helpers;
+package com.polidea.rxandroidble3.helpers;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.DaggerClientComponent;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.DaggerClientComponent;
 
 import java.util.UUID;
 
@@ -14,8 +14,8 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 
 /**
- * An Observable that emits false if an attempt to scan with {@link com.polidea.rxandroidble2.RxBleClient#scanBleDevices(UUID...)}
- * would cause the exception {@link com.polidea.rxandroidble2.exceptions.BleScanException#LOCATION_SERVICES_DISABLED}; otherwise emits true.
+ * An Observable that emits false if an attempt to scan with {@link com.polidea.rxandroidble3.RxBleClient#scanBleDevices(UUID...)}
+ * would cause the exception {@link com.polidea.rxandroidble3.exceptions.BleScanException#LOCATION_SERVICES_DISABLED}; otherwise emits true.
  * Always emits true in Android versions prior to 6.0.
  * Typically, receiving false should cause the user to be prompted to enable Location Services.
  */

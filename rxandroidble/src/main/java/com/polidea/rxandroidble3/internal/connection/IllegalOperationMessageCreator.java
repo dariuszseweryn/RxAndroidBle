@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble2.internal.BluetoothGattCharacteristicProperty;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
+import com.polidea.rxandroidble3.internal.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.util.CharacteristicPropertiesParser;
 
 import java.util.Locale;
 

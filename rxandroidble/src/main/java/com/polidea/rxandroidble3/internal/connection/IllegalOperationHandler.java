@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.internal.BluetoothGattCharacteristicProperty;
-import com.polidea.rxandroidble2.internal.BleIllegalOperationException;
+import com.polidea.rxandroidble3.internal.BluetoothGattCharacteristicProperty;
+import com.polidea.rxandroidble3.internal.BleIllegalOperationException;
 
 /**
  * Handler for {@link IllegalOperationChecker#checkAnyPropertyMatches(BluetoothGattCharacteristic, int)} response.

@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.connection
+package com.polidea.rxandroidble3.internal.connection
 
-import com.polidea.rxandroidble2.RxBleConnection
+import com.polidea.rxandroidble3.RxBleConnection
 import spock.lang.Specification
 import spock.lang.Unroll
 

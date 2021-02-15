@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.exceptions;
+package com.polidea.rxandroidble3.exceptions;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.IntDef;
 import androidx.annotation.RestrictTo;
-import com.polidea.rxandroidble2.NotificationSetupMode;
+import com.polidea.rxandroidble3.NotificationSetupMode;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
@@ -39,8 +39,8 @@ public class BleCannotSetCharacteristicNotificationException extends BleExceptio
      * {@link BluetoothGattCharacteristic#PROPERTY_NOTIFY} or {@link BluetoothGattCharacteristic#PROPERTY_INDICATE} shall contain
      * the Client Characteristic Configuration Descriptor. This is a violation of the specification and should be fixed on the firmware
      * side. As a temporary workaround
-     * {@link com.polidea.rxandroidble2.RxBleConnection#setupNotification(BluetoothGattCharacteristic, NotificationSetupMode)} or
-     * {@link com.polidea.rxandroidble2.RxBleConnection#setupIndication(UUID, NotificationSetupMode)} can be used with
+     * {@link com.polidea.rxandroidble3.RxBleConnection#setupNotification(BluetoothGattCharacteristic, NotificationSetupMode)} or
+     * {@link com.polidea.rxandroidble3.RxBleConnection#setupIndication(UUID, NotificationSetupMode)} can be used with
      * {@link NotificationSetupMode#COMPAT} - which will make the library call only
      * {@link android.bluetooth.BluetoothGatt#setCharacteristicNotification(BluetoothGattCharacteristic, boolean)} without writing
      * the descriptor.

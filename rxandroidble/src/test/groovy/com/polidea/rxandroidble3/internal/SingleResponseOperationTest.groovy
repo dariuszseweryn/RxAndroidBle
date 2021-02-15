@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.internal
+package com.polidea.rxandroidble3.internal
 
 import android.bluetooth.BluetoothGatt
-import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException
-import com.polidea.rxandroidble2.exceptions.BleGattCannotStartException
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
-import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
-import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
+import com.polidea.rxandroidble3.exceptions.BleGattCallbackTimeoutException
+import com.polidea.rxandroidble3.exceptions.BleGattCannotStartException
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback
+import com.polidea.rxandroidble3.internal.operations.TimeoutConfiguration
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface
+import com.polidea.rxandroidble3.internal.util.MockOperationTimeoutConfiguration
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.schedulers.TestScheduler

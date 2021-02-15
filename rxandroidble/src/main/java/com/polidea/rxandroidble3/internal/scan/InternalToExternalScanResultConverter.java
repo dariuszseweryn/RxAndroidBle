@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
 import androidx.annotation.RestrictTo;
 
-import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
-import com.polidea.rxandroidble2.scan.ScanResult;
+import com.polidea.rxandroidble3.internal.RxBleDeviceProvider;
+import com.polidea.rxandroidble3.scan.ScanResult;
 
 import bleshadow.javax.inject.Inject;
 

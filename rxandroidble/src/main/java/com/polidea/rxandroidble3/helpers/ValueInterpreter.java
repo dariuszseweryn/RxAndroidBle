@@ -1,18 +1,18 @@
-package com.polidea.rxandroidble2.helpers;
+package com.polidea.rxandroidble3.helpers;
 
 
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
-import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.RxBleLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
 
 /**
  * A helper class intended for interpreting Integers, Floats and Strings that may be stored in byte arrays retrieved by
- * {@link com.polidea.rxandroidble2.RxBleConnection#readCharacteristic(UUID)} or
- * {@link com.polidea.rxandroidble2.RxBleConnection#setupIndication(UUID)}. If the data in emitted byte arrays is stored using
+ * {@link com.polidea.rxandroidble3.RxBleConnection#readCharacteristic(UUID)} or
+ * {@link com.polidea.rxandroidble3.RxBleConnection#setupIndication(UUID)}. If the data in emitted byte arrays is stored using
  * a standardised Bluetooth Specification format
  *
  * This class is a copied from {@link android.bluetooth.BluetoothGattCharacteristic#getIntValue(int, int)},

@@ -1,22 +1,22 @@
-package com.polidea.rxandroidble2.internal.operations;
+package com.polidea.rxandroidble3.internal.operations;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.os.DeadObjectException;
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException;
-import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
-import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.connection.BluetoothGattProvider;
-import com.polidea.rxandroidble2.internal.connection.ConnectionStateChangeListener;
-import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
-import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
-import com.polidea.rxandroidble2.internal.util.BleConnectionCompat;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleGattCallbackTimeoutException;
+import com.polidea.rxandroidble3.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble3.internal.QueueOperation;
+import com.polidea.rxandroidble3.internal.connection.BluetoothGattProvider;
+import com.polidea.rxandroidble3.internal.connection.ConnectionStateChangeListener;
+import com.polidea.rxandroidble3.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble3.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface;
+import com.polidea.rxandroidble3.internal.util.BleConnectionCompat;
 
 import java.util.concurrent.Callable;
 
@@ -31,11 +31,11 @@ import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED;
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTING;
-import static com.polidea.rxandroidble2.internal.DeviceModule.CONNECT_TIMEOUT;
-import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
-import static com.polidea.rxandroidble2.internal.util.DisposableUtil.disposableSingleObserverFromEmitter;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.CONNECTED;
+import static com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState.CONNECTING;
+import static com.polidea.rxandroidble3.internal.DeviceModule.CONNECT_TIMEOUT;
+import static com.polidea.rxandroidble3.internal.connection.ConnectionComponent.NamedBooleans.AUTO_CONNECT;
+import static com.polidea.rxandroidble3.internal.util.DisposableUtil.disposableSingleObserverFromEmitter;
 
 public class ConnectOperation extends QueueOperation<BluetoothGatt> {
 
@@ -112,9 +112,9 @@ public class ConnectOperation extends QueueOperation<BluetoothGatt> {
     /**
      * Emits BluetoothGatt and completes after connection is established.
      *
-     * @return BluetoothGatt after connection reaches {@link com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState#CONNECTED}
+     * @return BluetoothGatt after connection reaches {@link com.polidea.rxandroidble3.RxBleConnection.RxBleConnectionState#CONNECTED}
      * state.
-     * @throws com.polidea.rxandroidble2.exceptions.BleDisconnectedException if connection was disconnected/failed before
+     * @throws com.polidea.rxandroidble3.exceptions.BleDisconnectedException if connection was disconnected/failed before
      *                                                                       it was established.
      */
     @NonNull

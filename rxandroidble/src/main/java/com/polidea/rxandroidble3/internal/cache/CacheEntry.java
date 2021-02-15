@@ -1,6 +1,6 @@
-package com.polidea.rxandroidble2.internal.cache;
+package com.polidea.rxandroidble3.internal.cache;
 
-import com.polidea.rxandroidble2.internal.DeviceComponent;
+import com.polidea.rxandroidble3.internal.DeviceComponent;
 
 import java.util.Map;
 

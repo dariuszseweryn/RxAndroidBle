@@ -1,9 +1,9 @@
-package com.polidea.rxandroidble2.samplekotlin
+package com.polidea.rxandroidble3.samplekotlin
 
 import android.app.Application
-import com.polidea.rxandroidble2.LogConstants
-import com.polidea.rxandroidble2.LogOptions
-import com.polidea.rxandroidble2.RxBleClient
+import com.polidea.rxandroidble3.LogConstants
+import com.polidea.rxandroidble3.LogOptions
+import com.polidea.rxandroidble3.RxBleClient
 
 class SampleApplication : Application() {
 

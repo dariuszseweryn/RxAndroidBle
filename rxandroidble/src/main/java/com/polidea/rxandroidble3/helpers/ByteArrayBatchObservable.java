@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.helpers;
+package com.polidea.rxandroidble3.helpers;
 
 
 import androidx.annotation.NonNull;

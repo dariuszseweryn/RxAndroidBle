@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.polidea.rxandroidble2.internal.ScanResultInterface;
-import com.polidea.rxandroidble2.scan.ScanCallbackType;
-import com.polidea.rxandroidble2.scan.ScanRecord;
+import com.polidea.rxandroidble3.internal.ScanResultInterface;
+import com.polidea.rxandroidble3.scan.ScanCallbackType;
+import com.polidea.rxandroidble3.scan.ScanRecord;
 
 public class RxBleInternalScanResult implements ScanResultInterface {
 

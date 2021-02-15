@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.serialization;
+package com.polidea.rxandroidble3.internal.serialization;
 
 import io.reactivex.rxjava3.internal.schedulers.NonBlockingThread;
 import java.util.concurrent.ThreadFactory;

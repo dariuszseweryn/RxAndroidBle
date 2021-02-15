@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example3_discovery;
+package com.polidea.rxandroidble3.sample.example3_discovery;
 
 
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -11,8 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.sample.R;
+import com.polidea.rxandroidble3.RxBleDeviceServices;
+import com.polidea.rxandroidble3.sample.R;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 /**
- * An interface that describes what library extensions should be added to {@link com.polidea.rxandroidble2.scan.ScanSettings}
+ * An interface that describes what library extensions should be added to {@link com.polidea.rxandroidble3.scan.ScanSettings}
  */
 public interface ExternalScanSettingsExtension<R extends ExternalScanSettingsExtension<R>> {
 
@@ -21,7 +21,7 @@ public interface ExternalScanSettingsExtension<R extends ExternalScanSettingsExt
 
         /**
          * Set whether a check if Location Services are (any Location Provider is) turned on before scheduling a BLE scan start.
-         * Some Android devices will not return any {@link com.polidea.rxandroidble2.scan.ScanResult} if Location Services are
+         * Some Android devices will not return any {@link com.polidea.rxandroidble3.scan.ScanResult} if Location Services are
          * disabled.
          *
          * @param shouldCheck true if Location Services should be checked before the scan

@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
 import bleshadow.javax.inject.Inject;
-import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
+import com.polidea.rxandroidble3.HiddenBluetoothGattCallback;
 
 class NativeCallbackDispatcher {
 

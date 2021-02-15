@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.internal.scan;
+package com.polidea.rxandroidble3.internal.scan;
 
 
 import androidx.annotation.IntRange;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.scan.ScanCallbackType;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.scan.ScanCallbackType;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +20,7 @@ import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.observables.GroupedObservable;
 
-import static com.polidea.rxandroidble2.internal.util.ObservableUtil.identityTransformer;
+import static com.polidea.rxandroidble3.internal.util.ObservableUtil.identityTransformer;
 
 public class ScanSettingsEmulator {
 

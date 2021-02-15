@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.util;
+package com.polidea.rxandroidble3.internal.util;
 
 
 import androidx.annotation.NonNull;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.RxBleAdapterStateObservable;
-import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.RxBleAdapterStateObservable;
+import com.polidea.rxandroidble3.RxBleClient;
 
 import java.util.concurrent.TimeUnit;
 

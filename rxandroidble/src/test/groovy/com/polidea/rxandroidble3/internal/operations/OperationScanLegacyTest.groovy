@@ -1,12 +1,12 @@
-package com.polidea.rxandroidble2.internal.operations
+package com.polidea.rxandroidble3.internal.operations
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import androidx.annotation.Nullable
-import com.polidea.rxandroidble2.exceptions.BleScanException
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
-import com.polidea.rxandroidble2.internal.util.ScanRecordParser
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper
+import com.polidea.rxandroidble3.internal.util.ScanRecordParser
 import spock.lang.Specification
 import spock.lang.Unroll
 

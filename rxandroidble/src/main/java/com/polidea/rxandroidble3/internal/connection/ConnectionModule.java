@@ -1,17 +1,17 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.Timeout;
-import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
-import com.polidea.rxandroidble2.internal.operations.OperationsProviderImpl;
-import com.polidea.rxandroidble2.internal.operations.TimeoutConfiguration;
-import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
-import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueueImpl;
-import com.polidea.rxandroidble2.internal.util.CharacteristicPropertiesParser;
+import com.polidea.rxandroidble3.ClientComponent;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.Timeout;
+import com.polidea.rxandroidble3.internal.operations.OperationsProvider;
+import com.polidea.rxandroidble3.internal.operations.OperationsProviderImpl;
+import com.polidea.rxandroidble3.internal.operations.TimeoutConfiguration;
+import com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueue;
+import com.polidea.rxandroidble3.internal.serialization.ConnectionOperationQueueImpl;
+import com.polidea.rxandroidble3.internal.util.CharacteristicPropertiesParser;
 
 import bleshadow.dagger.Binds;
 import bleshadow.dagger.Module;
@@ -21,9 +21,9 @@ import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
 import io.reactivex.rxjava3.core.Scheduler;
 
-import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
-import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
-import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
+import static com.polidea.rxandroidble3.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
+import static com.polidea.rxandroidble3.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
+import static com.polidea.rxandroidble3.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
 
 @Module
 public abstract class ConnectionModule {

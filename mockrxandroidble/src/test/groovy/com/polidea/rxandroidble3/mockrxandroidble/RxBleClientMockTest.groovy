@@ -1,15 +1,15 @@
-package com.polidea.rxandroidble2.mockrxandroidble
+package com.polidea.rxandroidble3.mockrxandroidble
 
 import android.os.Build
 import android.os.ParcelUuid
-import com.polidea.rxandroidble2.RxBleClient
-import com.polidea.rxandroidble2.RxBleConnection
-import com.polidea.rxandroidble2.scan.ScanFilter;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.polidea.rxandroidble3.RxBleClient
+import com.polidea.rxandroidble3.RxBleConnection
+import com.polidea.rxandroidble3.scan.ScanFilter;
+import com.polidea.rxandroidble3.scan.ScanSettings;
 import hkhc.electricspock.ElectricSpecification
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.robolectric.annotation.Config
-import com.polidea.rxandroidble2.BuildConfig
+import com.polidea.rxandroidble3.BuildConfig
 
 @Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class RxBleClientMockTest extends ElectricSpecification {

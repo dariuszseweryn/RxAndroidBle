@@ -1,11 +1,11 @@
-package com.polidea.rxandroidble2.internal.logger;
+package com.polidea.rxandroidble3.internal.logger;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import com.polidea.rxandroidble2.LogConstants;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.operations.Operation;
+import com.polidea.rxandroidble3.LogConstants;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.operations.Operation;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;

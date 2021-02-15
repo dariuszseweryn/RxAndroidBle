@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.scan;
+package com.polidea.rxandroidble3.scan;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -23,7 +23,7 @@ public interface BackgroundScanner {
      * @param scanSettings   Scan settings
      * @param scanFilters    Filtering settings
      * @param callbackIntent Intent that will be executed when the scan result becomes available
-     * @throws com.polidea.rxandroidble2.exceptions.BleScanException thrown if not possible to start the scan
+     * @throws com.polidea.rxandroidble3.exceptions.BleScanException thrown if not possible to start the scan
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     void scanBleDeviceInBackground(@NonNull PendingIntent callbackIntent, ScanSettings scanSettings, ScanFilter... scanFilters);
@@ -42,7 +42,7 @@ public interface BackgroundScanner {
      *
      * @param intent Intent containing scan result or an error code
      * @return Parsed scan result, ready to use with a RxAndroidBLE
-     * @throws com.polidea.rxandroidble2.exceptions.BleScanException scan failure
+     * @throws com.polidea.rxandroidble3.exceptions.BleScanException scan failure
      */
     List<ScanResult> onScanResultReceived(@NonNull Intent intent);
 }

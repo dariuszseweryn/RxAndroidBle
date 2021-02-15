@@ -1,8 +1,8 @@
-package com.polidea.rxandroidble2.internal.serialization
+package com.polidea.rxandroidble3.internal.serialization
 
-import com.polidea.rxandroidble2.MockOperation
-import com.polidea.rxandroidble2.internal.Priority
-import com.polidea.rxandroidble2.internal.operations.Operation
+import com.polidea.rxandroidble3.MockOperation
+import com.polidea.rxandroidble3.internal.Priority
+import com.polidea.rxandroidble3.internal.operations.Operation
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

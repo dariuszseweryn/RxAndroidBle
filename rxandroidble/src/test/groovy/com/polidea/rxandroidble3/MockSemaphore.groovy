@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2
+package com.polidea.rxandroidble3
 
-import com.polidea.rxandroidble2.internal.serialization.QueueAwaitReleaseInterface
-import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
+import com.polidea.rxandroidble3.internal.serialization.QueueAwaitReleaseInterface
+import com.polidea.rxandroidble3.internal.serialization.QueueReleaseInterface
 
 class MockSemaphore implements QueueReleaseInterface, QueueAwaitReleaseInterface {
     int permits = 0

@@ -1,10 +1,10 @@
-package com.polidea.rxandroidble2.exceptions;
+package com.polidea.rxandroidble3.exceptions;
 
 
 /**
  * An exception being emitted from an {@link io.reactivex.rxjava3.core.Observable} returned by the function
- * {@link com.polidea.rxandroidble2.RxBleDevice#establishConnection(boolean)} or other establishConnection() overloads when this kind
- * of observable was already subscribed and {@link com.polidea.rxandroidble2.RxBleConnection} is currently being established or active.
+ * {@link com.polidea.rxandroidble3.RxBleDevice#establishConnection(boolean)} or other establishConnection() overloads when this kind
+ * of observable was already subscribed and {@link com.polidea.rxandroidble3.RxBleConnection} is currently being established or active.
  *
  * <p>
  *     To prevent this exception from being emitted one must either:<br>

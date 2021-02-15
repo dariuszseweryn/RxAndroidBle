@@ -1,4 +1,4 @@
-package com.polidea.rxandroidble2.sample.example4_characteristic;
+package com.polidea.rxandroidble3.sample.example4_characteristic;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
@@ -11,12 +11,12 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.jakewharton.rx3.ReplayingShare;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.sample.DeviceActivity;
-import com.polidea.rxandroidble2.sample.R;
-import com.polidea.rxandroidble2.sample.SampleApplication;
-import com.polidea.rxandroidble2.sample.util.HexString;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
+import com.polidea.rxandroidble3.sample.DeviceActivity;
+import com.polidea.rxandroidble3.sample.R;
+import com.polidea.rxandroidble3.sample.SampleApplication;
+import com.polidea.rxandroidble3.sample.util.HexString;
 
 import java.util.UUID;
 

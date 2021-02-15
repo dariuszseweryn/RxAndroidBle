@@ -1,14 +1,14 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
 
 import com.jakewharton.rxrelay3.BehaviorRelay;
-import com.polidea.rxandroidble2.RxBleAdapterStateObservable;
-import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.exceptions.BleGattException;
-import com.polidea.rxandroidble2.internal.DeviceModule;
-import com.polidea.rxandroidble2.internal.RxBleLog;
-import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
+import com.polidea.rxandroidble3.RxBleAdapterStateObservable;
+import com.polidea.rxandroidble3.exceptions.BleDisconnectedException;
+import com.polidea.rxandroidble3.exceptions.BleException;
+import com.polidea.rxandroidble3.exceptions.BleGattException;
+import com.polidea.rxandroidble3.internal.DeviceModule;
+import com.polidea.rxandroidble3.internal.RxBleLog;
+import com.polidea.rxandroidble3.internal.util.RxBleAdapterWrapper;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;

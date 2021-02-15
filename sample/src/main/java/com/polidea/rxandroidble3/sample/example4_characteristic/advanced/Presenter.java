@@ -1,13 +1,13 @@
-package com.polidea.rxandroidble2.sample.example4_characteristic.advanced;
+package com.polidea.rxandroidble3.sample.example4_characteristic.advanced;
 
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import com.polidea.rxandroidble2.NotificationSetupMode;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble3.NotificationSetupMode;
+import com.polidea.rxandroidble3.RxBleConnection;
+import com.polidea.rxandroidble3.RxBleDevice;
 
 import java.util.UUID;
 

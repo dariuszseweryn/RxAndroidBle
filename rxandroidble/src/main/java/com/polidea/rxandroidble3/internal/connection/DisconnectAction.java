@@ -1,7 +1,7 @@
-package com.polidea.rxandroidble2.internal.connection;
+package com.polidea.rxandroidble3.internal.connection;
 
-import com.polidea.rxandroidble2.internal.operations.DisconnectOperation;
-import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble3.internal.operations.DisconnectOperation;
+import com.polidea.rxandroidble3.internal.serialization.ClientOperationQueue;
 
 import bleshadow.javax.inject.Inject;
 
