@@ -2,14 +2,14 @@ package com.polidea.rxandroidble2.exceptions;
 
 
 /**
- * An exception being emitted from an {@link io.reactivex.Observable} returned by the function
+ * An exception being emitted from an {@link io.reactivex.rxjava3.core.Observable} returned by the function
  * {@link com.polidea.rxandroidble2.RxBleDevice#establishConnection(boolean)} or other establishConnection() overloads when this kind
  * of observable was already subscribed and {@link com.polidea.rxandroidble2.RxBleConnection} is currently being established or active.
  *
  * <p>
  *     To prevent this exception from being emitted one must either:<br>
  *     * always unsubscribe from the above mentioned Observable before subscribing again<br>
- *     * {@link io.reactivex.Observable#share()} or {@link io.reactivex.Observable#publish()} the above mentioned
+ *     * {@link io.reactivex.rxjava3.core.Observable#share()} or {@link io.reactivex.rxjava3.core.Observable#publish()} the above mentioned
  *     Observable so it will be subscribed only once
  * </p>
  */

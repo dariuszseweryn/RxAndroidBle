@@ -65,7 +65,8 @@ public abstract class SingleResponseOperation<T> extends QueueOperation<T> {
     /**
      * A function that should return {@link Observable} derived from the passed {@link RxBleGattCallback}.
      * The returned {@link Observable} will be automatically unsubscribed after the first emission.
-     * The returned {@link Observable} is a subject to {@link Observable#timeout(long, TimeUnit, Scheduler, io.reactivex.ObservableSource)}
+     * The returned {@link Observable} is a subject to
+     * {@link Observable#timeout(long, TimeUnit, Scheduler, io.reactivex.rxjava3.core.ObservableSource)}
      * and by default it will throw {@link BleGattCallbackTimeoutException}. This behaviour can be overridden by overriding
      * {@link #timeoutFallbackProcedure(BluetoothGatt, RxBleGattCallback, Scheduler)}.
      *

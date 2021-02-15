@@ -188,7 +188,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should complete the emitted io.reactivex.Observable<byte> when an error happens while writing CCC in QUICK_SETUP mode ack:#ack"() {
+    def "should complete the emitted io.reactivex.rxjava3.core.Observable<byte> when an error happens while writing CCC in QUICK_SETUP mode ack:#ack"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -212,7 +212,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.Observable<byte[]> is made in QUICK_SETUP mode ack:#ack"() {
+    def "should subscribe to DescriptorWriter.writeDescriptor() only after subscription to the emitted io.reactivex.rxjava3.core.Observable<byte[]> is made in QUICK_SETUP mode ack:#ack"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -237,7 +237,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should not subscribe to DescriptorWriter.writeDescriptor() after subscription to the parent io.reactivex.Observable<Observable<byte[]>> was unsubscribed in QUICK_SETUP mode ack:#ack"() {
+    def "should not subscribe to DescriptorWriter.writeDescriptor() after subscription to the parent io.reactivex.rxjava3.core.Observable<Observable<byte[]>> was unsubscribed in QUICK_SETUP mode ack:#ack"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -260,7 +260,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should not subscribe to DescriptorWriter.writeDescriptor() twice in QUICK_SETUP mode when more than one subscription is made to the child io.reactivex.Observable<byte[]> ack:#ack"() {
+    def "should not subscribe to DescriptorWriter.writeDescriptor() twice in QUICK_SETUP mode when more than one subscription is made to the child io.reactivex.rxjava3.core.Observable<byte[]> ack:#ack"() {
         given:
         def characteristic = mockCharacteristicWithValue(uuid: CHARACTERISTIC_UUID, instanceId: CHARACTERISTIC_INSTANCE_ID, value: EMPTY_DATA)
         def descriptor = mockDescriptorAndAttachToCharacteristic(characteristic)
@@ -328,7 +328,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should proxy RxBleGattCallback.observeDisconnect() if happened after io.reactivex.Observable<byte[]> emission"() {
+    def "should proxy RxBleGattCallback.observeDisconnect() if happened after io.reactivex.rxjava3.core.Observable<byte[]> emission"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         def testException = new RuntimeException("test")
@@ -549,7 +549,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should complete the emitted io.reactivex.Observable<byte> when unsubscribed"() {
+    def "should complete the emitted io.reactivex.rxjava3.core.Observable<byte> when unsubscribed"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         rxBleGattCallbackMock.getOnCharacteristicChanged() >> Observable.never()
@@ -567,7 +567,7 @@ class NotificationAndIndicationManagerTest extends ElectricSpecification {
     }
 
     @Unroll
-    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted io.reactivex.Observable<byte>"() {
+    def "should proxy the error emitted by RxBleGattCallback.getOnCharacteristicChanged() to emitted io.reactivex.rxjava3.core.Observable<byte>"() {
         given:
         def characteristic = shouldSetupCharacteristicNotificationCorrectly(CHARACTERISTIC_UUID, CHARACTERISTIC_INSTANCE_ID)
         def testException = new RuntimeException("test")

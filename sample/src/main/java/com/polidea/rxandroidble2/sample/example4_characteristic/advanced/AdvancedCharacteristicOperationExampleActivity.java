@@ -159,7 +159,7 @@ public class AdvancedCharacteristicOperationExampleActivity extends AppCompatAct
     }
 
     /**
-     * Function that returns a {@link io.reactivex.ObservableTransformer} which will on subscribe
+     * Function that returns a {@link ObservableTransformer} which will on subscribe
      * set a text on a button using a proper thread
      *
      * @param button the button to set text on
