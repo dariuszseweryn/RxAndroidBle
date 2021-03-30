@@ -1,11 +1,13 @@
 package com.polidea.rxandroidble2.internal.scan;
 
 
+import android.os.Build;
 import android.os.ParcelUuid;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import android.util.SparseArray;
+import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +17,12 @@ import java.util.Map;
 public class ScanRecordImplNativeWrapper implements ScanRecord {
 
     private final android.bluetooth.le.ScanRecord nativeScanRecord;
+    private final ScanRecordParser scanRecordParser;
 
-    public ScanRecordImplNativeWrapper(android.bluetooth.le.ScanRecord nativeScanRecord) {
+    public ScanRecordImplNativeWrapper(android.bluetooth.le.ScanRecord nativeScanRecord,
+                                       ScanRecordParser scanRecordParser) {
         this.nativeScanRecord = nativeScanRecord;
+        this.scanRecordParser = scanRecordParser;
     }
 
     @Override
@@ -25,10 +30,18 @@ public class ScanRecordImplNativeWrapper implements ScanRecord {
         return nativeScanRecord.getAdvertiseFlags();
     }
 
-    @Nullable
     @Override
     public List<ParcelUuid> getServiceUuids() {
         return nativeScanRecord.getServiceUuids();
+    }
+
+    @Override
+    public List<ParcelUuid> getServiceSolicitationUuids() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return nativeScanRecord.getServiceSolicitationUuids();
+        } else {
+            return scanRecordParser.parseFromBytes(nativeScanRecord.getBytes()).getServiceSolicitationUuids();
+        }
     }
 
     @Override

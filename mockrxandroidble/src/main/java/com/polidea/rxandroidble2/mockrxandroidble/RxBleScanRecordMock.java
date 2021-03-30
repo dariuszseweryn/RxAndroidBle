@@ -20,17 +20,19 @@ import java.util.Map;
  */
 public class RxBleScanRecordMock implements ScanRecord {
 
-    private int advertiseFlags;
-    private List<ParcelUuid> serviceUuids;
-    private SparseArray<byte[]> manufacturerSpecificData;
-    private Map<ParcelUuid, byte[]> serviceData;
-    private int txPowerLevel;
-    private String deviceName;
-    private byte[] bytes;
+    private final int advertiseFlags;
+    private final List<ParcelUuid> serviceUuids;
+    private final List<ParcelUuid> serviceSolicitationUuids;
+    private final SparseArray<byte[]> manufacturerSpecificData;
+    private final Map<ParcelUuid, byte[]> serviceData;
+    private final int txPowerLevel;
+    private final String deviceName;
+    private final byte[] bytes;
 
     public RxBleScanRecordMock(
             int advertiseFlags,
             List<ParcelUuid> serviceUuids,
+            List<ParcelUuid> serviceSolicitationUuids,
             SparseArray<byte[]> manufacturerSpecificData,
             Map<ParcelUuid, byte[]> serviceData,
             int txPowerLevel,
@@ -38,6 +40,7 @@ public class RxBleScanRecordMock implements ScanRecord {
             boolean requireLegacyDataLength) throws UnsupportedEncodingException, IllegalArgumentException {
         this.advertiseFlags = advertiseFlags;
         this.serviceUuids = serviceUuids;
+        this.serviceSolicitationUuids = serviceSolicitationUuids;
         this.manufacturerSpecificData = manufacturerSpecificData;
         this.serviceData = serviceData;
         this.txPowerLevel = txPowerLevel;
@@ -54,6 +57,12 @@ public class RxBleScanRecordMock implements ScanRecord {
     @Override
     public List<ParcelUuid> getServiceUuids() {
         return serviceUuids;
+    }
+
+    @Nullable
+    @Override
+    public List<ParcelUuid> getServiceSolicitationUuids() {
+        return serviceSolicitationUuids;
     }
 
     @Override
@@ -99,15 +108,17 @@ public class RxBleScanRecordMock implements ScanRecord {
      */
     public static class Builder {
         private int advertiseFlags = -1;
-        private List<ParcelUuid> serviceUuids;
-        private SparseArray<byte[]> manufacturerSpecificData;
-        private Map<ParcelUuid, byte[]> serviceData;
+        private final List<ParcelUuid> serviceUuids;
+        private final List<ParcelUuid> serviceSolicitationUuids;
+        private final SparseArray<byte[]> manufacturerSpecificData;
+        private final Map<ParcelUuid, byte[]> serviceData;
         private int txPowerLevel = Integer.MIN_VALUE;
         private String deviceName = null;
         private boolean requireLegacyDataLength = false;
 
         public Builder() {
             serviceUuids = new ArrayList<>();
+            serviceSolicitationUuids = new ArrayList<>();
             manufacturerSpecificData = new SparseArray<>();
             serviceData = new HashMap<>();
         }
@@ -125,6 +136,14 @@ public class RxBleScanRecordMock implements ScanRecord {
          */
         public Builder addServiceUuid(ParcelUuid uuid) {
             serviceUuids.add(uuid);
+            return this;
+        }
+
+        /**
+         * Add a service solicitation UUID
+         */
+        public Builder addServiceSolicitionUuid(ParcelUuid uuid) {
+            serviceSolicitationUuids.add(uuid);
             return this;
         }
 
@@ -179,6 +198,7 @@ public class RxBleScanRecordMock implements ScanRecord {
             return new RxBleScanRecordMock(
                     advertiseFlags,
                     serviceUuids,
+                    serviceSolicitationUuids,
                     manufacturerSpecificData,
                     serviceData,
                     txPowerLevel,
