@@ -1,5 +1,7 @@
 package com.polidea.rxandroidble2.internal.util;
 
+import android.os.ParcelUuid;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -22,7 +24,15 @@ import java.util.UUID;
 @Deprecated
 public class UUIDUtil {
 
-    private ScanRecordParser parser;
+    public static final ParcelUuid BASE_UUID = new ParcelUuid(ScanRecordParser.BASE_UUID);
+    /** Length of bytes for 16 bit UUID */
+    public static final int UUID_BYTES_16_BIT = ScanRecordParser.UUID_BYTES_16_BIT;
+    /** Length of bytes for 32 bit UUID */
+    public static final int UUID_BYTES_32_BIT = ScanRecordParser.UUID_BYTES_32_BIT;
+    /** Length of bytes for 128 bit UUID */
+    public static final int UUID_BYTES_128_BIT = ScanRecordParser.UUID_BYTES_128_BIT;
+
+    private final ScanRecordParser parser;
 
     public UUIDUtil() {
         parser = new ScanRecordParser();
