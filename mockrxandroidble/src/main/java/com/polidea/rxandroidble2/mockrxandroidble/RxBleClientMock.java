@@ -257,21 +257,15 @@ public class RxBleClientMock extends RxBleClient {
 
     @Override
     public RxBleDevice getBleDevice(@NonNull final String macAddress) {
-        RxBleDevice rxBleDevice = discoveredDevicesSubject
-                .filter(new Predicate<RxBleDeviceMock>() {
-                    @Override
-                    public boolean test(RxBleDeviceMock device) {
-                        return device.getMacAddress().equals(macAddress);
-                    }
-                })
-                .firstOrError()
-                .blockingGet();
 
-        if (rxBleDevice == null) {
-            throw new IllegalStateException("Mock is not configured for a given mac address. Use Builder#addDevice method.");
+        Object[] rxBleDevices = discoveredDevicesSubject
+                .getValues();
+        for (Object device : rxBleDevices) {
+            if (((RxBleDevice) device).getMacAddress().equals(macAddress)) {
+                return (RxBleDevice) device;
+            }
         }
-
-        return rxBleDevice;
+        throw new IllegalStateException("Mock is not configured for a given mac address. Use Builder#addDevice method.");
     }
 
     @Override
