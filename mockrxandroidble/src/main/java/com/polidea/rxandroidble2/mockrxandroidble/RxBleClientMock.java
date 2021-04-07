@@ -395,7 +395,7 @@ public class RxBleClientMock extends RxBleClient {
 
     @Override
     public Observable<State> observeStateChanges() {
-        return Observable.just(State.READY);
+        return Observable.never();
     }
 
     @Override
