@@ -1,5 +1,14 @@
 Change Log
 ==========
+Version 1.12.0
+* Fixed a leak in `ScanOperationApi21` (https://github.com/Polidea/RxAndroidBle/pull/708)
+* Added Service Solicitation UUIDs support, thanks nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/711)
+* [mockclient] Added builder for `RxBleScanRecordMock`, thanks nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/703)
+* [mockclient] Changed `RxBleClientMock.DeviceBuilder()` => `RxBleDeviceMock.Builder`. Structural changes to creating devices, thanks nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/706)
+* [mockclient] Added builder functions to provide callbacks for characteristic/descriptor writes/reads, thanks nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/707)
+* [mockclient] Added constructor for `RxScanRecordMock`, thanks nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/712)
+* [mockclient] Fixed behaviour of `RxBleClientMock.observeStateChanges()` (https://github.com/Polidea/RxAndroidBle/pull/744)
+
 Version 1.11.1
 * Fixed `NullPointerException` when logging failed `BluetoothGattCharacteristic` initial reads (https://github.com/Polidea/RxAndroidBle/pull/679)
 * [mockclient] Added support for `BluetoothDevice` in `RxBleDeviceMock` (https://github.com/Polidea/RxAndroidBle/pull/676)
