@@ -22,13 +22,16 @@ public class CheckerLocationProvider {
         this.locationManager = locationManager;
     }
 
-    @SuppressWarnings("deprecation")
     public boolean isLocationProviderEnabled() {
+        if (Build.VERSION.SDK_INT >= 28 /* Build.VERSION_CODES.P */) {
+            return locationManager.isLocationEnabled();
+        }
         if (Build.VERSION.SDK_INT >= 19 /* Build.VERSION_CODES.KITKAT */) {
             try {
+                //noinspection deprecation
                 return Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF;
             } catch (Settings.SettingNotFoundException e) {
-                RxBleLog.w(e, "Could not use LOCATION_MODE check. Falling back to legacy method.");
+                RxBleLog.w(e, "Could not use LOCATION_MODE check. Falling back to a legacy/heuristic function.");
             }
         }
         return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
