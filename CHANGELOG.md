@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 1.12.1
+* Added a new location check for API 28+ (https://github.com/Polidea/RxAndroidBle/pull/747)
+* Fixed requirements for location services check (https://github.com/Polidea/RxAndroidBle/pull/748)
+
 Version 1.12.0
 * Fixed a leak in `ScanOperationApi21`, thanks @seotrader (https://github.com/Polidea/RxAndroidBle/pull/708)
 * Added Service Solicitation UUIDs support, thanks @nrbrook! (https://github.com/Polidea/RxAndroidBle/pull/711)
