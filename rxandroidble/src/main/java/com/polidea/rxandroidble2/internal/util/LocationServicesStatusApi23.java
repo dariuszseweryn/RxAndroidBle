@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble2.internal.util;
 
-import android.os.Build;
-
 import com.polidea.rxandroidble2.ClientComponent;
 
 import bleshadow.javax.inject.Inject;
@@ -13,17 +11,20 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
     private final CheckerLocationPermission checkerLocationPermission;
     private final boolean isAndroidWear;
     private final int targetSdk;
+    private final int deviceSdk;
 
     @Inject
     LocationServicesStatusApi23(
             CheckerLocationProvider checkerLocationProvider,
             CheckerLocationPermission checkerLocationPermission,
             @Named(ClientComponent.PlatformConstants.INT_TARGET_SDK) int targetSdk,
+            @Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
             @Named(ClientComponent.PlatformConstants.BOOL_IS_ANDROID_WEAR) boolean isAndroidWear
     ) {
         this.checkerLocationProvider = checkerLocationProvider;
         this.checkerLocationPermission = checkerLocationPermission;
         this.targetSdk = targetSdk;
+        this.deviceSdk = deviceSdk;
         this.isAndroidWear = isAndroidWear;
     }
 
@@ -39,10 +40,16 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
      * A function that returns true if the location services may be needed to be turned ON. Since there are no official guidelines
      * for Android Wear check is disabled.
      *
-     * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
      * @return true if Location Services need to be turned ON
+     * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
      */
     private boolean isLocationProviderEnabledRequired() {
-        return !isAndroidWear && targetSdk >= Build.VERSION_CODES.M;
+        return !isAndroidWear && (
+                // Apparently since device API 29 target SDK is not honored and location services need to be
+                // turned on for the app to get scan results.
+                // Based on issue https://github.com/Polidea/RxAndroidBle/issues/742
+                deviceSdk >= 29 /* Build.VERSION_CODES.Q */
+                        || targetSdk >= 23 /* Build.VERSION_CODES.M */
+        );
     }
 }
