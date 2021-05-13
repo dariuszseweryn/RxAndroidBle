@@ -67,8 +67,10 @@ public class AndroidScanObjectsConverter {
         if (scanFilter.getServiceDataUuid() != null) {
             builder.setServiceData(scanFilter.getServiceDataUuid(), scanFilter.getServiceData(), scanFilter.getServiceDataMask());
         }
+        if (scanFilter.getDeviceAddress() != null) {
+            builder.setDeviceAddress(scanFilter.getDeviceAddress());
+        }
         return builder
-                .setDeviceAddress(scanFilter.getDeviceAddress())
                 .setDeviceName(scanFilter.getDeviceName())
                 .setManufacturerData(scanFilter.getManufacturerId(), scanFilter.getManufacturerData(), scanFilter.getManufacturerDataMask())
                 .setServiceUuid(scanFilter.getServiceUuid(), scanFilter.getServiceUuidMask())
