@@ -23,6 +23,32 @@ Read the official announcement at [Polidea Blog](https://www.polidea.com/blog/RX
 ## RxAndroidBLE @ Mobile Central Europe 2016
 [![RxAndroidBLE @ Mobile Central Europe 2016](https://img.youtube.com/vi/0aKfUGCxUDM/0.jpg)](https://www.youtube.com/watch?v=0aKfUGCxUDM)
 
+## Getting Started
+### Gradle
+
+```groovy
+implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
+```
+### Maven
+
+```xml
+<dependency>
+  <groupId>com.polidea.rxandroidble2</groupId>
+  <artifactId>rxandroidble</artifactId>
+  <version>1.12.1</version>
+  <type>aar</type>
+</dependency>
+```
+
+### Snapshot
+If your are interested in cutting-edge build you can get a `x.y.z-SNAPSHOT` version of the library.
+NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
+
+To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
+```groovy
+maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+```
+
 ## Usage
 ### Obtaining the client
 It's your job to maintain single instance of the client. You can use singleton, scoped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
@@ -99,7 +125,7 @@ Disposable flowDisposable = rxBleClient.observeStateChanges()
     	    // Handle an error here.
     	}
     );
-    
+
 // When done, just dispose.
 flowDisposable.dispose();
 ```
@@ -269,9 +295,9 @@ Every error you may encounter is provided via `onError` callback. Each public me
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
 There are two types of `Observable`s that you may encounter.
 1. Multiple values - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
-2. One value — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
+2. One value — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled
 
-`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources. 
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources.
 
 The below table contains an overview of used `Observable` patterns
 
@@ -331,32 +357,6 @@ Usage examples are located in:
 - [`/sample-kotlin`](https://github.com/Polidea/RxAndroidBle/tree/master/sample-kotlin/src/main/kotlin/com/polidea/rxandroidble2/samplekotlin)
 
 Keep in mind that these are only _samples_ to show how the library can be used. These are not meant for being role model of a good application architecture.
-
-## Download
-### Gradle
-
-```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
-```
-### Maven
-
-```xml
-<dependency>
-  <groupId>com.polidea.rxandroidble2</groupId>
-  <artifactId>rxandroidble</artifactId>
-  <version>1.12.1</version>
-  <type>aar</type>
-</dependency>
-```
-
-### Snapshot
-If your are interested in cutting-edge build you can get a `SNAPSHOT` version of the library. 
-NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
-
-To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
-```groovy
-maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-```
 
 ## Testing
 Using RxAndroidBle enables you to test your application easily.
