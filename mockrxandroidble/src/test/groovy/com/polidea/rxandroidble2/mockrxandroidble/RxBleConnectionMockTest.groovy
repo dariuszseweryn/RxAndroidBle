@@ -1,20 +1,17 @@
 package com.polidea.rxandroidble2.mockrxandroidble
 
-import android.os.Build
+
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
-import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import org.robolectric.annotation.Config
-import com.polidea.rxandroidble2.BuildConfig
+import spock.lang.Specification
 
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleConnectionMockTest extends ElectricSpecification {
+public class RxBleConnectionMockTest extends Specification {
 
     def serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
     def characteristicUUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")

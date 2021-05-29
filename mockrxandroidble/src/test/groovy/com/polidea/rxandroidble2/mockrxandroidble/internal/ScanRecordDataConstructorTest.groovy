@@ -1,14 +1,10 @@
 package com.polidea.rxandroidble2.mockrxandroidble.internal
 
-import android.os.Build
 import android.os.ParcelUuid
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleScanRecordMock
-import hkhc.electricspock.ElectricSpecification
-import org.robolectric.annotation.Config
-import com.polidea.rxandroidble2.BuildConfig
+import spock.lang.Specification
 
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-public class ScanRecordDataConstructorTest extends ElectricSpecification {
+public class ScanRecordDataConstructorTest extends Specification {
 
     def setup() {
 

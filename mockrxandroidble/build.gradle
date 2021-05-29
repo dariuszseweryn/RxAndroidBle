@@ -41,10 +41,7 @@ dependencies {
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
-    testImplementation rootProject.ext.libs.robolectric
-    testImplementation(rootProject.ext.libs.electricspock) {
-        exclude group: 'org.robolectric', module: 'android-all'
-    }
+    testImplementation project(path: ':test-android-dependencies')
     api project(path: ':rxandroidble')
     api rootProject.ext.libs.rxjava
 }

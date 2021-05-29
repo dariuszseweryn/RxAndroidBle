@@ -1,19 +1,15 @@
 package com.polidea.rxandroidble2.mockrxandroidble
 
-import android.os.Build
 import android.os.ParcelUuid
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
-import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import org.robolectric.annotation.Config
-import com.polidea.rxandroidble2.BuildConfig
+import spock.lang.Specification
 
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-public class RxBleClientMockLegacyTest extends ElectricSpecification {
+public class RxBleClientMockLegacyTest extends Specification {
 
     def serviceUUID = UUID.fromString("00001234-0000-0000-8000-000000000000")
     def serviceUUID2 = UUID.fromString("00001235-0000-0000-8000-000000000000")
