@@ -23,6 +23,59 @@ Read the official announcement at [Polidea Blog](https://www.polidea.com/blog/RX
 ## RxAndroidBLE @ Mobile Central Europe 2016
 [![RxAndroidBLE @ Mobile Central Europe 2016](https://img.youtube.com/vi/0aKfUGCxUDM/0.jpg)](https://www.youtube.com/watch?v=0aKfUGCxUDM)
 
+## Getting Started
+
+The first step is to include RxAndroidBle into your project.
+
+### Gradle
+If you use Gradle to build your project — as a Gradle project implementation dependency:
+```groovy
+implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
+```
+### Maven
+If you use Maven to build your project — as a Maven project dependency:
+```xml
+<dependency>
+  <groupId>com.polidea.rxandroidble2</groupId>
+  <artifactId>rxandroidble</artifactId>
+  <version>1.12.1</version>
+  <type>aar</type>
+</dependency>
+```
+
+### Snapshot
+If your are interested in cutting-edge build you can get a `x.y.z-SNAPSHOT` version of the library.
+NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
+
+To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
+```groovy
+maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+```
+
+### Permissions
+Android since API 23 (6.0 / Marshmallow) requires location permissions declared in the manifest for an app to run a BLE scan. RxAndroidBle already provides all the necessary bluetooth permissions for you in AndroidManifest.
+
+Runtime permissions required for running a BLE scan:
+
+| from API | to API (inclusive) | Acceptable runtime permissions |
+|:---:|:---:| --- |
+| 18 | 22 | (No runtime permissions needed) |
+| 23 | 28 | One of below:<br>- `android.permission.ACCESS_COARSE_LOCATION`<br>- `android.permission.ACCESS_FINE_LOCATION` |
+| 29 | current | - `android.permission.ACCESS_FINE_LOCATION` |
+
+#### Potential permission issues
+Google is checking `AndroidManifest` for declaring permissions when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your manifest does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. These permissions are only required on SDK 23+. If you need any of these permissions on a lower version of Android replace your statement with:
+```xml
+<uses-permission
+  android:name="android.permission.ACCESS_COARSE_LOCATION"
+  android:maxSdkVersion="22"/>
+```
+```xml
+<uses-permission
+  android:name="android.permission.ACCESS_FINE_LOCATION"
+  android:maxSdkVersion="22"/>
+```
+
 ## Usage
 ### Obtaining the client
 It's your job to maintain single instance of the client. You can use singleton, scoped [Dagger](http://google.github.io/dagger/) component or whatever else you want.
@@ -99,7 +152,7 @@ Disposable flowDisposable = rxBleClient.observeStateChanges()
     	    // Handle an error here.
     	}
     );
-    
+
 // When done, just dispose.
 flowDisposable.dispose();
 ```
@@ -269,9 +322,9 @@ Every error you may encounter is provided via `onError` callback. Each public me
 From different interfaces, you can obtain different `Observable`s which exhibit different behaviours.
 There are two types of `Observable`s that you may encounter.
 1. Multiple values - i.e. `RxBleClient.scan()`, `RxBleDevice.observeConnectionStateChanges()` and `Observable` emitted by `RxBleConnection.setupNotification()` / `RxBleConnection.setupIndication()`
-2. One value — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled 
+2. One value — these usually are meant for auto cleanup upon disposing i.e. `setupNotification()` / `setupIndication()` — when you will dispose the notification / indication will be disabled
 
-`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources. 
+`RxBleDevice.establishConnection()` is an `Observable` that will emit a single `RxBleConnection` but will not complete as the connection may be later a subject to an error (i.e. external disconnection). Whenever you are no longer interested in keeping the connection open you should dispose it which will cause disconnection and cleanup of resources.
 
 The below table contains an overview of used `Observable` patterns
 
@@ -300,30 +353,6 @@ Since `RxAndroidBle` reads and notifications emit `byte[]` you may want to use `
 #### Observing BluetoothAdapter state
 If you would like to observe `BluetoothAdapter` state changes you can use `RxBleAdapterStateObservable`.
 
-### Permissions
-Android since API 23 (6.0 / Marshmallow) requires location permissions declared in the manifest for an app to run a BLE scan. RxAndroidBle already provides all the necessary bluetooth permissions for you in AndroidManifest.
-
-Runtime permissions required for running a BLE scan:
-
-| from API | to API (inclusive) | Acceptable runtime permissions |
-|:---:|:---:| --- |
-| 18 | 22 | (No runtime permissions needed) |
-| 23 | 28 | One of below:<br>- `android.permission.ACCESS_COARSE_LOCATION`<br>- `android.permission.ACCESS_FINE_LOCATION` |
-| 29 | current | - `android.permission.ACCESS_FINE_LOCATION` |
-
-#### Potential permission issues
-Google is checking `AndroidManifest` for declaring permissions when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your manifest does not merge with RxAndroidBle's, resulting in a failure to upload to the Play Store. These permissions are only required on SDK 23+. If you need any of these permissions on a lower version of Android replace your statement with:
-```xml
-<uses-permission
-  android:name="android.permission.ACCESS_COARSE_LOCATION"
-  android:maxSdkVersion="22"/>
-```
-```xml
-<uses-permission
-  android:name="android.permission.ACCESS_FINE_LOCATION"
-  android:maxSdkVersion="22"/>
-```
-
 ## More examples
 
 Usage examples are located in:
@@ -331,32 +360,6 @@ Usage examples are located in:
 - [`/sample-kotlin`](https://github.com/Polidea/RxAndroidBle/tree/master/sample-kotlin/src/main/kotlin/com/polidea/rxandroidble2/samplekotlin)
 
 Keep in mind that these are only _samples_ to show how the library can be used. These are not meant for being role model of a good application architecture.
-
-## Download
-### Gradle
-
-```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
-```
-### Maven
-
-```xml
-<dependency>
-  <groupId>com.polidea.rxandroidble2</groupId>
-  <artifactId>rxandroidble</artifactId>
-  <version>1.12.1</version>
-  <type>aar</type>
-</dependency>
-```
-
-### Snapshot
-If your are interested in cutting-edge build you can get a `SNAPSHOT` version of the library. 
-NOTE: Snapshots are built from the top of the `master` and `develop` branches and a subject to more frequent changes that may break the API and/or change behavior.
-
-To be able to download it you need to add Sonatype Snapshot repository site to your `build.gradle` file:
-```groovy
-maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-```
 
 ## Testing
 Using RxAndroidBle enables you to test your application easily.
