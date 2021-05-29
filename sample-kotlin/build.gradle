@@ -62,5 +62,4 @@ dependencies {
     // Test
     testImplementation project(':mockrxandroidble')
     testImplementation rootProject.ext.libs.junit
-    testImplementation rootProject.ext.libs.robolectric
 }
