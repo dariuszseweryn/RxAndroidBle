@@ -56,11 +56,8 @@ dependencies {
 
     // Test dependencies
     testImplementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
+    testImplementation project(path: ':test-android-dependencies')
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
-    testImplementation(rootProject.ext.libs.robolectric)
-    testImplementation(rootProject.ext.libs.electricspock){
-        exclude group: 'org.robolectric', module: 'android-all'
-    }
 }

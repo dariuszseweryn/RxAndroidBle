@@ -25,7 +25,7 @@ package android.bluetooth;
 //import android.annotation.SystemApi;
 //import android.app.PropertyInvalidatedCache;
 //import android.compat.annotation.UnsupportedAppUsage;
-//import android.content.Context;
+import android.content.Context;
 //import android.os.Build;
 //import android.os.Handler;
 //import android.os.Parcel;
@@ -76,7 +76,7 @@ import java.util.UUID;
  * {@see BluetoothAdapter}
  * {@see BluetoothSocket}
  */
-public final class BluetoothDevice {
+public class BluetoothDevice {
     private static final String TAG = "BluetoothDevice";
     private static final boolean DBG = false;
     /**
@@ -963,67 +963,36 @@ public final class BluetoothDevice {
 //    public void writeToParcel(Parcel out, int flags) {
 //        out.writeString(mAddress);
 //    }
-//    /**
-//     * Returns the hardware address of this BluetoothDevice.
-//     * <p> For example, "00:11:22:AA:BB:CC".
-//     *
-//     * @return Bluetooth hardware address as string
-//     */
-//    public String getAddress() {
-//        if (DBG) Log.d(TAG, "mAddress: " + mAddress);
-//        return mAddress;
-//    }
-//    /**
-//     * Get the friendly Bluetooth name of the remote device.
-//     *
-//     * <p>The local adapter will automatically retrieve remote names when
-//     * performing a device scan, and will cache them. This method just returns
-//     * the name for this device from the cache.
-//     *
-//     * @return the Bluetooth name, or null if there was a problem.
-//     */
-//    @RequiresPermission(Manifest.permission.BLUETOOTH)
-//    public String getName() {
-//        final IBluetooth service = sService;
-//        if (service == null) {
-//            Log.e(TAG, "BT not enabled. Cannot get Remote Device name");
-//            return null;
-//        }
-//        try {
-//            String name = service.getRemoteName(this);
-//            if (name != null) {
-//                // remove whitespace characters from the name
-//                return name
-//                        .replace('\t', ' ')
-//                        .replace('\n', ' ')
-//                        .replace('\r', ' ');
-//            }
-//            return null;
-//        } catch (RemoteException e) {
-//            Log.e(TAG, "", e);
-//        }
-//        return null;
-//    }
-//    /**
-//     * Get the Bluetooth device type of the remote device.
-//     *
-//     * @return the device type {@link #DEVICE_TYPE_CLASSIC}, {@link #DEVICE_TYPE_LE} {@link
-//     * #DEVICE_TYPE_DUAL}. {@link #DEVICE_TYPE_UNKNOWN} if it's not available
-//     */
-//    @RequiresPermission(Manifest.permission.BLUETOOTH)
-//    public int getType() {
-//        final IBluetooth service = sService;
-//        if (service == null) {
-//            Log.e(TAG, "BT not enabled. Cannot get Remote Device type");
-//            return DEVICE_TYPE_UNKNOWN;
-//        }
-//        try {
-//            return service.getRemoteType(this);
-//        } catch (RemoteException e) {
-//            Log.e(TAG, "", e);
-//        }
-//        return DEVICE_TYPE_UNKNOWN;
-//    }
+    /**
+     * Returns the hardware address of this BluetoothDevice.
+     * <p> For example, "00:11:22:AA:BB:CC".
+     *
+     * @return Bluetooth hardware address as string
+     */
+    public String getAddress() {
+        return null;
+    }
+    /**
+     * Get the friendly Bluetooth name of the remote device.
+     *
+     * <p>The local adapter will automatically retrieve remote names when
+     * performing a device scan, and will cache them. This method just returns
+     * the name for this device from the cache.
+     *
+     * @return the Bluetooth name, or null if there was a problem.
+     */
+    public String getName() {
+        return null;
+    }
+    /**
+     * Get the Bluetooth device type of the remote device.
+     *
+     * @return the device type {@link #DEVICE_TYPE_CLASSIC}, {@link #DEVICE_TYPE_LE} {@link
+     * #DEVICE_TYPE_DUAL}. {@link #DEVICE_TYPE_UNKNOWN} if it's not available
+     */
+    public int getType() {
+        return DEVICE_TYPE_UNKNOWN;
+    }
 //    /**
 //     * Get the Bluetooth alias of the remote device.
 //     * <p>Alias is the locally modified name of a remote device.
@@ -1098,20 +1067,19 @@ public final class BluetoothDevice {
 //        }
 //        return BATTERY_LEVEL_UNKNOWN;
 //    }
-//    /**
-//     * Start the bonding (pairing) process with the remote device.
-//     * <p>This is an asynchronous call, it will return immediately. Register
-//     * for {@link #ACTION_BOND_STATE_CHANGED} intents to be notified when
-//     * the bonding process completes, and its result.
-//     * <p>Android system services will handle the necessary user interactions
-//     * to confirm and complete the bonding process.
-//     *
-//     * @return false on immediate error, true if bonding will begin
-//     */
-//    @RequiresPermission(Manifest.permission.BLUETOOTH_ADMIN)
-//    public boolean createBond() {
-//        return createBond(TRANSPORT_AUTO);
-//    }
+    /**
+     * Start the bonding (pairing) process with the remote device.
+     * <p>This is an asynchronous call, it will return immediately. Register
+     * for {@link #ACTION_BOND_STATE_CHANGED} intents to be notified when
+     * the bonding process completes, and its result.
+     * <p>Android system services will handle the necessary user interactions
+     * to confirm and complete the bonding process.
+     *
+     * @return false on immediate error, true if bonding will begin
+     */
+    public boolean createBond() {
+        return true;
+    }
 //    /**
 //     * Start the bonding (pairing) process with the remote device using the
 //     * specified transport.
@@ -1274,33 +1242,18 @@ public final class BluetoothDevice {
 //    public static void invalidateBluetoothGetBondStateCache() {
 //        PropertyInvalidatedCache.invalidateCache(BLUETOOTH_BONDING_CACHE_PROPERTY);
 //    }
-//    /**
-//     * Get the bond state of the remote device.
-//     * <p>Possible values for the bond state are:
-//     * {@link #BOND_NONE},
-//     * {@link #BOND_BONDING},
-//     * {@link #BOND_BONDED}.
-//     *
-//     * @return the bond state
-//     */
-//    @RequiresPermission(Manifest.permission.BLUETOOTH)
-//    public int getBondState() {
-//        final IBluetooth service = sService;
-//        if (service == null) {
-//            Log.e(TAG, "BT not enabled. Cannot get bond state");
-//            return BOND_NONE;
-//        }
-//        try {
-//            return mBluetoothBondCache.query(this);
-//        } catch (RuntimeException e) {
-//            if (e.getCause() instanceof RemoteException) {
-//                Log.e(TAG, "", e);
-//            } else {
-//                throw e;
-//            }
-//        }
-//        return BOND_NONE;
-//    }
+    /**
+     * Get the bond state of the remote device.
+     * <p>Possible values for the bond state are:
+     * {@link #BOND_NONE},
+     * {@link #BOND_BONDING},
+     * {@link #BOND_BONDED}.
+     *
+     * @return the bond state
+     */
+    public int getBondState() {
+        return BOND_NONE;
+    }
 //    /**
 //     * Returns whether there is an open connection to this device.
 //     *
@@ -1954,41 +1907,41 @@ public final class BluetoothDevice {
 //        }
 //        return pinBytes;
 //    }
-//    /**
-//     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
-//     * The callback is used to deliver results to Caller, such as connection status as well
-//     * as any further GATT client operations.
-//     * The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct
-//     * GATT client operations.
-//     *
-//     * @param callback GATT callback handler that will receive asynchronous callbacks.
-//     * @param autoConnect Whether to directly connect to the remote device (false) or to
-//     * automatically connect as soon as the remote device becomes available (true).
-//     * @throws IllegalArgumentException if callback is null
-//     */
-//    public BluetoothGatt connectGatt(Context context, boolean autoConnect,
-//                                     BluetoothGattCallback callback) {
-//        return (connectGatt(context, autoConnect, callback, TRANSPORT_AUTO));
-//    }
-//    /**
-//     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
-//     * The callback is used to deliver results to Caller, such as connection status as well
-//     * as any further GATT client operations.
-//     * The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct
-//     * GATT client operations.
-//     *
-//     * @param callback GATT callback handler that will receive asynchronous callbacks.
-//     * @param autoConnect Whether to directly connect to the remote device (false) or to
-//     * automatically connect as soon as the remote device becomes available (true).
-//     * @param transport preferred transport for GATT connections to remote dual-mode devices {@link
-//     * BluetoothDevice#TRANSPORT_AUTO} or {@link BluetoothDevice#TRANSPORT_BREDR} or {@link
-//     * BluetoothDevice#TRANSPORT_LE}
-//     * @throws IllegalArgumentException if callback is null
-//     */
-//    public BluetoothGatt connectGatt(Context context, boolean autoConnect,
-//                                     BluetoothGattCallback callback, int transport) {
-//        return (connectGatt(context, autoConnect, callback, transport, PHY_LE_1M_MASK));
-//    }
+    /**
+     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
+     * The callback is used to deliver results to Caller, such as connection status as well
+     * as any further GATT client operations.
+     * The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct
+     * GATT client operations.
+     *
+     * @param callback GATT callback handler that will receive asynchronous callbacks.
+     * @param autoConnect Whether to directly connect to the remote device (false) or to
+     * automatically connect as soon as the remote device becomes available (true).
+     * @throws IllegalArgumentException if callback is null
+     */
+    public BluetoothGatt connectGatt(Context context, boolean autoConnect,
+                                     BluetoothGattCallback callback) {
+        return (connectGatt(context, autoConnect, callback, TRANSPORT_AUTO));
+    }
+    /**
+     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
+     * The callback is used to deliver results to Caller, such as connection status as well
+     * as any further GATT client operations.
+     * The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct
+     * GATT client operations.
+     *
+     * @param callback GATT callback handler that will receive asynchronous callbacks.
+     * @param autoConnect Whether to directly connect to the remote device (false) or to
+     * automatically connect as soon as the remote device becomes available (true).
+     * @param transport preferred transport for GATT connections to remote dual-mode devices {@link
+     * BluetoothDevice#TRANSPORT_AUTO} or {@link BluetoothDevice#TRANSPORT_BREDR} or {@link
+     * BluetoothDevice#TRANSPORT_LE}
+     * @throws IllegalArgumentException if callback is null
+     */
+    public BluetoothGatt connectGatt(Context context, boolean autoConnect,
+                                     BluetoothGattCallback callback, int transport) {
+        return null;
+    }
 //    /**
 //     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
 //     * The callback is used to deliver results to Caller, such as connection status as well

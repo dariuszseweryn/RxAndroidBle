@@ -20,7 +20,7 @@ import java.util.UUID;
  * immutable representation of a 128-bit universally unique
  * identifier.
  */
-public final class ParcelUuid {
+public class ParcelUuid {
     public final UUID mUuid;
     /**
      * Constructor creates a ParcelUuid instance from the

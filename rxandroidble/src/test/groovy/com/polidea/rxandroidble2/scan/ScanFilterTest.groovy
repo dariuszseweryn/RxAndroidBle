@@ -1,14 +1,11 @@
 package com.polidea.rxandroidble2.scan
 
-import android.os.Build
-import android.os.ParcelUuid
-import com.polidea.rxandroidble2.BuildConfig
-import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult
-import hkhc.electricspock.ElectricSpecification
-import org.robolectric.annotation.Config
 
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-public class ScanFilterTest extends ElectricSpecification {
+import android.os.ParcelUuid
+import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult
+import spock.lang.Specification
+
+class ScanFilterTest extends Specification {
 
     RxBleInternalScanResult mockInternalScanResult = Mock RxBleInternalScanResult
 

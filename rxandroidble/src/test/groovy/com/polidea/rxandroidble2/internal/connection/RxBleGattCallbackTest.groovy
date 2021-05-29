@@ -1,7 +1,5 @@
 package com.polidea.rxandroidble2.internal.connection
 
-import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED
-
 import android.bluetooth.*
 import com.polidea.rxandroidble2.ConnectionParameters
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback
@@ -10,27 +8,27 @@ import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.exceptions.*
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
-import hkhc.electricspock.ElectricSpecification
 import io.reactivex.Observable
 import io.reactivex.annotations.NonNull
-import io.reactivex.functions.Predicate
 import io.reactivex.functions.Function
+import io.reactivex.functions.Predicate
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
-import java.util.function.Consumer
-import org.robolectric.annotation.Config
 import spock.lang.Shared
+import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.function.Consumer
 
 import static android.bluetooth.BluetoothGatt.GATT_FAILURE
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.*
+import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
-@Config(manifest = Config.NONE)
-class RxBleGattCallbackTest extends ElectricSpecification {
+class RxBleGattCallbackTest extends Specification {
 
     DisconnectionRouter mockDisconnectionRouter
 
