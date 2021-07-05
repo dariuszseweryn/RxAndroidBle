@@ -1,5 +1,5 @@
 ext {
-    rxJavaVersion = '3.0.11'
+    rxJavaVersion = '3.0.13'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_8
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
     shadowPluginVersion = '5.0.0'
