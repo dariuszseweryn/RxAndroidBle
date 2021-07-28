@@ -22,7 +22,7 @@ import io.reactivex.Scheduler;
 import io.reactivex.Single;
 
 /**
- * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * A convenience class intended to use with {@link BluetoothGatt} functions that fire one-time actions.
  *
  * @param <T> The type of emitted result.
  */
