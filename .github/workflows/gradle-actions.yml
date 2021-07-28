@@ -1,10 +1,25 @@
-name: "Gradle Tasks"
+name: "Gradle Actions"
 on: [push, pull_request]
 
 jobs:
-  validation:
-    name: "Test"
+  gradle_validation:
+    name: "Validate Gradle Wrapper"
     runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v2
+      - name: "Validate"
+        uses: gradle/wrapper-validation-action@v1
+      - name: "Set up Android JDK environment"
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+      - name: "Run Checkstyle"
+        run: ./gradlew checkstyle
+  gradle_tasks:
+    name: "Gradle Tasks"
+    runs-on: ubuntu-latest
+    needs: gradle_validation
     steps:
       - name: "Checkout Repository"
         uses: actions/checkout@v2
