@@ -17,6 +17,6 @@ jobs:
       - name: Run Unit Tests — RxAndroidBle
         run: ./gradlew :rxandroidble:test
       - name: Run Unit Tests — MockClient
-        run: ./gradlew :mockclient:test
+        run: ./gradlew :mockrxandroidble:test
       - name: Run Unit Tests — Sample Kotlin
         run: ./gradlew :sample-kotlin:test
