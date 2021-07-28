@@ -59,7 +59,7 @@ class PresenterTest {
                 CompatibilityModeEvent(false),
                 ResultEvent(characteristicData.toList(), Type.READ)
             )
-        ).assertValueCount(3)
+        ).assertValueCount(2)
     }
 
     @Test

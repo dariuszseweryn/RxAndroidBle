@@ -12,7 +12,11 @@ jobs:
         uses: actions/setup-java@v1.4.3
         with:
           java-version: 1.8
-      - name: Run Unit Tests
+      - name: Run Checkstyle
         run: ./gradlew checkstyle
-      - name: Run Unit Tests
-        run: ./gradlew test
+      - name: Run Unit Tests — RxAndroidBle
+        run: ./gradlew :rxandroidble:test
+      - name: Run Unit Tests — MockClient
+        run: ./gradlew :mockclient:test
+      - name: Run Unit Tests — Sample Kotlin
+        run: ./gradlew :sample-kotlin:test
