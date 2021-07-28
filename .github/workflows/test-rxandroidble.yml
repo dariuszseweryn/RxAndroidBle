@@ -1,4 +1,4 @@
-name: "Test RxAndroidBle"
+name: "Tests"
 on: [push, pull_request]
 
 jobs:
@@ -6,17 +6,17 @@ jobs:
     name: "Test"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: "Checkout Repository"
         uses: actions/checkout@v2
-      - name: Set up Android JDK environment
+      - name: "Set up Android JDK environment"
         uses: actions/setup-java@v1.4.3
         with:
           java-version: 1.8
-      - name: Run Checkstyle
+      - name: "Run Checkstyle"
         run: ./gradlew checkstyle
-      - name: Run Unit Tests — RxAndroidBle
+      - name: "Run Unit Tests — RxAndroidBle"
         run: ./gradlew :rxandroidble:testReleaseUnitTest
-      - name: Run Unit Tests — MockClient
+      - name: "Run Unit Tests — MockClient"
         run: ./gradlew :mockrxandroidble:testReleaseUnitTest
-      - name: Run Unit Tests — Sample Kotlin
+      - name: "Run Unit Tests — Sample Kotlin"
         run: ./gradlew :sample-kotlin:testReleaseUnitTest
