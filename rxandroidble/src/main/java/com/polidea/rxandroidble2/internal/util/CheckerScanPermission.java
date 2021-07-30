@@ -12,13 +12,13 @@ import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ClientScope;
 
 @ClientScope
-public class CheckerLocationPermission {
+public class CheckerScanPermission {
 
     private final Context context;
     private final String[] scanPermissions;
 
     @Inject
-    CheckerLocationPermission(
+    CheckerScanPermission(
             Context context,
             @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[] scanPermissions
     ) {

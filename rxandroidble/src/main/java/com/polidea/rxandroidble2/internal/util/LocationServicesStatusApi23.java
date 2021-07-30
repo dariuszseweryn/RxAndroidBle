@@ -8,7 +8,7 @@ import bleshadow.javax.inject.Named;
 public class LocationServicesStatusApi23 implements LocationServicesStatus {
 
     private final CheckerLocationProvider checkerLocationProvider;
-    private final CheckerLocationPermission checkerLocationPermission;
+    private final CheckerScanPermission checkerScanPermission;
     private final boolean isAndroidWear;
     private final int targetSdk;
     private final int deviceSdk;
@@ -16,20 +16,20 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
     @Inject
     LocationServicesStatusApi23(
             CheckerLocationProvider checkerLocationProvider,
-            CheckerLocationPermission checkerLocationPermission,
+            CheckerScanPermission checkerScanPermission,
             @Named(ClientComponent.PlatformConstants.INT_TARGET_SDK) int targetSdk,
             @Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
             @Named(ClientComponent.PlatformConstants.BOOL_IS_ANDROID_WEAR) boolean isAndroidWear
     ) {
         this.checkerLocationProvider = checkerLocationProvider;
-        this.checkerLocationPermission = checkerLocationPermission;
+        this.checkerScanPermission = checkerScanPermission;
         this.targetSdk = targetSdk;
         this.deviceSdk = deviceSdk;
         this.isAndroidWear = isAndroidWear;
     }
 
     public boolean isLocationPermissionOk() {
-        return checkerLocationPermission.isScanRuntimePermissionGranted();
+        return checkerScanPermission.isScanRuntimePermissionGranted();
     }
 
     public boolean isLocationProviderOk() {

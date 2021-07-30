@@ -8,7 +8,7 @@ import spock.lang.Unroll
 class LocationServicesStatusApi23Test extends Specification {
 
     def mockCheckerLocationProvider = Mock CheckerLocationProvider
-    def mockCheckerLocationPermission = Mock CheckerLocationPermission
+    def mockCheckerLocationPermission = Mock CheckerScanPermission
     int mockApplicationTargetSdk
     int mockApplicationDeviceSdk
     boolean mockIsAndroidWear

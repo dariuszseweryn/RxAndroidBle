@@ -157,8 +157,12 @@ public interface ClientComponent {
                         Manifest.permission.ACCESS_FINE_LOCATION
                 };
             }
-            // Since API 29 (Android 10) only ACCESS_FINE_LOCATION allows for getting scan results
-            return new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+            if (sdkVersion < 31 /* pre Android 12 */) {
+                // Since API 29 (Android 10) only ACCESS_FINE_LOCATION allows for getting scan results
+                return new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+            }
+            // Since API 31 (Android 12) only BLUETOOTH_SCAN allows for getting scan results
+            return new String[]{Manifest.permission.BLUETOOTH_SCAN};
         }
 
         @Provides

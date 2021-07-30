@@ -9,7 +9,7 @@ import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble2.internal.operations.Operation
 import com.polidea.rxandroidble2.internal.scan.*
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
-import com.polidea.rxandroidble2.internal.util.CheckerLocationPermission
+import com.polidea.rxandroidble2.internal.util.CheckerScanPermission
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable
 import com.polidea.rxandroidble2.internal.util.ScanRecordParser
 import com.polidea.rxandroidble2.scan.BackgroundScanner
@@ -53,7 +53,7 @@ class RxBleClientTest extends ElectricSpecification {
     ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
     ScanPreconditionsVerifier mockScanPreconditionVerifier = Mock ScanPreconditionsVerifier
     InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
-    CheckerLocationPermission mockCheckerLocationPermission = Mock CheckerLocationPermission
+    CheckerScanPermission mockCheckerLocationPermission = Mock CheckerScanPermission
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
     private static Date suggestedDateToRetry = new Date()
