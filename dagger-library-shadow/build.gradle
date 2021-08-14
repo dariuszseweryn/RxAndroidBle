@@ -28,3 +28,8 @@ artifacts {
 dependencies {
     implementation rootProject.ext.libs.dagger
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
