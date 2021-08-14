@@ -18,10 +18,10 @@ jobs:
       - name: "Checkout Repository"
         uses: actions/checkout@v2
       - name: "Set up Android JDK environment"
-        uses: actions/setup-java@v2.1.0
+        uses: actions/setup-java@v2.2.0
         with:
           distribution: 'adopt'
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
       - name: "Run Checkstyle"
         run: ./gradlew checkstyle
