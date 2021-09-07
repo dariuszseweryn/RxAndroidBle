@@ -54,13 +54,13 @@ dependencies {
     // RxJava
     implementation rootProject.ext.libs.rxjava
     implementation rootProject.ext.libs.rxandroid
-    implementation 'io.reactivex.rxjava3:rxkotlin:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxkotlin:3.0.1'
 
     // Replaying share
     implementation rootProject.ext.libs.rxjava_replayingshare
 
     // Test
     testImplementation project(':mockrxandroidble')
-    testImplementation rootProject.ext.libs.junit
-    testImplementation rootProject.ext.libs.robolectric
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.6.1'
 }
