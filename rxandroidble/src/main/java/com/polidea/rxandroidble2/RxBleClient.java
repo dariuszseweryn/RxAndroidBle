@@ -208,8 +208,11 @@ public abstract class RxBleClient {
      * {@link android.Manifest.permission#ACCESS_COARSE_LOCATION}
      * {@link android.Manifest.permission#ACCESS_FINE_LOCATION}
      * <p>
-     * case: 29 <= API<p>
+     * case: 29 <= API < 31<p>
      * {@link android.Manifest.permission#ACCESS_FINE_LOCATION}
+     * <p>
+     * case: 31 <= API<p>
+     * {@link android.Manifest.permission#BLUETOOTH_SCAN}
      *
      * @return an ordered array of possible scan permissions
      */
