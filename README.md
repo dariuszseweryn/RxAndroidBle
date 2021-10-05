@@ -63,10 +63,11 @@ Runtime permissions required for running a BLE scan:
 | 18 | 22 | (No runtime permissions needed) |
 | 23 | 28 | One of below:<br>- `android.permission.ACCESS_COARSE_LOCATION`<br>- `android.permission.ACCESS_FINE_LOCATION` |
 | 29 | 30 | - `android.permission.ACCESS_FINE_LOCATION`<br>- `android.permission.ACCESS_BACKGROUND_LOCATION`\* |
-| 31 | current | - `android.permission.BLUETOOTH_SCAN`\*\* |
+| 31 | current | - `android.permission.BLUETOOTH_SCAN`\*\*<br>- `android.permission.ACCESS_FINE_LOCATION`\*\*\* |
 
 \* Needed if [scan is performed in background](https://developer.android.com/about/versions/10/privacy/changes#app-access-device-location)
 \*\* It is assumed in [AndroidManifest](https://github.com/Polidea/RxAndroidBle/blob/master/rxandroidble/src/main/AndroidManifest.xml) that the application is trying to derive user's location from BLE signal. If that is not the case look below into [Potential permission issues](https://github.com/Polidea/RxAndroidBle#potential-permission-issues).
+\*\*\* Needed if `BLUETOOTH_SCAN` is not using `neverForLocation` flag
 
 #### Connecting
 Runtime permissions required for connecting to a BLE peripheral:
@@ -87,7 +88,7 @@ If you only want to scan BLE peripherals and do not access location otherwise yo
 <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
 <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
 ```
-After API 31 (Android 12) there are new Bluetooth permissions. One of them comes in a flavour that restricts deriving user's location from BLE signal acquired while scanning — this is assumed by the library. If you need to locate user by scanning BLE use below:
+After API 31 (Android 12) there are new Bluetooth permissions. One of them comes in a flavour that restricts deriving user's location from BLE signal acquired while scanning — this is assumed by the library. If you need to locate user by scanning BLE use below but keep in mind that you will still need `ACCESS_FINE_LOCATION` then:
 ```xml
 <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:node="remove" />
 <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
