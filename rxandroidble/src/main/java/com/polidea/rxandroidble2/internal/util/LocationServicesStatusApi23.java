@@ -44,13 +44,11 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
      * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
      */
     private boolean isLocationProviderEnabledRequired() {
-        if (isAndroidWear) {
-            return false;
-        }
-        // Apparently since device API 29 target SDK is not honored and location services need to be
-        // turned on for the app to get scan results.
-        // Based on issue https://github.com/Polidea/RxAndroidBle/issues/742
-        return deviceSdk >= 29 /* Build.VERSION_CODES.Q */
-                || targetSdk >= 23 /* Build.VERSION_CODES.M */;
+        return !isAndroidWear && (
+                // Apparently since device API 29 target SDK is not honored and location services need to be
+                // turned on for the app to get scan results.
+                // Based on issue https://github.com/Polidea/RxAndroidBle/issues/742
+                deviceSdk >= 29 /* Build.VERSION_CODES.Q */
+                        || targetSdk >= 23 /* Build.VERSION_CODES.M */);
     }
 }
