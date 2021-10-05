@@ -32,6 +32,7 @@ import com.polidea.rxandroidble2.internal.util.LocationServicesOkObservableApi23
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi18;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi23;
+import com.polidea.rxandroidble2.internal.util.LocationServicesStatusApi31;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanResult;
@@ -174,11 +175,17 @@ public interface ClientComponent {
         static LocationServicesStatus provideLocationServicesStatus(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
                 Provider<LocationServicesStatusApi18> locationServicesStatusApi18Provider,
-                Provider<LocationServicesStatusApi23> locationServicesStatusApi23Provider
+                Provider<LocationServicesStatusApi23> locationServicesStatusApi23Provider,
+                Provider<LocationServicesStatusApi31> locationServicesStatusApi31Provider
         ) {
-            return deviceSdk < Build.VERSION_CODES.M
-                    ? locationServicesStatusApi18Provider.get()
-                    : locationServicesStatusApi23Provider.get();
+            if (deviceSdk < 23 /* Build.VERSION_CODES.M */) {
+                return locationServicesStatusApi18Provider.get();
+            }
+            if (deviceSdk < 31 /* Build.VERSION_CODES.S */) {
+                return locationServicesStatusApi23Provider.get();
+            }
+            /* deviceSdk >= Build.VERSION_CODES.S */
+            return locationServicesStatusApi31Provider.get();
         }
 
         @Provides
