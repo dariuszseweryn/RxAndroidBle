@@ -49,6 +49,7 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
                 // turned on for the app to get scan results.
                 // Based on issue https://github.com/Polidea/RxAndroidBle/issues/742
                 deviceSdk >= 29 /* Build.VERSION_CODES.Q */
-                        || targetSdk >= 23 /* Build.VERSION_CODES.M */);
+                        || targetSdk >= 23 /* Build.VERSION_CODES.M */
+        );
     }
 }
