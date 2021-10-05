@@ -196,8 +196,9 @@ public abstract class RxBleClient {
     /**
      * Returns permission strings needed by the application to run a BLE scan or an empty array if no runtime permissions are needed. Since
      * Android 6.0 runtime permissions were introduced. To run a BLE scan a runtime permission is needed ever since. Since Android 10.0
-     * a different (finer) permission is needed. Only a single permission returned by this function is needed to perform a scan. It is up
-     * to the user to decide which one. The result array is sorted with the least permissive values first.
+     * a different (finer) permission is needed. Prior to Android 12.0 only a single permission returned by this function is needed to
+     * perform a scan. It is up to the user to decide which one. The result array is sorted with the least permissive values first. Since
+     * Android 12 all permissions returned by this function are needed.
      * <p>
      * Returned values:
      * <p>
@@ -213,6 +214,7 @@ public abstract class RxBleClient {
      * <p>
      * case: 31 <= API<p>
      * {@link android.Manifest.permission#BLUETOOTH_SCAN}
+     * optionally {@link android.Manifest.permission#ACCESS_FINE_LOCATION} if BLUETOOTH_SCAN does not have a "neverForLocation" flag
      *
      * @return an ordered array of possible scan permissions
      */

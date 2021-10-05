@@ -7,14 +7,17 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
@@ -61,6 +64,7 @@ public interface ClientComponent {
 
         public static final String BLUETOOTH_INTERACTION = "executor_bluetooth_interaction";
         public static final String CONNECTION_QUEUE = "executor_connection_queue";
+
         private NamedExecutors() {
 
         }
@@ -72,6 +76,7 @@ public interface ClientComponent {
         public static final String TIMEOUT = "timeout";
         public static final String BLUETOOTH_INTERACTION = "bluetooth_interaction";
         public static final String BLUETOOTH_CALLBACKS = "bluetooth_callbacks";
+
         private NamedSchedulers() {
 
         }
@@ -82,7 +87,9 @@ public interface ClientComponent {
         public static final String INT_TARGET_SDK = "target-sdk";
         public static final String INT_DEVICE_SDK = "device-sdk";
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
+        public static final String BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION = "nearby-permission-never-for-location";
         public static final String STRING_ARRAY_SCAN_PERMISSIONS = "scan-permissions";
+
         private PlatformConstants() {
 
         }
@@ -91,6 +98,7 @@ public interface ClientComponent {
     class NamedBooleanObservables {
 
         public static final String LOCATION_SERVICES_OK = "location-ok-boolean-observable";
+
         private NamedBooleanObservables() {
 
         }
@@ -101,6 +109,7 @@ public interface ClientComponent {
         public static final String ENABLE_NOTIFICATION_VALUE = "enable-notification-value";
         public static final String ENABLE_INDICATION_VALUE = "enable-indication-value";
         public static final String DISABLE_NOTIFICATION_VALUE = "disable-notification-value";
+
         private BluetoothConstants() {
 
         }
@@ -142,28 +151,40 @@ public interface ClientComponent {
 
         @Provides
         @Named(PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS)
-        static String[] provideRecommendedScanRuntimePermissionNames(
+        static String[][] provideRecommendedScanRuntimePermissionNames(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
-                @Named(PlatformConstants.INT_TARGET_SDK) int targetSdk
+                @Named(PlatformConstants.INT_TARGET_SDK) int targetSdk,
+                @Named(PlatformConstants.BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION) boolean isNearbyServicesNeverForLocation
         ) {
             int sdkVersion = Math.min(deviceSdk, targetSdk);
             if (sdkVersion < 23 /* pre Android M */) {
                 // Before API 23 (Android M) no runtime permissions are needed
-                return new String[]{};
+                return new String[][]{};
             }
             if (sdkVersion < 29 /* pre Android 10 */) {
                 // Since API 23 (Android M) ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION allows for getting scan results
-                return new String[]{
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION
+                return new String[][]{
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}
                 };
             }
             if (sdkVersion < 31 /* pre Android 12 */) {
                 // Since API 29 (Android 10) only ACCESS_FINE_LOCATION allows for getting scan results
-                return new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                return new String[][]{
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
+                };
             }
             // Since API 31 (Android 12) only BLUETOOTH_SCAN allows for getting scan results
-            return new String[]{Manifest.permission.BLUETOOTH_SCAN};
+            if (isNearbyServicesNeverForLocation) {
+                // if neverForLocation flag is used on BLUETOOTH_SCAN then it is the only permission needed
+                return new String[][]{
+                        new String[]{Manifest.permission.BLUETOOTH_SCAN}
+                };
+            }
+            // otherwise ACCESS_FINE_LOCATION is needed as well
+            return new String[][]{
+                    new String[]{Manifest.permission.BLUETOOTH_SCAN},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
+            };
         }
 
         @Provides
@@ -264,6 +285,28 @@ public interface ClientComponent {
         static boolean provideIsAndroidWear(Context context, @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
             return deviceSdk >= Build.VERSION_CODES.KITKAT_WATCH
                     && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
+        }
+
+        @Provides
+        @Named(PlatformConstants.BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION)
+        @ClientScope
+        static boolean provideIsNearbyPermissionNeverForLocation(Context context) {
+            try {
+                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
+                        context.getPackageName(),
+                        PackageManager.GET_PERMISSIONS
+                );
+                for (int i = 0; i < packageInfo.requestedPermissions.length; i++) {
+                    if (!Manifest.permission.BLUETOOTH_SCAN.equals(packageInfo.requestedPermissions[i])) {
+                        continue;
+                    }
+                    return (packageInfo.requestedPermissionsFlags[i] & PackageInfo.REQUESTED_PERMISSION_NEVER_FOR_LOCATION) != 0;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                RxBleLog.e(e, "Could not find application PackageInfo");
+            }
+            // default to a safe value
+            return true;
         }
 
         @Provides
