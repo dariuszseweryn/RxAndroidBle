@@ -1,0 +1,33 @@
+name: "Gradle Actions"
+on: [push, pull_request]
+
+jobs:
+  gradle_validation:
+    name: "Validate Gradle Wrapper"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v2
+      - name: "Validate"
+        uses: gradle/wrapper-validation-action@v1
+  gradle_tasks:
+    name: "Gradle Tasks"
+    runs-on: ubuntu-latest
+    needs: gradle_validation
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v2
+      - name: "Set up Android JDK environment"
+        uses: actions/setup-java@v2.1.0
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+          java-package: jdk
+      - name: "Run Checkstyle"
+        run: ./gradlew checkstyle
+      - name: "Run Unit Tests — RxAndroidBle"
+        run: ./gradlew :rxandroidble:testReleaseUnitTest
+      - name: "Run Unit Tests — MockClient"
+        run: ./gradlew :mockrxandroidble:testReleaseUnitTest
+      - name: "Run Unit Tests — Sample Kotlin"
+        run: ./gradlew :sample-kotlin:testReleaseUnitTest
