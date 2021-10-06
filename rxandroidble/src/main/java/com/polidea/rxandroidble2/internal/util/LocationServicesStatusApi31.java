@@ -1,31 +1,31 @@
 package com.polidea.rxandroidble2.internal.util;
 
+import android.annotation.TargetApi;
+
 import com.polidea.rxandroidble2.ClientComponent;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
-public class LocationServicesStatusApi23 implements LocationServicesStatus {
+@TargetApi(31 /* Build.VERSION_CODES.S */)
+public class LocationServicesStatusApi31 implements LocationServicesStatus {
 
     private final CheckerLocationProvider checkerLocationProvider;
     private final CheckerScanPermission checkerScanPermission;
     private final boolean isAndroidWear;
-    private final int targetSdk;
-    private final int deviceSdk;
+    private final boolean isNearbyPermissionNeverForLoc;
 
     @Inject
-    LocationServicesStatusApi23(
+    LocationServicesStatusApi31(
             CheckerLocationProvider checkerLocationProvider,
             CheckerScanPermission checkerScanPermission,
-            @Named(ClientComponent.PlatformConstants.INT_TARGET_SDK) int targetSdk,
-            @Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
-            @Named(ClientComponent.PlatformConstants.BOOL_IS_ANDROID_WEAR) boolean isAndroidWear
+            @Named(ClientComponent.PlatformConstants.BOOL_IS_ANDROID_WEAR) boolean isAndroidWear,
+            @Named(ClientComponent.PlatformConstants.BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION) boolean isNearbyPermissionNeverForLoc
     ) {
         this.checkerLocationProvider = checkerLocationProvider;
         this.checkerScanPermission = checkerScanPermission;
-        this.targetSdk = targetSdk;
-        this.deviceSdk = deviceSdk;
         this.isAndroidWear = isAndroidWear;
+        this.isNearbyPermissionNeverForLoc = isNearbyPermissionNeverForLoc;
     }
 
     public boolean isLocationPermissionOk() {
@@ -44,12 +44,9 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
      * @see <a href="https://code.google.com/p/android/issues/detail?id=189090">Google Groups Discussion</a>
      */
     private boolean isLocationProviderEnabledRequired() {
-        return !isAndroidWear && (
-                // Apparently since device API 29 target SDK is not honored and location services need to be
-                // turned on for the app to get scan results.
-                // Based on issue https://github.com/Polidea/RxAndroidBle/issues/742
-                deviceSdk >= 29 /* Build.VERSION_CODES.Q */
-                        || targetSdk >= 23 /* Build.VERSION_CODES.M */
-        );
+        if (isAndroidWear) {
+            return false;
+        }
+        return !isNearbyPermissionNeverForLoc;
     }
 }

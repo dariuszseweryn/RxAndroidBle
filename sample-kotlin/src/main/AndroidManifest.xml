@@ -14,7 +14,8 @@
 
         <activity
             android:name=".example1_scanning.ScanActivity"
-            android:label="@string/title_example1">
+            android:label="@string/title_example1"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
