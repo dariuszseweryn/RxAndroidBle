@@ -8,14 +8,14 @@ import spock.lang.Unroll
 class LocationServicesStatusApi23Test extends Specification {
 
     def mockCheckerLocationProvider = Mock CheckerLocationProvider
-    def mockCheckerLocationPermission = Mock CheckerScanPermission
+    def mockCheckerScanPermission = Mock CheckerScanPermission
     int mockApplicationTargetSdk
     int mockApplicationDeviceSdk
     boolean mockIsAndroidWear
     LocationServicesStatusApi23 objectUnderTest
 
     private prepareObjectUnderTest() {
-        objectUnderTest = new LocationServicesStatusApi23(mockCheckerLocationProvider, mockCheckerLocationPermission, mockApplicationTargetSdk, mockApplicationDeviceSdk, mockIsAndroidWear)
+        objectUnderTest = new LocationServicesStatusApi23(mockCheckerLocationProvider, mockCheckerScanPermission, mockApplicationTargetSdk, mockApplicationDeviceSdk, mockIsAndroidWear)
     }
 
     // API 18 is the first version with official AOSP BLE, API 21 is the last w/o need of location
@@ -37,7 +37,7 @@ class LocationServicesStatusApi23Test extends Specification {
 
         given:
         prepareObjectUnderTest()
-        mockCheckerLocationPermission.isScanRuntimePermissionGranted() >> permissionGranted
+        mockCheckerScanPermission.isScanRuntimePermissionGranted() >> permissionGranted
 
         expect:
         objectUnderTest.isLocationPermissionOk() == permissionGranted
