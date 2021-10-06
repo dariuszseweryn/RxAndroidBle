@@ -306,7 +306,7 @@ public interface ClientComponent {
                 RxBleLog.e(e, "Could not find application PackageInfo");
             }
             // default to a safe value
-            return true;
+            return false;
         }
 
         @Provides
