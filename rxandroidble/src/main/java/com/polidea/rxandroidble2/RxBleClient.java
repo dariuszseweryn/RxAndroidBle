@@ -25,7 +25,10 @@ public abstract class RxBleClient {
          */
         BLUETOOTH_NOT_AVAILABLE,
         /**
-         * Location permission is not given. Scanning and connecting to a device will not work. Used on API >=23.
+         * Runtime location permission is not given. Scanning will not work. Used on API >=23.
+         * <p>APIs 23-28 – ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION
+         * <p>APIs 29-30 - ACCESS_FINE_LOCATION
+         * <p>APIs 31+   - BLUETOOTH_SCAN and ACCESS_FINE_LOCATION (if BLUETOOTH_SCAN does not have neverForLocation flag)
          */
         LOCATION_PERMISSION_NOT_GRANTED,
         /**
