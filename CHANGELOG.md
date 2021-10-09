@@ -1,6 +1,7 @@
 Change Log
 ==========
 Version 1.13.0
+* **Changed behaviour** of `RxBleClient#getRecommendedScanRuntimePermissions` (https://github.com/Polidea/RxAndroidBle/pull/762)
 * Adjusted checks for scanning in regards to API 31 (Android 12) (https://github.com/Polidea/RxAndroidBle/pull/762)
 * Adjusted readme for new BLE permission system introduced with API 31 (https://github.com/Polidea/RxAndroidBle/pull/762)
 
