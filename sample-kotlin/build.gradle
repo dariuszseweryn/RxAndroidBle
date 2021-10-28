@@ -45,7 +45,7 @@ dependencies {
     // AndroidX
     implementation rootProject.ext.libs.appcompat
     implementation rootProject.ext.libs.material_design
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation rootProject.ext.libs.annotations
 
     // RxBinding
