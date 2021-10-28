@@ -12,31 +12,50 @@ import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ClientScope;
 
 @ClientScope
-public class CheckerLocationPermission {
+public class CheckerScanPermission {
 
     private final Context context;
-    private final String[] scanPermissions;
+    private final String[][] scanPermissions;
 
     @Inject
-    CheckerLocationPermission(
+    CheckerScanPermission(
             Context context,
-            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[] scanPermissions
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[][] scanPermissions
     ) {
         this.context = context;
         this.scanPermissions = scanPermissions;
     }
 
     public boolean isScanRuntimePermissionGranted() {
-        for (String locationPermission : scanPermissions) {
-            if (isPermissionGranted(locationPermission)) {
+        boolean allNeededPermissionsGranted = true;
+        for (String[] neededPermissions : scanPermissions) {
+            allNeededPermissionsGranted &= isAnyPermissionGranted(neededPermissions);
+        }
+        return allNeededPermissionsGranted;
+    }
+
+    private boolean isAnyPermissionGranted(String[] acceptablePermissions) {
+        for (String acceptablePermission : acceptablePermissions) {
+            if (isPermissionGranted(acceptablePermission)) {
                 return true;
             }
         }
-        return scanPermissions.length == 0;
+        return false;
     }
 
     public String[] getRecommendedScanRuntimePermissions() {
-        return scanPermissions;
+        int allPermissionsCount = 0;
+        for (String[] permissionsArray : scanPermissions) {
+            allPermissionsCount += permissionsArray.length;
+        }
+        String[] resultPermissions = new String[allPermissionsCount];
+        int i = 0;
+        for (String[] permissionsArray : scanPermissions) {
+            for (String permission : permissionsArray) {
+                resultPermissions[i++] = permission;
+            }
+        }
+        return resultPermissions;
     }
 
     /**

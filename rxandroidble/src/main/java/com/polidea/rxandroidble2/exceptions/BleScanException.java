@@ -38,9 +38,10 @@ public class BleScanException extends BleException {
     public static final int BLUETOOTH_NOT_AVAILABLE = 2;
 
     /**
-     * Scan did not start correctly because the user did not accept access to location services. On Android 6.0 and up you must ask the
-     * user about <b>ACCESS_COARSE_LOCATION</b> or <b>ACCESS_FINE_LOCATION</b> in runtime. On Android 10.0 and above only
-     * <b>ACCESS_FINE_LOCATION</b> is accepted.
+     * Scan did not start correctly because the user did not accept a potential access to their location. On Android 6.0 to 9 you must ask
+     * the user for <b>ACCESS_COARSE_LOCATION</b> or <b>ACCESS_FINE_LOCATION</b> permissions at runtime. On Android 10.0 to 11 above only
+     * <b>ACCESS_FINE_LOCATION</b> is accepted. On Android 12.0 and above <b>BLUETOOTH_SCAN</b> is needed if declared in the manifest with
+     * <b>neverForLocation</b> flag – if the flag is not used then <b>ACCESS_FINE_LOCATION</b> is needed as well.
      */
     public static final int LOCATION_PERMISSION_MISSING = 3;
 

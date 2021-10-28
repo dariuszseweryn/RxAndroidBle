@@ -25,7 +25,10 @@ public abstract class RxBleClient {
          */
         BLUETOOTH_NOT_AVAILABLE,
         /**
-         * Location permission is not given. Scanning and connecting to a device will not work. Used on API >=23.
+         * Runtime location permission is not given. Scanning will not work. Used on API >=23.
+         * <p>APIs 23-28 – ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION
+         * <p>APIs 29-30 - ACCESS_FINE_LOCATION
+         * <p>APIs 31+   - BLUETOOTH_SCAN and ACCESS_FINE_LOCATION (if BLUETOOTH_SCAN does not have neverForLocation flag)
          */
         LOCATION_PERMISSION_NOT_GRANTED,
         /**
@@ -196,8 +199,9 @@ public abstract class RxBleClient {
     /**
      * Returns permission strings needed by the application to run a BLE scan or an empty array if no runtime permissions are needed. Since
      * Android 6.0 runtime permissions were introduced. To run a BLE scan a runtime permission is needed ever since. Since Android 10.0
-     * a different (finer) permission is needed. Only a single permission returned by this function is needed to perform a scan. It is up
-     * to the user to decide which one. The result array is sorted with the least permissive values first.
+     * a different (finer) permission is needed. Prior to Android 12.0 only a single permission returned by this function is needed to
+     * perform a scan. It is up to the user to decide which one. The result array is sorted with the least permissive values first. Since
+     * Android 12 all permissions returned by this function are needed.
      * <p>
      * Returned values:
      * <p>
@@ -208,8 +212,12 @@ public abstract class RxBleClient {
      * {@link android.Manifest.permission#ACCESS_COARSE_LOCATION}
      * {@link android.Manifest.permission#ACCESS_FINE_LOCATION}
      * <p>
-     * case: 29 <= API<p>
+     * case: 29 <= API < 31<p>
      * {@link android.Manifest.permission#ACCESS_FINE_LOCATION}
+     * <p>
+     * case: 31 <= API<p>
+     * {@link android.Manifest.permission#BLUETOOTH_SCAN}
+     * optionally {@link android.Manifest.permission#ACCESS_FINE_LOCATION} if BLUETOOTH_SCAN does not have a "neverForLocation" flag
      *
      * @return an ordered array of possible scan permissions
      */
