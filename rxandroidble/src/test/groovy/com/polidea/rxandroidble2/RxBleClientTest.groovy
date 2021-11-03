@@ -112,6 +112,8 @@ class RxBleClientTest extends ElectricSpecification {
 
     def "should return connected devices"() {
         given:
+        bluetoothDeviceConnected("AA:AA:AA:AA:AA:AA")
+        bluetoothDeviceConnected("BB:BB:BB:BB:BB:BB")
 
         when:
         def results = objectUnderTest.getConnectedDevices()
