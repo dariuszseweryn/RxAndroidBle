@@ -39,6 +39,7 @@ public class RxBleClientMock extends RxBleClient {
 
         private ReplaySubject<RxBleDeviceMock> discoverableDevicesSubject;
         private Set<RxBleDevice> bondedDevices;
+        private Set<RxBleDevice> connectedDevices;
 
         /**
          * Build a new {@link RxBleClientMock}.
@@ -46,6 +47,7 @@ public class RxBleClientMock extends RxBleClient {
         public Builder() {
             this.discoverableDevicesSubject = ReplaySubject.create();
             this.bondedDevices = new HashSet<>();
+            this.connectedDevices = new HashSet<>();
         }
 
         public Builder setDeviceDiscoveryObservable(@NonNull Observable<RxBleDeviceMock> discoverableDevicesObservable) {
@@ -70,6 +72,16 @@ public class RxBleClientMock extends RxBleClient {
          */
         public Builder addBondedDevice(@NonNull RxBleDevice rxBleDevice) {
             bondedDevices.add(rxBleDevice);
+            return this;
+        }
+
+        /**
+         * Add a {@link RxBleDevice} to the list of connected devices.
+         *
+         * @param rxBleDevice device that the mocked client should contain. Use {@link RxBleDeviceMock.Builder} to create them.
+         */
+        public Builder addConnectedDevice(@NonNull RxBleDevice rxBleDevice) {
+            connectedDevices.add(rxBleDevice);
             return this;
         }
 
@@ -248,10 +260,12 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     private Set<RxBleDevice> bondedDevices;
+    private Set<RxBleDevice> connectedDevices;
     private ReplaySubject<RxBleDeviceMock> discoveredDevicesSubject;
 
     private RxBleClientMock(Builder builder) {
         bondedDevices = builder.bondedDevices;
+        connectedDevices = builder.connectedDevices;
         discoveredDevicesSubject = builder.discoverableDevicesSubject;
     }
 
@@ -271,6 +285,11 @@ public class RxBleClientMock extends RxBleClient {
     @Override
     public Set<RxBleDevice> getBondedDevices() {
         return bondedDevices;
+    }
+
+    @Override
+    public Set<RxBleDevice> getConnectedDevices() {
+        return connectedDevices;
     }
 
     @Override

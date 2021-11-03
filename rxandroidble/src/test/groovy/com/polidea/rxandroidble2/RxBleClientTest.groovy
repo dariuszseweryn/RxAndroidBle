@@ -35,6 +35,7 @@ class RxBleClientTest extends ElectricSpecification {
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     ScanRecordParser scanRecordParserSpy = Spy ScanRecordParser
+    MockRxBluetoothManagerWrapper bluetoothManagerWrapperSpy = Spy MockRxBluetoothManagerWrapper
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
@@ -77,6 +78,7 @@ class RxBleClientTest extends ElectricSpecification {
         mockOperationScan.run(_) >> Observable.never()
         mockScanSetupBuilder.build(_, _) >> mockScanSetup
         objectUnderTest = new RxBleClientImpl(
+                bluetoothManagerWrapperSpy,
                 bleAdapterWrapperSpy,
                 queue,
                 adapterStateObservable.asObservable(),
@@ -103,6 +105,16 @@ class RxBleClientTest extends ElectricSpecification {
 
         when:
         def results = objectUnderTest.getBondedDevices()
+
+        then:
+        assert results.size() == 2
+    }
+
+    def "should return connected devices"() {
+        given:
+
+        when:
+        def results = objectUnderTest.getConnectedDevices()
 
         then:
         assert results.size() == 2
@@ -481,6 +493,13 @@ class RxBleClientTest extends ElectricSpecification {
         mock.getAddress() >> address
         mock.hashCode() >> address.hashCode()
         bleAdapterWrapperSpy.addBondedDevice(mock)
+    }
+
+    def bluetoothDeviceConnected(String address) {
+        def mock = Mock(BluetoothDevice)
+        mock.getAddress() >> address
+        mock.hashCode() >> address.hashCode()
+        bluetoothManagerWrapperSpy.addConnectedDevice(mock)
     }
 
     def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {
