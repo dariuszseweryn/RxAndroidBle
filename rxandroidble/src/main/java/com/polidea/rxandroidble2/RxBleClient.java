@@ -109,7 +109,7 @@ public abstract class RxBleClient {
     /**
      * A function returning a set of currently connected devices (NOTE: Connected to the phone, not necessarily application)
      *
-     * @return set of currently bonded devices
+     * @return set of currently connected devices
      */
     public abstract Set<RxBleDevice> getConnectedDevices();
 
