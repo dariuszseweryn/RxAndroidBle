@@ -5,4 +5,6 @@ public interface LocationServicesStatus {
 
     boolean isLocationPermissionOk();
     boolean isLocationProviderOk();
+    boolean isScanPermissionOk();
+    boolean isConnectPermissionOk();
 }

@@ -16,4 +16,12 @@ public class LocationServicesStatusApi18 implements LocationServicesStatus {
     public boolean isLocationProviderOk() {
         return true;
     }
+
+    public boolean isScanPermissionOk() {
+        return true;
+    }
+
+    public boolean isConnectPermissionOk() {
+        return true;
+    }
 }

@@ -72,6 +72,7 @@ class RxBleDeviceImpl implements RxBleDevice {
         return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
             public ObservableSource<RxBleConnection> call() {
+                // TODO: Check BLUETOOTH_CONNECT permission
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(options)
                             .doFinally(new Action() {

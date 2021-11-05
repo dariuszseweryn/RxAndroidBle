@@ -36,6 +36,14 @@ public class LocationServicesStatusApi23 implements LocationServicesStatus {
         return !isLocationProviderEnabledRequired() || checkerLocationProvider.isLocationProviderEnabled();
     }
 
+    public boolean isScanPermissionOk() {
+        return true;
+    }
+
+    public boolean isConnectPermissionOk() {
+        return true;
+    }
+
     /**
      * A function that returns true if the location services may be needed to be turned ON. Since there are no official guidelines
      * for Android Wear check is disabled.

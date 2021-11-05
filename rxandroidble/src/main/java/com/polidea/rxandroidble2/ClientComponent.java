@@ -24,6 +24,7 @@ import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifierApi18;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifierApi24;
+import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifierApi31;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi18;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilderImplApi21;
@@ -89,6 +90,7 @@ public interface ClientComponent {
         public static final String BOOL_IS_ANDROID_WEAR = "android-wear";
         public static final String BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION = "nearby-permission-never-for-location";
         public static final String STRING_ARRAY_SCAN_PERMISSIONS = "scan-permissions";
+        public static final String PACKAGE_INFO = "package-info";
 
         private PlatformConstants() {
 
@@ -185,6 +187,18 @@ public interface ClientComponent {
                     new String[]{Manifest.permission.BLUETOOTH_SCAN},
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
             };
+        }
+
+        @Provides
+        @Named(PlatformConstants.PACKAGE_INFO)
+        static PackageInfo providePackageInfo(
+                Context context
+        ) {
+            try {
+                return context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
+            } catch (Exception e) {
+                return new PackageInfo();
+            }
         }
 
         @Provides
@@ -347,12 +361,15 @@ public interface ClientComponent {
         static ScanPreconditionsVerifier provideScanPreconditionVerifier(
                 @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
                 Provider<ScanPreconditionsVerifierApi18> scanPreconditionVerifierForApi18,
-                Provider<ScanPreconditionsVerifierApi24> scanPreconditionVerifierForApi24
+                Provider<ScanPreconditionsVerifierApi24> scanPreconditionVerifierForApi24,
+                Provider<ScanPreconditionsVerifierApi31> scanPreconditionVerifierForApi31
         ) {
             if (deviceSdk < Build.VERSION_CODES.N) {
                 return scanPreconditionVerifierForApi18.get();
-            } else {
+            } else if (deviceSdk < Build.VERSION_CODES.S) {
                 return scanPreconditionVerifierForApi24.get();
+            } else {
+                return scanPreconditionVerifierForApi31.get();
             }
         }
 
