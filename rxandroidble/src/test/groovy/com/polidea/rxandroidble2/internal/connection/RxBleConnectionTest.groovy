@@ -1,6 +1,9 @@
 package com.polidea.rxandroidble2.internal.connection
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothGattCallback
 import androidx.annotation.NonNull
 import com.polidea.rxandroidble2.*
 import com.polidea.rxandroidble2.exceptions.BleCharacteristicNotFoundException

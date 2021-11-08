@@ -52,7 +52,23 @@ allprojects {
         tasks.withType(JavaCompile) {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
         }
+
+        afterEvaluate {
+            // add explicit dependencies to compile groovy when testing
+            testDebugUnitTest.dependsOn 'compileDebugUnitTestGroovyWithGroovyc'
+            testReleaseUnitTest.dependsOn 'compileReleaseUnitTestGroovyWithGroovyc'
+        }
+        tasks.withType(Test) {
+            useJUnitPlatform()
+            testLogging {
+                exceptionFormat "full"
+                events "started", "skipped", "passed", "failed"
+                showStandardStreams true
+            }
+        }
     }
+
+
 }
 
 task clean(type: Delete) {
