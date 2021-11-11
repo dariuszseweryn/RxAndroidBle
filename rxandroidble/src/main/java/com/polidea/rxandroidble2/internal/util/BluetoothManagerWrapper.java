@@ -7,16 +7,16 @@ import java.util.List;
 
 import bleshadow.javax.inject.Inject;
 
-public class RxBluetoothManagerWrapper {
+public class BluetoothManagerWrapper {
 
     private final BluetoothManager bluetoothManager;
 
     @Inject
-    public RxBluetoothManagerWrapper(BluetoothManager bluetoothManager) {
+    public BluetoothManagerWrapper(BluetoothManager bluetoothManager) {
         this.bluetoothManager = bluetoothManager;
     }
 
-    public List<BluetoothDevice> getConnectedDevices(int profile) {
-        return bluetoothManager.getConnectedDevices(profile);
+    public List<BluetoothDevice> getConnectedPeripherals() {
+        return bluetoothManager.getConnectedDevices(BluetoothProfile.GATT_SERVER);
     }
 }

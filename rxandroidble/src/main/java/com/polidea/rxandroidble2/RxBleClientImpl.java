@@ -22,7 +22,7 @@ import com.polidea.rxandroidble2.internal.util.CheckerScanPermission;
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper;
-import com.polidea.rxandroidble2.internal.util.RxBluetoothManagerWrapper;
+import com.polidea.rxandroidble2.internal.util.BluetoothManagerWrapper;
 import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
 import com.polidea.rxandroidble2.scan.BackgroundScanner;
 import com.polidea.rxandroidble2.scan.ScanFilter;
@@ -64,7 +64,7 @@ class RxBleClientImpl extends RxBleClient {
     private final ClientComponent.ClientComponentFinalizer clientComponentFinalizer;
     final Scheduler bluetoothInteractionScheduler;
     final Map<Set<UUID>, Observable<RxBleScanResult>> queuedScanOperations = new HashMap<>();
-    private final RxBluetoothManagerWrapper rxBluetoothManagerWrapper;
+    private final BluetoothManagerWrapper bluetoothManagerWrapper;
     private final RxBleAdapterWrapper rxBleAdapterWrapper;
     private final Observable<BleAdapterState> rxBleAdapterStateObservable;
     private final LocationServicesStatus locationServicesStatus;
@@ -73,7 +73,7 @@ class RxBleClientImpl extends RxBleClient {
     private final CheckerScanPermission checkerScanPermission;
 
     @Inject
-    RxBleClientImpl(RxBluetoothManagerWrapper rxBluetoothManagerWrapper,
+    RxBleClientImpl(BluetoothManagerWrapper bluetoothManagerWrapper,
                     RxBleAdapterWrapper rxBleAdapterWrapper,
                     ClientOperationQueue operationQueue,
                     Observable<BleAdapterState> adapterStateObservable,
@@ -89,7 +89,7 @@ class RxBleClientImpl extends RxBleClient {
                     BackgroundScanner backgroundScanner,
                     CheckerScanPermission checkerScanPermission) {
         this.operationQueue = operationQueue;
-        this.rxBluetoothManagerWrapper = rxBluetoothManagerWrapper;
+        this.bluetoothManagerWrapper = bluetoothManagerWrapper;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
         this.rxBleAdapterStateObservable = adapterStateObservable;
         this.scanRecordParser = scanRecordParser;
@@ -130,9 +130,9 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @Override
-    public Set<RxBleDevice> getConnectedDevices() {
+    public Set<RxBleDevice> getConnectedPeripherals() {
         Set<RxBleDevice> rxBleDevices = new HashSet<>();
-        List<BluetoothDevice> bluetoothDevices = rxBluetoothManagerWrapper.getConnectedDevices(BluetoothProfile.GATT_SERVER);
+        List<BluetoothDevice> bluetoothDevices = bluetoothManagerWrapper.getConnectedPeripherals();
         for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
             rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
         }

@@ -35,7 +35,7 @@ class RxBleClientTest extends ElectricSpecification {
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     ScanRecordParser scanRecordParserSpy = Spy ScanRecordParser
-    MockRxBluetoothManagerWrapper bluetoothManagerWrapperSpy = Spy MockRxBluetoothManagerWrapper
+    MockBluetoothManagerWrapper bluetoothManagerWrapperSpy = Spy MockBluetoothManagerWrapper
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
@@ -112,11 +112,11 @@ class RxBleClientTest extends ElectricSpecification {
 
     def "should return connected devices"() {
         given:
-        bluetoothDeviceConnected("AA:AA:AA:AA:AA:AA")
-        bluetoothDeviceConnected("BB:BB:BB:BB:BB:BB")
+        bluetoothPeripheralConnected("AA:AA:AA:AA:AA:AA")
+        bluetoothPeripheralConnected("BB:BB:BB:BB:BB:BB")
 
         when:
-        def results = objectUnderTest.getConnectedDevices()
+        def results = objectUnderTest.getConnectedPeripherals()
 
         then:
         assert results.size() == 2
@@ -497,7 +497,7 @@ class RxBleClientTest extends ElectricSpecification {
         bleAdapterWrapperSpy.addBondedDevice(mock)
     }
 
-    def bluetoothDeviceConnected(String address) {
+    def bluetoothPeripheralConnected(String address) {
         def mock = Mock(BluetoothDevice)
         mock.getAddress() >> address
         mock.hashCode() >> address.hashCode()

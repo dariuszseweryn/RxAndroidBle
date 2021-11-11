@@ -111,7 +111,7 @@ public abstract class RxBleClient {
      *
      * @return set of currently bonded devices
      */
-    public abstract Set<RxBleDevice> getConnectedDevices();
+    public abstract Set<RxBleDevice> getConnectedPeripherals();
 
     /**
      * Returns an infinite observable emitting BLE scan results.

@@ -2,9 +2,9 @@ package com.polidea.rxandroidble2
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import com.polidea.rxandroidble2.internal.util.RxBluetoothManagerWrapper
+import com.polidea.rxandroidble2.internal.util.BluetoothManagerWrapper
 
-class MockBluetoothManagerWrapper extends RxBluetoothManagerWrapper {
+class MockBluetoothManagerWrapper extends BluetoothManagerWrapper {
 
     private List<BluetoothDevice> connectedDevices = new ArrayList<>()
 
@@ -21,7 +21,7 @@ class MockBluetoothManagerWrapper extends RxBluetoothManagerWrapper {
     }
 
     @Override
-    List<BluetoothDevice> getConnectedDevices() {
+    List<BluetoothDevice> getConnectedPeripherals() {
         return connectedDevices
     }
 }
