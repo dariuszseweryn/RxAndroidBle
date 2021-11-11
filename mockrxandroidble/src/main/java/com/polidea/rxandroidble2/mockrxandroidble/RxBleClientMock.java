@@ -80,7 +80,7 @@ public class RxBleClientMock extends RxBleClient {
          *
          * @param rxBleDevice device that the mocked client should contain. Use {@link RxBleDeviceMock.Builder} to create them.
          */
-        public Builder addConnectedDevice(@NonNull RxBleDevice rxBleDevice) {
+        public Builder addConnectedPeripheral(@NonNull RxBleDevice rxBleDevice) {
             connectedPeripherals.add(rxBleDevice);
             return this;
         }

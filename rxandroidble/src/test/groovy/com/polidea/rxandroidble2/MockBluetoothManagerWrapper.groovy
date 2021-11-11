@@ -6,7 +6,7 @@ import com.polidea.rxandroidble2.internal.util.BluetoothManagerWrapper
 
 class MockBluetoothManagerWrapper extends BluetoothManagerWrapper {
 
-    private List<BluetoothDevice> connectedDevices = new ArrayList<>()
+    private List<BluetoothDevice> connectedPeripherals = new ArrayList<>()
 
     MockBluetoothManagerWrapper() {
         super(null)
@@ -16,12 +16,12 @@ class MockBluetoothManagerWrapper extends BluetoothManagerWrapper {
         super(bluetoothManager)
     }
 
-    def addConnectedDevice(BluetoothDevice bluetoothDevice) {
-        connectedDevices.add(bluetoothDevice)
+    def addConnectedPeripheral(BluetoothDevice bluetoothDevice) {
+        connectedPeripherals.add(bluetoothDevice)
     }
 
     @Override
     List<BluetoothDevice> getConnectedPeripherals() {
-        return connectedDevices
+        return connectedPeripherals
     }
 }

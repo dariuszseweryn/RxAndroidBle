@@ -501,7 +501,7 @@ class RxBleClientTest extends ElectricSpecification {
         def mock = Mock(BluetoothDevice)
         mock.getAddress() >> address
         mock.hashCode() >> address.hashCode()
-        bluetoothManagerWrapperSpy.addConnectedDevice(mock)
+        bluetoothManagerWrapperSpy.addConnectedPeripheral(mock)
     }
 
     def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {
