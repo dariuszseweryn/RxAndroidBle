@@ -53,46 +53,67 @@ maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 ```
 
 ### Permissions
-Android since API 23 (6.0 / Marshmallow) requires additional permissions declared in the manifest for an app to run a BLE scan. RxAndroidBle provides minimal required bluetooth permissions for you in AndroidManifest — it assumes to be used in the foreground and not deriving actual user location from BLE signal.
+Android requires additional permissions declared in the manifest for an app to run a BLE scan since API 23 (6.0 / Marshmallow) and perform a BLE connection since API 31 (Android 12). RxAndroidBle provides a minimal set of commonly used bluetooth permissions for you in its `AndroidManifest.xml`. These permissions currently assume scanning is only used when the App is in the foreground, and that the App wants to derive the user's location from BLE signal (on API >= 23). Below are a number of additions you can make to your `AndroidManifext.xml` for your specific use case.
 
-#### Scanning
-Runtime permissions required for running a BLE scan:
+#### If you want to derive the user's location in your App
+RxAndroidBle uses the `uses-permission-sdk-23` tag to require location only on APIs >= 23, where it is required for BLE scanning. Additionally, in a future version of RxAndroidBle, these permissions will be restricted to only APIs 23-30. To ensure you can derive the user's location in your App with all API versions, and avoid any issues with merging of permissions when uploading to the Play Store, add the following to your `AndroidManifest.xml`:
+```xml
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
+#### If you do not want to derive user's location in your App
+If you only want to scan for BLE peripherals and do not access location otherwise you can request only the required permissions by adding the following to your `AndroidManifest.xml`:
+```xml
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+```
+
+#### If you want to scan in the background and support APIs 29 & 30
+You should add the following to your `AndroidManifest.xml`:
+```xml
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" android:maxSdkVersion="30" />
+```
+If you want to access the user's location in the background on APIs > 30, remove the `android:maxSdkVersion` attribute.
+
+#### If you want to derive the user's location from BLE scanning in API >= 31
+
+API 31 (Android 12) introduced new Bluetooth permissions. RxAndroidBle uses the `android:usesPermissionFlags="neverForLocation"` attribute on the `BLUETOOTH_SCAN` permission, which indicates scanning will not be used to derive the user's location, so location permissions are not required. If you need to locate the user with BLE scanning, use this instead, but keep in mind that you will still need `ACCESS_FINE_LOCATION`:
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:node="remove" />
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+```
+
+#### If you do not need to connect to peripherals
+You can remove the `BLUETOOTH_CONNECT` permission that RxAndroidBle requests in APIs >= 31:
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:node="remove" />
+```
+
+#### Summary of available permissions
+##### Scanning
+A summary of available runtime permissions used for BLE scanning:
 
 | from API | to API (inclusive) | Acceptable runtime permissions |
 |:---:|:---:| --- |
 | 18 | 22 | (No runtime permissions needed) |
 | 23 | 28 | One of below:<br>- `android.permission.ACCESS_COARSE_LOCATION`<br>- `android.permission.ACCESS_FINE_LOCATION` |
 | 29 | 30 | - `android.permission.ACCESS_FINE_LOCATION`<br>- `android.permission.ACCESS_BACKGROUND_LOCATION`\* |
-| 31 | current | - `android.permission.BLUETOOTH_SCAN`\*\*<br>- `android.permission.ACCESS_FINE_LOCATION`\*\*\* |
+| 31 | current | - `android.permission.BLUETOOTH_SCAN`<br>- `android.permission.ACCESS_FINE_LOCATION`\*\* |
 
 \* Needed if [scan is performed in background](https://developer.android.com/about/versions/10/privacy/changes#app-access-device-location)
-\*\* It is assumed in [AndroidManifest](https://github.com/Polidea/RxAndroidBle/blob/master/rxandroidble/src/main/AndroidManifest.xml) that the application is trying to derive user's location from BLE signal. If that is not the case look below into [Potential permission issues](https://github.com/Polidea/RxAndroidBle#potential-permission-issues).
-\*\*\* Needed if `BLUETOOTH_SCAN` is not using `neverForLocation` flag
 
-#### Connecting
-Runtime permissions required for connecting to a BLE peripheral:
+\*\* Only needed if you want to obtain user's location with BLE scanning (`BLUETOOTH_SCAN` is not using `neverForLocation` attribute in your App)
+
+##### Connecting
+A summary of available runtime permissions used for BLE connections:
 | from API | to API (inclusive) | Acceptable runtime permissions |
 |:---:|:---:| --- |
 | 18 | 30 | (No runtime permissions needed) |
 | 31 | current | - `android.permission.BLUETOOTH_CONNECT` |
-
-#### Potential permission issues
-Google is checking `AndroidManifest` for declaring permissions when releasing to the Play Store. If you have `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION` set manually using tag `uses-permission` (as opposed to `uses-permission-sdk-23`) you may run into an issue where your manifest does not merge with [RxAndroidBle's AndroidManifest.xml](https://github.com/Polidea/RxAndroidBle/blob/master/rxandroidble/src/main/AndroidManifest.xml), resulting in a failure to upload to the Play Store. These permissions are required only on APIs 23-30 assuming your app is not accessing location otherwise. If you need any of these permissions other versions of Android replace your statement with:
-```xml
-<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-```
-If you only want to scan BLE peripherals and do not access location otherwise you can restrict location permissions to only the required range by using [Manifest Merger tool directives](https://developer.android.com/studio/build/manifest-merge.html#marker_selector):
-```xml
-<uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
-<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
-<uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
-```
-After API 31 (Android 12) there are new Bluetooth permissions. One of them comes in a flavour that restricts deriving user's location from BLE signal acquired while scanning — this is assumed by the library. If you need to locate user by scanning BLE use below but keep in mind that you will still need `ACCESS_FINE_LOCATION` then:
-```xml
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:node="remove" />
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-```
 
 ## Usage
 ### Obtaining the client

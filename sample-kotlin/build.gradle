@@ -27,7 +27,10 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
-        test.java.srcDirs += 'src/test/kotlin'
+        test.java.srcDirs = [
+                'src/test/kotlin',
+                '../rxandroidble/src/test/java' // this produces a warning about duplicate content roots, but it is still required
+        ]
     }
 }
 
@@ -62,5 +65,4 @@ dependencies {
     // Test
     testImplementation project(':mockrxandroidble')
     testImplementation rootProject.ext.libs.junit
-    testImplementation rootProject.ext.libs.robolectric
 }
