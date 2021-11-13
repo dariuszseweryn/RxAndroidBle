@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+/**
+ * Must have implementation
+ */
 public class MemorySharedPreferences implements SharedPreferences{
     private final HashMap<String, Object> map = new HashMap<>();
     public MemorySharedPreferences() {

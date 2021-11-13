@@ -1,6 +1,9 @@
 package android.app;
 import android.os.Parcel;
 import android.os.Parcelable;
+/**
+ * Stubs, only used for mocks
+ */
 public class PendingIntent implements Parcelable {
     public PendingIntent() {
     }

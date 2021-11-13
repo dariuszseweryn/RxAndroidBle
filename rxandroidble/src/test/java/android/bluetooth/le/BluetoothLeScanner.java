@@ -1,5 +1,9 @@
 package android.bluetooth.le;
 import android.bluetooth.BluetoothAdapter;
+
+/**
+ * Only used for constants currently
+ */
 public class BluetoothLeScanner {
     public static final String EXTRA_LIST_SCAN_RESULT =
             "android.bluetooth.le.extra.LIST_SCAN_RESULT";

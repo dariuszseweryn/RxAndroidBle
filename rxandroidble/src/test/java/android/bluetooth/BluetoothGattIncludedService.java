@@ -3,6 +3,9 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import java.util.UUID;
+/**
+ * Used for mocks
+ */
 public class BluetoothGattIncludedService implements Parcelable {
     public BluetoothGattIncludedService(UUID uuid, int instanceId, int serviceType) {
     }

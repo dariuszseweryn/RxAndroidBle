@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 @SuppressWarnings({"unchecked"})
+/**
+ * Must have implementation
+ */
 public final class Bundle implements Cloneable, Parcelable {
     static final int FLAG_HAS_FDS = 1 << 8;
     static final int FLAG_HAS_FDS_KNOWN = 1 << 9;

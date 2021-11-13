@@ -3,6 +3,9 @@ package android.content;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AndroidException;
+/**
+ * Instances created, so must have implementation of action
+ */
 public class IntentFilter implements Parcelable {
 
     @Override

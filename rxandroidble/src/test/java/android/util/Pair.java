@@ -1,5 +1,8 @@
 package android.util;
 import java.util.Objects;
+/**
+ * Must have implementation
+ */
 public class Pair<F, S> {
     public final F first;
     public final S second;

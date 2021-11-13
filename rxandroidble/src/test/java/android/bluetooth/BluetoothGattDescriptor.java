@@ -3,6 +3,9 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import java.util.UUID;
+/**
+ * Used for mocks and constants in rxandroidble, but instances created in mockrxandroidble, so the methods must be implemented
+ */
 public class BluetoothGattDescriptor implements Parcelable {
     public static final byte[] ENABLE_NOTIFICATION_VALUE = {0x01, 0x00};
     public static final byte[] ENABLE_INDICATION_VALUE = {0x02, 0x00};

@@ -32,16 +32,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+/**
+ * Stubs, only used for mocks
+ */
 @SuppressWarnings("deprecation")
 public class Activity {
     public static final int RESULT_CANCELED    = 0;
     public static final int RESULT_OK           = -1;
     public static final int RESULT_FIRST_USER   = 1;
     public Activity() {
-        this.resources = null;
     }
     public Activity(Resources resources) {
-        this.resources = resources;
     }
     public void requestPermissions(String[] permissions, int requestCode) {
     }
@@ -53,9 +55,8 @@ public class Activity {
     public AssetManager getAssets() {
         return null;
     }
-    private final Resources resources;
     public Resources getResources() {
-        return resources;
+        return null;
     }
     public PackageManager getPackageManager() {
         return null;

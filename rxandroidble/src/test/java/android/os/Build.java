@@ -1,4 +1,7 @@
 package android.os;
+/**
+ * Used for constants
+ */
 public class Build {
         public static class VERSION_CODES {
         public static final int CUR_DEVELOPMENT = 10000;

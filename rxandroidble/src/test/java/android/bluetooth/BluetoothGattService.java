@@ -5,6 +5,9 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+/**
+ * Used for mocks and constants in rxandroidble, but instances created in mockrxandroidble, so the methods must be implemented
+ */
 public class BluetoothGattService implements Parcelable {
     public static final int SERVICE_TYPE_PRIMARY = 0;
     public static final int SERVICE_TYPE_SECONDARY = 1;

@@ -1,5 +1,8 @@
 package android.os;
 import java.util.UUID;
+/**
+ * Must have implementation
+ */
 public final class ParcelUuid implements Parcelable {
     private final UUID mUuid;
     public ParcelUuid(UUID uuid) {

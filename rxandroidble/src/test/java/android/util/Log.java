@@ -2,6 +2,9 @@ package android.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.UnknownHostException;
+/**
+ * Used for logging
+ */
 public final class Log {
     public static final int VERBOSE = 2;
     public static final int DEBUG = 3;

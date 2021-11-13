@@ -2,6 +2,9 @@ package android.bluetooth;
 import android.os.Handler;
 import java.util.List;
 import java.util.UUID;
+/**
+ * Used for mocks and constants
+ */
 public class BluetoothGatt implements BluetoothProfile {
     public static final int GATT_SUCCESS = 0;
     public static final int GATT_READ_NOT_PERMITTED = 0x2;

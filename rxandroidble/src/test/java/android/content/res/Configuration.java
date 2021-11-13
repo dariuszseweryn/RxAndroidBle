@@ -1,6 +1,9 @@
 package android.content.res;
 import android.os.Parcel;
 import android.os.Parcelable;
+/**
+ * Used for mocks and constants
+ */
 public final class Configuration implements Parcelable, Comparable<Configuration> {
     public static final int NAVIGATION_UNDEFINED = 0;
     public static final int NAVIGATION_NONAV = 1;

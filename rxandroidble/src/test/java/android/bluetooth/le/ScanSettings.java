@@ -1,6 +1,9 @@
 package android.bluetooth.le;
 import android.os.Parcel;
 import android.os.Parcelable;
+/**
+ * Used for mocks and constants
+ */
 public class ScanSettings implements Parcelable {
         public static final int SCAN_MODE_OPPORTUNISTIC = -1;
         public static final int SCAN_MODE_LOW_POWER = 0;

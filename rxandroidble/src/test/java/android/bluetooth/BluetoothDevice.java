@@ -8,6 +8,10 @@ import android.os.Parcelable;
 import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+/**
+ * Used for mocks and constants
+ */
 public class BluetoothDevice implements Parcelable {
     private static final String TAG = "BluetoothDevice";
     private static final boolean DBG = false;

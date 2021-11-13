@@ -5,6 +5,10 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import java.util.List;
+
+/**
+ * Used for mocks
+ */
 public class ScanFilter implements Parcelable {
     public static final ScanFilter EMPTY = new Builder().build();
     private ScanFilter(String name, String deviceAddress, ParcelUuid uuid,

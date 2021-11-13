@@ -1,4 +1,7 @@
 package android.content.res;
+/**
+ * Used for mocks and constants
+ */
 public class Resources {
     public Configuration getConfiguration() {
         return configuration;

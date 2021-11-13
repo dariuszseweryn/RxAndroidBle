@@ -1,7 +1,9 @@
 package android.content;
 
 import android.content.res.Resources;
-
+/**
+ * Used for mocks
+ */
 public abstract class Context {
 
         public abstract String getPackageName();

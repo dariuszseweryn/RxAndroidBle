@@ -1,4 +1,7 @@
 package android.util;
+/**
+ * Used for exceptions
+ */
 public class AndroidException extends Exception {
     public AndroidException() {
     }

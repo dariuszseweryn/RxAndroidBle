@@ -1,5 +1,8 @@
 package android.os;
 import android.util.AndroidException;
+/**
+ * Used for exceptions
+ */
 public class RemoteException extends AndroidException {
     public RemoteException() {
         super();

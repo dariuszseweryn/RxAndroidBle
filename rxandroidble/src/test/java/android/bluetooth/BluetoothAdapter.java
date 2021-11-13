@@ -7,6 +7,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * Used for mocks and constants
+ */
 public class BluetoothAdapter {
     private static final String TAG = "BluetoothAdapter";
     private static final boolean VDBG = false;
@@ -34,24 +38,7 @@ public class BluetoothAdapter {
     public static final UUID LE_PSM_CHARACTERISTIC_UUID =
             UUID.fromString("2d410339-82b6-42aa-b34e-e2e01df8cc1a");
     public static String nameForState(@AdapterState int state) {
-        switch (state) {
-            case STATE_OFF:
-                return "OFF";
-            case STATE_TURNING_ON:
-                return "TURNING_ON";
-            case STATE_ON:
-                return "ON";
-            case STATE_TURNING_OFF:
-                return "TURNING_OFF";
-            case STATE_BLE_TURNING_ON:
-                return "BLE_TURNING_ON";
-            case STATE_BLE_ON:
-                return "BLE_ON";
-            case STATE_BLE_TURNING_OFF:
-                return "BLE_TURNING_OFF";
-            default:
-                return "?!?!? (" + state + ")";
-        }
+        return null;
     }
     @IntDef(value = {
             SCAN_MODE_NONE,
@@ -81,12 +68,6 @@ public class BluetoothAdapter {
     public static final int ACTIVE_DEVICE_AUDIO = 0;
     public static final int ACTIVE_DEVICE_PHONE_CALL = 1;
     public static final int ACTIVE_DEVICE_ALL = 2;
-    private BluetoothLeScanner mBluetoothLeScanner;
-    // Yeah, keeping both mService and sService isn't pretty, but it's too late
-    // in the current release for a major refactoring, so we leave them both
-    // intact until this can be cleaned up in a future release
-    private final ReentrantReadWriteLock mServiceLock = new ReentrantReadWriteLock();
-    private final Object mLock = new Object();
     public BluetoothDevice getRemoteDevice(String address) {
         return null;
     }
@@ -94,54 +75,17 @@ public class BluetoothAdapter {
         return null;
     }
     public boolean isEnabled() {
-        return getState() == BluetoothAdapter.STATE_ON;
+        return false;
     }
     @AdapterState
     private int getStateInternal() {
-        int state = BluetoothAdapter.STATE_OFF;
-        try {
-            mServiceLock.readLock().lock();
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof RemoteException) {
-                Log.e(TAG, "", e.getCause());
-            } else {
-                throw e;
-            }
-        } finally {
-            mServiceLock.readLock().unlock();
-        }
-        return state;
+        return 0;
     }
     public int getState() {
-        int state = getStateInternal();
-        // Consider all internal states as OFF
-        if (state == BluetoothAdapter.STATE_BLE_ON || state == BluetoothAdapter.STATE_BLE_TURNING_ON
-                || state == BluetoothAdapter.STATE_BLE_TURNING_OFF) {
-            if (VDBG) {
-                Log.d(TAG, "Consider " + BluetoothAdapter.nameForState(state) + " state as OFF");
-            }
-            state = BluetoothAdapter.STATE_OFF;
-        }
-        if (VDBG) {
-            Log.d(TAG, "" + hashCode() + ": getState(). Returning " + BluetoothAdapter.nameForState(
-                    state));
-        }
-        return state;
+        return 0;
     }
     public int getLeState() {
-        int state = getStateInternal();
-        if (VDBG) {
-            Log.d(TAG, "getLeState() returning " + BluetoothAdapter.nameForState(state));
-        }
-        return state;
-    }
-    boolean getLeAccess() {
-        if (getLeState() == STATE_ON) {
-            return true;
-        } else if (getLeState() == STATE_BLE_ON) {
-            return true; // TODO: FILTER SYSTEM APPS HERE <--
-        }
-        return false;
+        return 0;
     }
     public String getName() {
         return null;

@@ -3,6 +3,10 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
 import java.util.Objects;
+
+/**
+ * Used for mocks and constants
+ */
 public class ScanResult implements Parcelable {
     public static final int DATA_COMPLETE = 0x00;
     public static final int DATA_TRUNCATED = 0x02;

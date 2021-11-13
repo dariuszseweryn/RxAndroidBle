@@ -1,4 +1,7 @@
 package android.bluetooth;
+/**
+ * Used to create callbacks
+ */
 public abstract class BluetoothGattCallback {
     public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
     }

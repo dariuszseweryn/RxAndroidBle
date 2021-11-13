@@ -54,6 +54,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
+/**
+ * Used for mocks and constants, but put and get extras must be implemented
+ */
 public class Intent implements Parcelable, Cloneable {
     private static final String TAG = "Intent";
     private static final String ATTR_ACTION = "action";
