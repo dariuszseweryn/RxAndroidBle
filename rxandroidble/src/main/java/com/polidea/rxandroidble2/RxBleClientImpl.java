@@ -1,8 +1,6 @@
 package com.polidea.rxandroidble2;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothProfile;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
