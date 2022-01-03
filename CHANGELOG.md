@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.13.1
+* Fixed 'BLUETOOTH_SCAN' permission entry in Android Manifest for apps that do not build using Android 12 target (https://github.com/Polidea/RxAndroidBle/pull/767)
+
 Version 1.13.0
 * **Changed behaviour** of `RxBleClient#getRecommendedScanRuntimePermissions` (https://github.com/Polidea/RxAndroidBle/pull/762)
 * Adjusted checks for scanning in regards to API 31 (Android 12) (https://github.com/Polidea/RxAndroidBle/pull/762)
