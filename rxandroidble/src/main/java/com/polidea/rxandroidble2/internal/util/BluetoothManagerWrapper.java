@@ -2,6 +2,7 @@ package com.polidea.rxandroidble2.internal.util;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 
 import java.util.List;
 
