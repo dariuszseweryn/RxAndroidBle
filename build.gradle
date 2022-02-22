@@ -2,7 +2,7 @@ apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
 
 buildscript {
-    ext.kotlinVersion = '1.6.0'
+    ext.kotlinVersion = '1.6.10'
     repositories {
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.android.tools.build:gradle:7.1.1'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
         classpath 'gradle.plugin.org.codehaus.groovy:groovy-android-gradle-plugin:3.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
