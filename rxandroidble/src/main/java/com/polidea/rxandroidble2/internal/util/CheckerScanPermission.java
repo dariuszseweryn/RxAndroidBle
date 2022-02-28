@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.util;
 
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
@@ -32,6 +33,15 @@ public class CheckerScanPermission {
             allNeededPermissionsGranted &= isAnyPermissionGranted(neededPermissions);
         }
         return allNeededPermissionsGranted;
+    }
+
+    public boolean isLocationRuntimePermissionGranted() {
+        return isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    public boolean isConnectRuntimePermissionGranted() {
+        return isPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT);
     }
 
     private boolean isAnyPermissionGranted(String[] acceptablePermissions) {

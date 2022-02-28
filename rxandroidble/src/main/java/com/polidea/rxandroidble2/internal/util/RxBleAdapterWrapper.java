@@ -115,6 +115,7 @@ public class RxBleAdapterWrapper {
         if (bluetoothAdapter == null) {
             throw nullBluetoothAdapter;
         }
+        // TODO: check BLUETOOTH_CONNECT permission
         return bluetoothAdapter.getBondedDevices();
     }
 }

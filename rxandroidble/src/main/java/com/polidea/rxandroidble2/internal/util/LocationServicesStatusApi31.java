@@ -29,11 +29,20 @@ public class LocationServicesStatusApi31 implements LocationServicesStatus {
     }
 
     public boolean isLocationPermissionOk() {
-        return checkerScanPermission.isScanRuntimePermissionGranted();
+        return checkerScanPermission.isLocationRuntimePermissionGranted();
     }
 
     public boolean isLocationProviderOk() {
         return !isLocationProviderEnabledRequired() || checkerLocationProvider.isLocationProviderEnabled();
+    }
+
+    @Override
+    public boolean isScanPermissionOk() {
+        return checkerScanPermission.isScanRuntimePermissionGranted();
+    }
+
+    public boolean isConnectPermissionOk() {
+        return checkerScanPermission.isConnectRuntimePermissionGranted();
     }
 
     /**
