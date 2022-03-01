@@ -25,6 +25,10 @@ public abstract class RxBleClient {
          */
         BLUETOOTH_NOT_AVAILABLE,
         /**
+         * TODO - Add Doc
+         */
+        BLUETOOTH_PERMISSION_NOT_GRANTED,
+        /**
          * Runtime location permission is not given. Scanning will not work. Used on API >=23.
          * <p>APIs 23-28 – ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION
          * <p>APIs 29-30 - ACCESS_FINE_LOCATION
@@ -222,4 +226,17 @@ public abstract class RxBleClient {
      * @return an ordered array of possible scan permissions
      */
     public abstract String[] getRecommendedScanRuntimePermissions();
+
+    /**
+     * Returns whether runtime permissions needed to establish BLE connection are granted. If permissions are not granted then one may check
+     * {@link #getRecommendedConnectRuntimePermissions()} to get Android runtime permission strings needed to establish a connection.
+     *
+     * @return true if needed permissions are granted, false otherwise
+     */
+    public abstract boolean isConnectRuntimePermissionGranted();
+
+    /**
+     * TODO - Add Doc
+     */
+    public abstract String[] getRecommendedConnectRuntimePermissions();
 }

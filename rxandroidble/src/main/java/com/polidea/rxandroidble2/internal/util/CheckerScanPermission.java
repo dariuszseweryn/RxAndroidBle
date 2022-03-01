@@ -17,22 +17,25 @@ public class CheckerScanPermission {
 
     private final Context context;
     private final String[][] scanPermissions;
+    private final String[][] connectPermissions;
 
     @Inject
     CheckerScanPermission(
             Context context,
-            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[][] scanPermissions
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[][] scanPermissions,
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_CONNECT_PERMISSIONS) String[][] connectPermissions
     ) {
         this.context = context;
         this.scanPermissions = scanPermissions;
+        this.connectPermissions = connectPermissions;
     }
 
     public boolean isScanRuntimePermissionGranted() {
-        boolean allNeededPermissionsGranted = true;
-        for (String[] neededPermissions : scanPermissions) {
-            allNeededPermissionsGranted &= isAnyPermissionGranted(neededPermissions);
-        }
-        return allNeededPermissionsGranted;
+        return isAllPermissionsGranted(scanPermissions);
+    }
+
+    public boolean isConnectRuntimePermissionGranted() {
+        return isAllPermissionsGranted(connectPermissions);
     }
 
     public boolean isLocationRuntimePermissionGranted() {
@@ -40,8 +43,12 @@ public class CheckerScanPermission {
                 || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
-    public boolean isConnectRuntimePermissionGranted() {
-        return isPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT);
+    private boolean isAllPermissionsGranted(String[][] neededPermissions) {
+        boolean allNeededPermissionsGranted = true;
+        for (String[] permissions : neededPermissions) {
+            allNeededPermissionsGranted &= isAnyPermissionGranted(permissions);
+        }
+        return allNeededPermissionsGranted;
     }
 
     private boolean isAnyPermissionGranted(String[] acceptablePermissions) {
@@ -54,13 +61,21 @@ public class CheckerScanPermission {
     }
 
     public String[] getRecommendedScanRuntimePermissions() {
+        return getRecommendedRuntimePermissions(scanPermissions);
+    }
+
+    public String[] getRecommendedConnectRuntimePermissions() {
+        return getRecommendedRuntimePermissions(connectPermissions);
+    }
+
+    private String[] getRecommendedRuntimePermissions(String[][] permissions) {
         int allPermissionsCount = 0;
-        for (String[] permissionsArray : scanPermissions) {
+        for (String[] permissionsArray : permissions) {
             allPermissionsCount += permissionsArray.length;
         }
         String[] resultPermissions = new String[allPermissionsCount];
         int i = 0;
-        for (String[] permissionsArray : scanPermissions) {
+        for (String[] permissionsArray : permissions) {
             for (String permission : permissionsArray) {
                 resultPermissions[i++] = permission;
             }

@@ -1,10 +1,12 @@
 package com.polidea.rxandroidble2;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState;
+import com.polidea.rxandroidble2.exceptions.BlePermissionException;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -113,15 +115,18 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Set<RxBleDevice> getBondedDevices() {
-        guardBluetoothAdapterAvailable();
-        Set<RxBleDevice> rxBleDevices = new HashSet<>();
-        // TODO: check BLUETOOTH_CONNECT permission
-        Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
-        for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
-            rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
-        }
+        if (locationServicesStatus.isConnectPermissionOk()) {
+            guardBluetoothAdapterAvailable();
+            Set<RxBleDevice> rxBleDevices = new HashSet<>();
+            Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
+            for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
+                rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
+            }
 
-        return rxBleDevices;
+            return rxBleDevices;
+        } else {
+            throw new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT);
+        }
     }
 
     @Override
@@ -258,6 +263,9 @@ class RxBleClientImpl extends RxBleClient {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
             return State.BLUETOOTH_NOT_AVAILABLE;
         }
+        if (!locationServicesStatus.isScanPermissionOk()) {
+            return State.BLUETOOTH_PERMISSION_NOT_GRANTED;
+        }
         if (!locationServicesStatus.isLocationPermissionOk()) {
             return State.LOCATION_PERMISSION_NOT_GRANTED;
         }
@@ -279,5 +287,15 @@ class RxBleClientImpl extends RxBleClient {
     @Override
     public String[] getRecommendedScanRuntimePermissions() {
         return checkerScanPermission.getRecommendedScanRuntimePermissions();
+    }
+
+    @Override
+    public boolean isConnectRuntimePermissionGranted() {
+        return checkerScanPermission.isConnectRuntimePermissionGranted();
+    }
+
+    @Override
+    public String[] getRecommendedConnectRuntimePermissions() {
+        return checkerScanPermission.getRecommendedConnectRuntimePermissions();
     }
 }

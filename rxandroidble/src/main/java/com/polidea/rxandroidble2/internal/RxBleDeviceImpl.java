@@ -1,5 +1,6 @@
 package com.polidea.rxandroidble2.internal;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.Nullable;
 
@@ -9,9 +10,12 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble2.exceptions.BlePermissionException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,17 +30,20 @@ class RxBleDeviceImpl implements RxBleDevice {
     final BluetoothDevice bluetoothDevice;
     final Connector connector;
     private final BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay;
+    private final LocationServicesStatus locationServicesStatus;
     final AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
     RxBleDeviceImpl(
             BluetoothDevice bluetoothDevice,
             Connector connector,
-            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay
+            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay,
+            LocationServicesStatus locationServicesStatus
     ) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
         this.connectionStateRelay = connectionStateRelay;
+        this.locationServicesStatus = locationServicesStatus;
     }
 
     @Override
@@ -72,17 +79,20 @@ class RxBleDeviceImpl implements RxBleDevice {
         return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
             public ObservableSource<RxBleConnection> call() {
-                // TODO: Check BLUETOOTH_CONNECT permission
-                if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(options)
-                            .doFinally(new Action() {
-                                @Override
-                                public void run() {
-                                    isConnected.set(false);
-                                }
-                            });
+                if (locationServicesStatus.isConnectPermissionOk()) {
+                    if (isConnected.compareAndSet(false, true)) {
+                        return connector.prepareConnection(options)
+                                .doFinally(new Action() {
+                                    @Override
+                                    public void run() {
+                                        isConnected.set(false);
+                                    }
+                                });
+                    } else {
+                        return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
+                    }
                 } else {
-                    return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
+                    return Observable.error(new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT));
                 }
             }
         });
