@@ -43,6 +43,10 @@ public class CheckerScanPermission {
                 || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
+    public boolean isFineLocationRuntimePermissionGranted() {
+        return isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
     private boolean isAllPermissionsGranted(String[][] neededPermissions) {
         boolean allNeededPermissionsGranted = true;
         for (String[] permissions : neededPermissions) {

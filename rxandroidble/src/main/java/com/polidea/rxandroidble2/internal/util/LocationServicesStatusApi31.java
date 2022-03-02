@@ -29,7 +29,7 @@ public class LocationServicesStatusApi31 implements LocationServicesStatus {
     }
 
     public boolean isLocationPermissionOk() {
-        return true;
+        return isNearbyPermissionNeverForLoc || checkerScanPermission.isFineLocationRuntimePermissionGranted();
     }
 
     public boolean isLocationProviderOk() {
