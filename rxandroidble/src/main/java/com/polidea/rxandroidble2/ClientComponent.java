@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
@@ -318,6 +319,7 @@ public interface ClientComponent {
                     && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.S)
         @Provides
         @Named(PlatformConstants.BOOL_IS_NEARBY_PERMISSION_NEVER_FOR_LOCATION)
         @ClientScope
