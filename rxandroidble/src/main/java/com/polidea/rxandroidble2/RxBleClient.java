@@ -25,14 +25,15 @@ public abstract class RxBleClient {
          */
         BLUETOOTH_NOT_AVAILABLE,
         /**
-         * TODO - Add Doc
+         * Runtime Bluetooth scan permission is not granted. Scanning will not work. Used on API >=31.
+         * <p>APIs 31+   - BLUETOOTH_SCAN
          */
-        BLUETOOTH_PERMISSION_NOT_GRANTED,
+        BLUETOOTH_SCAN_PERMISSION_NOT_GRANTED,
         /**
-         * Runtime location permission is not given. Scanning will not work. Used on API >=23.
+         * Runtime location permission is not given. Scanning will not work. Used on API 23-30 inclusive.
          * <p>APIs 23-28 – ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION
          * <p>APIs 29-30 - ACCESS_FINE_LOCATION
-         * <p>APIs 31+   - BLUETOOTH_SCAN and ACCESS_FINE_LOCATION (if BLUETOOTH_SCAN does not have neverForLocation flag)
+         * <p>APIs 31+   - BLUETOOTH_SCAN and ACCESS_FINE_LOCATION if BLUETOOTH_SCAN does not have neverForLocation flag
          */
         LOCATION_PERMISSION_NOT_GRANTED,
         /**
@@ -236,7 +237,17 @@ public abstract class RxBleClient {
     public abstract boolean isConnectRuntimePermissionGranted();
 
     /**
-     * TODO - Add Doc
+     * Returns permission strings needed by the application to connect to Bluetooth devices or retrieve bonded devices, or an empty array
+     * if no runtime permissions are needed.
+     * <p>
+     * Returned values:
+     * <p>
+     * case: API < 31<p>
+     * Empty array. No runtime permissions needed.
+     * <p>
+     * case: 31 <= API<p>
+     * {@link android.Manifest.permission#BLUETOOTH_CONNECT}
+     * @return an ordered array of possible connect permissions
      */
     public abstract String[] getRecommendedConnectRuntimePermissions();
 }

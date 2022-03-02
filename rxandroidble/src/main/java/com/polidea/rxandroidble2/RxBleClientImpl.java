@@ -2,10 +2,13 @@ package com.polidea.rxandroidble2;
 
 import android.Manifest;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState;
+import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.exceptions.BlePermissionException;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
@@ -115,18 +118,20 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Set<RxBleDevice> getBondedDevices() {
-        if (locationServicesStatus.isConnectPermissionOk()) {
-            guardBluetoothAdapterAvailable();
-            Set<RxBleDevice> rxBleDevices = new HashSet<>();
-            Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
-            for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
-                rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
+        if (!locationServicesStatus.isConnectPermissionOk()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                throw new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT);
             }
-
-            return rxBleDevices;
-        } else {
-            throw new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT);
+            throw new BleException("Unexpected connect permission not OK");
         }
+        guardBluetoothAdapterAvailable();
+        Set<RxBleDevice> rxBleDevices = new HashSet<>();
+        Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
+        for (BluetoothDevice bluetoothDevice : bluetoothDevices) {
+            rxBleDevices.add(getBleDevice(bluetoothDevice.getAddress()));
+        }
+
+        return rxBleDevices;
     }
 
     @Override
@@ -264,7 +269,7 @@ class RxBleClientImpl extends RxBleClient {
             return State.BLUETOOTH_NOT_AVAILABLE;
         }
         if (!locationServicesStatus.isScanPermissionOk()) {
-            return State.BLUETOOTH_PERMISSION_NOT_GRANTED;
+            return State.BLUETOOTH_SCAN_PERMISSION_NOT_GRANTED;
         }
         if (!locationServicesStatus.isLocationPermissionOk()) {
             return State.LOCATION_PERMISSION_NOT_GRANTED;
