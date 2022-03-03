@@ -9,7 +9,9 @@ import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
+import com.polidea.rxandroidble2.exceptions.BlePermissionException
 import com.polidea.rxandroidble2.internal.connection.Connector
+import com.polidea.rxandroidble2.internal.util.LocationServicesStatus
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Shared
@@ -26,7 +28,8 @@ class RxBleDeviceTest extends Specification {
     PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
     BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateBehaviorRelay = BehaviorRelay.createDefault(DISCONNECTED)
     @Shared BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
-    RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay)
+    LocationServicesStatus mockLocationServicesStatus = Mock LocationServicesStatus
+    RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay, mockLocationServicesStatus)
     static List<EstablishConnectionCaller> establishConnectionCallers = []
     static List<EstablishConnectionTestSetup> establishConnectionTestSetups = []
 
@@ -96,7 +99,7 @@ class RxBleDeviceTest extends Specification {
     def "equals() should return true when compared to a different RxBleDevice instance with the same underlying BluetoothDevice"() {
 
         given:
-        def differentRxBleDeviceWithSameBluetoothDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create())
+        def differentRxBleDeviceWithSameBluetoothDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create(), mockLocationServicesStatus)
 
         expect:
         rxBleDevice == differentRxBleDeviceWithSameBluetoothDevice
@@ -105,7 +108,7 @@ class RxBleDeviceTest extends Specification {
     def "hashCode() should return the same value as a different RxBleDevice instance hashCode() with the same underlying BluetoothDevice"() {
 
         given:
-        def differentRxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create())
+        def differentRxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create(), mockLocationServicesStatus)
 
         expect:
         rxBleDevice.hashCode() == differentRxBleDevice.hashCode()
@@ -115,6 +118,7 @@ class RxBleDeviceTest extends Specification {
     def "establishConnection() should call RxBleConnection.Connector.prepareConnection() => autoConnect:#autoConnectValue #establishConnectionCaller"() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         ConnectionSetup connectionSetup = new ConnectionSetup.Builder()
             .setAutoConnect(autoConnectValue)
             .setSuppressIllegalOperationCheck(suppressIllegalOperationCheckValue)
@@ -174,6 +178,7 @@ class RxBleDeviceTest extends Specification {
     def "should emit connection and stay subscribed after it was established => call:#establishConnectionSetup"() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         def connectionObservable = establishConnectionSetup.establishConnection(rxBleDevice)
 
         when:
@@ -192,6 +197,7 @@ class RxBleDeviceTest extends Specification {
     def "should emit BleAlreadyConnectedException if already connected => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1\""() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
         connectionObs0.subscribe()
@@ -214,6 +220,7 @@ class RxBleDeviceTest extends Specification {
     def "should emit BleAlreadyConnectedException if there is already one subscriber to .establishConnection() => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
         connectionObs0.test()
@@ -235,6 +242,7 @@ class RxBleDeviceTest extends Specification {
     def "should create new connection if previous connection was established and released before second subscriber has subscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
         def firstSubscriber = connectionObs0.test()
@@ -259,6 +267,7 @@ class RxBleDeviceTest extends Specification {
     def "should not emit BleAlreadyConnectedException if there is already was subscriber to .establishConnection() but it unsubscribed => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
 
         given:
+        mockLocationServicesStatus.isConnectPermissionOk() >> true
         def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
         def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
         def testSubscriber = connectionObs0.test()
@@ -269,6 +278,30 @@ class RxBleDeviceTest extends Specification {
 
         then:
         testSubscriber.assertNoErrors()
+
+        where:
+        [establishConnectionSetup0, establishConnectionSetup1] << [
+                establishConnectionTestSetups,
+                establishConnectionTestSetups
+        ].combinations()
+    }
+
+    @Unroll
+    def "should emit permission error but only once => firstCall:#establishConnectionSetup0 secondCall:#establishConnectionSetup1"() {
+
+        given:
+        1 * mockLocationServicesStatus.isConnectPermissionOk() >> false
+        1 * mockLocationServicesStatus.isConnectPermissionOk() >> true
+        def connectionObs0 = establishConnectionSetup0.establishConnection(rxBleDevice)
+        def connectionObs1 = establishConnectionSetup1.establishConnection(rxBleDevice)
+
+        when:
+        def testSubscriber0 = connectionObs0.test()
+        def testSubscriber1 = connectionObs1.test()
+
+        then:
+        testSubscriber0.assertError(BlePermissionException)
+        testSubscriber1.assertNoErrors()
 
         where:
         [establishConnectionSetup0, establishConnectionSetup1] << [

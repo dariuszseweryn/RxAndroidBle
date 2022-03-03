@@ -42,8 +42,8 @@ public class Build {
                 public static final String BASE_OS = "";
                 public static final String SECURITY_PATCH = "2021-08-05";
                 public static final int MEDIA_PERFORMANCE_CLASS = 0;
-                public static final String SDK = "30";
-                public static final int SDK_INT = 30;
+                public static final String SDK = "31";
+                public static final int SDK_INT = 31;
                 public static final int PREVIEW_SDK_INT = 0;
                 public static final String CODENAME = "REL";
         }
