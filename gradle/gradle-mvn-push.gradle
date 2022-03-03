@@ -119,8 +119,12 @@ afterEvaluate { project ->
     task androidJavadocs(type: Javadoc) {
         def releaseVariant = android.libraryVariants.matching { variant -> variant.name == "release" }.iterator().next()
         source = android.sourceSets.main.java.source
-        classpath = project.files(releaseVariant.javaCompileProvider.get().classpath.files,
-                project.android.getBootClasspath())
+        classpath += project.files(releaseVariant.javaCompileProvider.get().classpath.files,
+                project.android.getBootClasspath(), files("$buildDir/intermediates/classes/release"))
+        title = null
+        options.noTimestamp(false)
+        options.doclet = "com.google.doclava.Doclava"
+        options.docletpath = configurations.doclava.files.asType(List)
     }
 
     task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {

@@ -1,9 +1,11 @@
 buildscript {
     repositories {
-        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:$rootProject.ext.shadowPluginVersion"
+        classpath "gradle.plugin.com.github.johnrengelman:shadow:$rootProject.ext.shadowPluginVersion"
     }
 }
 
@@ -22,4 +24,9 @@ shadowJar {
 
 dependencies {
     implementation rootProject.ext.libs.dagger_compiler
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }

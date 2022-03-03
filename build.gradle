@@ -34,6 +34,14 @@ allprojects {
         }
     }
 
+    configurations {
+        doclava
+    }
+
+    dependencies {
+        doclava 'com.google.doclava:doclava:1.0.6'
+    }
+
     dependencyUpdates.resolutionStrategy {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
