@@ -35,7 +35,7 @@ public class InternalScanResultCreator {
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
         final ScanRecord scanRecordObj = scanRecordParser.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
-                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, null);
+                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, IsConnectableStatus.LEGACY_UNKNOWN);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
