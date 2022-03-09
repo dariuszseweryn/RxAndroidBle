@@ -68,7 +68,7 @@ public class InternalScanResultCreator {
     }
 
     private IsConnectableStatus isConnectable(ScanResult scanResult) {
-        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (scanResult.isConnectable()) {
                 return IsConnectableStatus.CONNECTABLE;
             } else {
