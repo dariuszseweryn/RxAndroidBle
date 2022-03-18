@@ -1,9 +1,9 @@
 ext {
     rxJavaVersion = '2.2.17'
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
-    targetCompatibilityVersion = JavaVersion.VERSION_1_7
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
+    targetCompatibilityVersion = JavaVersion.VERSION_1_8
     shadowPluginVersion = '7.1.2'
-    daggerVersion = '2.15'
+    daggerVersion = '2.41'
     libs = [
             /* Library-only dependencies */
             rxjava                : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
