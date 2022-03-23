@@ -117,7 +117,21 @@ afterEvaluate { project ->
     }
 
     task androidJavadocs(type: Javadoc) {
+        def releaseVariant = android.libraryVariants.matching { variant -> variant.name == "release" }.iterator().next()
         source = android.sourceSets.main.java.source
+        if(project.name.contains("mock")) {
+            classpath += files(releaseVariant.javaCompileProvider.get().classpath.filter { f -> !f.getName().contains("shadow") })
+        } else {
+            classpath += files(releaseVariant.javaCompileProvider.get().classpath)
+        }
+        classpath += project.files(
+                project.android.getBootClasspath().join(File.pathSeparator),
+                files("$buildDir/intermediates/classes/release")
+        )
+        title = null
+        options.noTimestamp(false)
+        options.doclet = "com.google.doclava.Doclava"
+        options.docletpath = configurations.doclava.files.asType(List)
     }
 
     task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {

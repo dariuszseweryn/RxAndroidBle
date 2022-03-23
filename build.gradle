@@ -24,6 +24,9 @@ allprojects {
     
     repositories {
         google()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
         maven { url 'https://jitpack.io' }
         mavenCentral()
     }
@@ -32,6 +35,14 @@ allprojects {
         repositories {
             google()
         }
+    }
+
+    configurations {
+        doclava
+    }
+
+    dependencies {
+        doclava 'com.google.doclava:doclava:1.0.6'
     }
 
     dependencyUpdates.resolutionStrategy {
