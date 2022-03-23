@@ -1,12 +1,8 @@
 package com.polidea.rxandroidble2.internal.util
 
-import android.os.Build
-import com.polidea.rxandroidble2.BuildConfig
-import hkhc.electricspock.ElectricSpecification
-import org.robolectric.annotation.Config
+import spock.lang.Specification
 
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-class ScanRecordParserTest extends ElectricSpecification {
+class ScanRecordParserTest extends Specification {
 
     static final UNKNOWN_DATA_TYPE = 0xfa
     ScanRecordParser objectUnderTest = new ScanRecordParser()

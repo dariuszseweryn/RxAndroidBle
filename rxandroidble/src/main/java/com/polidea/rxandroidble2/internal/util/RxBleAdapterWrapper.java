@@ -111,7 +111,7 @@ public class RxBleAdapterWrapper {
         bluetoothLeScanner.stopScan(scanCallback);
     }
 
-    public Set<BluetoothDevice> getBondedDevices() {
+    public Set<BluetoothDevice> getBondedDevices() throws SecurityException {
         if (bluetoothAdapter == null) {
             throw nullBluetoothAdapter;
         }

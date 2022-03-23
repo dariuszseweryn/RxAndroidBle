@@ -1,10 +1,15 @@
 package com.polidea.rxandroidble2;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState;
+import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.exceptions.BlePermissionException;
 import com.polidea.rxandroidble2.exceptions.BleScanException;
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider;
 import com.polidea.rxandroidble2.internal.RxBleLog;
@@ -113,6 +118,12 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Set<RxBleDevice> getBondedDevices() {
+        if (!locationServicesStatus.isConnectPermissionOk()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                throw new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT);
+            }
+            throw new BleException("Unexpected connect permission not OK");
+        }
         guardBluetoothAdapterAvailable();
         Set<RxBleDevice> rxBleDevices = new HashSet<>();
         Set<BluetoothDevice> bluetoothDevices = rxBleAdapterWrapper.getBondedDevices();
@@ -257,6 +268,9 @@ class RxBleClientImpl extends RxBleClient {
         if (!rxBleAdapterWrapper.hasBluetoothAdapter()) {
             return State.BLUETOOTH_NOT_AVAILABLE;
         }
+        if (!locationServicesStatus.isScanPermissionOk()) {
+            return State.BLUETOOTH_SCAN_PERMISSION_NOT_GRANTED;
+        }
         if (!locationServicesStatus.isLocationPermissionOk()) {
             return State.LOCATION_PERMISSION_NOT_GRANTED;
         }
@@ -278,5 +292,15 @@ class RxBleClientImpl extends RxBleClient {
     @Override
     public String[] getRecommendedScanRuntimePermissions() {
         return checkerScanPermission.getRecommendedScanRuntimePermissions();
+    }
+
+    @Override
+    public boolean isConnectRuntimePermissionGranted() {
+        return checkerScanPermission.isConnectRuntimePermissionGranted();
+    }
+
+    @Override
+    public String[] getRecommendedConnectRuntimePermissions() {
+        return checkerScanPermission.getRecommendedConnectRuntimePermissions();
     }
 }

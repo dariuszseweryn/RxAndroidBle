@@ -15,7 +15,8 @@ public class BleScanException extends BleException {
 
     @IntDef({BLUETOOTH_CANNOT_START, BLUETOOTH_DISABLED, BLUETOOTH_NOT_AVAILABLE, LOCATION_PERMISSION_MISSING, LOCATION_SERVICES_DISABLED,
             SCAN_FAILED_ALREADY_STARTED, SCAN_FAILED_APPLICATION_REGISTRATION_FAILED, SCAN_FAILED_INTERNAL_ERROR,
-            SCAN_FAILED_FEATURE_UNSUPPORTED, SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES, UNDOCUMENTED_SCAN_THROTTLE, UNKNOWN_ERROR_CODE})
+            SCAN_FAILED_FEATURE_UNSUPPORTED, SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES, SCAN_PERMISSION_MISSING, UNDOCUMENTED_SCAN_THROTTLE,
+            UNKNOWN_ERROR_CODE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Reason {
 
@@ -75,6 +76,11 @@ public class BleScanException extends BleException {
      * Fails to start scan as it is out of hardware resources. Only on API >=21.
      */
     public static final int SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES = 9;
+
+    /**
+     * The BLUETOOTH_SCAN permission has not been granted. Only on API >=31.
+     */
+    public static final int SCAN_PERMISSION_MISSING = 10;
 
     /**
      * On API >=25 there is an undocumented scan throttling mechanism. If 5 scans were started by the app during a 30 second window

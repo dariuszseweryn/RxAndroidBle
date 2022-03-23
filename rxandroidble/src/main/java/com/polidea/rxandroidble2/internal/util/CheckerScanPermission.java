@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.internal.util;
 
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
@@ -16,20 +17,40 @@ public class CheckerScanPermission {
 
     private final Context context;
     private final String[][] scanPermissions;
+    private final String[][] connectPermissions;
 
     @Inject
     CheckerScanPermission(
             Context context,
-            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[][] scanPermissions
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_SCAN_PERMISSIONS) String[][] scanPermissions,
+            @Named(ClientComponent.PlatformConstants.STRING_ARRAY_CONNECT_PERMISSIONS) String[][] connectPermissions
     ) {
         this.context = context;
         this.scanPermissions = scanPermissions;
+        this.connectPermissions = connectPermissions;
     }
 
     public boolean isScanRuntimePermissionGranted() {
+        return isAllPermissionsGranted(scanPermissions);
+    }
+
+    public boolean isConnectRuntimePermissionGranted() {
+        return isAllPermissionsGranted(connectPermissions);
+    }
+
+    public boolean isLocationRuntimePermissionGranted() {
+        return isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    public boolean isFineLocationRuntimePermissionGranted() {
+        return isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    private boolean isAllPermissionsGranted(String[][] neededPermissions) {
         boolean allNeededPermissionsGranted = true;
-        for (String[] neededPermissions : scanPermissions) {
-            allNeededPermissionsGranted &= isAnyPermissionGranted(neededPermissions);
+        for (String[] permissions : neededPermissions) {
+            allNeededPermissionsGranted &= isAnyPermissionGranted(permissions);
         }
         return allNeededPermissionsGranted;
     }
@@ -44,13 +65,21 @@ public class CheckerScanPermission {
     }
 
     public String[] getRecommendedScanRuntimePermissions() {
+        return getRecommendedRuntimePermissions(scanPermissions);
+    }
+
+    public String[] getRecommendedConnectRuntimePermissions() {
+        return getRecommendedRuntimePermissions(connectPermissions);
+    }
+
+    private String[] getRecommendedRuntimePermissions(String[][] permissions) {
         int allPermissionsCount = 0;
-        for (String[] permissionsArray : scanPermissions) {
+        for (String[] permissionsArray : permissions) {
             allPermissionsCount += permissionsArray.length;
         }
         String[] resultPermissions = new String[allPermissionsCount];
         int i = 0;
-        for (String[] permissionsArray : scanPermissions) {
+        for (String[] permissionsArray : permissions) {
             for (String permission : permissionsArray) {
                 resultPermissions[i++] = permission;
             }

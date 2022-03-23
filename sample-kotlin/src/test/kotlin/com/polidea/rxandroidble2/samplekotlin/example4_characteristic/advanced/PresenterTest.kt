@@ -4,16 +4,11 @@ import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE
-import android.os.Build
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.mockrxandroidble.RxBleClientMock
-import com.polidea.rxandroidble2.samplekotlin.BuildConfig
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import org.junit.*
-import org.junit.runner.*
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 private const val deviceName = "TestDevice"
@@ -27,8 +22,6 @@ private val characteristicData = "Polidea".toByteArray()
 private val descriptorUUID = UUID.fromString("00001337-0000-1000-8000-00805f9b34fb")
 private val descriptorData = "Config".toByteArray()
 
-@RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, constants = BuildConfig::class, sdk = [Build.VERSION_CODES.LOLLIPOP])
 class PresenterTest {
 
     private val characteristicNotificationSubject = PublishSubject.create<ByteArray>()

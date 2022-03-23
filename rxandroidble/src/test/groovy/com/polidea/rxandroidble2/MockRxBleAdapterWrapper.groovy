@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
-import android.os.Build
 import androidx.annotation.RequiresApi
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 

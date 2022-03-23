@@ -1,6 +1,9 @@
 package com.polidea.rxandroidble2.internal;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+
 import androidx.annotation.Nullable;
 
 import com.jakewharton.rxrelay2.BehaviorRelay;
@@ -9,9 +12,13 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
+import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.exceptions.BlePermissionException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,17 +33,20 @@ class RxBleDeviceImpl implements RxBleDevice {
     final BluetoothDevice bluetoothDevice;
     final Connector connector;
     private final BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay;
+    private final LocationServicesStatus locationServicesStatus;
     final AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
     RxBleDeviceImpl(
             BluetoothDevice bluetoothDevice,
             Connector connector,
-            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay
+            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay,
+            LocationServicesStatus locationServicesStatus
     ) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
         this.connectionStateRelay = connectionStateRelay;
+        this.locationServicesStatus = locationServicesStatus;
     }
 
     @Override
@@ -72,6 +82,12 @@ class RxBleDeviceImpl implements RxBleDevice {
         return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
             @Override
             public ObservableSource<RxBleConnection> call() {
+                if (!locationServicesStatus.isConnectPermissionOk()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        return Observable.error(new BlePermissionException(Manifest.permission.BLUETOOTH_CONNECT));
+                    }
+                    return Observable.error(new BleException("Unexpected connect permission not OK"));
+                }
                 if (isConnected.compareAndSet(false, true)) {
                     return connector.prepareConnection(options)
                             .doFinally(new Action() {
