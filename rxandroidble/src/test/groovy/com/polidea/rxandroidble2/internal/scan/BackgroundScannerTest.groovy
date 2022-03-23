@@ -5,18 +5,15 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
-import android.os.Build
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.internal.util.RxBleAdapterWrapper
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanSettings
-import hkhc.electricspock.ElectricSpecification
-import org.robolectric.annotation.Config
+import spock.lang.Specification
 
 import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_ALL_MATCHES
 
-@Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
-class BackgroundScannerTest extends ElectricSpecification {
+class BackgroundScannerTest extends Specification {
     public static final int SUCCESS_CODE = 0
     BackgroundScannerImpl objectUnderTest
     RxBleAdapterWrapper adapterWrapper
@@ -176,25 +173,25 @@ class BackgroundScannerTest extends ElectricSpecification {
     }
 
 
-    private static Intent prepareIntentWithScanResultError(int errorCode) {
-        def intent = new Intent()
-        intent.putExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, errorCode)
+    private Intent prepareIntentWithScanResultError(int errorCode) {
+        def intent = Mock Intent
+        intent.getIntExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, _) >> errorCode
         return intent
     }
 
-    private static Intent prepareIntentWithEmptyResult() {
-        def intent = new Intent()
-        intent.putExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, BackgroundScannerImpl.NO_ERROR)
-        intent.putExtra(BluetoothLeScanner.EXTRA_CALLBACK_TYPE, CALLBACK_TYPE_ALL_MATCHES)
-        intent.putExtra(BluetoothLeScanner.EXTRA_LIST_SCAN_RESULT, [])
+    private Intent prepareIntentWithEmptyResult() {
+        def intent = Mock Intent
+        intent.getIntExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, _) >> BackgroundScannerImpl.NO_ERROR
+        intent.getIntExtra(BluetoothLeScanner.EXTRA_CALLBACK_TYPE, _) >> CALLBACK_TYPE_ALL_MATCHES.ordinal()
+        intent.getSerializableExtra(BluetoothLeScanner.EXTRA_LIST_SCAN_RESULT) >> []
         return intent
     }
 
-    private static Intent prepareIntentWithResults(ScanResult... scanResults) {
-        def intent = new Intent()
-        intent.putExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, BackgroundScannerImpl.NO_ERROR)
-        intent.putExtra(BluetoothLeScanner.EXTRA_CALLBACK_TYPE, CALLBACK_TYPE_ALL_MATCHES)
-        intent.putExtra(BluetoothLeScanner.EXTRA_LIST_SCAN_RESULT, scanResults.toList())
+    private Intent prepareIntentWithResults(ScanResult... scanResults) {
+        def intent = Mock Intent
+        intent.getIntExtra(BluetoothLeScanner.EXTRA_ERROR_CODE, _) >> BackgroundScannerImpl.NO_ERROR
+        intent.getIntExtra(BluetoothLeScanner.EXTRA_CALLBACK_TYPE, _) >> CALLBACK_TYPE_ALL_MATCHES.ordinal()
+        intent.getSerializableExtra(BluetoothLeScanner.EXTRA_LIST_SCAN_RESULT) >> scanResults.toList()
         return intent
     }
 }

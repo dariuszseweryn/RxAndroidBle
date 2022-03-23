@@ -11,6 +11,10 @@ class MockRxBleAdapterStateObservable {
 
     public final ReplaySubject relay = ReplaySubject.create()
 
+    public final ReplaySubject getRelay() {
+        return relay
+    }
+
     public Observable<RxBleAdapterStateObservable.BleAdapterState> asObservable() {
         Observable.create(new ObservableOnSubscribe() {
             @Override
