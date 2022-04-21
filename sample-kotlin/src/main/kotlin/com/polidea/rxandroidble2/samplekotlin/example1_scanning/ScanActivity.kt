@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.samplekotlin.example1_scanning
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.polidea.rxandroidble2.exceptions.BleScanException
 import com.polidea.rxandroidble2.samplekotlin.DeviceActivity
@@ -90,7 +91,10 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun onScanFailure(throwable: Throwable) {
-        if (throwable is BleScanException) showError(throwable)
+        if (throwable is BleScanException)
+            showError(throwable)
+        else
+            Log.w("ScanActivity", "Scan failed", throwable)
     }
 
     private fun updateButtonUIState() =

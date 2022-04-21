@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.widget.Button;
 
 import com.polidea.rxandroidble2.RxBleClient;
@@ -134,6 +136,8 @@ public class ScanActivity extends AppCompatActivity {
     private void onScanFailure(Throwable throwable) {
         if (throwable instanceof BleScanException) {
             ScanExceptionHandler.handleException(this, (BleScanException) throwable);
+        } else {
+            Log.w("ScanActivity", "Scan failed", throwable);
         }
     }
 

@@ -177,7 +177,7 @@ public interface ClientComponent {
             if (isNearbyServicesNeverForLocation) {
                 // if neverForLocation flag is used on BLUETOOTH_SCAN then it is the only permission needed
                 return new String[][]{
-                        new String[]{Manifest.permission.BLUETOOTH_SCAN}
+                    new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
                 };
             }
             // otherwise ACCESS_FINE_LOCATION is needed as well

@@ -20,7 +20,7 @@ public class LocationPermission {
                  * the below would cause a ArrayIndexOutOfBoundsException on API < 23. Yet it should not be called then as runtime
                  * permissions are not needed and RxBleClient.isScanRuntimePermissionGranted() returns `true`
                  */
-                new String[]{client.getRecommendedScanRuntimePermissions()[0]},
+                client.getRecommendedScanRuntimePermissions(),
                 REQUEST_PERMISSION_BLE_SCAN
         );
     }
