@@ -21,13 +21,16 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility = rootProject.ext.targetCompatibilityVersion
     }
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
-        test.java.srcDirs += 'src/test/kotlin'
+        test.java.srcDirs = [
+                'src/test/kotlin',
+                '../rxandroidble/src/test/java' // this produces a warning about duplicate content roots, but it is still required
+        ]
     }
 }
 
@@ -45,7 +48,7 @@ dependencies {
     // AndroidX
     implementation rootProject.ext.libs.appcompat
     implementation rootProject.ext.libs.material_design
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation rootProject.ext.libs.annotations
 
     // RxBinding
@@ -62,5 +65,4 @@ dependencies {
     // Test
     testImplementation project(':mockrxandroidble')
     testImplementation rootProject.ext.libs.junit
-    testImplementation rootProject.ext.libs.robolectric
 }

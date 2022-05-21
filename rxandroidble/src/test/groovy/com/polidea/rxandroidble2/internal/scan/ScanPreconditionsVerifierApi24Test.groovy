@@ -4,9 +4,9 @@ import com.polidea.rxandroidble2.exceptions.BleScanException
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.TestScheduler
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.util.concurrent.TimeUnit
-import spock.lang.Unroll
 
 class ScanPreconditionsVerifierApi24Test extends Specification {
 

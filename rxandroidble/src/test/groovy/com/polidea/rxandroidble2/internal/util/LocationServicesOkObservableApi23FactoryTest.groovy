@@ -3,12 +3,11 @@ package com.polidea.rxandroidble2.internal.util
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.LocationManager
-import hkhc.electricspock.ElectricSpecification
-import org.robolectric.annotation.Config
+import spock.lang.Specification
 
-@Config(manifest = Config.NONE)
-class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification {
+class LocationServicesOkObservableApi23FactoryTest extends Specification {
     def contextMock = Mock Context
     def mockLocationServicesStatus = Mock LocationServicesStatus
     def objectUnderTest = new LocationServicesOkObservableApi23Factory(contextMock, mockLocationServicesStatus)
@@ -137,9 +136,10 @@ class LocationServicesOkObservableApi23FactoryTest extends ElectricSpecification
     }
 
     BroadcastReceiver shouldCaptureRegisteredReceiver() {
-        _ * contextMock.registerReceiver({
-            BroadcastReceiver receiver ->
+        _ * contextMock.registerReceiver(*_) >> {
+            BroadcastReceiver receiver, IntentFilter filter ->
                 this.registeredReceiver = receiver
-        }, _)
+                return Mock(Intent)
+        }
     }
 }
