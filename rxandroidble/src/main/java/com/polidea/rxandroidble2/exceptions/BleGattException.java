@@ -69,8 +69,8 @@ public class BleGattException extends BleException {
         }
 
         final String statusDescription = GattStatusParser.getGattCallbackStatusDescription(status);
-        final String link
-                = "https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h";
+        final String link =
+                "https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h";
         return String.format("GATT exception from %s, status %d (%s), type %s. (Look up status 0x%02x here %s)",
                 LoggerUtil.commonMacMessage(gatt), status, statusDescription, bleGattOperationType, status, link);
     }
