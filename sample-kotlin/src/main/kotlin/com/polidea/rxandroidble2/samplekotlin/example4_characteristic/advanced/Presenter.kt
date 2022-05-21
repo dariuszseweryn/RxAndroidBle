@@ -322,7 +322,7 @@ private val BluetoothGattCharacteristic.notificationSetupMode: NotificationSetup
  */
 private fun transformToPresenterEvent(type: Type): ObservableTransformer<ByteArray, PresenterEvent> =
     ObservableTransformer {
-        it.map { writtenBytes -> ResultEvent(writtenBytes.toList(), type) as PresenterEvent }
+        it.map<PresenterEvent> { writtenBytes -> ResultEvent(writtenBytes.toList(), type) }
             .onErrorReturn { throwable -> ErrorEvent(throwable, type) }
     }
 
@@ -338,7 +338,7 @@ private fun transformToNotificationPresenterEvent(
 ): ObservableTransformer<Observable<ByteArray>, PresenterEvent> =
     ObservableTransformer { observableObservable ->
         observableObservable
-            .flatMap { it.map { bytes -> ResultEvent(bytes.toList(), type) as PresenterEvent } }
+            .flatMap<PresenterEvent> { it.map { bytes -> ResultEvent(bytes.toList(), type) } }
             .onErrorReturn { throwable -> ErrorEvent(throwable, type) }
     }
 
