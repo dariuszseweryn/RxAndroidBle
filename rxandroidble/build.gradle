@@ -1,15 +1,16 @@
 apply plugin: 'com.android.library'
 apply plugin: 'groovyx.android'
 apply plugin: "com.vanniktech.maven.publish"
+apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 android {
     namespace 'com.polidea.rxandroidble2'
 
-    compileSdkVersion 31
+    compileSdkVersion 32
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 31
+        targetSdkVersion 32
     }
 
     buildTypes {

@@ -7,6 +7,7 @@ buildscript {
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'com.vanniktech.maven.publish'
+apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 def buildSrcDir = '../gradle'
 apply from: "${buildSrcDir}/shadow.gradle"
