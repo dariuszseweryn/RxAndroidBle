@@ -2,18 +2,18 @@ apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
 
 buildscript {
-    ext.kotlinVersion = '1.6.10'
+    apply from: 'dependencies.gradle'
+
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.1.3'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.19.0'
         classpath 'gradle.plugin.org.codehaus.groovy:groovy-android-gradle-plugin:3.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
@@ -23,17 +23,18 @@ allprojects {
     apply plugin: 'com.github.ben-manes.versions'
     
     repositories {
+        mavenLocal()
         google()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        maven { url 'https://jitpack.io' }
         mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://jitpack.io' }
     }
 
     buildscript {
         repositories {
+            gradlePluginPortal()
             google()
+            mavenCentral()
         }
     }
 
@@ -73,6 +74,24 @@ allprojects {
         }
     }
 
+    afterEvaluate {
+        if (getPlugins().hasPlugin('com.vanniktech.maven.publish')) {
+            publishing {
+                repositories {
+                    maven {
+                        def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                        def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                        url = VERSION_NAME.contains("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+
+                        credentials(PasswordCredentials) {
+                            username = property('SONATYPE_NEXUS_USERNAME')
+                            password = property('SONATYPE_NEXUS_PASSWORD')
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }
 

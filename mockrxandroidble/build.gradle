@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'groovyx.android'
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+apply plugin: 'com.vanniktech.maven.publish'
 
 android {
     compileSdkVersion 31
@@ -8,8 +8,6 @@ android {
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 31
-        versionCode 1
-        versionName VERSION_NAME
     }
 
     compileOptions {
@@ -41,6 +39,12 @@ android {
             }
         }
     }
+}
+
+afterEvaluate { project ->
+    // add explicit dependencies to compile groovy when testing
+    testDebugUnitTest.dependsOn 'compileDebugUnitTestGroovyWithGroovyc'
+    testReleaseUnitTest.dependsOn 'compileReleaseUnitTestGroovyWithGroovyc'
 }
 
 dependencies {

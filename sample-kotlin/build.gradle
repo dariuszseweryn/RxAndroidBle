@@ -43,7 +43,7 @@ dependencies {
     implementation project(path: ':rxandroidble')
 
     // Kotlin stdlib
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
     // AndroidX
     implementation rootProject.ext.libs.appcompat
