@@ -3,6 +3,8 @@ apply plugin: 'groovyx.android'
 apply plugin: 'com.vanniktech.maven.publish'
 
 android {
+    namespace 'com.polidea.rxandroidble2.mockrxandroidble'
+
     compileSdkVersion 31
 
     defaultConfig {
@@ -26,7 +28,7 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         abortOnError false
     }
 

@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.polidea.rxandroidble2">
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- required for API 18 - 30 -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
