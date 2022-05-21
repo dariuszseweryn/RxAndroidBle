@@ -11,7 +11,7 @@ import com.polidea.rxandroidble2.utils.GattStatusParser;
 /**
  * Exception emitted when the BLE link has been interrupted as a result of an error. The exception contains
  * detailed explanation of the error source (type of operation) and the code proxied from
- * the <a href="https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h">
+ * the <a href="https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h">
  * Android system</a>.
  *
  * @see com.polidea.rxandroidble2.RxBleDevice#establishConnection(boolean)
@@ -70,7 +70,7 @@ public class BleGattException extends BleException {
 
         final String statusDescription = GattStatusParser.getGattCallbackStatusDescription(status);
         final String link
-                = "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h";
+                = "https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h";
         return String.format("GATT exception from %s, status %d (%s), type %s. (Look up status 0x%02x here %s)",
                 LoggerUtil.commonMacMessage(gatt), status, statusDescription, bleGattOperationType, status, link);
     }
