@@ -32,6 +32,7 @@ class RxBleClientTest extends Specification {
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     ScanRecordParser scanRecordParserSpy = Spy ScanRecordParser
+    MockBluetoothManagerWrapper bluetoothManagerWrapperSpy = Spy MockBluetoothManagerWrapper
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
@@ -74,6 +75,7 @@ class RxBleClientTest extends Specification {
         mockOperationScan.run(_) >> Observable.never()
         mockScanSetupBuilder.build(_, _) >> mockScanSetup
         objectUnderTest = new RxBleClientImpl(
+                bluetoothManagerWrapperSpy,
                 bleAdapterWrapperSpy,
                 queue,
                 adapterStateObservable.asObservable(),
@@ -100,6 +102,18 @@ class RxBleClientTest extends Specification {
 
         when:
         def results = objectUnderTest.getBondedDevices()
+
+        then:
+        assert results.size() == 2
+    }
+
+    def "should return connected devices"() {
+        given:
+        bluetoothPeripheralConnected("AA:AA:AA:AA:AA:AA")
+        bluetoothPeripheralConnected("BB:BB:BB:BB:BB:BB")
+
+        when:
+        def results = objectUnderTest.getConnectedPeripherals()
 
         then:
         assert results.size() == 2
@@ -478,6 +492,13 @@ class RxBleClientTest extends Specification {
         mock.getAddress() >> address
         mock.hashCode() >> address.hashCode()
         bleAdapterWrapperSpy.addBondedDevice(mock)
+    }
+
+    def bluetoothPeripheralConnected(String address) {
+        def mock = Mock(BluetoothDevice)
+        mock.getAddress() >> address
+        mock.hashCode() >> address.hashCode()
+        bluetoothManagerWrapperSpy.addConnectedPeripheral(mock)
     }
 
     def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {
