@@ -3,12 +3,14 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.kotlin.android.extensions'
 
 android {
-    compileSdkVersion 31
+    namespace 'com.polidea.rxandroidble2.samplekotlin'
+
+    compileSdkVersion 32
 
     defaultConfig {
         applicationId "com.polidea.rxandroidble.sample"
         minSdkVersion 18
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
     }

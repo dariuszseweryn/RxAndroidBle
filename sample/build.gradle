@@ -12,6 +12,8 @@ repositories {
 }
 
 android {
+    namespace 'com.polidea.rxandroidble2.sample'
+
     compileSdkVersion 31
 
     defaultConfig {
