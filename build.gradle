@@ -73,26 +73,6 @@ allprojects {
             }
         }
     }
-
-    afterEvaluate {
-        if (getPlugins().hasPlugin('com.vanniktech.maven.publish')) {
-            publishing {
-                repositories {
-                    maven {
-                        def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                        def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-                        url = VERSION_NAME.contains("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
-
-                        credentials(PasswordCredentials) {
-                            username = property('SONATYPE_NEXUS_USERNAME')
-                            password = property('SONATYPE_NEXUS_PASSWORD')
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 }
 
 task clean(type: Delete) {
