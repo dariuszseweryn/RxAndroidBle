@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.polidea.rxandroidble2.IsConnectableStatus;
+import com.polidea.rxandroidble2.scan.IsConnectable;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleScanResult;
@@ -383,7 +383,7 @@ public class RxBleClientMock extends RxBleClient {
                 System.currentTimeMillis() * 1000000,
                 ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH,
                 scanRecord,
-                IsConnectableStatus.LEGACY_UNKNOWN
+                IsConnectable.LEGACY_UNKNOWN
         );
     }
 

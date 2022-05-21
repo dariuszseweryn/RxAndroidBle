@@ -1,6 +1,6 @@
 package com.polidea.rxandroidble2.mockrxandroidble;
 
-import com.polidea.rxandroidble2.IsConnectableStatus;
+import com.polidea.rxandroidble2.scan.IsConnectable;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.internal.ScanResultInterface;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
@@ -10,7 +10,7 @@ import com.polidea.rxandroidble2.scan.ScanResult;
 public class RxBleScanResultMock extends ScanResult implements ScanResultInterface {
     public RxBleScanResultMock(RxBleDevice bleDevice, int rssi, long timestampNanos,
                                ScanCallbackType callbackType, ScanRecord scanRecord,
-                               IsConnectableStatus isConnectable) {
+                               IsConnectable isConnectable) {
         super(bleDevice, rssi, timestampNanos, callbackType, scanRecord, isConnectable);
     }
 
