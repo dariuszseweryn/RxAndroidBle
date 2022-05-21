@@ -27,7 +27,8 @@ public class InternalToExternalScanResultConverter implements Function<RxBleInte
                 rxBleInternalScanResult.getRssi(),
                 rxBleInternalScanResult.getTimestampNanos(),
                 rxBleInternalScanResult.getScanCallbackType(),
-                rxBleInternalScanResult.getScanRecord()
+                rxBleInternalScanResult.getScanRecord(),
+                rxBleInternalScanResult.isConnectable()
         );
     }
 }

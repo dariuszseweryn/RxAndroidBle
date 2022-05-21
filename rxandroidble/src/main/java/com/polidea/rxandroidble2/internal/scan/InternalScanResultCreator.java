@@ -9,9 +9,11 @@ import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_UNKN
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.ClientScope;
+import com.polidea.rxandroidble2.scan.IsConnectable;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.util.ScanRecordParser;
 import com.polidea.rxandroidble2.scan.ScanCallbackType;
@@ -23,30 +25,32 @@ import bleshadow.javax.inject.Inject;
 public class InternalScanResultCreator {
 
     private final ScanRecordParser scanRecordParser;
+    private final IsConnectableChecker isConnectableChecker;
 
     @Inject
-    public InternalScanResultCreator(ScanRecordParser scanRecordParser) {
+    public InternalScanResultCreator(ScanRecordParser scanRecordParser, IsConnectableChecker isConnectableChecker) {
         this.scanRecordParser = scanRecordParser;
+        this.isConnectableChecker = isConnectableChecker;
     }
 
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
         final ScanRecord scanRecordObj = scanRecordParser.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
-                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED);
+                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, IsConnectable.LEGACY_UNKNOWN);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                ScanCallbackType.CALLBACK_TYPE_BATCH);
+                ScanCallbackType.CALLBACK_TYPE_BATCH, isConnectableChecker.check(result));
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(int callbackType, ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                toScanCallbackType(callbackType));
+                toScanCallbackType(callbackType), isConnectableChecker.check(result));
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)

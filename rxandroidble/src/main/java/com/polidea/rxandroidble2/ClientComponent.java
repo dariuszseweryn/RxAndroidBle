@@ -20,6 +20,9 @@ import com.polidea.rxandroidble2.internal.DeviceComponent;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
+import com.polidea.rxandroidble2.internal.scan.IsConnectableChecker;
+import com.polidea.rxandroidble2.internal.scan.IsConnectableCheckerApi18;
+import com.polidea.rxandroidble2.internal.scan.IsConnectableCheckerApi26;
 import com.polidea.rxandroidble2.internal.scan.RxBleInternalScanResult;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifierApi18;
@@ -323,6 +326,19 @@ public interface ClientComponent {
                 return scanSetupBuilderProviderForApi21.get();
             }
             return scanSetupBuilderProviderForApi23.get();
+        }
+
+        @Provides
+        @ClientScope
+        static IsConnectableChecker provideIsConnectableChecker(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<IsConnectableCheckerApi18> isConnectableCheckerApi18,
+                Provider<IsConnectableCheckerApi26> isConnectableCheckerApi26
+        ) {
+            if (deviceSdk < Build.VERSION_CODES.O) {
+                return isConnectableCheckerApi18.get();
+            }
+            return isConnectableCheckerApi26.get();
         }
 
         @Provides
