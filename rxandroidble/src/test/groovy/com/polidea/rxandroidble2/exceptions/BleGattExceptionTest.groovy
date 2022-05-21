@@ -19,6 +19,6 @@ class BleGattExceptionTest extends Specification {
                 "com.polidea.rxandroidble2.exceptions.BleGattException: GATT exception from MAC=null, status 10 (GATT_NOT_FOUND), " +
                 "type BleGattOperation{description='CONNECTION_STATE'}. " +
                 "(Look up status 0x0a here " +
-                "https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h)"
+                "https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h)"
     }
 }

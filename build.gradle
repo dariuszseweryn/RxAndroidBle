@@ -2,17 +2,17 @@ apply from: 'dependencies.gradle'
 apply from: 'checkstyle.gradle'
 
 buildscript {
-    ext.kotlinVersion = '1.5.21'
+    ext.kotlinVersion = '1.6.10'
     repositories {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.1.2'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
         classpath 'gradle.plugin.org.codehaus.groovy:groovy-android-gradle-plugin:3.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -24,15 +24,25 @@ allprojects {
     
     repositories {
         google()
-        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
         maven { url 'https://jitpack.io' }
+        mavenCentral()
     }
 
     buildscript {
         repositories {
             google()
-            jcenter()
         }
+    }
+
+    configurations {
+        doclava
+    }
+
+    dependencies {
+        doclava 'com.google.doclava:doclava:1.0.6'
     }
 
     dependencyUpdates.resolutionStrategy {
@@ -52,7 +62,18 @@ allprojects {
         tasks.withType(JavaCompile) {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
         }
+
+        tasks.withType(Test) {
+            useJUnitPlatform()
+            testLogging {
+                exceptionFormat "full"
+                events "started", "skipped", "passed", "failed"
+                showStandardStreams true
+            }
+        }
     }
+
+
 }
 
 task clean(type: Delete) {

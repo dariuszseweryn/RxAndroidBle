@@ -4,14 +4,13 @@ import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import hkhc.electricspock.ElectricSpecification
+import android.content.IntentFilter
 import io.reactivex.disposables.Disposable
-import org.robolectric.annotation.Config
+import spock.lang.Specification
 
 import static com.polidea.rxandroidble2.RxBleAdapterStateObservable.BleAdapterState.*
 
-@Config(manifest = Config.NONE)
-class RxBleAdapterStateObservableTest extends ElectricSpecification {
+class RxBleAdapterStateObservableTest extends Specification {
     def contextMock = Mock Context
     def objectUnderTest = new RxBleAdapterStateObservable(contextMock)
     BroadcastReceiver registeredReceiver
@@ -77,16 +76,16 @@ class RxBleAdapterStateObservableTest extends ElectricSpecification {
         STATE_TURNING_ON  | false
     }
 
-    public postStateChangeBroadcast(int bluetoothChange) {
-        def intent = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED)
-        intent.putExtra(BluetoothAdapter.EXTRA_STATE, bluetoothChange)
+    def postStateChangeBroadcast(int bluetoothChange) {
+        def intent = Mock Intent
+        intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, _) >> bluetoothChange
         registeredReceiver.onReceive(contextMock, intent)
     }
 
-    public BroadcastReceiver shouldCaptureRegisteredReceiver() {
-        _ * contextMock.registerReceiver({
-            BroadcastReceiver receiver ->
-                this.registeredReceiver = receiver
-        }, _)
+    def shouldCaptureRegisteredReceiver() {
+        _ * contextMock.registerReceiver(*_) >> {
+                this.registeredReceiver = it[0]
+                return Mock(Intent)
+        }
     }
 }

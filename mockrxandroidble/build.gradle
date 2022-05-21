@@ -33,6 +33,14 @@ android {
     }
 
     preBuild.dependsOn 'checkstyle'
+
+    sourceSets {
+        test {
+            java {
+                srcDir("../rxandroidble/src/test/java") // Add android stubs from main lib tests
+            }
+        }
+    }
 }
 
 dependencies {
@@ -41,10 +49,6 @@ dependencies {
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
-    testImplementation rootProject.ext.libs.robolectric
-    testImplementation(rootProject.ext.libs.electricspock) {
-        exclude group: 'org.robolectric', module: 'android-all'
-    }
     api project(path: ':rxandroidble')
     api rootProject.ext.libs.rxjava
 }

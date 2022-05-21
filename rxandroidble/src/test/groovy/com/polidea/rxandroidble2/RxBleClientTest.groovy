@@ -2,7 +2,6 @@ package com.polidea.rxandroidble2
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.os.Build
 import com.polidea.rxandroidble2.exceptions.BleScanException
 
 import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
@@ -14,27 +13,26 @@ import com.polidea.rxandroidble2.internal.util.ClientStateObservable
 import com.polidea.rxandroidble2.internal.util.ScanRecordParser
 import com.polidea.rxandroidble2.scan.BackgroundScanner
 import com.polidea.rxandroidble2.scan.ScanSettings
-import hkhc.electricspock.ElectricSpecification
+import spock.lang.Specification
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
 import io.reactivex.ObservableTransformer
 import io.reactivex.annotations.NonNull
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.TestScheduler
-import org.robolectric.annotation.Config
 import spock.lang.Unroll
 
 import static com.polidea.rxandroidble2.exceptions.BleScanException.*
 
 @SuppressWarnings("GrDeprecatedAPIUsage")
-@Config(manifest = Config.NONE, constants = BuildConfig, sdk = Build.VERSION_CODES.LOLLIPOP)
-class RxBleClientTest extends ElectricSpecification {
+class RxBleClientTest extends Specification {
 
     BackgroundScanner backgroundScanner = Mock(BackgroundScanner)
     DummyOperationQueue dummyQueue = new DummyOperationQueue()
     RxBleClient objectUnderTest
     Context contextMock = Mock Context
     ScanRecordParser scanRecordParserSpy = Spy ScanRecordParser
+    MockBluetoothManagerWrapper bluetoothManagerWrapperSpy = Spy MockBluetoothManagerWrapper
     MockRxBleAdapterWrapper bleAdapterWrapperSpy = Spy MockRxBleAdapterWrapper
     MockRxBleAdapterStateObservable adapterStateObservable = Spy MockRxBleAdapterStateObservable
     MockLocationServicesStatus locationServicesStatusMock = Spy MockLocationServicesStatus
@@ -77,6 +75,7 @@ class RxBleClientTest extends ElectricSpecification {
         mockOperationScan.run(_) >> Observable.never()
         mockScanSetupBuilder.build(_, _) >> mockScanSetup
         objectUnderTest = new RxBleClientImpl(
+                bluetoothManagerWrapperSpy,
                 bleAdapterWrapperSpy,
                 queue,
                 adapterStateObservable.asObservable(),
@@ -103,6 +102,18 @@ class RxBleClientTest extends ElectricSpecification {
 
         when:
         def results = objectUnderTest.getBondedDevices()
+
+        then:
+        assert results.size() == 2
+    }
+
+    def "should return connected devices"() {
+        given:
+        bluetoothPeripheralConnected("AA:AA:AA:AA:AA:AA")
+        bluetoothPeripheralConnected("BB:BB:BB:BB:BB:BB")
+
+        when:
+        def results = objectUnderTest.getConnectedPeripherals()
 
         then:
         assert results.size() == 2
@@ -481,6 +492,13 @@ class RxBleClientTest extends ElectricSpecification {
         mock.getAddress() >> address
         mock.hashCode() >> address.hashCode()
         bleAdapterWrapperSpy.addBondedDevice(mock)
+    }
+
+    def bluetoothPeripheralConnected(String address) {
+        def mock = Mock(BluetoothDevice)
+        mock.getAddress() >> address
+        mock.hashCode() >> address.hashCode()
+        bluetoothManagerWrapperSpy.addConnectedPeripheral(mock)
     }
 
     def "should throw UnsupportedOperationException if .getBleDevice() is called on system that has no Bluetooth capabilities"() {

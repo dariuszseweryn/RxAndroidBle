@@ -107,6 +107,13 @@ public abstract class RxBleClient {
     public abstract Set<RxBleDevice> getBondedDevices();
 
     /**
+     * A function returning a set of currently connected devices (NOTE: Connected to the phone, not necessarily application)
+     *
+     * @return set of currently connected devices
+     */
+    public abstract Set<RxBleDevice> getConnectedPeripherals();
+
+    /**
      * Returns an infinite observable emitting BLE scan results.
      * Scan is automatically started and stopped based on the Observable lifecycle.
      * Scan is started when the Observable is subscribed and stopped when unsubscribed.

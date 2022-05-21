@@ -10,7 +10,7 @@ import com.polidea.rxandroidble2.RxBleDeviceServices
 import com.polidea.rxandroidble2.exceptions.*
 import com.polidea.rxandroidble2.internal.util.ByteAssociation
 import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent
-import hkhc.electricspock.ElectricSpecification
+import spock.lang.Specification
 import io.reactivex.Observable
 import io.reactivex.annotations.NonNull
 import io.reactivex.functions.Predicate
@@ -20,7 +20,6 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
 import java.util.function.Consumer
-import org.robolectric.annotation.Config
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -29,8 +28,7 @@ import static android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import static android.bluetooth.BluetoothProfile.*
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.DISCONNECTED
 
-@Config(manifest = Config.NONE)
-class RxBleGattCallbackTest extends ElectricSpecification {
+class RxBleGattCallbackTest extends Specification {
 
     DisconnectionRouter mockDisconnectionRouter
 
