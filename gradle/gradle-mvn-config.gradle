@@ -71,8 +71,8 @@ afterEvaluate { project ->
         publications {
             release(MavenPublication) {
                 afterEvaluate {
-                    if (!isAndroidProject()) return
-                    from components.release
+                    if (isAndroidProject()) from components.release
+                    else from components.java
                 }
             }
         }
