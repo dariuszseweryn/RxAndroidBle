@@ -58,11 +58,11 @@ dependencies {
     api rootProject.ext.libs.rxjava
     api rootProject.ext.libs.annotations
     implementation rootProject.ext.libs.rxrelay
-    implementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
+    implementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     annotationProcessor project(path: ':dagger-compiler-shadow', transitive: false, configuration: 'shadow')
 
     // Test dependencies
-    testImplementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
+    testImplementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock

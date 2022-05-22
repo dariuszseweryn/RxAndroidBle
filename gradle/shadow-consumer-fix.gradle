@@ -1,0 +1,22 @@
+// Fixes problem with Android Studio not seeing shadowed libraries (dagger & javax)
+// Based on: https://github.com/johnrengelman/shadow/issues/264#issuecomment-814265839
+
+// Related change in rxandroidble build.gradle:
+// implementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
+// Become this:
+// implementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
+
+// Additional difference is that now :dagger-library-shadow is packed into :rxandroidble aar
+// and dagger-library-shadow no longer needs to be distributed to maven
+
+// Since the following references a subproject's task,
+// it will need to be run after the subproject has been evaluated.
+// You will likely need to put the following block toward the end
+// of your project's build.gradle for it to work.
+
+apply plugin: 'org.jetbrains.gradle.plugin.idea-ext'
+idea.project.settings {
+    taskTriggers {
+        beforeSync tasks.getByPath(':dagger-library-shadow:shadowJar')
+    }
+}
