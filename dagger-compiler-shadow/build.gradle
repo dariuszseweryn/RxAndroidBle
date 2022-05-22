@@ -6,9 +6,7 @@ buildscript {
 
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
-
-def buildSrcDir = '../gradle'
-apply from: "${buildSrcDir}/shadow.gradle"
+apply from: rootProject.file('gradle/shadow.gradle')
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 shadowJar {
