@@ -7,7 +7,7 @@ import com.polidea.rxandroidble2.RxBleClient
 
 private const val REQUEST_PERMISSION_BLE_SCAN = 101
 
-internal fun Activity.requestLocationPermission(client: RxBleClient) =
+internal fun Activity.requestScanPermission(client: RxBleClient) =
     ActivityCompat.requestPermissions(
         this,
         /*
@@ -18,5 +18,5 @@ internal fun Activity.requestLocationPermission(client: RxBleClient) =
         REQUEST_PERMISSION_BLE_SCAN
     )
 
-internal fun isLocationPermissionGranted(requestCode: Int, grantResults: IntArray) =
+internal fun isScanPermissionGranted(requestCode: Int, grantResults: IntArray) =
     requestCode == REQUEST_PERMISSION_BLE_SCAN && grantResults[0] == PackageManager.PERMISSION_GRANTED

@@ -7,8 +7,8 @@ import com.polidea.rxandroidble2.samplekotlin.DeviceActivity
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
 import com.polidea.rxandroidble2.samplekotlin.example1a_background_scanning.BackgroundScanActivity
-import com.polidea.rxandroidble2.samplekotlin.util.isLocationPermissionGranted
-import com.polidea.rxandroidble2.samplekotlin.util.requestLocationPermission
+import com.polidea.rxandroidble2.samplekotlin.util.isScanPermissionGranted
+import com.polidea.rxandroidble2.samplekotlin.util.requestScanPermission
 import com.polidea.rxandroidble2.samplekotlin.util.showError
 import com.polidea.rxandroidble2.scan.ScanFilter
 import com.polidea.rxandroidble2.scan.ScanResult
@@ -63,7 +63,7 @@ class ScanActivity : AppCompatActivity() {
                     .let { scanDisposable = it }
             } else {
                 hasClickedScan = true
-                requestLocationPermission(rxBleClient)
+                requestScanPermission(rxBleClient)
             }
         }
         updateButtonUIState()
@@ -97,7 +97,7 @@ class ScanActivity : AppCompatActivity() {
         scan_toggle_btn.setText(if (isScanning) R.string.button_stop_scan else R.string.button_start_scan)
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (isLocationPermissionGranted(requestCode, grantResults) && hasClickedScan) {
+        if (isScanPermissionGranted(requestCode, grantResults) && hasClickedScan) {
             hasClickedScan = false
             scanBleDevices()
         }
