@@ -15,7 +15,7 @@ import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
 import com.polidea.rxandroidble2.sample.example1a_background_scanning.BackgroundScanActivity;
 import com.polidea.rxandroidble2.sample.util.ScanExceptionHandler;
-import com.polidea.rxandroidble2.sample.util.LocationPermission;
+import com.polidea.rxandroidble2.sample.util.ScanPermission;
 import com.polidea.rxandroidble2.scan.ScanFilter;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
@@ -61,7 +61,7 @@ public class ScanActivity extends AppCompatActivity {
                 scanBleDevices();
             } else {
                 hasClickedScan = true;
-                LocationPermission.requestLocationPermission(this, rxBleClient);
+                ScanPermission.requestScanPermission(this, rxBleClient);
             }
         }
 
@@ -87,7 +87,7 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions,
             @NonNull final int[] grantResults) {
-        if (LocationPermission.isRequestLocationPermissionGranted(requestCode, permissions, grantResults, rxBleClient)
+        if (ScanPermission.isScanPermissionGranted(requestCode, permissions, grantResults, rxBleClient)
                 && hasClickedScan) {
             hasClickedScan = false;
             scanBleDevices();
