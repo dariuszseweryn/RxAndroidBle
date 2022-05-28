@@ -3,14 +3,16 @@ package com.polidea.rxandroidble2.samplekotlin.example2_connection
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.samplekotlin.R
 import com.polidea.rxandroidble2.samplekotlin.SampleApplication
+import com.polidea.rxandroidble2.samplekotlin.util.*
 import com.polidea.rxandroidble2.samplekotlin.util.isConnected
+import com.polidea.rxandroidble2.samplekotlin.util.isConnectionPermissionGranted
+import com.polidea.rxandroidble2.samplekotlin.util.requestConnectionPermission
 import com.polidea.rxandroidble2.samplekotlin.util.showSnackbarShort
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -40,6 +42,8 @@ class ConnectionExampleActivity : AppCompatActivity() {
 
     private val mtuDisposable = CompositeDisposable()
 
+    private var hasClickedConnect = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_example2)
@@ -62,12 +66,21 @@ class ConnectionExampleActivity : AppCompatActivity() {
         if (bleDevice.isConnected) {
             triggerDisconnect()
         } else {
-            bleDevice.establishConnection(autoconnect.isChecked)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally { dispose() }
-                .subscribe({ onConnectionReceived() }, { onConnectionFailure(it) })
-                .let { connectionDisposable = it }
+            if (SampleApplication.rxBleClient.isScanRuntimePermissionGranted) {
+                connect()
+            } else {
+                hasClickedConnect = true
+                requestConnectionPermission(SampleApplication.rxBleClient)
+            }
         }
+    }
+
+    private fun connect() {
+        bleDevice.establishConnection(autoconnect.isChecked)
+            .observeOn(AndroidSchedulers.mainThread())
+            .doFinally { dispose() }
+            .subscribe({ onConnectionReceived() }, { onConnectionFailure(it) })
+            .let { connectionDisposable = it }
     }
 
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
@@ -104,6 +117,17 @@ class ConnectionExampleActivity : AppCompatActivity() {
     private fun updateUI() {
         connect_toggle.setText(if (bleDevice.isConnected) R.string.button_disconnect else R.string.button_connect)
         autoconnect.isEnabled = !bleDevice.isConnected
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (isConnectionPermissionGranted(requestCode, grantResults) && hasClickedConnect) {
+            hasClickedConnect = false
+            connect()
+        }
     }
 
     override fun onPause() {
