@@ -2,6 +2,8 @@ package com.polidea.rxandroidble2.sample.example2_connection;
 
 import android.annotation.TargetApi;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.snackbar.Snackbar;
@@ -9,11 +11,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.sample.DeviceActivity;
 import com.polidea.rxandroidble2.sample.R;
 import com.polidea.rxandroidble2.sample.SampleApplication;
+import com.polidea.rxandroidble2.sample.util.ConnectPermission;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,21 +38,32 @@ public class ConnectionExampleActivity extends AppCompatActivity {
     Button setMtuButton;
     @BindView(R.id.autoconnect)
     SwitchCompat autoConnectToggleSwitch;
+    private RxBleClient rxBleClient;
     private RxBleDevice bleDevice;
     private Disposable connectionDisposable;
     private final CompositeDisposable mtuDisposable = new CompositeDisposable();
     private Disposable stateDisposable;
+    private boolean hasClickedConnect;
 
     @OnClick(R.id.connect_toggle)
     public void onConnectToggleClick() {
         if (isConnected()) {
             triggerDisconnect();
         } else {
-            connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(this::dispose)
-                    .subscribe(this::onConnectionReceived, this::onConnectionFailure);
+            if (rxBleClient.isConnectRuntimePermissionGranted()) {
+                connect();
+            } else {
+                hasClickedConnect = true;
+                ConnectPermission.requestConnectionPermission(this, rxBleClient);
+            }
         }
+    }
+
+    private void connect() {
+        connectionDisposable = bleDevice.establishConnection(autoConnectToggleSwitch.isChecked())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(this::dispose)
+                .subscribe(this::onConnectionReceived, this::onConnectionFailure);
     }
 
     @TargetApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
@@ -70,7 +85,8 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         String macAddress = getIntent().getStringExtra(DeviceActivity.EXTRA_MAC_ADDRESS);
         setTitle(getString(R.string.mac_address, macAddress));
-        bleDevice = SampleApplication.getRxBleClient(this).getBleDevice(macAddress);
+        rxBleClient = SampleApplication.getRxBleClient(this);
+        bleDevice = rxBleClient.getBleDevice(macAddress);
         // How to listen for connection state changes
         // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
         stateDisposable = bleDevice.observeConnectionStateChanges()
@@ -83,13 +99,11 @@ public class ConnectionExampleActivity extends AppCompatActivity {
     }
 
     private void onConnectionFailure(Throwable throwable) {
-        //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
     }
 
     @SuppressWarnings("unused")
     private void onConnectionReceived(RxBleConnection connection) {
-        //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "Connection received", Snackbar.LENGTH_SHORT).show();
     }
 
@@ -99,7 +113,6 @@ public class ConnectionExampleActivity extends AppCompatActivity {
     }
 
     private void onMtuReceived(Integer mtu) {
-        //noinspection ConstantConditions
         Snackbar.make(findViewById(android.R.id.content), "MTU received: " + mtu, Snackbar.LENGTH_SHORT).show();
     }
 
@@ -119,6 +132,14 @@ public class ConnectionExampleActivity extends AppCompatActivity {
         final boolean connected = isConnected();
         connectButton.setText(connected ? R.string.disconnect : R.string.connect);
         autoConnectToggleSwitch.setEnabled(!connected);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (ConnectPermission.isRequestConnectionPermissionGranted(requestCode, permissions, grantResults, rxBleClient)) {
+            hasClickedConnect = false;
+            connect();
+        }
     }
 
     @Override
