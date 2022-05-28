@@ -33,7 +33,7 @@ class LocationServicesStatusApi23Test extends Specification {
     private def isAndroidWear = [true, false]
 
     @Unroll
-    def "isLocationPermissionOk should return value from CheckerLocationPermission.areScanPermissionsOk (permissionGranted:#permissionGranted)"() {
+    def "isLocationPermissionOk should return value from CheckerScanPermission.areScanPermissionsOk (permissionGranted:#permissionGranted)"() {
 
         given:
         prepareObjectUnderTest()

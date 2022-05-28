@@ -16,6 +16,7 @@ import com.polidea.rxandroidble2.internal.scan.ScanPreconditionsVerifier;
 import com.polidea.rxandroidble2.internal.scan.ScanSetup;
 import com.polidea.rxandroidble2.internal.scan.ScanSetupBuilder;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
+import com.polidea.rxandroidble2.internal.util.CheckerConnectPermission;
 import com.polidea.rxandroidble2.internal.util.CheckerScanPermission;
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable;
 import com.polidea.rxandroidble2.internal.util.LocationServicesStatus;
@@ -69,6 +70,7 @@ class RxBleClientImpl extends RxBleClient {
     private final Lazy<ClientStateObservable> lazyClientStateObservable;
     private final BackgroundScanner backgroundScanner;
     private final CheckerScanPermission checkerScanPermission;
+    private final CheckerConnectPermission checkerConnectPermission;
 
     @Inject
     RxBleClientImpl(BluetoothManagerWrapper bluetoothManagerWrapper,
@@ -85,7 +87,8 @@ class RxBleClientImpl extends RxBleClient {
                     @Named(ClientComponent.NamedSchedulers.BLUETOOTH_INTERACTION) Scheduler bluetoothInteractionScheduler,
                     ClientComponent.ClientComponentFinalizer clientComponentFinalizer,
                     BackgroundScanner backgroundScanner,
-                    CheckerScanPermission checkerScanPermission) {
+                    CheckerScanPermission checkerScanPermission,
+                    CheckerConnectPermission checkerConnectPermission) {
         this.operationQueue = operationQueue;
         this.bluetoothManagerWrapper = bluetoothManagerWrapper;
         this.rxBleAdapterWrapper = rxBleAdapterWrapper;
@@ -101,6 +104,7 @@ class RxBleClientImpl extends RxBleClient {
         this.clientComponentFinalizer = clientComponentFinalizer;
         this.backgroundScanner = backgroundScanner;
         this.checkerScanPermission = checkerScanPermission;
+        this.checkerConnectPermission = checkerConnectPermission;
     }
 
     @Override
@@ -280,9 +284,8 @@ class RxBleClientImpl extends RxBleClient {
         }
         if (!locationServicesStatus.isLocationProviderOk()) {
             return State.LOCATION_SERVICES_NOT_ENABLED;
-        } else {
-            return State.READY;
         }
+        return State.READY;
     }
 
     @Override
@@ -291,7 +294,17 @@ class RxBleClientImpl extends RxBleClient {
     }
 
     @Override
+    public boolean isConnectRuntimePermissionGranted() {
+        return checkerConnectPermission.isConnectRuntimePermissionGranted();
+    }
+
+    @Override
     public String[] getRecommendedScanRuntimePermissions() {
         return checkerScanPermission.getRecommendedScanRuntimePermissions();
+    }
+
+    @Override
+    public String[] getRecommendedConnectRuntimePermissions() {
+        return checkerConnectPermission.getRecommendedConnectRuntimePermissions();
     }
 }

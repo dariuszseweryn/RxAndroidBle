@@ -431,7 +431,17 @@ public class RxBleClientMock extends RxBleClient {
     }
 
     @Override
+    public boolean isConnectRuntimePermissionGranted() {
+        return true;
+    }
+
+    @Override
     public String[] getRecommendedScanRuntimePermissions() {
+        return new String[0];
+    }
+
+    @Override
+    public String[] getRecommendedConnectRuntimePermissions() {
         return new String[0];
     }
 }

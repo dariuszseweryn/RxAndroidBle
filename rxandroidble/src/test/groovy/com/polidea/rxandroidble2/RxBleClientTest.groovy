@@ -8,6 +8,7 @@ import com.polidea.rxandroidble2.internal.RxBleDeviceProvider
 import com.polidea.rxandroidble2.internal.operations.Operation
 import com.polidea.rxandroidble2.internal.scan.*
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue
+import com.polidea.rxandroidble2.internal.util.CheckerConnectPermission
 import com.polidea.rxandroidble2.internal.util.CheckerScanPermission
 import com.polidea.rxandroidble2.internal.util.ClientStateObservable
 import com.polidea.rxandroidble2.internal.util.ScanRecordParser
@@ -51,7 +52,8 @@ class RxBleClientTest extends Specification {
     ScanSetup mockScanSetup = new ScanSetup(mockOperationScan, mockObservableTransformer)
     ScanPreconditionsVerifier mockScanPreconditionVerifier = Mock ScanPreconditionsVerifier
     InternalToExternalScanResultConverter mockMapper = Mock InternalToExternalScanResultConverter
-    CheckerScanPermission mockCheckerLocationPermission = Mock CheckerScanPermission
+    CheckerScanPermission mockCheckerScanPermission = Mock CheckerScanPermission
+    CheckerConnectPermission mockCheckerConnectPermission = Mock CheckerConnectPermission
     private static someUUID = UUID.randomUUID()
     private static otherUUID = UUID.randomUUID()
     private static Date suggestedDateToRetry = new Date()
@@ -89,7 +91,8 @@ class RxBleClientTest extends Specification {
                 new TestScheduler(),
                 Mock(ClientComponent.ClientComponentFinalizer),
                 backgroundScanner,
-                mockCheckerLocationPermission
+                mockCheckerScanPermission,
+                mockCheckerConnectPermission
         )
     }
 
@@ -540,13 +543,13 @@ class RxBleClientTest extends Specification {
     }
 
     @Unroll
-    def "should pass call to CheckerLocationPermission when called .isScanRuntimePermissionGranted() and proxy back the result"() {
+    def "should pass call to CheckerScanPermission when called .isScanRuntimePermissionGranted() and proxy back the result"() {
 
         when:
         def result = objectUnderTest.isScanRuntimePermissionGranted()
 
         then:
-        1 * mockCheckerLocationPermission.isScanRuntimePermissionGranted() >> expectedResult
+        1 * mockCheckerScanPermission.isScanRuntimePermissionGranted() >> expectedResult
 
         and:
         result == expectedResult
@@ -555,7 +558,23 @@ class RxBleClientTest extends Specification {
         expectedResult << [true, false]
     }
 
-    def "should pass call to CheckerLocationPermission when called .getRecommendedScanRuntimePermissions() and proxy back the result"() {
+    @Unroll
+    def "should pass call to CheckerConnectPermission when called .isConnectRuntimePermissionGranted() and proxy back the result"() {
+
+        when:
+        def result = objectUnderTest.isConnectRuntimePermissionGranted()
+
+        then:
+        1 * mockCheckerConnectPermission.isConnectRuntimePermissionGranted() >> expectedResult
+
+        and:
+        result == expectedResult
+
+        where:
+        expectedResult << [true, false]
+    }
+
+    def "should pass call to CheckerScanPermission when called .getRecommendedScanRuntimePermissions() and proxy back the result"() {
 
         given:
         String[] resultRef = new String[0]
@@ -564,7 +583,22 @@ class RxBleClientTest extends Specification {
         def result = objectUnderTest.getRecommendedScanRuntimePermissions()
 
         then:
-        1 * mockCheckerLocationPermission.getRecommendedScanRuntimePermissions() >> resultRef
+        1 * mockCheckerScanPermission.getRecommendedScanRuntimePermissions() >> resultRef
+
+        and:
+        result == resultRef
+    }
+    
+    def "should pass call to CheckerConnectPermission when called .getRecommendedConnectRuntimePermissions() and proxy back the result"() {
+       
+        given:
+        String[] resultRef = new String[0]
+
+        when:
+        def result = objectUnderTest.getRecommendedConnectRuntimePermissions()
+
+        then:
+        1 * mockCheckerConnectPermission.getRecommendedConnectRuntimePermissions() >> resultRef
 
         and:
         result == resultRef
