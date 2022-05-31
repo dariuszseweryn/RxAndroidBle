@@ -1,5 +1,11 @@
 Change Log
 ==========
+Version 1.14.0
+* Added `RxBleClient#getConnectedPeripherals` for retrieving all BLE peripherals connected to the device, thanks @DaBs! (https://github.com/Polidea/RxAndroidBle/pull/765)
+* Updated URL for native GATT statuses in `BleGattException`, thanks @ariccio! (https://github.com/Polidea/RxAndroidBle/pull/779)
+* Added `BleScanResult#isConnectable` for getting info if the scanned peripheral is connectable, thanks @MartinSadovy! (https://github.com/Polidea/RxAndroidBle/pull/781)
+* Added helper functions `RxBleClient#isConnectRuntimePermissionGranted` and `RxBleClient#getRecommendedConnectRuntimePermissions` (https://github.com/Polidea/RxAndroidBle/pull/787)
+
 Version 1.13.1
 * Fixed 'BLUETOOTH_SCAN' permission entry in Android Manifest for apps that do not build using Android 12 target (https://github.com/Polidea/RxAndroidBle/pull/767)
 
