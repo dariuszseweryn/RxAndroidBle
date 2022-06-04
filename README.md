@@ -1,4 +1,4 @@
-# RxAndroidBle [![Build Status](https://travis-ci.org/Polidea/RxAndroidBle.svg?branch=master)](https://travis-ci.org/Polidea/RxAndroidBle) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
+# RxAndroidBle ![Build Status](https://github.com/dariuszseweryn/rxandroidble/actions/workflows/gradle-actions.yml/badge.svg?branch=master) [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
 <p align="center">
   <img 
     alt="Tailored software services including concept, design, development and testing"
@@ -17,8 +17,6 @@ RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headach
  * Connection and operation error handling
 
 For support head to [StackOverflow #rxandroidble](http://stackoverflow.com/questions/tagged/rxandroidble?sort=active)
-
-Read the official announcement at [Polidea Blog](https://www.polidea.com/blog/RXAndroidBLE/).
 
 ## RxAndroidBLE @ Mobile Central Europe 2016
 [![RxAndroidBLE @ Mobile Central Europe 2016](https://img.youtube.com/vi/0aKfUGCxUDM/0.jpg)](https://www.youtube.com/watch?v=0aKfUGCxUDM)
@@ -158,7 +156,7 @@ scanSubscription.dispose();
 For devices with API <21 (before Lollipop) the scan API is emulated to get the same behaviour.
 
 ### Observing client state
-On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. e.g. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted [runtime permission](https://github.com/Polidea/RxAndroidBle#permissions) for either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION`, additionally `Location Services` need to be turned on.
+On Android it is not always trivial to determine if a particular BLE operation has a potential to succeed. e.g. to scan on Android 6.0 the device needs to have a `BluetoothAdapter`, the application needs to have a granted [runtime permission](https://github.com/dariuszseweryn/RxAndroidBle#permissions) for either `ACCESS_COARSE_LOCATION` or `ACCESS_FINE_LOCATION`, additionally `Location Services` need to be turned on.
 To be sure that the scan will work only when everything is ready you could use:
 
 ```java
@@ -381,7 +379,7 @@ The below table contains an overview of used `Observable` patterns
 \** this `Observable` may complete. For example `observeStateChanges()` does emit only a single value and finishes in exactly one situation — when Bluetooth Adapter is not available on the device. There is no reason to monitor other states as the adapter does not appear during runtime. A second example: Observables emitted from `setupNotification` / `setupIndication` may complete when the parent Observable is disposed.
 
 ### Helpers
-We encourage you to check the package [`com.polidea.rxandroidble2.helpers`](https://github.com/Polidea/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/helpers) and [`com.polidea.rxandroidble2.utils`](https://github.com/Polidea/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/utils) which contain handy reactive wrappers for some typical use-cases.
+We encourage you to check the package [`com.polidea.rxandroidble2.helpers`](https://github.com/dariuszseweryn/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/helpers) and [`com.polidea.rxandroidble2.utils`](https://github.com/dariuszseweryn/RxAndroidBle/tree/master/rxandroidble/src/main/java/com/polidea/rxandroidble2/utils) which contain handy reactive wrappers for some typical use-cases.
 
 #### Value interpretation
 Bluetooth Specification specifies formats in which `int`/`float`/`String` values may be stored in characteristics. `BluetoothGattCharacteristic` has functions for retrieving those (`.getIntValue()`/`.getFloatValue()`/`.getStringValue()`).
@@ -393,8 +391,8 @@ If you would like to observe `BluetoothAdapter` state changes you can use `RxBle
 ## More examples
 
 Usage examples are located in:
-- [`/sample`](https://github.com/Polidea/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample)
-- [`/sample-kotlin`](https://github.com/Polidea/RxAndroidBle/tree/master/sample-kotlin/src/main/kotlin/com/polidea/rxandroidble2/samplekotlin)
+- [`/sample`](https://github.com/dariuszseweryn/RxAndroidBle/tree/master/sample/src/main/java/com/polidea/rxandroidble2/sample)
+- [`/sample-kotlin`](https://github.com/dariuszseweryn/RxAndroidBle/tree/master/sample-kotlin/src/main/kotlin/com/polidea/rxandroidble2/samplekotlin)
 
 Keep in mind that these are only _samples_ to show how the library can be used. These are not meant for being role model of a good application architecture.
 
@@ -407,11 +405,11 @@ Most of the objects that the library uses are implementations of interfaces whic
 Alternatively one could use `MockRxAndroidBle` (more info below). Note: Using `MockRxAndroidBle` in unit tests needs [Robolectric](https://github.com/robolectric/robolectric).
 
 ### Integration tests
-Sometimes there is a need to develop the application without the access to a physical device. We have created [MockRxAndroidBle](https://github.com/Polidea/RxAndroidBle/tree/master/mockrxandroidble) as a drop-in addon for mocking a simple peripheral.
+Sometimes there is a need to develop the application without the access to a physical device. We have created [MockRxAndroidBle](https://github.com/dariuszseweryn/RxAndroidBle/tree/master/mockrxandroidble) as a drop-in addon for mocking a simple peripheral.
 
 Unfortunately it is not under active development—PRs are welcomed though. ;)
 
-## [Small performance comparison](https://github.com/Polidea/RxAndroidBle/issues/41#issuecomment-333513707)
+## [Small performance comparison](https://github.com/dariuszseweryn/RxAndroidBle/issues/41#issuecomment-333513707)
 
 ## Contributing
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
@@ -420,16 +418,12 @@ When submitting code, please make every effort to follow existing conventions an
 
 ## FAQ
 If you encounter seemingly incorrect behaviour in your application that is regarding this library please check the below list of Frequently Asked Questions:
-- [Cannot connect](https://github.com/Polidea/RxAndroidBle/wiki/FAQ:-Cannot-connect)
-- [UndeliverableException](https://github.com/Polidea/RxAndroidBle/wiki/FAQ:-UndeliverableException)
+- [Cannot connect / Status 133](https://github.com/dariuszseweryn/RxAndroidBle/wiki/FAQ:-Cannot-connect)
+- [UndeliverableException](https://github.com/dariuszseweryn/RxAndroidBle/wiki/FAQ:-UndeliverableException)
 
 ## Support
 * non-commercial — head to [StackOverflow #rxandroidble](https://stackoverflow.com/questions/tagged/rxandroidble)
-* commercial — drop an email to hello@polidea.com for more info
-
-[Contact us](https://www.polidea.com/project/?utm_source=Github&utm_medium=Npaid&utm_campaign=Kontakt&utm_term=Code&utm_content=GH_NOP_KKT_COD_RAB001)
-
-Learn more about Polidea's BLE services [here](https://www.polidea.com/services/ble/?utm_source=Github&utm_medium=Npaid&utm_campaign=Tech_BLE&utm_term=Code&utm_content=GH_NOP_BLE_COD_RAB001)
+* commercial — contact the maintainer
 
 ## Discussions
 Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELibraries/RxAndroidBle)
@@ -437,11 +431,12 @@ Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELi
 ## Maintainers
 * Dariusz Seweryn (github: dariuszseweryn)
 
-## [Contributors](https://github.com/Polidea/RxAndroidBle/graphs/contributors), thank you!
+## [Contributors](https://github.com/dariuszseweryn/RxAndroidBle/graphs/contributors), thank you!
 
 ## License
 
     Copyright 2016 Polidea Sp. z o.o
+    Copyright 2021 Dariusz Seweryn 
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -455,8 +450,3 @@ Want to talk about it? Join our discussion on [Gitter](https://gitter.im/RxBLELi
     See the License for the specific language governing permissions and
     limitations under the License.
 
-
-
-## Maintained by
-
-[![Polidea](https://raw.githubusercontent.com/Polidea/RxAndroidBle/master/site/polidea_logo.png "Tailored software services including concept, design, development and testing")](http://www.polidea.com)
