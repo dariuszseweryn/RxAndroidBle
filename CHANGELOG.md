@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.14.1
+* Fixed duplicate 'META-INF/com.google.dagger_dagger.version' file (https://github.com/Polidea/RxAndroidBle/pull/790)
+
 Version 1.14.0
 * Added `RxBleClient#getConnectedPeripherals` for retrieving all BLE peripherals connected to the device, thanks @DaBs! (https://github.com/Polidea/RxAndroidBle/pull/765)
 * Updated URL for native GATT statuses in `BleGattException`, thanks @ariccio! (https://github.com/Polidea/RxAndroidBle/pull/779)

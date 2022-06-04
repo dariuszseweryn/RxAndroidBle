@@ -28,7 +28,7 @@ The first step is to include RxAndroidBle into your project.
 ### Gradle
 If you use Gradle to build your project — as a Gradle project implementation dependency:
 ```groovy
-implementation "com.polidea.rxandroidble2:rxandroidble:1.14.0"
+implementation "com.polidea.rxandroidble2:rxandroidble:1.14.1"
 ```
 ### Maven
 If you use Maven to build your project — as a Maven project dependency:
@@ -36,7 +36,7 @@ If you use Maven to build your project — as a Maven project dependency:
 <dependency>
   <groupId>com.polidea.rxandroidble2</groupId>
   <artifactId>rxandroidble</artifactId>
-  <version>1.14.0</version>
+  <version>1.14.1</version>
   <type>aar</type>
 </dependency>
 ```
