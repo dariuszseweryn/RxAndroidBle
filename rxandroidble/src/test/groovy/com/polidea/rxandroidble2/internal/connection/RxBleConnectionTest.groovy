@@ -130,7 +130,12 @@ class RxBleConnectionTest extends Specification {
 
         then:
         testSubscriber.assertError(BleGattCannotStartException)
-        testSubscriber.assertErrorMessage("GATT exception from MAC address null, with type BleGattOperation{description='READ_RSSI'}")
+        testSubscriber.assertError(new Predicate<BleGattCannotStartException>() {
+            @Override
+            boolean test(@io.reactivex.annotations.NonNull BleGattCannotStartException throwable) throws Exception {
+                return throwable.message == "GATT exception from MAC address null, with type BleGattOperation{description='READ_RSSI'}"
+            }
+        })
         testSubscriber.assertError(new Predicate<BleGattCannotStartException>() {
             @Override
             boolean test(@io.reactivex.annotations.NonNull BleGattCannotStartException throwable) throws Exception {

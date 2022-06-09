@@ -12,14 +12,11 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
-import io.reactivex.SingleSource;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDeviceServices> {
@@ -40,12 +37,8 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
     @Override
     protected Single<RxBleDeviceServices> getCallback(RxBleGattCallback rxBleGattCallback) {
         return rxBleGattCallback.getOnServicesDiscovered().firstOrError()
-                .doOnSuccess(new Consumer<RxBleDeviceServices>() {
-                    @Override
-                    public void accept(RxBleDeviceServices rxBleDeviceServices) {
-                        bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice());
-                    }
-                });
+                .doOnSuccess(rxBleDeviceServices ->
+                        bleServicesLogger.log(rxBleDeviceServices, bluetoothGatt.getDevice()));
     }
 
     @Override
@@ -74,33 +67,21 @@ public class ServiceDiscoveryOperation extends SingleResponseOperation<RxBleDevi
             final RxBleGattCallback rxBleGattCallback,
             final Scheduler timeoutScheduler
     ) {
-        return Single.defer(new Callable<SingleSource<? extends RxBleDeviceServices>>() {
-            @Override
-            public SingleSource<? extends RxBleDeviceServices> call() {
-                final List<BluetoothGattService> services = bluetoothGatt.getServices();
-                if (services.size() == 0) {
-                    // if after the timeout services are empty we have no other option to declare a failed discovery
-                    return Single.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
-                } else {
-                /*
-                it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time
-                if there are some services available we will wait for 5 more seconds just to be sure that
-                the timeout was not triggered right in the moment of filling the services and then emit a value.
-                 */
-                    return Single
-                            .timer(5, TimeUnit.SECONDS, timeoutScheduler)
-                            .flatMap(new Function<Long, Single<RxBleDeviceServices>>() {
-                                @Override
-                                public Single<RxBleDeviceServices> apply(Long delayedSeconds) {
-                                    return Single.fromCallable(new Callable<RxBleDeviceServices>() {
-                                        @Override
-                                        public RxBleDeviceServices call() {
-                                            return new RxBleDeviceServices(bluetoothGatt.getServices());
-                                        }
-                                    });
-                                }
-                            });
-                }
+        return Single.defer(() -> {
+            final List<BluetoothGattService> services = bluetoothGatt.getServices();
+            if (services.size() == 0) {
+                // if after the timeout services are empty we have no other option to declare a failed discovery
+                return Single.error(new BleGattCallbackTimeoutException(bluetoothGatt, BleGattOperationType.SERVICE_DISCOVERY));
+            } else {
+            /*
+            it is observed that usually the Android OS is returning services, characteristics and descriptors in a short period of time
+            if there are some services available we will wait for 5 more seconds just to be sure that
+            the timeout was not triggered right in the moment of filling the services and then emit a value.
+             */
+                return Single
+                        .timer(5, TimeUnit.SECONDS, timeoutScheduler)
+                        .flatMap((Function<Long, Single<RxBleDeviceServices>>) delayedSeconds ->
+                                Single.fromCallable(() -> new RxBleDeviceServices(bluetoothGatt.getServices())));
             }
         });
     }

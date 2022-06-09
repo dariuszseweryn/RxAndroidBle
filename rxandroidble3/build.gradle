@@ -4,13 +4,21 @@ apply plugin: 'com.vanniktech.maven.publish'
 apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 android {
-    namespace 'com.polidea.rxandroidble2.mockrxandroidble'
+    namespace 'com.polidea.rxandroidble3'
 
     compileSdkVersion 32
 
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 32
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'proguard-rules.pro'
+        }
     }
 
     compileOptions {
@@ -33,15 +41,18 @@ android {
         abortOnError false
     }
 
-    preBuild.dependsOn 'checkstyle'
+//    preBuild.dependsOn 'checkstyle'
 
-    sourceSets {
-        test {
-            java {
-                srcDir("../rxandroidble/src/test/java") // Add android stubs from main lib tests
-            }
-        }
+    packagingOptions {
+        // Dagger 2.25.4 introduced a file for tracking purposes. This can break apps using Dagger.
+        // See https://github.com/dariuszseweryn/RxAndroidBle/issues/789
+        // Source https://github.com/google/dagger/commit/709098caaf4c7124f5e5313c1aa9ab34fced0031
+        excludes = ['**/com.google.dagger_dagger.version']
     }
+}
+
+androidGroovy {
+    skipJavaC = true
 }
 
 afterEvaluate { project ->
@@ -50,14 +61,16 @@ afterEvaluate { project ->
     testReleaseUnitTest.dependsOn 'compileReleaseUnitTestGroovyWithGroovyc'
 }
 
-apply from: rootProject.file('gradle/rxjava3-generation.gradle')
-
 dependencies {
+    api rootProject.ext.libs.rxjava3
+    api rootProject.ext.libs.annotations
+    implementation rootProject.ext.libs.rxrelay3
+    implementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
+    annotationProcessor project(path: ':dagger-compiler-shadow', transitive: false, configuration: 'shadow')
 
     // Test dependencies
+    testImplementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
-    api project(path: ':rxandroidble')
-    api rootProject.ext.libs.rxjava2
 }

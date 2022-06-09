@@ -51,6 +51,8 @@ android {
     }
 }
 
+apply from: rootProject.file('gradle/rxjava3-generation.gradle')
+
 androidGroovy {
     skipJavaC = true
 }
@@ -62,9 +64,9 @@ afterEvaluate { project ->
 }
 
 dependencies {
-    api rootProject.ext.libs.rxjava
+    api rootProject.ext.libs.rxjava2
     api rootProject.ext.libs.annotations
-    implementation rootProject.ext.libs.rxrelay
+    implementation rootProject.ext.libs.rxrelay2
     implementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     annotationProcessor project(path: ':dagger-compiler-shadow', transitive: false, configuration: 'shadow')
 

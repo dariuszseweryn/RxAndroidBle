@@ -8,16 +8,11 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 
 public class ConnectorImpl implements Connector {
 
@@ -37,50 +32,36 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Observable<RxBleConnection> prepareConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
-            @Override
-            public ObservableSource<RxBleConnection> call() {
-                final ConnectionComponent connectionComponent = connectionComponentBuilder
-                        .autoConnect(options.autoConnect)
-                        .suppressOperationChecks(options.suppressOperationCheck)
-                        .operationTimeout(options.operationTimeout)
-                        .build();
+        return Observable.defer(() -> {
+            final ConnectionComponent connectionComponent = connectionComponentBuilder
+                    .autoConnect(options.autoConnect)
+                    .suppressOperationChecks(options.suppressOperationCheck)
+                    .operationTimeout(options.operationTimeout)
+                    .build();
 
-                final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
-                return obtainRxBleConnection(connectionComponent)
-                        .mergeWith(observeDisconnections(connectionComponent))
-                        .delaySubscription(enqueueConnectOperation(connectionComponent))
-                        .doOnSubscribe(new Consumer<Disposable>() {
-                            @Override
-                            public void accept(Disposable disposable) {
-                                for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
-                                    csa.onConnectionSubscribed();
-                                }
-                            }
-                        })
-                        .doFinally(new Action() {
-                            @Override
-                            public void run() {
-                                for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
-                                    csa.onConnectionUnsubscribed();
-                                }
-                            }
-                        })
-                        .subscribeOn(callbacksScheduler)
-                        .unsubscribeOn(callbacksScheduler);
-            }
+            final Set<ConnectionSubscriptionWatcher> connSubWatchers = connectionComponent.connectionSubscriptionWatchers();
+            return obtainRxBleConnection(connectionComponent)
+                    .mergeWith(observeDisconnections(connectionComponent))
+                    .delaySubscription(enqueueConnectOperation(connectionComponent))
+                    .doOnSubscribe(disposable -> {
+                        for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
+                            csa.onConnectionSubscribed();
+                        }
+                    })
+                    .doFinally(() -> {
+                        for (ConnectionSubscriptionWatcher csa : connSubWatchers) {
+                            csa.onConnectionUnsubscribed();
+                        }
+                    })
+                    .subscribeOn(callbacksScheduler)
+                    .unsubscribeOn(callbacksScheduler);
         });
     }
 
     static Observable<RxBleConnection> obtainRxBleConnection(final ConnectionComponent connectionComponent) {
-        return Observable.fromCallable(new Callable<RxBleConnection>() {
-            @Override
-            public RxBleConnection call() {
-                // BluetoothGatt is needed for RxBleConnection
-                // BluetoothGatt is produced by RxBleRadioOperationConnect
-                return connectionComponent.rxBleConnection();
-            }
-        });
+        // BluetoothGatt is needed for RxBleConnection
+        // BluetoothGatt is produced by RxBleRadioOperationConnect
+        return Observable.fromCallable(connectionComponent::rxBleConnection);
     }
 
     static Observable<RxBleConnection> observeDisconnections(ConnectionComponent connectionComponent) {

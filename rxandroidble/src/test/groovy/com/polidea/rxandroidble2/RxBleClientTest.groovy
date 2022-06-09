@@ -238,7 +238,7 @@ class RxBleClientTest extends Specification {
         1 * bleAdapterWrapperSpy.stopLegacyLeScan(_)
 
         and:
-        scanSubscription.assertTerminated()
+        scanSubscription.assertError(BleScanException.class)
     }
 
     def "should stop scan after all subscribers are unsubscribed"() {

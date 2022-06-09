@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import bleshadow.dagger.Lazy;
 import bleshadow.javax.inject.Inject;
@@ -43,12 +42,8 @@ import bleshadow.javax.inject.Named;
 import io.reactivex.Maybe;
 import io.reactivex.MaybeSource;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.Scheduler;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 
 class RxBleClientImpl extends RxBleClient {
 
@@ -144,24 +139,18 @@ class RxBleClientImpl extends RxBleClient {
 
     @Override
     public Observable<ScanResult> scanBleDevices(final ScanSettings scanSettings, final ScanFilter... scanFilters) {
-        return Observable.defer(new Callable<ObservableSource<? extends ScanResult>>() {
-            @Override
-            public Observable<ScanResult> call() {
-                scanPreconditionVerifier.verify(scanSettings.shouldCheckLocationProviderState());
-                final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
-                final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
-                return operationQueue.queue(scanOperation)
-                        .unsubscribeOn(bluetoothInteractionScheduler)
-                        .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
-                        .map(internalToExternalScanResultMapFunction)
-                        .doOnNext(new Consumer<ScanResult>() {
-                            @Override
-                            public void accept(ScanResult scanResult) {
-                                if (RxBleLog.getShouldLogScannedPeripherals()) RxBleLog.i("%s", scanResult);
-                            }
-                        })
-                        .mergeWith(RxBleClientImpl.this.<ScanResult>bluetoothAdapterOffExceptionObservable());
-            }
+        return Observable.defer(() -> {
+            scanPreconditionVerifier.verify(scanSettings.shouldCheckLocationProviderState());
+            final ScanSetup scanSetup = scanSetupBuilder.build(scanSettings, scanFilters);
+            final Operation<RxBleInternalScanResult> scanOperation = scanSetup.scanOperation;
+            return operationQueue.queue(scanOperation)
+                    .unsubscribeOn(bluetoothInteractionScheduler)
+                    .compose(scanSetup.scanOperationBehaviourEmulatorTransformer)
+                    .map(internalToExternalScanResultMapFunction)
+                    .doOnNext(scanResult -> {
+                        if (RxBleLog.getShouldLogScannedPeripherals()) RxBleLog.i("%s", scanResult);
+                    })
+                    .mergeWith(RxBleClientImpl.this.bluetoothAdapterOffExceptionObservable());
         });
     }
 
@@ -173,12 +162,9 @@ class RxBleClientImpl extends RxBleClient {
     @Override
     @Deprecated
     public Observable<RxBleScanResult> scanBleDevices(@Nullable final UUID... filterServiceUUIDs) {
-        return Observable.defer(new Callable<ObservableSource<? extends RxBleScanResult>>() {
-            @Override
-            public ObservableSource<? extends RxBleScanResult> call() {
-                scanPreconditionVerifier.verify(true);
-                return initializeScan(filterServiceUUIDs);
-            }
+        return Observable.defer(() -> {
+            scanPreconditionVerifier.verify(true);
+            return initializeScan(filterServiceUUIDs);
         });
     }
 
@@ -208,19 +194,10 @@ class RxBleClientImpl extends RxBleClient {
      */
     <T> Observable<T> bluetoothAdapterOffExceptionObservable() {
         return rxBleAdapterStateObservable
-                .filter(new Predicate<BleAdapterState>() {
-                    @Override
-                    public boolean test(BleAdapterState state) {
-                        return state != BleAdapterState.STATE_ON;
-                    }
-                })
+                .filter(state -> state != BleAdapterState.STATE_ON)
                 .firstElement()
-                .flatMap(new Function<BleAdapterState, MaybeSource<T>>() {
-                    @Override
-                    public MaybeSource<T> apply(BleAdapterState bleAdapterState) {
-                        return Maybe.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED));
-                    }
-                })
+                .flatMap((Function<BleAdapterState, MaybeSource<T>>) bleAdapterState ->
+                        Maybe.error(new BleScanException(BleScanException.BLUETOOTH_DISABLED)))
                 .toObservable();
     }
 
@@ -235,27 +212,14 @@ class RxBleClientImpl extends RxBleClient {
         final LegacyScanOperation
                 scanOperation = new LegacyScanOperation(filterServiceUUIDs, rxBleAdapterWrapper, scanRecordParser);
         return operationQueue.queue(scanOperation)
-                .doFinally(new Action() {
-                    @Override
-                    public void run() {
-                        synchronized (queuedScanOperations) {
-                            queuedScanOperations.remove(filteredUUIDs);
-                        }
+                .doFinally(() -> {
+                    synchronized (queuedScanOperations) {
+                        queuedScanOperations.remove(filteredUUIDs);
                     }
                 })
-                .mergeWith(this.<RxBleInternalScanResultLegacy>bluetoothAdapterOffExceptionObservable())
-                .map(new Function<RxBleInternalScanResultLegacy, RxBleScanResult>() {
-                    @Override
-                    public RxBleScanResult apply(RxBleInternalScanResultLegacy scanResult) {
-                        return convertToPublicScanResult(scanResult);
-                    }
-                })
-                .doOnNext(new Consumer<RxBleScanResult>() {
-                    @Override
-                    public void accept(RxBleScanResult rxBleScanResult) {
-                        RxBleLog.i("%s", rxBleScanResult);
-                    }
-                })
+                .mergeWith(this.bluetoothAdapterOffExceptionObservable())
+                .map(this::convertToPublicScanResult)
+                .doOnNext(rxBleScanResult -> RxBleLog.i("%s", rxBleScanResult))
                 .share();
     }
 

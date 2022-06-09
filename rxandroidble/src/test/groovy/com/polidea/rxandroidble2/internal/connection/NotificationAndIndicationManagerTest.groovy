@@ -376,7 +376,8 @@ class NotificationAndIndicationManagerTest extends Specification {
 
         then:
         testSubscriber.assertValues(changeNotificationsAndExpectedValues)
-        testSubscriber.assertNotTerminated()
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNotComplete()
 
         where:
         [changeNotificationsAndExpectedValues, mode, ack] << [

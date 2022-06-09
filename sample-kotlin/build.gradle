@@ -57,7 +57,7 @@ dependencies {
     implementation rootProject.ext.libs.rxjava_binding
 
     // RxJava
-    implementation rootProject.ext.libs.rxjava
+    implementation rootProject.ext.libs.rxjava2
     implementation rootProject.ext.libs.rxandroid
     implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
 

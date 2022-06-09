@@ -12,13 +12,10 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import bleshadow.javax.inject.Inject;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.functions.Action;
 
 @DeviceScope
 class RxBleDeviceImpl implements RxBleDevice {
@@ -69,20 +66,12 @@ class RxBleDeviceImpl implements RxBleDevice {
     }
 
     public Observable<RxBleConnection> establishConnection(final ConnectionSetup options) {
-        return Observable.defer(new Callable<ObservableSource<RxBleConnection>>() {
-            @Override
-            public ObservableSource<RxBleConnection> call() {
-                if (isConnected.compareAndSet(false, true)) {
-                    return connector.prepareConnection(options)
-                            .doFinally(new Action() {
-                                @Override
-                                public void run() {
-                                    isConnected.set(false);
-                                }
-                            });
-                } else {
-                    return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
-                }
+        return Observable.defer(() -> {
+            if (isConnected.compareAndSet(false, true)) {
+                return connector.prepareConnection(options)
+                        .doFinally(() -> isConnected.set(false));
+            } else {
+                return Observable.error(new BleAlreadyConnectedException(bluetoothDevice.getAddress()));
             }
         });
     }

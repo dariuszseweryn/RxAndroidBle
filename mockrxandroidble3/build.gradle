@@ -4,7 +4,7 @@ apply plugin: 'com.vanniktech.maven.publish'
 apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 android {
-    namespace 'com.polidea.rxandroidble2.mockrxandroidble'
+    namespace 'com.polidea.rxandroidble3.mockrxandroidble'
 
     compileSdkVersion 32
 
@@ -38,7 +38,7 @@ android {
     sourceSets {
         test {
             java {
-                srcDir("../rxandroidble/src/test/java") // Add android stubs from main lib tests
+                srcDir("../rxandroidble3/src/test/java") // Add android stubs from main lib tests
             }
         }
     }
@@ -50,14 +50,12 @@ afterEvaluate { project ->
     testReleaseUnitTest.dependsOn 'compileReleaseUnitTestGroovyWithGroovyc'
 }
 
-apply from: rootProject.file('gradle/rxjava3-generation.gradle')
-
 dependencies {
 
     // Test dependencies
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
-    api project(path: ':rxandroidble')
-    api rootProject.ext.libs.rxjava2
+    api project(path: ':rxandroidble3')
+    api rootProject.ext.libs.rxjava3
 }
