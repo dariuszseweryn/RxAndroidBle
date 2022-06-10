@@ -8,6 +8,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'com.vanniktech.maven.publish'
 apply from: rootProject.file('gradle/shadow.gradle')
+apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 shadowJar {
