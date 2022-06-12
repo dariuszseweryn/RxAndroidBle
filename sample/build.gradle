@@ -46,7 +46,7 @@ dependencies {
     implementation 'com.jakewharton:butterknife:10.2.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
     implementation rootProject.ext.libs.rxandroid
-    implementation rootProject.ext.libs.rxjava
+    implementation rootProject.ext.libs.rxjava2
     implementation rootProject.ext.libs.rxjava_binding
     implementation rootProject.ext.libs.rxjava_replayingshare
 }

@@ -8,6 +8,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'com.vanniktech.maven.publish'
 apply from: rootProject.file('gradle/shadow.gradle')
+apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 shadowJar {
@@ -27,4 +28,19 @@ dependencies {
 java {
     sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
     targetCompatibility = rootProject.ext.targetCompatibilityVersion
+}
+
+task javadocs(type: Javadoc) {
+    source = sourceSets.main.java.source
+    classpath += configurations.compileClasspath
+}
+
+task javadocsJar(type: Jar, dependsOn: javadocs) {
+    archiveClassifier.set('javadoc')
+    from javadocs.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
 }

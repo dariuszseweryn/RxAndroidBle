@@ -1,7 +1,6 @@
 package com.polidea.rxandroidble2.internal.connection;
 
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -12,7 +11,6 @@ import com.polidea.rxandroidble2.NotificationSetupMode;
 import com.polidea.rxandroidble2.exceptions.BleCannotSetCharacteristicNotificationException;
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble2.internal.util.ActiveCharacteristicNotification;
-import com.polidea.rxandroidble2.internal.util.CharacteristicChangedEvent;
 import com.polidea.rxandroidble2.internal.util.CharacteristicNotificationId;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
 
@@ -20,20 +18,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.subjects.PublishSubject;
 
@@ -71,63 +63,51 @@ class NotificationAndIndicationManager {
     Observable<Observable<byte[]>> setupServerInitiatedCharacteristicRead(
             @NonNull final BluetoothGattCharacteristic characteristic, final NotificationSetupMode setupMode, final boolean isIndication
     ) {
-        return Observable.defer(new Callable<ObservableSource<Observable<byte[]>>>() {
-            @Override
-            public ObservableSource<Observable<byte[]>> call() {
-                synchronized (activeNotificationObservableMap) {
-                    final CharacteristicNotificationId id
-                            = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
+        return Observable.defer(() -> {
+            synchronized (activeNotificationObservableMap) {
+                final CharacteristicNotificationId id
+                        = new CharacteristicNotificationId(characteristic.getUuid(), characteristic.getInstanceId());
 
-                    final ActiveCharacteristicNotification activeCharacteristicNotification = activeNotificationObservableMap.get(id);
+                final ActiveCharacteristicNotification activeCharacteristicNotification = activeNotificationObservableMap.get(id);
 
-                    if (activeCharacteristicNotification != null) {
-                        if (activeCharacteristicNotification.isIndication == isIndication) {
-                            return activeCharacteristicNotification.notificationObservable;
-                        } else {
-                            return Observable.error(
-                                    new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !isIndication)
-                            );
-                        }
+                if (activeCharacteristicNotification != null) {
+                    if (activeCharacteristicNotification.isIndication == isIndication) {
+                        return activeCharacteristicNotification.notificationObservable;
+                    } else {
+                        return Observable.error(
+                                new BleConflictingNotificationAlreadySetException(characteristic.getUuid(), !isIndication)
+                        );
                     }
-
-                    final byte[] enableNotificationTypeValue = isIndication ? configEnableIndication : configEnableNotification;
-                    final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
-
-                    final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
-                            .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
-                            .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
-                            .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
-                                @Override
-                                public Observable<byte[]> apply(Observable<byte[]> observable) {
-                                    return Observable.amb(Arrays.asList(
-                                            notificationCompletedSubject.cast(byte[].class),
-                                            observable.takeUntil(notificationCompletedSubject)
-                                    ));
-                                }
-                            })
-                            .doFinally(new Action() {
-                                @SuppressLint("CheckResult")
-                                @Override
-                                public void run() {
-                                    notificationCompletedSubject.onComplete();
-                                    synchronized (activeNotificationObservableMap) {
-                                        activeNotificationObservableMap.remove(id);
-                                    }
-                                    // teardown the notification — subscription and result are ignored
-                                    setCharacteristicNotification(bluetoothGatt, characteristic, false)
-                                            .compose(teardownModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
-                                            .subscribe(
-                                                    Functions.EMPTY_ACTION,
-                                                    Functions.emptyConsumer()
-                                            );
-                                }
-                            })
-                            .mergeWith(gattCallback.<Observable<byte[]>>observeDisconnect())
-                            .replay(1)
-                            .refCount();
-                    activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, isIndication));
-                    return newObservable;
                 }
+
+                final byte[] enableNotificationTypeValue = isIndication ? configEnableIndication : configEnableNotification;
+                final PublishSubject<?> notificationCompletedSubject = PublishSubject.create();
+
+                final Observable<Observable<byte[]>> newObservable = setCharacteristicNotification(bluetoothGatt, characteristic, true)
+                        .andThen(ObservableUtil.justOnNext(observeOnCharacteristicChangeCallbacks(gattCallback, id)))
+                        .compose(setupModeTransformer(descriptorWriter, characteristic, enableNotificationTypeValue, setupMode))
+                        .map(observable -> Observable.amb(Arrays.asList(
+                                notificationCompletedSubject.cast(byte[].class),
+                                observable.takeUntil(notificationCompletedSubject)
+                        )))
+                        .doFinally(() -> {
+                            notificationCompletedSubject.onComplete();
+                            synchronized (activeNotificationObservableMap) {
+                                activeNotificationObservableMap.remove(id);
+                            }
+                            // teardown the notification — subscription and result are ignored
+                            setCharacteristicNotification(bluetoothGatt, characteristic, false)
+                                    .compose(teardownModeTransformer(descriptorWriter, characteristic, configDisable, setupMode))
+                                    .subscribe(
+                                            Functions.EMPTY_ACTION,
+                                            Functions.emptyConsumer()
+                                    );
+                        })
+                        .mergeWith(gattCallback.observeDisconnect())
+                        .replay(1)
+                        .refCount();
+                activeNotificationObservableMap.put(id, new ActiveCharacteristicNotification(newObservable, isIndication));
+                return newObservable;
             }
         });
     }
@@ -136,14 +116,11 @@ class NotificationAndIndicationManager {
     static Completable setCharacteristicNotification(final BluetoothGatt bluetoothGatt,
                                                      final BluetoothGattCharacteristic characteristic,
                                                      final boolean isNotificationEnabled) {
-        return Completable.fromAction(new Action() {
-            @Override
-            public void run() {
-                if (!bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled)) {
-                    throw new BleCannotSetCharacteristicNotificationException(
-                            characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION, null
-                    );
-                }
+        return Completable.fromAction(() -> {
+            if (!bluetoothGatt.setCharacteristicNotification(characteristic, isNotificationEnabled)) {
+                throw new BleCannotSetCharacteristicNotificationException(
+                        characteristic, BleCannotSetCharacteristicNotificationException.CANNOT_SET_LOCAL_NOTIFICATION, null
+                );
             }
         });
     }
@@ -155,31 +132,23 @@ class NotificationAndIndicationManager {
             final byte[] value,
             final NotificationSetupMode mode
     ) {
-        return new ObservableTransformer<Observable<byte[]>, Observable<byte[]>>() {
-            @Override
-            public ObservableSource<Observable<byte[]>> apply(final Observable<Observable<byte[]>> upstream) {
-                switch (mode) {
+        return upstream -> {
+            switch (mode) {
 
-                    case COMPAT:
-                        return upstream;
-                    case QUICK_SETUP:
-                        final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
-                                .toObservable()
-                                .publish()
-                                .autoConnect(2)
-                                .ignoreElements();
-                        return upstream
-                                .mergeWith(publishedWriteCCCDesc)
-                                .map(new Function<Observable<byte[]>, Observable<byte[]>>() {
-                                    @Override
-                                    public Observable<byte[]> apply(Observable<byte[]> observable) {
-                                        return observable.mergeWith(publishedWriteCCCDesc.onErrorComplete());
-                                    }
-                                });
-                    case DEFAULT:
-                    default:
-                        return writeClientCharacteristicConfig(characteristic, descriptorWriter, value).andThen(upstream);
-                }
+                case COMPAT:
+                    return upstream;
+                case QUICK_SETUP:
+                    final Completable publishedWriteCCCDesc = writeClientCharacteristicConfig(characteristic, descriptorWriter, value)
+                            .toObservable()
+                            .publish()
+                            .autoConnect(2)
+                            .ignoreElements();
+                    return upstream
+                            .mergeWith(publishedWriteCCCDesc)
+                            .map(observable -> observable.mergeWith(publishedWriteCCCDesc.onErrorComplete()));
+                case DEFAULT:
+                default:
+                    return writeClientCharacteristicConfig(characteristic, descriptorWriter, value).andThen(upstream);
             }
         };
     }
@@ -189,14 +158,11 @@ class NotificationAndIndicationManager {
                                                           final BluetoothGattCharacteristic characteristic,
                                                           final byte[] value,
                                                           final NotificationSetupMode mode) {
-        return new CompletableTransformer() {
-            @Override
-            public Completable apply(Completable completable) {
-                if (mode == NotificationSetupMode.COMPAT) {
-                    return completable;
-                } else {
-                    return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
-                }
+        return completable -> {
+            if (mode == NotificationSetupMode.COMPAT) {
+                return completable;
+            } else {
+                return completable.andThen(writeClientCharacteristicConfig(characteristic, descriptorWriter, value));
             }
         };
     }
@@ -205,18 +171,8 @@ class NotificationAndIndicationManager {
     static Observable<byte[]> observeOnCharacteristicChangeCallbacks(RxBleGattCallback gattCallback,
                                                                      final CharacteristicNotificationId characteristicId) {
         return gattCallback.getOnCharacteristicChanged()
-                .filter(new Predicate<CharacteristicChangedEvent>() {
-                    @Override
-                    public boolean test(CharacteristicChangedEvent notificationIdWithData) {
-                        return notificationIdWithData.equals(characteristicId);
-                    }
-                })
-                .map(new Function<CharacteristicChangedEvent, byte[]>() {
-                    @Override
-                    public byte[] apply(CharacteristicChangedEvent notificationIdWithData) {
-                        return notificationIdWithData.data;
-                    }
-                });
+                .filter(notificationIdWithData -> notificationIdWithData.equals(characteristicId))
+                .map(notificationIdWithData -> notificationIdWithData.data);
     }
 
     @NonNull
@@ -235,15 +191,10 @@ class NotificationAndIndicationManager {
         }
 
         return descriptorWriter.writeDescriptor(descriptor, value)
-                .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
-                    @Override
-                    public CompletableSource apply(Throwable throwable) {
-                        return Completable.error(new BleCannotSetCharacteristicNotificationException(
-                                bluetoothGattCharacteristic,
-                                BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
-                                throwable
-                        ));
-                    }
-                });
+                .onErrorResumeNext(throwable -> Completable.error(new BleCannotSetCharacteristicNotificationException(
+                        bluetoothGattCharacteristic,
+                        BleCannotSetCharacteristicNotificationException.CANNOT_WRITE_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
+                        throwable
+                )));
     }
 }

@@ -1,0 +1,22 @@
+// generates sources compatible with RxJava 2 to RxJava 3
+
+copy {
+    from "../${project.name.substring(0, project.name.length() - 1)}/src"
+    into 'src'
+    includeEmptyDirs = false
+    eachFile {
+        name = name.replace('rxandroidble2', 'rxandroidble3')
+        path = path.replace('rxandroidble2', 'rxandroidble3')
+        filter {
+            it.replace('rxandroidble2', 'rxandroidble3')
+                    .replaceAll('io\\.reactivex\\.([a-z]+)', 'io.reactivex.rxjava3.$1')
+                    .replaceAll('io\\.reactivex\\.([A-Z][a-z]+)', 'io.reactivex.rxjava3.core.$1')
+                    .replace('import io.reactivex.rxjava3.disposables.Disposables', 'import io.reactivex.rxjava3.disposables.Disposable')
+                    .replace('Disposables.fromAction', 'Disposable.fromAction')
+                    .replace('Disposables.empty()', 'Disposable.empty()')
+                    .replace('com.jakewharton.rxrelay2.BehaviorRelay', 'com.jakewharton.rxrelay3.BehaviorRelay')
+                    .replace('.startWith(', '.startWithItem(')
+                    .replace('import com.jakewharton.rxrelay2', 'import com.jakewharton.rxrelay3')
+        }
+    }
+}

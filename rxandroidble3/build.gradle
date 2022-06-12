@@ -4,7 +4,7 @@ apply plugin: 'com.vanniktech.maven.publish'
 apply from: rootProject.file('gradle/gradle-mvn-config.gradle')
 
 android {
-    namespace 'com.polidea.rxandroidble2'
+    namespace 'com.polidea.rxandroidble3'
 
     compileSdkVersion 32
 
@@ -41,7 +41,7 @@ android {
         abortOnError false
     }
 
-    preBuild.dependsOn 'checkstyle'
+//    preBuild.dependsOn 'checkstyle'
 
     packagingOptions {
         // Dagger 2.25.4 introduced a file for tracking purposes. This can break apps using Dagger.
@@ -50,6 +50,8 @@ android {
         excludes = ['**/com.google.dagger_dagger.version']
     }
 }
+
+apply from: rootProject.file('gradle/src-gen-rxjava3-from-rxjava2.gradle')
 
 androidGroovy {
     skipJavaC = true
@@ -62,15 +64,16 @@ afterEvaluate { project ->
 }
 
 dependencies {
-    api rootProject.ext.libs.rxjava2
+    api rootProject.ext.libs.rxjava3
     api rootProject.ext.libs.annotations
-    implementation rootProject.ext.libs.rxrelay2
+    implementation rootProject.ext.libs.rxrelay3
     implementation project(path: ':dagger-library-shadow', transitive: false, configuration: 'shadow')
     annotationProcessor project(path: ':dagger-compiler-shadow', transitive: false, configuration: 'shadow')
 
     compileOnly files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
 
     // Test dependencies
+    testImplementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     testImplementation rootProject.ext.libs.junit
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock

@@ -5,3 +5,5 @@ local.properties
 /build
 dagger-compiler-shadow/build
 dagger-library-shadow/build
+rxandroidble3/src
+mockrxandroidble3/src

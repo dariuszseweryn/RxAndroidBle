@@ -1,15 +1,18 @@
 ext {
     kotlinVersion = '1.6.21'
-    rxJavaVersion = '2.2.17'
+    rxJava2Version = '2.2.17'
+    rxJava3Version = '3.1.4'
     sourceCompatibilityVersion = JavaVersion.VERSION_1_8
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
     shadowPluginVersion = '7.1.2'
     daggerVersion = '2.42'
     libs = [
             /* Library-only dependencies */
-            rxjava                : "io.reactivex.rxjava2:rxjava:$rxJavaVersion",
+            rxjava2               : "io.reactivex.rxjava2:rxjava:$rxJava2Version",
+            rxjava3               : "io.reactivex.rxjava3:rxjava:$rxJava3Version",
             rxandroid             : 'io.reactivex.rxjava2:rxandroid:2.1.1',
-            rxrelay               : 'com.jakewharton.rxrelay2:rxrelay:2.1.1',
+            rxrelay2              : 'com.jakewharton.rxrelay2:rxrelay:2.1.1',
+            rxrelay3              : 'com.jakewharton.rxrelay3:rxrelay:3.0.1',
             junit                 : 'org.junit.jupiter:junit-jupiter:5.8.1',
             groovy                : ['org.codehaus.groovy:groovy:3.0.9', 'org.codehaus.groovy:groovy-test:3.0.9'],
             spock                 : 'org.spockframework:spock-core:2.0-groovy-3.0',

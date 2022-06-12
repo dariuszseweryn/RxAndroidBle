@@ -248,7 +248,8 @@ class OperationCharacteristicLongWriteTest extends Specification {
         then:
         1 * mockCharacteristic.setValue([0x1, 0x1] as byte[]) >> true
         1 * mockGatt.writeCharacteristic(mockCharacteristic) >> false
-        testSubscriber.assertNotTerminated()
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNotComplete()
 
         when:
         retryWriteOperationStrategy.triggerRetry()

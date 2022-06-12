@@ -42,8 +42,8 @@ def getRepositoryPassword() {
     return hasProperty('SONATYPE_NEXUS_PASSWORD') ? property('SONATYPE_NEXUS_PASSWORD') : ""
 }
 
-def isAndroidProject() {
-    return project.getPlugins().hasPlugin('com.android.application') || project.getPlugins().hasPlugin('com.android.library')
+def isAndroidProject(Project maybeProject = null) {
+    return (maybeProject ?: project).getPlugins().hasPlugin('com.android.application') || project.getPlugins().hasPlugin('com.android.library')
 }
 
 if (isAndroidProject()) {
@@ -71,8 +71,13 @@ afterEvaluate { project ->
         publications {
             release(MavenPublication) {
                 afterEvaluate {
-                    if (isAndroidProject()) from components.release
-                    else from components.java
+                    if (isAndroidProject(project)) {
+                        from components.release
+                    } else {
+                        from components.java
+                        artifact sourcesJar
+                        artifact javadocsJar
+                    }
                 }
             }
         }

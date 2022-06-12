@@ -57,5 +57,5 @@ dependencies {
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
     api project(path: ':rxandroidble')
-    api rootProject.ext.libs.rxjava
+    api rootProject.ext.libs.rxjava2
 }

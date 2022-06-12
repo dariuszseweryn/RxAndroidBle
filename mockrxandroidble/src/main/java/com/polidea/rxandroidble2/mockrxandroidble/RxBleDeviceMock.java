@@ -13,23 +13,15 @@ import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.Timeout;
 import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 import com.polidea.rxandroidble2.scan.ScanRecord;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.ReplaySubject;
 
@@ -81,10 +73,10 @@ public class RxBleDeviceMock implements RxBleDevice {
                         rxBleDeviceServices,
                         rssi,
                         characteristicNotificationSources,
-                        new HashMap<UUID, RxBleCharacteristicReadCallback>(),
-                        new HashMap<UUID, RxBleCharacteristicWriteCallback>(),
-                        new HashMap<UUID, Map<UUID, RxBleDescriptorReadCallback>>(),
-                        new HashMap<UUID, Map<UUID, RxBleDescriptorWriteCallback>>())
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        new HashMap<>())
                 );
         this.legacyScanRecord = scanRecord;
     }
@@ -252,33 +244,17 @@ public class RxBleDeviceMock implements RxBleDevice {
 
     @Override
     public Observable<RxBleConnection> establishConnection(boolean autoConnect) {
-        return Observable.defer(new Callable<Observable<RxBleConnection>>() {
-            @Override
-            public Observable<RxBleConnection> call() {
-                if (isConnected.compareAndSet(false, true)) {
-                    return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
-                            .doOnSubscribe(new Consumer<Disposable>() {
-                                @Override
-                                public void accept(Disposable disposable) throws Exception {
-                                    connectionStateBehaviorSubject.onNext(CONNECTING);
-                                }
-                            })
-                            .doOnNext(new Consumer<RxBleConnection>() {
-                                @Override
-                                public void accept(RxBleConnection rxBleConnection) throws Exception {
-                                    connectionStateBehaviorSubject.onNext(CONNECTED);
-                                }
-                            })
-                            .doFinally(new Action() {
-                                @Override
-                                public void run() {
-                                    connectionStateBehaviorSubject.onNext(DISCONNECTED);
-                                    isConnected.set(false);
-                                }
-                            });
-                } else {
-                    return Observable.error(new BleAlreadyConnectedException(macAddress));
-                }
+        return Observable.defer(() -> {
+            if (isConnected.compareAndSet(false, true)) {
+                return RxBleDeviceMock.this.emitConnectionWithoutCompleting()
+                        .doOnSubscribe(disposable -> connectionStateBehaviorSubject.onNext(CONNECTING))
+                        .doOnNext(rxBleConnection -> connectionStateBehaviorSubject.onNext(CONNECTED))
+                        .doFinally(() -> {
+                            connectionStateBehaviorSubject.onNext(DISCONNECTED);
+                            isConnected.set(false);
+                        });
+            } else {
+                return Observable.error(new BleAlreadyConnectedException(macAddress));
             }
         });
     }
@@ -291,12 +267,7 @@ public class RxBleDeviceMock implements RxBleDevice {
     private Observable<RxBleConnection> emitConnectionWithoutCompleting() {
         connectionSubject = ReplaySubject.createWithSize(1);
         connectionSubject.onNext(rxBleConnection);
-        return connectionSubject.doFinally(new Action() {
-            @Override
-            public void run() throws Exception {
-                connectionSubject = null;
-            }
-        });
+        return connectionSubject.doFinally(() -> connectionSubject = null);
     }
 
     public void disconnectWithException(BleException exception) {

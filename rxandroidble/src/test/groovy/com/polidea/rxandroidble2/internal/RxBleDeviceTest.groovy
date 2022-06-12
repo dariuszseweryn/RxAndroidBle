@@ -288,7 +288,7 @@ class RxBleDeviceTest extends Specification {
         dropConnection()
 
         then:
-        connectionTestSubscriber.assertTerminated()
+        connectionTestSubscriber.assertError(BleGattException.class)
 
         where:
         establishConnectionSetup << establishConnectionTestSetups
