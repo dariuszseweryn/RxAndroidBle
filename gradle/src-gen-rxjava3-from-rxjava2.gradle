@@ -1,8 +1,8 @@
 // generates sources compatible with RxJava 2 to RxJava 3
 
 copy {
-    from 'src'
-    into "../${project.name}3/src"
+    from "../${project.name.substring(0, project.name.length() - 1)}/src"
+    into 'src'
     includeEmptyDirs = false
     eachFile {
         name = name.replace('rxandroidble2', 'rxandroidble3')

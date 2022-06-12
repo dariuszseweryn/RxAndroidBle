@@ -50,8 +50,6 @@ afterEvaluate { project ->
     testReleaseUnitTest.dependsOn 'compileReleaseUnitTestGroovyWithGroovyc'
 }
 
-apply from: rootProject.file('gradle/rxjava3-generation.gradle')
-
 dependencies {
 
     // Test dependencies

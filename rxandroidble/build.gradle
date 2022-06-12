@@ -51,8 +51,6 @@ android {
     }
 }
 
-apply from: rootProject.file('gradle/rxjava3-generation.gradle')
-
 androidGroovy {
     skipJavaC = true
 }
