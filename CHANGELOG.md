@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.15.0
+* No functional changes. First release of RxAndroidBle based on RxJava 3. RxJava 2 version is still supported.
+
 Version 1.14.1
 * Fixed duplicate 'META-INF/com.google.dagger_dagger.version' file (https://github.com/Polidea/RxAndroidBle/pull/790)
 
