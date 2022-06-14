@@ -1,6 +1,10 @@
 # RxAndroidBle ![Build Status](https://github.com/dariuszseweryn/rxandroidble/actions/workflows/gradle-actions.yml/badge.svg?branch=master)
 RxJava 3 — [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble3/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble3%22%20AND%20a%3A%22rxandroidble%22)
+
 RxJava 2 — [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble2/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble2%22%20AND%20a%3A%22rxandroidble%22)
+
+RxJava 1 — [![Maven Central](https://img.shields.io/maven-central/v/com.polidea.rxandroidble/rxandroidble.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.polidea.rxandroidble%22%20AND%20a%3A%22rxandroidble%22) (No longer supported)
+
 <p align="center">
   <img 
     alt="Tailored software services including concept, design, development and testing"
