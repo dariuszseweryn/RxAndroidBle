@@ -42,13 +42,6 @@ android {
     }
 
     preBuild.dependsOn 'checkstyle'
-
-    packagingOptions {
-        // Dagger 2.25.4 introduced a file for tracking purposes. This can break apps using Dagger.
-        // See https://github.com/dariuszseweryn/RxAndroidBle/issues/789
-        // Source https://github.com/google/dagger/commit/709098caaf4c7124f5e5313c1aa9ab34fced0031
-        excludes = ['**/com.google.dagger_dagger.version']
-    }
 }
 
 androidGroovy {
