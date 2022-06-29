@@ -3,6 +3,9 @@ package com.polidea.rxandroidble2.internal.util;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ClientScope;
+import com.polidea.rxandroidble2.internal.RxBleLog;
+
+import java.util.Arrays;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
@@ -27,6 +30,7 @@ public class CheckerScanPermission {
         for (String[] neededPermissions : scanPermissions) {
             allNeededPermissionsGranted &= checkerPermission.isAnyPermissionGranted(neededPermissions);
         }
+        RxBleLog.d("Scan Runtime Permission Granted: %s", allNeededPermissionsGranted);
         return allNeededPermissionsGranted;
     }
 
@@ -42,6 +46,7 @@ public class CheckerScanPermission {
                 resultPermissions[i++] = permission;
             }
         }
+        RxBleLog.d("Recommended Scan Runtime Permissions: %s", Arrays.toString(resultPermissions));
         return resultPermissions;
     }
 }

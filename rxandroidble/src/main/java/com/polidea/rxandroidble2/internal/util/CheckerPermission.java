@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.os.Process;
 
 import com.polidea.rxandroidble2.ClientScope;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import bleshadow.javax.inject.Inject;
 
@@ -20,7 +21,9 @@ public class CheckerPermission {
 
     boolean isAnyPermissionGranted(String[] acceptablePermissions) {
         for (String acceptablePermission : acceptablePermissions) {
-            if (isPermissionGranted(acceptablePermission)) {
+            boolean permissionGranted = isPermissionGranted(acceptablePermission);
+            RxBleLog.d("Checking Permission: %s => %s", acceptablePermission, permissionGranted);
+            if (permissionGranted) {
                 return true;
             }
         }
