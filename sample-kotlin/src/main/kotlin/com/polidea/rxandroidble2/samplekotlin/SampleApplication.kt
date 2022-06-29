@@ -16,7 +16,7 @@ class SampleApplication : Application() {
         super.onCreate()
         rxBleClient = RxBleClient.create(this)
         RxBleClient.updateLogOptions(LogOptions.Builder()
-                .setLogLevel(LogConstants.INFO)
+                .setLogLevel(LogConstants.DEBUG)
                 .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
                 .setUuidsLogSetting(LogConstants.UUIDS_FULL)
                 .setShouldLogAttributeValues(true)
