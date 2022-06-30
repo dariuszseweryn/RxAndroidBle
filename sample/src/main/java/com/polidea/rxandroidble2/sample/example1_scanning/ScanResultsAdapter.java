@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.polidea.rxandroidble2.RxBleDevice;
-
 import com.polidea.rxandroidble2.scan.ScanResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,12 +85,11 @@ class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultsAdapter.ViewHol
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final ScanResult rxBleScanResult = data.get(position);
-        final RxBleDevice bleDevice = rxBleScanResult.getBleDevice();
         holder.line1.setText(String.format(
                 Locale.getDefault(),
                 "%s (%s) %s",
-                bleDevice.getMacAddress(),
-                bleDevice.getName(),
+                rxBleScanResult.getBleDevice().getMacAddress(),
+                rxBleScanResult.getScanRecord().getDeviceName(),
                 rxBleScanResult.isConnectable()));
         holder.line2.setText(String.format(Locale.getDefault(), "RSSI: %d", rxBleScanResult.getRssi()));
     }

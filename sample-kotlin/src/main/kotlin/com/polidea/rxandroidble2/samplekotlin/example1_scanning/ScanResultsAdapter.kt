@@ -47,7 +47,7 @@ internal class ScanResultsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(data[position]) {
-            holder.device.text = String.format("%s (%s) %s", bleDevice.macAddress, bleDevice.name, isConnectable)
+            holder.device.text = String.format("%s (%s) %s", bleDevice.macAddress, scanRecord.deviceName, isConnectable)
             holder.rssi.text = String.format("RSSI: %d", rssi)
             holder.itemView.setOnClickListener { onClickListener(this) }
         }
