@@ -10,6 +10,7 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
 import com.polidea.rxandroidble2.internal.connection.Connector
+import com.polidea.rxandroidble2.internal.util.CheckerConnectPermission
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Shared
@@ -25,8 +26,9 @@ class RxBleDeviceTest extends Specification {
     RxBleConnection mockConnection = Mock RxBleConnection
     PublishSubject<RxBleConnection> mockConnectorEstablishConnectionPublishSubject = PublishSubject.create()
     BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateBehaviorRelay = BehaviorRelay.createDefault(DISCONNECTED)
+    CheckerConnectPermission mockCheckerConnectPermission = Mock CheckerConnectPermission
     @Shared BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
-    RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay)
+    RxBleDevice rxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, mockConnector, connectionStateBehaviorRelay, mockCheckerConnectPermission)
     static List<EstablishConnectionCaller> establishConnectionCallers = []
     static List<EstablishConnectionTestSetup> establishConnectionTestSetups = []
 
@@ -73,6 +75,7 @@ class RxBleDeviceTest extends Specification {
 
     def setup() {
         mockConnector.prepareConnection(_) >> mockConnectorEstablishConnectionPublishSubject
+        mockCheckerConnectPermission.isConnectRuntimePermissionGranted() >> true
     }
 
     def "should return the BluetoothDevice name"() {
@@ -96,7 +99,7 @@ class RxBleDeviceTest extends Specification {
     def "equals() should return true when compared to a different RxBleDevice instance with the same underlying BluetoothDevice"() {
 
         given:
-        def differentRxBleDeviceWithSameBluetoothDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create())
+        def differentRxBleDeviceWithSameBluetoothDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create(), mockCheckerConnectPermission)
 
         expect:
         rxBleDevice == differentRxBleDeviceWithSameBluetoothDevice
@@ -105,7 +108,7 @@ class RxBleDeviceTest extends Specification {
     def "hashCode() should return the same value as a different RxBleDevice instance hashCode() with the same underlying BluetoothDevice"() {
 
         given:
-        def differentRxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create())
+        def differentRxBleDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create(), mockCheckerConnectPermission)
 
         expect:
         rxBleDevice.hashCode() == differentRxBleDevice.hashCode()
@@ -311,6 +314,26 @@ class RxBleDeviceTest extends Specification {
 
         expect:
         rxBleDevice.getBluetoothDevice() == mockBluetoothDevice
+    }
+
+    @Unroll
+    def "should call BluetoothDevice.getName() when called toString() only when BLUETOOTH_CONNECT permission is granted"() {
+
+        given:
+        def localMockCheckerConnectPermission = Mock(CheckerConnectPermission)
+        localMockCheckerConnectPermission.isConnectRuntimePermissionGranted() >> permissionGranted
+        def localDevice = new RxBleDeviceImpl(mockBluetoothDevice, null, BehaviorRelay.create(), localMockCheckerConnectPermission)
+
+        when:
+        localDevice.toString()
+
+        then:
+        expectedCallsToGetName * mockBluetoothDevice.getName()
+
+        where:
+        permissionGranted | expectedCallsToGetName
+        true              | 1
+        false             | 0
     }
 
     void startConnecting() {

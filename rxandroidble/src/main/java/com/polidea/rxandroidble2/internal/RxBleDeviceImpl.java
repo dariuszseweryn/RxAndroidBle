@@ -12,6 +12,8 @@ import com.polidea.rxandroidble2.exceptions.BleAlreadyConnectedException;
 import com.polidea.rxandroidble2.internal.connection.Connector;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble2.internal.util.CheckerConnectPermission;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import bleshadow.javax.inject.Inject;
@@ -23,17 +25,20 @@ class RxBleDeviceImpl implements RxBleDevice {
     final BluetoothDevice bluetoothDevice;
     final Connector connector;
     private final BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay;
+    private final CheckerConnectPermission checkerConnectPermission;
     final AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @Inject
     RxBleDeviceImpl(
             BluetoothDevice bluetoothDevice,
             Connector connector,
-            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay
+            BehaviorRelay<RxBleConnection.RxBleConnectionState> connectionStateRelay,
+            CheckerConnectPermission checkerConnectPermission
     ) {
         this.bluetoothDevice = bluetoothDevice;
         this.connector = connector;
         this.connectionStateRelay = connectionStateRelay;
+        this.checkerConnectPermission = checkerConnectPermission;
     }
 
     @Override
@@ -79,6 +84,13 @@ class RxBleDeviceImpl implements RxBleDevice {
     @Override
     @Nullable
     public String getName() {
+        return getName(false);
+    }
+
+    private String getName(boolean placeholderIfNoPermission) {
+        if (placeholderIfNoPermission && !checkerConnectPermission.isConnectRuntimePermissionGranted()) {
+            return "[NO SCAN_PERMISSION]";
+        }
         return bluetoothDevice.getName();
     }
 
@@ -114,7 +126,7 @@ class RxBleDeviceImpl implements RxBleDevice {
     public String toString() {
         return "RxBleDeviceImpl{"
                 + LoggerUtil.commonMacMessage(bluetoothDevice.getAddress())
-                + ", name=" + bluetoothDevice.getName()
+                + ", name=" + getName(true)
                 + '}';
     }
 }
