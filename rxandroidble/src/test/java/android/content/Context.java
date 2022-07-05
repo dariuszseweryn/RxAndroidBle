@@ -12,5 +12,6 @@ public abstract class Context {
         public abstract ContentResolver getContentResolver();
         public abstract Intent registerReceiver(BroadcastReceiver receiver, IntentFilter intentFilter);
         public abstract void unregisterReceiver(BroadcastReceiver receiver);
+        public abstract int checkPermission(String permission, int pid, int uid);
 
 }

@@ -6,12 +6,16 @@ import android.os.Process;
 
 import com.polidea.rxandroidble2.ClientScope;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import bleshadow.javax.inject.Inject;
 
 @ClientScope
 public class CheckerPermission {
 
     private final Context context;
+    private final Set<String> grantedPermissions = new HashSet<>();
 
     @Inject
     CheckerPermission(Context context) {
@@ -37,6 +41,16 @@ public class CheckerPermission {
             throw new IllegalArgumentException("permission is null");
         }
 
-        return context.checkPermission(permission, Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+        if (grantedPermissions.contains(permission)) {
+            return true;
+        }
+
+        boolean isGranted = context.checkPermission(permission, Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+
+        if (isGranted) {
+            grantedPermissions.add(permission);
+        }
+
+        return isGranted;
     }
 }
