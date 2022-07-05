@@ -138,6 +138,8 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
     @MatchNum
     private int mNumOfMatchesPerFilter;
 
+    private boolean mLegacy;
+
     private boolean mShouldCheckLocationProviderState;
 
     @ScanMode
@@ -160,6 +162,10 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         return mNumOfMatchesPerFilter;
     }
 
+    public boolean getLegacy() {
+        return mLegacy;
+    }
+
     /**
      * Returns report delay timestamp based on the device clock.
      */
@@ -173,12 +179,14 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
     }
 
     ScanSettings(int scanMode, int callbackType,
-                 long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean shouldCheckLocationServicesState) {
+                 long reportDelayMillis, int matchMode, int numOfMatchesPerFilter, boolean legacy,
+                 boolean shouldCheckLocationServicesState) {
         mScanMode = scanMode;
         mCallbackType = callbackType;
         mReportDelayMillis = reportDelayMillis;
         mNumOfMatchesPerFilter = numOfMatchesPerFilter;
         mMatchMode = matchMode;
+        mLegacy = legacy;
         mShouldCheckLocationProviderState = shouldCheckLocationServicesState;
     }
 
@@ -192,6 +200,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         mMatchMode = in.readInt();
         //noinspection WrongConstant
         mNumOfMatchesPerFilter = in.readInt();
+        mLegacy = in.readInt() != 0;
         mShouldCheckLocationProviderState = in.readInt() != 0;
     }
 
@@ -202,6 +211,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         dest.writeLong(mReportDelayMillis);
         dest.writeInt(mMatchMode);
         dest.writeInt(mNumOfMatchesPerFilter);
+        dest.writeInt(mLegacy ? 1 : 0);
         dest.writeInt(mShouldCheckLocationProviderState ? 1 : 0);
     }
 
@@ -231,6 +241,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
                 this.mReportDelayMillis,
                 this.mMatchMode,
                 this.mNumOfMatchesPerFilter,
+                this.mLegacy,
                 this.mShouldCheckLocationProviderState
         );
     }
@@ -245,6 +256,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
         private long mReportDelayMillis = 0;
         private int mMatchMode = MATCH_MODE_AGGRESSIVE;
         private int mNumOfMatchesPerFilter = MATCH_NUM_MAX_ADVERTISEMENT;
+        private boolean mLegacy = true;
         private boolean mShouldCheckLocationProviderState = true;
 
         /**
@@ -297,6 +309,11 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
                 return true;
             }
             return callbackType == (CALLBACK_TYPE_FIRST_MATCH | CALLBACK_TYPE_MATCH_LOST);
+        }
+
+        public Builder setLegacy(boolean legacy) {
+            mLegacy = legacy;
+            return this;
         }
 
         // [DS 27.04.2017] TODO: when there will be a need
@@ -356,7 +373,7 @@ public class ScanSettings implements Parcelable, ExternalScanSettingsExtension<S
          */
         public ScanSettings build() {
             return new ScanSettings(mScanMode, mCallbackType,
-                    mReportDelayMillis, mMatchMode, mNumOfMatchesPerFilter, mShouldCheckLocationProviderState);
+                    mReportDelayMillis, mMatchMode, mNumOfMatchesPerFilter, mLegacy, mShouldCheckLocationProviderState);
         }
     }
 }
