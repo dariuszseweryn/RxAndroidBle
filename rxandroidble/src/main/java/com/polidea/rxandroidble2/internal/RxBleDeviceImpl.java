@@ -89,7 +89,7 @@ class RxBleDeviceImpl implements RxBleDevice {
 
     private String getName(boolean placeholderIfNoPermission) {
         if (placeholderIfNoPermission && !checkerConnectPermission.isConnectRuntimePermissionGranted()) {
-            return "[NO SCAN_PERMISSION]";
+            return "[NO BLUETOOTH_CONNECT PERMISSION]";
         }
         return bluetoothDevice.getName();
     }
