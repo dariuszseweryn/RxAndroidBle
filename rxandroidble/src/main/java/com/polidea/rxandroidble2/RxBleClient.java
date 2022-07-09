@@ -105,7 +105,7 @@ public abstract class RxBleClient {
      *
      * @return set of currently bonded devices
      * @throws UnsupportedOperationException if called on system without Bluetooth capabilities
-     * @throws java.lang.SecurityException if called on or above Android 12 (API >= 31) and no BLUETOOTH_CONNECT runtime permission is granted
+     * @throws java.lang.SecurityException if called on Android 12 or newer (API >= 31) and no BLUETOOTH_CONNECT runtime permission granted
      */
     public abstract Set<RxBleDevice> getBondedDevices();
 
