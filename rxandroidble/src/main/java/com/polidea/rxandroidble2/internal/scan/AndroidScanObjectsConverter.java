@@ -30,6 +30,9 @@ public class AndroidScanObjectsConverter {
         final android.bluetooth.le.ScanSettings.Builder builder = new android.bluetooth.le.ScanSettings.Builder();
         if (deviceSdk >= 23 /* Build.VERSION_CODES.M */) {
             setMarshmallowSettings(scanSettings, builder);
+            if (deviceSdk >= 26 /* Build.VERSION_CODES.O */) {
+                builder.setLegacy(scanSettings.getLegacy());
+            }
         }
         return builder
                 .setReportDelay(scanSettings.getReportDelayMillis())
