@@ -101,8 +101,11 @@ public abstract class RxBleClient {
      * If Bluetooth state is not STATE_ON, this API will return an empty set. After turning on Bluetooth, wait for ACTION_STATE_CHANGED
      * with STATE_ON to get the updated value.
      *
+     * Calling this function on or above Android 12 (API >= 31) requires BLUETOOTH_CONNECT runtime permission.
+     *
      * @return set of currently bonded devices
      * @throws UnsupportedOperationException if called on system without Bluetooth capabilities
+     * @throws java.lang.SecurityException if called on Android 12 or newer (API >= 31) and no BLUETOOTH_CONNECT runtime permission granted
      */
     public abstract Set<RxBleDevice> getBondedDevices();
 
