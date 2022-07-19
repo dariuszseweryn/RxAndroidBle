@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.16.0
+* Added `ScanSettingsBuilder#setLegacy` option, thanks @danielstuart14! (https://github.com/Polidea/RxAndroidBle/pull/801)
+
 Version 1.15.2
 * Fixed `RxBleDevice#toString` crashing when runtime permission BLUETOOTH_CONNECT is not granted on API 31 (Android 12) (https://github.com/Polidea/RxAndroidBle/pull/800)
 * Added granted permissions cache (https://github.com/Polidea/RxAndroidBle/pull/802)
