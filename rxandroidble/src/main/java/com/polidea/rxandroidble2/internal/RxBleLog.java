@@ -2,14 +2,20 @@ package com.polidea.rxandroidble2.internal;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+
 import android.util.Log;
 
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.LogOptions;
 
 import com.polidea.rxandroidble2.internal.logger.LoggerSetup;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
+import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,12 +148,22 @@ public class RxBleLog {
             return tag;
         }
 
-        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-        if (stackTrace.length < 5) {
-            throw new IllegalStateException(
-                    "Synthetic stacktrace didn't have enough elements: are you using proguard?");
+        List<String> ignoreClasses = Arrays.asList(
+                RxBleLog.class.getName(),
+                LoggerUtil.class.getName(),
+                LoggerUtilBluetoothServices.class.getName());
+
+        Throwable throwable = new Throwable();
+        StackTraceElement[] stackTrace = throwable.getStackTrace();
+        int i = 0;
+        while (i < stackTrace.length && ignoreClasses.contains(stackTrace[i].getClassName())) {
+            i++;
         }
-        tag = stackTrace[4].getClassName();
+        if (stackTrace.length <= i) {
+            throw new IllegalStateException(
+                    "Synthetic stacktrace didn't have enough elements: are you using proguard?", throwable);
+        }
+        tag = stackTrace[i].getClassName();
         Matcher m = ANONYMOUS_CLASS.matcher(tag);
         if (m.find()) {
             tag = m.replaceAll("");
@@ -249,11 +265,13 @@ public class RxBleLog {
         return loggerSetup.logLevel <= expectedLogLevel;
     }
 
-    public static @LogConstants.MacAddressLogSetting int getMacAddressLogSetting() {
+    public static @LogConstants.MacAddressLogSetting
+    int getMacAddressLogSetting() {
         return loggerSetup.macAddressLogSetting;
     }
 
-    public static @LogConstants.UuidLogSetting int getUuidLogSetting() {
+    public static @LogConstants.UuidLogSetting
+    int getUuidLogSetting() {
         return loggerSetup.uuidLogSetting;
     }
 
