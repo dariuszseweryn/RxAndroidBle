@@ -56,12 +56,14 @@ public interface RxBleConnection {
     int GATT_MTU_MINIMUM = 23;
 
     /**
-     * Even though the maximum supported value for MTU Negotiation (Maximum Transfer Unit) on Android OS is 517
+     * The maximum properly supported value for MTU (Maximum Transfer Unit) used by a bluetooth connection on Android OS.
+     * <p>The theoretical maximum value for MTU Negotiation on Android OS is 517
      * (https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h;l=244;drc=1918034a0730839c7a07b1260b1ab74b80d6b4e6)
      * the real maximal supported MTU is 515 since the buffer size is capped on 512 bytes = 515 - GATT_READ_MTU_OVERHEAD
      * (https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/system/stack/include/gatt_api.h;l=250;drc=1918034a0730839c7a07b1260b1ab74b80d6b4e6;bpv=1;bpt=1)
-     *
-     * NOTE: before Android 13 the effective maximal supported MTU was 517
+     * <p>
+     * <p>NOTE: before Android 13 (API 33) the maximal properly supported MTU was 517
+     * see https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/android-5.1.0_r1/stack/include/gatt_api.h#119
      */
     int GATT_MTU_MAXIMUM = 515;
 
