@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.17.0
+* Changed RxBleConnection.GATT_MTU_MAXIMUM to 515 to fix Android 13, thanks @marsounjan! (https://github.com/Polidea/RxAndroidBle/pull/808)
+
 Version 1.16.0
 * Added `ScanSettingsBuilder#setLegacy` option, thanks @danielstuart14! (https://github.com/Polidea/RxAndroidBle/pull/801)
 
