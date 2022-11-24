@@ -1,5 +1,11 @@
 Change Log
 ==========
+Version 1.17.2
+* Fixed log tags generation on builds with Proguard enabled (https://github.com/Polidea/RxAndroidBle/pull/814)
+
+Version 1.17.1
+* No changes over 1.17.0. Mistake release.
+
 Version 1.17.0
 * Changed RxBleConnection.GATT_MTU_MAXIMUM to 515 to fix Android 13, thanks @marsounjan! (https://github.com/Polidea/RxAndroidBle/pull/808)
 
