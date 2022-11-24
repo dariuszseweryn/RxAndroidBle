@@ -265,13 +265,13 @@ public class RxBleLog {
         return loggerSetup.logLevel <= expectedLogLevel;
     }
 
-    public static @LogConstants.MacAddressLogSetting
-    int getMacAddressLogSetting() {
+    @LogConstants.MacAddressLogSetting
+    public static int getMacAddressLogSetting() {
         return loggerSetup.macAddressLogSetting;
     }
 
-    public static @LogConstants.UuidLogSetting
-    int getUuidLogSetting() {
+    @LogConstants.UuidLogSetting
+    public static int getUuidLogSetting() {
         return loggerSetup.uuidLogSetting;
     }
 
