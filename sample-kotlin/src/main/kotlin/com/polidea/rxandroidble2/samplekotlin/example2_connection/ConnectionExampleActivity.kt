@@ -66,7 +66,7 @@ class ConnectionExampleActivity : AppCompatActivity() {
         if (bleDevice.isConnected) {
             triggerDisconnect()
         } else {
-            if (SampleApplication.rxBleClient.isScanRuntimePermissionGranted) {
+            if (SampleApplication.rxBleClient.isConnectRuntimePermissionGranted) {
                 connect()
             } else {
                 hasClickedConnect = true
