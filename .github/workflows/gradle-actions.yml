@@ -16,9 +16,9 @@ jobs:
     needs: gradle_validation
     steps:
       - name: "Checkout Repository"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: "Set up Android JDK environment"
-        uses: actions/setup-java@v2.2.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: 'adopt'
           java-version: '11'
