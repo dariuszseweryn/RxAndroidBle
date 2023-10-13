@@ -137,6 +137,14 @@ public class LoggerUtil {
                 callbackName, status, value);
     }
 
+    public static void logCallback(String callbackName, BluetoothGatt gatt, int status, int valueA, int valueB) {
+        if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
+            return;
+        }
+        RxBleLog.i(commonMacMessage(gatt) + commonCallbackMessage() + commonStatusMessage() + commonValueMessage() + commonValueMessage(),
+                callbackName, status, valueA, valueB);
+    }
+
     public static void logConnectionUpdateCallback(String callbackName, BluetoothGatt gatt,
                                                    int status, int interval, int latency, int timeout) {
         if (!RxBleLog.isAtLeast(LogConstants.INFO)) {

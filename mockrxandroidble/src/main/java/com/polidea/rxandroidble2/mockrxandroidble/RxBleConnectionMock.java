@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
+import android.util.Pair;
 
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
@@ -73,6 +74,9 @@ public class RxBleConnectionMock implements RxBleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
     private int currentMtu = 23;
+    private int phyTx = RxBleConnection.PHY_LE_1M;
+    private int phyRx = RxBleConnection.PHY_LE_1M;
+    private int phyOption = RxBleConnection.PHY_OPTION_NO_PREFERRED;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
     private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
     private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
@@ -121,6 +125,21 @@ public class RxBleConnectionMock implements RxBleConnection {
     @Override
     public int getMtu() {
         return currentMtu;
+    }
+
+    @Override
+    public Single<Pair<Integer, Integer>> readPhy() {
+        return Single.fromCallable((Callable<Pair<Integer, Integer>>) () -> new Pair<>(phyTx, phyRx));
+    }
+
+    @Override
+    public Single<Boolean> setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+        return Single.fromCallable(() -> {
+            phyTx = txPhy;
+            phyRx = rxPhy;
+            phyOption = phyOptions;
+            return true;
+        });
     }
 
     public int getRssi() {

@@ -1,9 +1,12 @@
 package com.polidea.rxandroidble2.internal.connection;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.DeadObjectException;
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -126,6 +129,18 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public int getMtu() {
         return mtuProvider.getMtu();
+    }
+
+    @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public Single<Pair<Integer, Integer>> readPhy() {
+        return operationQueue.queue(operationsProvider.providePhyReadOperation()).firstOrError();
+    }
+
+    @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public Single<Boolean> setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+        return operationQueue.queue(operationsProvider.providePhyRequestOperation(txPhy, rxPhy, phyOptions)).firstOrError();
     }
 
     @Override

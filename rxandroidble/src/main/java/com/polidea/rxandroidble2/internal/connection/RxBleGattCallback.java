@@ -4,12 +4,14 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.util.Pair;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.jakewharton.rxrelay2.Relay;
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 import com.polidea.rxandroidble2.ClientComponent;
+import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
@@ -49,6 +51,8 @@ public class RxBleGattCallback {
     final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     final Output<Integer> readRssiOutput = new Output<>();
     final Output<Integer> changedMtuOutput = new Output<>();
+    final Output<Pair<Integer, Integer>> phyReadOutput = new Output<>();
+    final Output<Boolean> phyUpdateOutput = new Output<>();
     final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
@@ -207,6 +211,32 @@ public class RxBleGattCallback {
             }
         }
 
+        @Override
+        public void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            LoggerUtil.logCallback("onPhyRead", gatt, status, txPhy, rxPhy);
+            nativeCallbackDispatcher.notifyNativePhyReadCallback(gatt, txPhy, rxPhy, status);
+            super.onPhyRead(gatt, txPhy, rxPhy, status);
+
+            if (phyReadOutput.hasObservers()
+                    && !propagateErrorIfOccurred(phyReadOutput, gatt, status, BleGattOperationType.PHY_READ)) {
+                final int tx = status == BluetoothGatt.GATT_SUCCESS ? txPhy : RxBleConnection.PHY_UNKNOWN;
+                final int rx = status == BluetoothGatt.GATT_SUCCESS ? rxPhy : RxBleConnection.PHY_UNKNOWN;
+                phyReadOutput.valueRelay.accept(new Pair<>(tx, rx));
+            }
+        }
+
+        @Override
+        public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            LoggerUtil.logCallback("onPhyUpdate", gatt, status, txPhy, rxPhy);
+            nativeCallbackDispatcher.notifyNativePhyUpdateCallback(gatt, txPhy, rxPhy, status);
+            super.onPhyUpdate(gatt, txPhy, rxPhy, status);
+
+            if (phyUpdateOutput.hasObservers()
+                    && !propagateErrorIfOccurred(phyUpdateOutput, gatt, status, BleGattOperationType.PHY_UPDATE)) {
+                phyUpdateOutput.valueRelay.accept(status == BluetoothGatt.GATT_SUCCESS);
+            }
+        }
+
         // This callback first appeared in Android 8.0 (android-8.0.0_r1/core/java/android/bluetooth/BluetoothGattCallback.java)
         // It is hidden since
         @SuppressWarnings("unused")
@@ -313,6 +343,14 @@ public class RxBleGattCallback {
 
     public Observable<Integer> getOnMtuChanged() {
         return withDisconnectionHandling(changedMtuOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
+    }
+
+    public Observable<Pair<Integer, Integer>> getOnPhyRead() {
+        return withDisconnectionHandling(phyReadOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
+    }
+
+    public Observable<Boolean> getOnPhyUpdate() {
+        return withDisconnectionHandling(phyUpdateOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {
