@@ -5,8 +5,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.RxBlePhy;
+import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 public interface OperationsProvider {
@@ -25,7 +28,7 @@ public interface OperationsProvider {
     PhyReadOperation providePhyReadOperation();
 
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    PhyUpdateOperation providePhyRequestOperation(int txPhy, int rxPhy, int phyOptions);
+    PhyUpdateOperation providePhyRequestOperation(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
 
     CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic);
 

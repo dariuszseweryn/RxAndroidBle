@@ -3,7 +3,6 @@ package com.polidea.rxandroidble2;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.util.Pair;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
@@ -23,6 +22,7 @@ import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOper
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.EnumSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -37,41 +37,6 @@ import io.reactivex.Single;
  * executed in the same time within the client instance.
  */
 public interface RxBleConnection {
-
-    /**
-     * Unknown Bluetooth PHY. Used if the PHY couldn't be determined.
-     */
-    int PHY_UNKNOWN = 0;
-
-    /**
-     * Bluetooth LE 1M PHY. Used to refer to the Physical Channel for advertising, scanning or connection.
-     */
-    int PHY_LE_1M = 1;
-
-    /**
-     * Bluetooth LE 2M PHY. Used to refer to the Physical Channel for advertising, scanning or connection.
-     */
-    int PHY_LE_2M = 2;
-
-    /**
-     * Bluetooth LE Coded PHY mask. Used to refer to the Physical Channel for advertising, scanning or connection.
-     */
-    int PHY_LE_CODED = 4;
-
-    /**
-     * No preferred coding when transmitting on the LE Coded PHY.
-     */
-    int PHY_OPTION_NO_PREFERRED = 0;
-
-    /**
-     * Prefer the S=2 coding to be used when transmitting on the LE Coded PHY.
-     */
-    int PHY_OPTION_S2 = 1;
-
-    /**
-     * Prefer the S=8 coding to be used when transmitting on the LE Coded PHY.
-     */
-    int PHY_OPTION_S8 = 2;
 
     /**
      * The overhead value that is subtracted from the amount of bytes available when writing to a characteristic.
@@ -620,7 +585,7 @@ public interface RxBleConnection {
     int getMtu();
 
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    Single<Pair<Integer, Integer>> readPhy();
+    Single<PhyPair> readPhy();
 
     /**
      * Performs set preferred PHY request.
@@ -629,9 +594,7 @@ public interface RxBleConnection {
      * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    Single<Boolean> setPreferredPhy(@IntRange(from = PHY_LE_1M, to = (PHY_LE_1M | PHY_LE_2M | PHY_LE_CODED)) int txPhy,
-                                    @IntRange(from = PHY_LE_1M, to = (PHY_LE_1M | PHY_LE_2M | PHY_LE_CODED)) int rxPhy,
-                                    @IntRange(from = PHY_OPTION_NO_PREFERRED, to = PHY_OPTION_S8) int phyOptions);
+    Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
 
     /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know

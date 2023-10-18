@@ -1,11 +1,11 @@
 package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
-import android.util.Pair;
 
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
@@ -16,7 +16,7 @@ import bleshadow.javax.inject.Named;
 import io.reactivex.Single;
 
 @RequiresApi(26 /* Build.VERSION_CODES.O */)
-public class PhyReadOperation extends SingleResponseOperation<Pair<Integer, Integer>> {
+public class PhyReadOperation extends SingleResponseOperation<PhyPair> {
 
     @Inject
     PhyReadOperation(RxBleGattCallback bleGattCallback, BluetoothGatt bluetoothGatt,
@@ -25,7 +25,7 @@ public class PhyReadOperation extends SingleResponseOperation<Pair<Integer, Inte
     }
 
     @Override
-    protected Single<Pair<Integer, Integer>> getCallback(RxBleGattCallback rxBleGattCallback) {
+    protected Single<PhyPair> getCallback(RxBleGattCallback rxBleGattCallback) {
         return rxBleGattCallback.getOnPhyRead().firstOrError();
     }
 

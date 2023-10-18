@@ -1,19 +1,20 @@
 package com.polidea.rxandroidble2.internal.connection;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.util.Pair;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.jakewharton.rxrelay2.Relay;
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.HiddenBluetoothGattCallback;
 import com.polidea.rxandroidble2.ClientComponent;
-import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.polidea.rxandroidble2.RxBlePhy;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
@@ -51,7 +52,7 @@ public class RxBleGattCallback {
     final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     final Output<Integer> readRssiOutput = new Output<>();
     final Output<Integer> changedMtuOutput = new Output<>();
-    final Output<Pair<Integer, Integer>> phyReadOutput = new Output<>();
+    final Output<PhyPair> phyReadOutput = new Output<>();
     final Output<Boolean> phyUpdateOutput = new Output<>();
     final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
@@ -219,9 +220,15 @@ public class RxBleGattCallback {
 
             if (phyReadOutput.hasObservers()
                     && !propagateErrorIfOccurred(phyReadOutput, gatt, status, BleGattOperationType.PHY_READ)) {
-                final int tx = status == BluetoothGatt.GATT_SUCCESS ? txPhy : RxBleConnection.PHY_UNKNOWN;
-                final int rx = status == BluetoothGatt.GATT_SUCCESS ? rxPhy : RxBleConnection.PHY_UNKNOWN;
-                phyReadOutput.valueRelay.accept(new Pair<>(tx, rx));
+                RxBlePhy tx = RxBlePhy.PHY_UNKNOWN;
+                RxBlePhy rx = RxBlePhy.PHY_UNKNOWN;
+
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    tx = txPhy == BluetoothDevice.PHY_LE_CODED ? RxBlePhy.PHY_CODED : RxBlePhy.fromInt(txPhy);
+                    rx = rxPhy == BluetoothDevice.PHY_LE_CODED ? RxBlePhy.PHY_CODED : RxBlePhy.fromInt(rxPhy);
+                }
+
+                phyReadOutput.valueRelay.accept(new PhyPair(tx, rx));
             }
         }
 
@@ -345,7 +352,7 @@ public class RxBleGattCallback {
         return withDisconnectionHandling(changedMtuOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
-    public Observable<Pair<Integer, Integer>> getOnPhyRead() {
+    public Observable<PhyPair> getOnPhyRead() {
         return withDisconnectionHandling(phyReadOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 

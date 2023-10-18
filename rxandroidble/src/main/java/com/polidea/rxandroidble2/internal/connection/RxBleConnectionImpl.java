@@ -1,11 +1,9 @@
 package com.polidea.rxandroidble2.internal.connection;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.DeadObjectException;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -13,9 +11,12 @@ import androidx.annotation.RequiresApi;
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.polidea.rxandroidble2.RxBlePhy;
+import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.internal.Priority;
@@ -26,6 +27,7 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
+import java.util.EnumSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -133,13 +135,13 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    public Single<Pair<Integer, Integer>> readPhy() {
+    public Single<PhyPair> readPhy() {
         return operationQueue.queue(operationsProvider.providePhyReadOperation()).firstOrError();
     }
 
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    public Single<Boolean> setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    public Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return operationQueue.queue(operationsProvider.providePhyRequestOperation(txPhy, rxPhy, phyOptions)).firstOrError();
     }
 

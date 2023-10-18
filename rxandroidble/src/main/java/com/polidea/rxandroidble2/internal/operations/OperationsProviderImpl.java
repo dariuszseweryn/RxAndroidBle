@@ -7,11 +7,14 @@ import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.RxBlePhy;
+import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 import bleshadow.javax.inject.Inject;
@@ -81,7 +84,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    public PhyUpdateOperation providePhyRequestOperation(int txPhy, int rxPhy, int phyOptions) {
+    public PhyUpdateOperation providePhyRequestOperation(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return new PhyUpdateOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, txPhy, rxPhy, phyOptions);
     }
 

@@ -6,13 +6,15 @@ import androidx.annotation.NonNull;
 
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
-import android.util.Pair;
 
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.polidea.rxandroidble2.RxBlePhy;
+import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.exceptions.BleConflictingNotificationAlreadySetException;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
@@ -29,6 +31,7 @@ import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadC
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +77,6 @@ public class RxBleConnectionMock implements RxBleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
     private int currentMtu = 23;
-    private int phyTx = RxBleConnection.PHY_LE_1M;
-    private int phyRx = RxBleConnection.PHY_LE_1M;
-    private int phyOption = RxBleConnection.PHY_OPTION_NO_PREFERRED;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
     private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
     private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
@@ -128,16 +128,14 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<Pair<Integer, Integer>> readPhy() {
-        return Single.fromCallable((Callable<Pair<Integer, Integer>>) () -> new Pair<>(phyTx, phyRx));
+    public Single<PhyPair> readPhy() {
+        return Single.fromCallable((Callable<PhyPair>) () -> new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M));
     }
 
     @Override
-    public Single<Boolean> setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    public Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return Single.fromCallable(() -> {
-            phyTx = txPhy;
-            phyRx = rxPhy;
-            phyOption = phyOptions;
+            //
             return true;
         });
     }
