@@ -7,15 +7,25 @@ public enum RxBlePhyOption {
     /**
      * No preferred coding.
      */
-    PHY_OPTION_NO_PREFERRED,
+    PHY_OPTION_NO_PREFERRED(0),
 
     /**
      * Prefer the S=2 coding.
      */
-    PHY_OPTION_S2,
+    PHY_OPTION_S2(1),
 
     /**
      * Prefer the S=2 coding.
      */
-    PHY_OPTION_S8
+    PHY_OPTION_S8(2);
+
+    private final int value;
+
+    RxBlePhyOption(final int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
 }

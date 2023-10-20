@@ -45,10 +45,10 @@ public class PhyUpdateOperation extends SingleResponseOperation<Boolean> {
     @Override
     @SuppressLint("MissingPermission")
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
-        Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
-        Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
-        int tx = 0;
-        int rx = 0;
+        final Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
+        final Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
+        int tx = RxBlePhy.PHY_1M.getValue();
+        int rx = RxBlePhy.PHY_1M.getValue();
 
         while (txPhyIterator.hasNext()) {
             tx |= txPhyIterator.next().getValue();
@@ -58,7 +58,7 @@ public class PhyUpdateOperation extends SingleResponseOperation<Boolean> {
             rx |= rxPhyIterator.next().getValue();
         }
 
-        bluetoothGatt.setPreferredPhy(tx, rx, phyOptions.ordinal());
+        bluetoothGatt.setPreferredPhy(tx, rx, phyOptions.getValue());
         return true;
     }
 

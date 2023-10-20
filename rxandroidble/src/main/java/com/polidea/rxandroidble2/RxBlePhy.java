@@ -8,7 +8,7 @@ public enum RxBlePhy {
     /**
      * Unknown Bluetooth PHY. Used if the PHY couldn't be determined.
      *
-     * @implNote If this value is used when calling the setPreferredPhy then it will use the radio's default PHY (1 Mb/s)
+     * @implNote If this value is used when calling the setPreferredPhy then it will default to PHY_1M
      */
     PHY_UNKNOWN(0),
 
