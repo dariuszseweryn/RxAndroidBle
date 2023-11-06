@@ -591,7 +591,7 @@ public interface RxBleConnection {
      * Performs set preferred PHY request.
      *
      * @return Observable emitting whether the GATT operation succeeded or not.
-     * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#ON_MTU_CHANGED} type.
+     * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
