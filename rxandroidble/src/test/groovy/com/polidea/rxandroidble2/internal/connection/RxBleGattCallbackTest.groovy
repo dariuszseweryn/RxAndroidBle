@@ -1,5 +1,8 @@
 package com.polidea.rxandroidble2.internal.connection
 
+import com.polidea.rxandroidble2.PhyPair
+import com.polidea.rxandroidble2.RxBlePhy
+
 import static com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState.CONNECTED
 
 import android.bluetooth.*
@@ -104,6 +107,8 @@ class RxBleGattCallbackTest extends Specification {
                 { return (it as RxBleGattCallback).getOnDescriptorRead() },
                 { return (it as RxBleGattCallback).getOnDescriptorWrite() },
                 { return (it as RxBleGattCallback).getOnRssiRead() },
+                { return (it as RxBleGattCallback).getOnPhyRead() },
+                { return (it as RxBleGattCallback).getOnPhyUpdate() },
                 { return (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
         callbackCaller << [
@@ -115,6 +120,8 @@ class RxBleGattCallbackTest extends Specification {
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_SUCCESS) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_SUCCESS) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_SUCCESS) },
+                { (it as BluetoothGattCallback).onPhyRead(mockBluetoothGatt, 1, 1, GATT_SUCCESS) },
+                { (it as BluetoothGattCallback).onPhyUpdate(mockBluetoothGatt, 1, 1, GATT_SUCCESS) },
                 { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_SUCCESS) }
         ]
     }
@@ -182,6 +189,8 @@ class RxBleGattCallbackTest extends Specification {
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onPhyRead(mockBluetoothGatt, 1, 1, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onPhyUpdate(mockBluetoothGatt, 1, 1, GATT_FAILURE) },
                 { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_FAILURE) }
         ]
     }
@@ -228,6 +237,8 @@ class RxBleGattCallbackTest extends Specification {
                 { return (it as RxBleGattCallback).getOnDescriptorRead() },
                 { return (it as RxBleGattCallback).getOnDescriptorWrite() },
                 { return (it as RxBleGattCallback).getOnRssiRead() },
+                { return (it as RxBleGattCallback).getOnPhyRead() },
+                { return (it as RxBleGattCallback).getOnPhyUpdate() },
                 { return (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
     }
@@ -252,6 +263,8 @@ class RxBleGattCallbackTest extends Specification {
                 { (it as RxBleGattCallback).getOnDescriptorRead() },
                 { (it as RxBleGattCallback).getOnDescriptorWrite() },
                 { (it as RxBleGattCallback).getOnRssiRead() },
+                { (it as RxBleGattCallback).getOnPhyRead() },
+                { (it as RxBleGattCallback).getOnPhyUpdate() },
                 { (it as RxBleGattCallback).getConnectionParametersUpdates() }
         ]
         callbackCaller << [
@@ -261,6 +274,8 @@ class RxBleGattCallbackTest extends Specification {
                 { (it as BluetoothGattCallback).onDescriptorRead(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onDescriptorWrite(mockBluetoothGatt, mockBluetoothGattDescriptor, GATT_FAILURE) },
                 { (it as BluetoothGattCallback).onReadRemoteRssi(mockBluetoothGatt, 1, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onPhyRead(mockBluetoothGatt, 1, 1, GATT_FAILURE) },
+                { (it as BluetoothGattCallback).onPhyUpdate(mockBluetoothGatt, 1, 1, GATT_FAILURE) },
                 { (it as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, GATT_FAILURE) }
         ]
         errorAssertion << [
@@ -287,6 +302,16 @@ class RxBleGattCallbackTest extends Specification {
                 {
                     (it as TestObserver).assertError {
                         it instanceof BleGattDescriptorException && it.descriptor == mockBluetoothGattDescriptor && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress
+                    }
+                },
+                {
+                    (it as TestObserver).assertError {
+                        it instanceof BleGattException && it.getMacAddress() == mockBluetoothDeviceMacAddress
                     }
                 },
                 {
@@ -328,6 +353,8 @@ class RxBleGattCallbackTest extends Specification {
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorRead() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnDescriptorWrite() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnRssiRead() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnPhyRead() },
+                { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnPhyUpdate() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getOnServicesDiscovered() },
                 { RxBleGattCallback objectUnderTest -> objectUnderTest.getConnectionParametersUpdates() }
         ]
@@ -337,6 +364,8 @@ class RxBleGattCallbackTest extends Specification {
                 { BluetoothGattCallback callback, int status -> callback.onDescriptorRead(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
                 { BluetoothGattCallback callback, int status -> callback.onDescriptorWrite(mockBluetoothGatt, Mock(BluetoothGattDescriptor), status) },
                 { BluetoothGattCallback callback, int status -> callback.onReadRemoteRssi(mockBluetoothGatt, 0, status) },
+                { BluetoothGattCallback callback, int status -> callback.onPhyRead(mockBluetoothGatt, 0, 0, status) },
+                { BluetoothGattCallback callback, int status -> callback.onPhyUpdate(mockBluetoothGatt, 0, 0, status) },
                 { BluetoothGattCallback callback, int status -> callback.onServicesDiscovered(mockBluetoothGatt, status) },
                 { BluetoothGattCallback callback, int status -> (callback as HiddenBluetoothGattCallback).onConnectionUpdated(mockBluetoothGatt, 1, 1, 1, status) }
         ]
@@ -420,6 +449,18 @@ class RxBleGattCallbackTest extends Specification {
                     { RxBleGattCallback out -> out.getOnRssiRead() },
                     { BluetoothGattCallback bgc -> bgc.onReadRemoteRssi(mockBluetoothGatt, 13373, GATT_SUCCESS) },
                     { it instanceof Integer && it == 13373 }
+            ),
+            new CallbackTestCase(
+                    "PhyRead",
+                    { RxBleGattCallback out -> out.getOnPhyRead() },
+                    { BluetoothGattCallback bgc -> bgc.onPhyRead(mockBluetoothGatt, 1, 1, GATT_SUCCESS) },
+                    { it instanceof PhyPair && (it as PhyPair).txPhy == RxBlePhy.PHY_1M && it.rxPhy == RxBlePhy.PHY_1M }
+            ),
+            new CallbackTestCase(
+                    "PhyUpdate",
+                    { RxBleGattCallback out -> out.getOnPhyUpdate() },
+                    { BluetoothGattCallback bgc -> bgc.onPhyUpdate(mockBluetoothGatt, 1, 1, GATT_SUCCESS) },
+                    { it instanceof PhyPair && (it as PhyPair).txPhy == RxBlePhy.PHY_1M && it.rxPhy == RxBlePhy.PHY_1M }
             ),
             new CallbackTestCase(
                     "ServiceDiscovery",

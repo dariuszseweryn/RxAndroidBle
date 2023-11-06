@@ -584,17 +584,28 @@ public interface RxBleConnection {
      */
     int getMtu();
 
+    /**
+     * Performs GATT read PHY operation.
+     *
+     * @return Observable emitting the read Tx and Rx values.
+     */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     Single<PhyPair> readPhy();
 
     /**
      * Performs set preferred PHY request.
      *
+     * @param txPhy Sets the preferred transmitter (Tx) PHY.
+     * @param rxPhy Sets the preferred receiver (Rx) PHY.
+     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY.
      * @return Observable emitting whether the GATT operation succeeded or not.
      * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
+     * @implNote RxBlePhy.PHY_UNKNOWN is used for the onPhyRead and onPhyUpdate callbacks in cases where the GATT operation
+     *           was not successful. Using RxBlePhy.PHY_UNKNOWN as the sole value in either of the txPhy or rxPhy parameters
+     *           will result in the default value being used (RxBlePhy.PHY_1M).
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
+    Single<PhyPair> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
 
     /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know

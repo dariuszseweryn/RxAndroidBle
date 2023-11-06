@@ -33,6 +33,7 @@ import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWrite
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,6 +78,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
     private int currentMtu = 23;
+    private PhyPair phy = new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M);
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
     private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
     private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
@@ -129,14 +131,35 @@ public class RxBleConnectionMock implements RxBleConnection {
 
     @Override
     public Single<PhyPair> readPhy() {
-        return Single.fromCallable((Callable<PhyPair>) () -> new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M));
+        return Single.fromCallable(() -> phy);
     }
 
     @Override
-    public Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+    public Single<PhyPair> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return Single.fromCallable(() -> {
-            //
-            return true;
+            final Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
+            final Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
+            int tx = RxBlePhy.PHY_1M.getValue();
+            int rx = RxBlePhy.PHY_1M.getValue();
+
+            while (txPhyIterator.hasNext()) {
+                final int value = txPhyIterator.next().getValue();
+                if (value != RxBlePhy.PHY_UNKNOWN.getValue()) {
+                    tx = value;
+                    break;
+                }
+            }
+
+            while (rxPhyIterator.hasNext()) {
+                final int value = rxPhyIterator.next().getValue();
+                if (value != RxBlePhy.PHY_UNKNOWN.getValue()) {
+                    rx = value;
+                    break;
+                }
+            }
+
+            phy = new PhyPair(RxBlePhy.fromInt(tx), RxBlePhy.fromInt(rx));
+            return phy;
         });
     }
 

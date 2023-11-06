@@ -2,6 +2,8 @@ package com.polidea.rxandroidble2;
 
 import androidx.annotation.NonNull;
 
+import com.polidea.rxandroidble2.internal.RxBleLog;
+
 import java.util.EnumSet;
 
 public enum RxBlePhy {
@@ -45,6 +47,7 @@ public enum RxBlePhy {
                 return entry;
             }
         }
+        RxBleLog.w("%d is not a valid PHY value.", i);
         return RxBlePhy.PHY_UNKNOWN;
     }
 }

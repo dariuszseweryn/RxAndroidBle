@@ -1,7 +1,9 @@
 package com.polidea.rxandroidble2.mockrxandroidble
 
-
+import com.polidea.rxandroidble2.PhyPair
+import com.polidea.rxandroidble2.RxBlePhy
 import com.polidea.rxandroidble2.RxBleClient
+import com.polidea.rxandroidble2.RxBlePhyOption
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
@@ -111,6 +113,34 @@ public class RxBleConnectionMockTest extends Specification {
 
         then:
         testSubscriber.assertValue(72)
+    }
+
+    def "should return the BluetoothDevice PHY"() {
+        when:
+        def testSubscriber = rxBleConnectionMock
+                .setPreferredPhy(
+                        EnumSet.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
+                        EnumSet.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
+                        RxBlePhyOption.PHY_OPTION_NO_PREFERRED
+                )
+                .test()
+
+        then:
+        testSubscriber.assertValue(new PhyPair(RxBlePhy.PHY_2M, RxBlePhy.PHY_2M))
+    }
+
+    def "should return the first non-unknown BluetoothDevice PHY"() {
+        when:
+        def testSubscriber = rxBleConnectionMock
+                .setPreferredPhy(
+                        EnumSet.of(RxBlePhy.PHY_UNKNOWN, RxBlePhy.PHY_1M),
+                        EnumSet.of(RxBlePhy.PHY_UNKNOWN, RxBlePhy.PHY_1M),
+                        RxBlePhyOption.PHY_OPTION_NO_PREFERRED
+                )
+                .test()
+
+        then:
+        testSubscriber.assertValue(new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M))
     }
 
     def "should return services list"() {

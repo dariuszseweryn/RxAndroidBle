@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGatt;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBlePhy;
 import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
@@ -19,7 +20,7 @@ import bleshadow.javax.inject.Inject;
 import io.reactivex.Single;
 
 @RequiresApi(26 /* Build.VERSION_CODES.O */)
-public class PhyUpdateOperation extends SingleResponseOperation<Boolean> {
+public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
 
     EnumSet<RxBlePhy> txPhy;
     EnumSet<RxBlePhy> rxPhy;
@@ -38,7 +39,7 @@ public class PhyUpdateOperation extends SingleResponseOperation<Boolean> {
     }
 
     @Override
-    protected Single<Boolean> getCallback(RxBleGattCallback rxBleGattCallback) {
+    protected Single<PhyPair> getCallback(RxBleGattCallback rxBleGattCallback) {
         return rxBleGattCallback.getOnPhyUpdate().firstOrError();
     }
 
@@ -47,6 +48,9 @@ public class PhyUpdateOperation extends SingleResponseOperation<Boolean> {
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         final Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
         final Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
+
+        // Set the default value to PHY 1Mbps, which is the default value for Bluetooth 4.2+. This will handle cases
+        // where RxBlePhy.PHY_UNKNOWN is passed as the desired value.
         int tx = RxBlePhy.PHY_1M.getValue();
         int rx = RxBlePhy.PHY_1M.getValue();
 

@@ -141,7 +141,7 @@ public class RxBleConnectionImpl implements RxBleConnection {
 
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    public Single<Boolean> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+    public Single<PhyPair> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return operationQueue.queue(operationsProvider.providePhyRequestOperation(txPhy, rxPhy, phyOptions)).firstOrError();
     }
 

@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble2.internal.connection;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -14,7 +13,6 @@ import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBleConnection.RxBleConnectionState;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.RxBlePhy;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
@@ -53,7 +51,7 @@ public class RxBleGattCallback {
     final Output<Integer> readRssiOutput = new Output<>();
     final Output<Integer> changedMtuOutput = new Output<>();
     final Output<PhyPair> phyReadOutput = new Output<>();
-    final Output<Boolean> phyUpdateOutput = new Output<>();
+    final Output<PhyPair> phyUpdateOutput = new Output<>();
     final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
@@ -220,15 +218,7 @@ public class RxBleGattCallback {
 
             if (phyReadOutput.hasObservers()
                     && !propagateErrorIfOccurred(phyReadOutput, gatt, status, BleGattOperationType.PHY_READ)) {
-                RxBlePhy tx = RxBlePhy.PHY_UNKNOWN;
-                RxBlePhy rx = RxBlePhy.PHY_UNKNOWN;
-
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    tx = txPhy == BluetoothDevice.PHY_LE_CODED ? RxBlePhy.PHY_CODED : RxBlePhy.fromInt(txPhy);
-                    rx = rxPhy == BluetoothDevice.PHY_LE_CODED ? RxBlePhy.PHY_CODED : RxBlePhy.fromInt(rxPhy);
-                }
-
-                phyReadOutput.valueRelay.accept(new PhyPair(tx, rx));
+                phyReadOutput.valueRelay.accept(PhyPair.fromGattCallback(txPhy, rxPhy, status));
             }
         }
 
@@ -240,7 +230,7 @@ public class RxBleGattCallback {
 
             if (phyUpdateOutput.hasObservers()
                     && !propagateErrorIfOccurred(phyUpdateOutput, gatt, status, BleGattOperationType.PHY_UPDATE)) {
-                phyUpdateOutput.valueRelay.accept(status == BluetoothGatt.GATT_SUCCESS);
+                phyUpdateOutput.valueRelay.accept(PhyPair.fromGattCallback(txPhy, rxPhy, status));
             }
         }
 
@@ -356,7 +346,7 @@ public class RxBleGattCallback {
         return withDisconnectionHandling(phyReadOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
-    public Observable<Boolean> getOnPhyUpdate() {
+    public Observable<PhyPair> getOnPhyUpdate() {
         return withDisconnectionHandling(phyUpdateOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
