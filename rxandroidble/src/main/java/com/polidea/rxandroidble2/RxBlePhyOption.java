@@ -15,7 +15,7 @@ public enum RxBlePhyOption {
     PHY_OPTION_S2(1),
 
     /**
-     * Prefer the S=2 coding.
+     * Prefer the S=8 coding.
      */
     PHY_OPTION_S8(2);
 
