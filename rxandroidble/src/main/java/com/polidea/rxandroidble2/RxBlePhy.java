@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 
 public enum RxBlePhy {
     /**
@@ -30,7 +31,6 @@ public enum RxBlePhy {
     PHY_CODED(1 << 2);
 
     private final int value;
-    public static final EnumSet<RxBlePhy> PHY_ALL = EnumSet.allOf(RxBlePhy.class);
 
     RxBlePhy(final int value) {
         this.value = value;
@@ -49,5 +49,26 @@ public enum RxBlePhy {
         }
         RxBleLog.w("%d is not a valid PHY value.", i);
         return RxBlePhy.PHY_UNKNOWN;
+    }
+
+    public static int enumSetToInt(EnumSet<RxBlePhy> set) {
+        final Iterator<RxBlePhy> iterator = set.iterator();
+
+        if (set.size() == 1) {
+            final int requestedValue = iterator.next().getValue();
+            final boolean isUnknown = requestedValue == RxBlePhy.PHY_UNKNOWN.getValue();
+            return isUnknown ? RxBlePhy.PHY_1M.getValue() : requestedValue;
+        }
+
+        // Set the default value to PHY 1Mbps, which is the default value for Bluetooth 4.2+. This will handle cases
+        // where RxBlePhy.PHY_UNKNOWN is passed as the desired value.
+        int result = RxBlePhy.PHY_1M.getValue();
+
+        while (iterator.hasNext()) {
+            final int requestedValue = iterator.next().getValue();
+            result |= requestedValue;
+        }
+
+        return result;
     }
 }

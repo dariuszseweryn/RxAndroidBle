@@ -14,7 +14,6 @@ import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 
 import bleshadow.javax.inject.Inject;
 import io.reactivex.Single;
@@ -46,23 +45,11 @@ public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
     @Override
     @SuppressLint("MissingPermission")
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
-        final Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
-        final Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
-
-        // Set the default value to PHY 1Mbps, which is the default value for Bluetooth 4.2+. This will handle cases
-        // where RxBlePhy.PHY_UNKNOWN is passed as the desired value.
-        int tx = RxBlePhy.PHY_1M.getValue();
-        int rx = RxBlePhy.PHY_1M.getValue();
-
-        while (txPhyIterator.hasNext()) {
-            tx |= txPhyIterator.next().getValue();
-        }
-
-        while (rxPhyIterator.hasNext()) {
-            rx |= rxPhyIterator.next().getValue();
-        }
-
-        bluetoothGatt.setPreferredPhy(tx, rx, phyOptions.getValue());
+        bluetoothGatt.setPreferredPhy(
+                RxBlePhy.enumSetToInt(txPhy),
+                RxBlePhy.enumSetToInt(txPhy),
+                phyOptions.getValue()
+        );
         return true;
     }
 
