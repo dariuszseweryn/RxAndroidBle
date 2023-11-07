@@ -54,15 +54,17 @@ public enum RxBlePhy {
     public static int enumSetToInt(EnumSet<RxBlePhy> set) {
         final Iterator<RxBlePhy> iterator = set.iterator();
 
+        if (set.size() == 0) {
+            return RxBlePhy.PHY_1M.getValue();
+        }
+
         if (set.size() == 1) {
             final int requestedValue = iterator.next().getValue();
             final boolean isUnknown = requestedValue == RxBlePhy.PHY_UNKNOWN.getValue();
             return isUnknown ? RxBlePhy.PHY_1M.getValue() : requestedValue;
         }
 
-        // Set the default value to PHY 1Mbps, which is the default value for Bluetooth 4.2+. This will handle cases
-        // where RxBlePhy.PHY_UNKNOWN is passed as the desired value.
-        int result = RxBlePhy.PHY_1M.getValue();
+        int result = 0;
 
         while (iterator.hasNext()) {
             final int requestedValue = iterator.next().getValue();
