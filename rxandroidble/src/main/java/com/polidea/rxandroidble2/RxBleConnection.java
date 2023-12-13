@@ -598,7 +598,7 @@ public interface RxBleConnection {
      * @param txPhy Sets the preferred transmitter (Tx) PHY.
      * @param rxPhy Sets the preferred receiver (Rx) PHY.
      * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY.
-     * @return Observable emitting whether the GATT operation succeeded or not.
+     * @return Observable emitting negotiated PHY values pair.
      * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
      * @implNote RxBlePhy.PHY_UNKNOWN is used for the onPhyRead and onPhyUpdate callbacks in cases where the GATT operation
      *           was not successful. Using RxBlePhy.PHY_UNKNOWN as the sole value in either of the txPhy or rxPhy parameters
