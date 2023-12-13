@@ -46,8 +46,8 @@ public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
     @SuppressLint("MissingPermission")
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         bluetoothGatt.setPreferredPhy(
-                RxBlePhy.enumSetToInt(txPhy),
-                RxBlePhy.enumSetToInt(txPhy),
+                RxBlePhy.enumSetToValuesMask(txPhy),
+                RxBlePhy.enumSetToValuesMask(txPhy),
                 phyOptions.getValue()
         );
         return true;

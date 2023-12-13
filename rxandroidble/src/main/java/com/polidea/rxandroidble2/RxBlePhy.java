@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.polidea.rxandroidble2.internal.RxBleLog;
 
@@ -40,23 +41,38 @@ public enum RxBlePhy {
         return value;
     }
 
+    /**
+     * Function used to get the PHY enum value from an integer.
+     *
+     * @param value The integer value to try to get he PHY enum value for.
+     *
+     * @return The PHY enum value if a valid one was found; otherwise, RxBlePhy.PHY_UNKNOWN is returned.
+     */
     @NonNull
-    public static RxBlePhy fromInt(final int i) {
+    public static RxBlePhy fromInt(final int value) {
         for (final RxBlePhy entry : RxBlePhy.values()) {
-            if (entry.getValue() == i) {
+            if (entry.getValue() == value) {
                 return entry;
             }
         }
-        RxBleLog.w("%d is not a valid PHY value.", i);
+        RxBleLog.w("%d is not a valid PHY value.", value);
         return RxBlePhy.PHY_UNKNOWN;
     }
 
-    public static int enumSetToInt(EnumSet<RxBlePhy> set) {
-        final Iterator<RxBlePhy> iterator = set.iterator();
-
-        if (set.size() == 0) {
+    /**
+     * Function used to convert the specified enum set to the equivalent values mask.
+     *
+     * @param set The enum set to compute the values mask for.
+     *
+     * @return If the set is NULL, empty, or only contains the unknown value (RxBlePhy.PHY_UNKNOWN), then the default
+     *         value mask, RxBlePhy.PHY_1M, is returned. Otherwise, the resulting values mask is returned.
+     */
+    public static int enumSetToValuesMask(@Nullable final EnumSet<RxBlePhy> set) {
+        if (set == null || set.size() == 0) {
             return RxBlePhy.PHY_1M.getValue();
         }
+
+        final Iterator<RxBlePhy> iterator = set.iterator();
 
         if (set.size() == 1) {
             final int requestedValue = iterator.next().getValue();
