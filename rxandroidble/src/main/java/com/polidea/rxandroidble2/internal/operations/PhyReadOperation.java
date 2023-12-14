@@ -2,6 +2,7 @@ package com.polidea.rxandroidble2.internal.operations;
 
 import android.bluetooth.BluetoothGatt;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
@@ -36,6 +37,7 @@ public class PhyReadOperation extends SingleResponseOperation<PhyPair> {
         return true;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "PhyReadOperation{" + super.toString() + '}';

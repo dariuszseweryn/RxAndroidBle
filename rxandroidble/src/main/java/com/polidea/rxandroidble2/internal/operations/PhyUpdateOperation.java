@@ -47,7 +47,7 @@ public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         bluetoothGatt.setPreferredPhy(
                 RxBlePhy.enumSetToValuesMask(txPhy),
-                RxBlePhy.enumSetToValuesMask(txPhy),
+                RxBlePhy.enumSetToValuesMask(rxPhy),
                 phyOptions.getValue()
         );
         return true;
