@@ -1,28 +1,42 @@
 package com.polidea.rxandroidble2.internal.connection;
 
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
+import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE;
+
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.DeadObjectException;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
+import com.polidea.rxandroidble2.PhyPair;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleCustomOperation;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.polidea.rxandroidble2.RxBlePhy;
+import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.QueueOperation;
+import com.polidea.rxandroidble2.internal.RxBlePhyImpl;
+import com.polidea.rxandroidble2.internal.RxBlePhyOptionImpl;
 import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
 import com.polidea.rxandroidble2.internal.serialization.ConnectionOperationQueue;
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -39,13 +53,6 @@ import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
-
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE;
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ;
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE;
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE;
 
 @ConnectionScope
 public class RxBleConnectionImpl implements RxBleConnection {
@@ -126,6 +133,21 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     public int getMtu() {
         return mtuProvider.getMtu();
+    }
+
+    @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public Single<PhyPair> readPhy() {
+        return operationQueue.queue(operationsProvider.providePhyReadOperation()).firstOrError();
+    }
+
+    @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+        Set<RxBlePhyImpl> txPhyImpls = RxBlePhyImpl.fromInterface(txPhy);
+        Set<RxBlePhyImpl> rxPhyImpls = RxBlePhyImpl.fromInterface(rxPhy);
+        RxBlePhyOptionImpl phyOptionImpl = RxBlePhyOptionImpl.fromInterface(phyOptions);
+        return operationQueue.queue(operationsProvider.providePhyRequestOperation(txPhyImpls, rxPhyImpls, phyOptionImpl)).firstOrError();
     }
 
     @Override

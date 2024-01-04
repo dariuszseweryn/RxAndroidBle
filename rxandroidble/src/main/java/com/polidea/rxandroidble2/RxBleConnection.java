@@ -3,6 +3,7 @@ package com.polidea.rxandroidble2;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
@@ -21,6 +22,7 @@ import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOper
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -581,6 +583,31 @@ public interface RxBleConnection {
      * @return currently negotiated MTU value.
      */
     int getMtu();
+
+    /**
+     * Performs GATT read PHY operation.
+     *
+     * @return Observable emitting the read Tx and Rx values.
+     */
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    Single<PhyPair> readPhy();
+
+    /**
+     * Performs set preferred PHY request.
+     *
+     * @param txPhy Sets the preferred transmitter (Tx) PHY. Use static values defined by the library, e.g. {@link RxBlePhy#PHY_1M}.
+     * @param rxPhy Sets the preferred receiver (Rx) PHY. Use static values defined by the library, e.g. {@link RxBlePhy#PHY_1M}.
+     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY. Use static values defined by the library,
+     *                   e.g. {@link RxBlePhyOption}.
+     * @return Observable emitting negotiated PHY values pair.
+     * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
+     * @implNote In case the library is outdated and does not implement expected pre-defined static objects to use, one can implement their
+     *           own objects and pass as parameters which should unblock the use-case. In this case please consider making a PR to the
+     *           library. Please keep in mind that passing custom implementations of RxBlePhy or RxBlePhyOption is permitted for unblocking,
+     *           it is also considered an undefined behaviour and may break with subsequent releases.
+     */
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
 
     /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know
