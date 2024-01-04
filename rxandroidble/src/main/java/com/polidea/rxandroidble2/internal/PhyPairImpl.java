@@ -42,4 +42,13 @@ public class PhyPairImpl implements PhyPair {
         PhyPair phyPair = (PhyPair) obj;
         return txPhy.equals(phyPair.getTxPhy()) && rxPhy.equals(phyPair.getRxPhy());
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "PhyPair{"
+                + "txPhy=" + txPhy
+                + ", rxPhy=" + rxPhy
+                + '}';
+    }
 }

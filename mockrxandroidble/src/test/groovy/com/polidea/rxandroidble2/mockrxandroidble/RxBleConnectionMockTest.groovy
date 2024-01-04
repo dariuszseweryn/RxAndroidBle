@@ -120,8 +120,8 @@ public class RxBleConnectionMockTest extends Specification {
         when:
         def testSubscriber = rxBleConnectionMock
                 .setPreferredPhy(
-                        Set.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
-                        Set.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
+                        new LinkedHashSet<RxBlePhy>(List.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M)),
+                        new LinkedHashSet<RxBlePhy>(List.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M)),
                         RxBlePhyOption.PHY_OPTION_NO_PREFERRED
                 )
                 .test()
