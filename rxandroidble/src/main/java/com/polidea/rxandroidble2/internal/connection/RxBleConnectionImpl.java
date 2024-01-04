@@ -28,7 +28,6 @@ import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleException;
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.QueueOperation;
-import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.RxBlePhyImpl;
 import com.polidea.rxandroidble2.internal.RxBlePhyOptionImpl;
 import com.polidea.rxandroidble2.internal.operations.OperationsProvider;
@@ -37,7 +36,6 @@ import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface;
 import com.polidea.rxandroidble2.internal.util.ByteAssociation;
 import com.polidea.rxandroidble2.internal.util.QueueReleasingEmitterWrapper;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
