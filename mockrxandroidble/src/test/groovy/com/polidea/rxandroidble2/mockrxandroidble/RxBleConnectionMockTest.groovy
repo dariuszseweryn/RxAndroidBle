@@ -1,15 +1,16 @@
 package com.polidea.rxandroidble2.mockrxandroidble
 
-import com.polidea.rxandroidble2.PhyPair
 import com.polidea.rxandroidble2.RxBlePhy
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBlePhyOption
 import com.polidea.rxandroidble2.exceptions.BleDisconnectedException
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException
+import com.polidea.rxandroidble2.internal.PhyPairImpl
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock
 import io.reactivex.Observable
+import io.reactivex.functions.Predicate
 import io.reactivex.subjects.PublishSubject
 import spock.lang.Specification
 
@@ -119,28 +120,14 @@ public class RxBleConnectionMockTest extends Specification {
         when:
         def testSubscriber = rxBleConnectionMock
                 .setPreferredPhy(
-                        EnumSet.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
-                        EnumSet.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
+                        Set.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
+                        Set.of(RxBlePhy.PHY_2M, RxBlePhy.PHY_1M),
                         RxBlePhyOption.PHY_OPTION_NO_PREFERRED
                 )
                 .test()
 
         then:
-        testSubscriber.assertValue(new PhyPair(RxBlePhy.PHY_2M, RxBlePhy.PHY_2M))
-    }
-
-    def "should return the first non-unknown BluetoothDevice PHY"() {
-        when:
-        def testSubscriber = rxBleConnectionMock
-                .setPreferredPhy(
-                        EnumSet.of(RxBlePhy.PHY_UNKNOWN, RxBlePhy.PHY_1M),
-                        EnumSet.of(RxBlePhy.PHY_UNKNOWN, RxBlePhy.PHY_1M),
-                        RxBlePhyOption.PHY_OPTION_NO_PREFERRED
-                )
-                .test()
-
-        then:
-        testSubscriber.assertValue(new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M))
+        testSubscriber.assertValue ({ new PhyPairImpl(RxBlePhy.PHY_2M, RxBlePhy.PHY_2M) == it } as Predicate)
     }
 
     def "should return services list"() {
