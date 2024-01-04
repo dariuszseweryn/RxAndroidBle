@@ -160,19 +160,16 @@ public final class RxBlePhyImpl implements RxBlePhy {
     public static Set<RxBlePhyImpl> fromInterface(Set<RxBlePhy> phys) {
         Set<RxBlePhyImpl> result = new HashSet<>();
         for (RxBlePhy phy : phys) {
-            if (!BUILTIN_VALUES.contains(phy)) {
+            int value = phy.getValue();
+            int mask = phy.getMask();
+            if (phy.getClass() == RxBlePhyImpl.class && BUILTIN_VALUES.contains(phy)) {
                 result.add((RxBlePhyImpl) phy);
             } else {
-                int value = phy.getValue();
-                int mask = phy.getMask();
                 RxBleLog.w("Using a custom RxBlePhy with value=%d, mask=%d. Please consider making a PR to the library.", value, mask);
-                result.add(RxBlePhyImpl.custom(mask, value));
+                result.add(new RxBlePhyImpl(mask, value));
             }
         }
         return result;
     }
 
-    public static RxBlePhyImpl custom(final int mask, final int value) {
-        return new RxBlePhyImpl(mask, value);
-    }
 }

@@ -67,7 +67,7 @@ public final class RxBlePhyOptionImpl implements RxBlePhyOption {
 
     public static RxBlePhyOptionImpl fromInterface(RxBlePhyOption phyOption) {
         int phyOptionsValue = phyOption.getValue();
-        if (!BUILTIN_VALUES.contains(phyOption)) {
+        if (phyOption.getClass() != RxBlePhyOptionImpl.class || !BUILTIN_VALUES.contains(phyOption)) {
             RxBleLog.w("Using a custom RxBlePhyOption with value=%d. Please consider making a PR to the library.", phyOptionsValue);
         }
         return phyOption.getClass() == RxBlePhyOptionImpl.class
