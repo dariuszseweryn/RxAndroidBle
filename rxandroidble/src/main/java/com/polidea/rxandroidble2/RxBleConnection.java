@@ -22,7 +22,7 @@ import com.polidea.rxandroidble2.internal.operations.CharacteristicLongWriteOper
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -595,17 +595,18 @@ public interface RxBleConnection {
     /**
      * Performs set preferred PHY request.
      *
-     * @param txPhy Sets the preferred transmitter (Tx) PHY.
-     * @param rxPhy Sets the preferred receiver (Rx) PHY.
-     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY.
+     * @param txPhy Sets the preferred transmitter (Tx) PHY. Use static values from RxBlePhy.
+     * @param rxPhy Sets the preferred receiver (Rx) PHY. Use static values from RxBlePhy.
+     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY. Use one of static values from
+     *                   RxBlePhyOption.
      * @return Observable emitting negotiated PHY values pair.
      * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
-     * @implNote RxBlePhy.PHY_UNKNOWN is used for the onPhyRead and onPhyUpdate callbacks in cases where the GATT operation
-     *           was not successful. Using RxBlePhy.PHY_UNKNOWN as the sole value in either of the txPhy or rxPhy parameters
-     *           will result in the default value being used (RxBlePhy.PHY_1M).
+     * @implNote In case the library is outdated and does not implement expected pre-defined static objects to use, one can implement their
+     *           own objects and pass as parameters which should unblock the use-case. In this case please consider making a PR to the
+     *           library.
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    Single<PhyPair> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
+    Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
 
     /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know

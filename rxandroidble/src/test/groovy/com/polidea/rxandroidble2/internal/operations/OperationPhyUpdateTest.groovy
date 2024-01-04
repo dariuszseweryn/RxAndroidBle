@@ -7,6 +7,7 @@ import com.polidea.rxandroidble2.RxBlePhy
 import com.polidea.rxandroidble2.RxBlePhyOption
 import com.polidea.rxandroidble2.exceptions.BleGattCallbackTimeoutException
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType
+import com.polidea.rxandroidble2.internal.RxBlePhyImpl
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback
 import com.polidea.rxandroidble2.internal.serialization.QueueReleaseInterface
 import com.polidea.rxandroidble2.internal.util.MockOperationTimeoutConfiguration
@@ -22,16 +23,19 @@ public class OperationPhyUpdateTest extends Specification {
     static TimeUnit timeoutTimeUnit = TimeUnit.SECONDS
     QueueReleaseInterface mockQueueReleaseInterface = Mock QueueReleaseInterface
     BluetoothGatt mockBluetoothGatt = Mock BluetoothGatt
+    BluetoothDevice mockBluetoothDevice = Mock BluetoothDevice
     RxBleGattCallback mockGattCallback = Mock RxBleGattCallback
     TestScheduler testScheduler = new TestScheduler()
     PublishSubject<PhyPair> updatedPhyPublishSubject = PublishSubject.create()
     PhyUpdateOperation objectUnderTest
-    EnumSet<RxBlePhy> rxSet = EnumSet.of(RxBlePhy.PHY_1M)
-    EnumSet<RxBlePhy> txSet = EnumSet.of(RxBlePhy.PHY_1M, RxBlePhy.PHY_2M)
+    Set<RxBlePhy> rxSet = Set.of(RxBlePhy.PHY_1M)
+    Set<RxBlePhy> txSet = Set.of(RxBlePhy.PHY_1M, RxBlePhy.PHY_2M)
     RxBlePhyOption phyOption = RxBlePhyOption.PHY_OPTION_S8
 
     def setup() {
         mockGattCallback.getOnPhyUpdate() >> updatedPhyPublishSubject
+        mockBluetoothGatt.getDevice() >> mockBluetoothDevice
+        mockBluetoothDevice.getAddress() >> "AA:BB:CC:DD:EE:FF"
         prepareObjectUnderTest()
     }
 
@@ -42,8 +46,8 @@ public class OperationPhyUpdateTest extends Specification {
 
         then:
         1 * mockBluetoothGatt.setPreferredPhy(
-                RxBlePhy.enumSetToValuesMask(txSet),
-                RxBlePhy.enumSetToValuesMask(rxSet),
+                RxBlePhyImpl.enumSetToValuesMask(txSet),
+                RxBlePhyImpl.enumSetToValuesMask(rxSet),
                 phyOption.value
         )
     }

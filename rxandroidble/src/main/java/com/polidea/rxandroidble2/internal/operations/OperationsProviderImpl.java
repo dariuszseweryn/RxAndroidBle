@@ -3,24 +3,24 @@ package com.polidea.rxandroidble2.internal.operations;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.ClientComponent;
 import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBlePhy;
-import com.polidea.rxandroidble2.RxBlePhyOption;
+import com.polidea.rxandroidble2.internal.RxBlePhyImpl;
+import com.polidea.rxandroidble2.internal.RxBlePhyOptionImpl;
 import com.polidea.rxandroidble2.internal.connection.ConnectionModule;
 import com.polidea.rxandroidble2.internal.connection.PayloadSizeLimitProvider;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtilBluetoothServices;
 
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import bleshadow.javax.inject.Inject;
 import bleshadow.javax.inject.Named;
 import bleshadow.javax.inject.Provider;
-
 import io.reactivex.Scheduler;
 
 public class OperationsProviderImpl implements OperationsProvider {
@@ -84,7 +84,7 @@ public class OperationsProviderImpl implements OperationsProvider {
 
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
-    public PhyUpdateOperation providePhyRequestOperation(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+    public PhyUpdateOperation providePhyRequestOperation(Set<RxBlePhyImpl> txPhy, Set<RxBlePhyImpl> rxPhy, RxBlePhyOptionImpl phyOptions) {
         return new PhyUpdateOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, txPhy, rxPhy, phyOptions);
     }
 

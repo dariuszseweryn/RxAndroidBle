@@ -2,10 +2,10 @@ package com.polidea.rxandroidble2.mockrxandroidble;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import androidx.annotation.NonNull;
-
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.polidea.rxandroidble2.ConnectionParameters;
 import com.polidea.rxandroidble2.NotificationSetupMode;
@@ -20,22 +20,23 @@ import com.polidea.rxandroidble2.exceptions.BleDisconnectedException;
 import com.polidea.rxandroidble2.exceptions.BleGattCharacteristicException;
 import com.polidea.rxandroidble2.exceptions.BleGattDescriptorException;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble2.internal.PhyPairImpl;
 import com.polidea.rxandroidble2.internal.Priority;
 import com.polidea.rxandroidble2.internal.connection.ImmediateSerializedBatchAckStrategy;
 import com.polidea.rxandroidble2.internal.util.ObservableUtil;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
-import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicReadCallback;
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleCharacteristicWriteCallback;
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorReadCallback;
 import com.polidea.rxandroidble2.mockrxandroidble.callbacks.RxBleDescriptorWriteCallback;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattReadResultMock;
+import com.polidea.rxandroidble2.mockrxandroidble.callbacks.results.RxBleGattWriteResultMock;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +79,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
     private int currentMtu = 23;
-    private PhyPair phy = new PhyPair(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M);
+    private PhyPair phy = new PhyPairImpl(RxBlePhy.PHY_1M, RxBlePhy.PHY_1M);
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
     private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
     private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
@@ -135,30 +136,13 @@ public class RxBleConnectionMock implements RxBleConnection {
     }
 
     @Override
-    public Single<PhyPair> setPreferredPhy(EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+    public Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
         return Single.fromCallable(() -> {
             final Iterator<RxBlePhy> txPhyIterator = txPhy.iterator();
             final Iterator<RxBlePhy> rxPhyIterator = rxPhy.iterator();
-            int tx = RxBlePhy.PHY_1M.getValue();
-            int rx = RxBlePhy.PHY_1M.getValue();
-
-            while (txPhyIterator.hasNext()) {
-                final int value = txPhyIterator.next().getValue();
-                if (value != RxBlePhy.PHY_UNKNOWN.getValue()) {
-                    tx = value;
-                    break;
-                }
-            }
-
-            while (rxPhyIterator.hasNext()) {
-                final int value = rxPhyIterator.next().getValue();
-                if (value != RxBlePhy.PHY_UNKNOWN.getValue()) {
-                    rx = value;
-                    break;
-                }
-            }
-
-            phy = new PhyPair(RxBlePhy.fromInt(tx), RxBlePhy.fromInt(rx));
+            phy = new PhyPairImpl(
+                    txPhyIterator.hasNext() ? txPhyIterator.next() : RxBlePhy.PHY_1M,
+                    rxPhyIterator.hasNext() ? rxPhyIterator.next() : RxBlePhy.PHY_1M);
             return phy;
         });
     }

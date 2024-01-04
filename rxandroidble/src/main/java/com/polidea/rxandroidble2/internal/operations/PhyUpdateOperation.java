@@ -7,13 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.polidea.rxandroidble2.PhyPair;
-import com.polidea.rxandroidble2.RxBlePhy;
 import com.polidea.rxandroidble2.RxBlePhyOption;
 import com.polidea.rxandroidble2.exceptions.BleGattOperationType;
+import com.polidea.rxandroidble2.internal.RxBlePhyImpl;
 import com.polidea.rxandroidble2.internal.SingleResponseOperation;
 import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 
-import java.util.EnumSet;
+import java.util.Set;
 
 import bleshadow.javax.inject.Inject;
 import io.reactivex.Single;
@@ -21,8 +21,8 @@ import io.reactivex.Single;
 @RequiresApi(26 /* Build.VERSION_CODES.O */)
 public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
 
-    EnumSet<RxBlePhy> txPhy;
-    EnumSet<RxBlePhy> rxPhy;
+    Set<RxBlePhyImpl> txPhy;
+    Set<RxBlePhyImpl> rxPhy;
     RxBlePhyOption phyOptions;
 
     @Inject
@@ -30,7 +30,7 @@ public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
             RxBleGattCallback rxBleGattCallback,
             BluetoothGatt bluetoothGatt,
             TimeoutConfiguration timeoutConfiguration,
-            EnumSet<RxBlePhy> txPhy, EnumSet<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
+            Set<RxBlePhyImpl> txPhy, Set<RxBlePhyImpl> rxPhy, RxBlePhyOption phyOptions) {
         super(bluetoothGatt, rxBleGattCallback, BleGattOperationType.PHY_UPDATE, timeoutConfiguration);
         this.txPhy = txPhy;
         this.rxPhy = rxPhy;
@@ -46,8 +46,8 @@ public class PhyUpdateOperation extends SingleResponseOperation<PhyPair> {
     @SuppressLint("MissingPermission")
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
         bluetoothGatt.setPreferredPhy(
-                RxBlePhy.enumSetToValuesMask(txPhy),
-                RxBlePhy.enumSetToValuesMask(rxPhy),
+                RxBlePhyImpl.enumSetToValuesMask(txPhy),
+                RxBlePhyImpl.enumSetToValuesMask(rxPhy),
                 phyOptions.getValue()
         );
         return true;
