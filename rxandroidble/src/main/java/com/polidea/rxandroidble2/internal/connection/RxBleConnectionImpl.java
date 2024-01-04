@@ -146,35 +146,10 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     public Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions) {
-        Set<RxBlePhyImpl> txPhyImpls = toKnownImpl(txPhy);
-        Set<RxBlePhyImpl> rxPhyImpls = toKnownImpl(rxPhy);
-        RxBlePhyOptionImpl phyOptionImpl = toKnownImpl(phyOptions);
+        Set<RxBlePhyImpl> txPhyImpls = RxBlePhyImpl.fromInterface(txPhy);
+        Set<RxBlePhyImpl> rxPhyImpls = RxBlePhyImpl.fromInterface(rxPhy);
+        RxBlePhyOptionImpl phyOptionImpl = RxBlePhyOptionImpl.fromInterface(phyOptions);
         return operationQueue.queue(operationsProvider.providePhyRequestOperation(txPhyImpls, rxPhyImpls, phyOptionImpl)).firstOrError();
-    }
-
-    private Set<RxBlePhyImpl> toKnownImpl(Set<RxBlePhy> phys) {
-        Set<RxBlePhyImpl> result = new HashSet<>();
-        for (RxBlePhy phy : phys) {
-            if (!RxBlePhyImpl.isBuiltInValue(phy)) {
-                result.add((RxBlePhyImpl) phy);
-            } else {
-                int value = phy.getValue();
-                int mask = phy.getMask();
-                RxBleLog.w("Using a custom RxBlePhy with value=%d, mask=%d. Please consider making a PR to the library.", value, mask);
-                result.add(RxBlePhyImpl.custom(mask, value));
-            }
-        }
-        return result;
-    }
-
-    private RxBlePhyOptionImpl toKnownImpl(RxBlePhyOption phyOption) {
-        int phyOptionsValue = phyOption.getValue();
-        if (!RxBlePhyOptionImpl.isBuiltInValue(phyOption)) {
-            RxBleLog.w("Using a custom RxBlePhyOption with value=%d. Please consider making a PR to the library.", phyOptionsValue);
-        }
-        return phyOption.getClass() == RxBlePhyOptionImpl.class
-                ? (RxBlePhyOptionImpl) phyOption
-                : new RxBlePhyOptionImpl(null, phyOptionsValue);
     }
 
     @Override

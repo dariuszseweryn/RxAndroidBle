@@ -65,7 +65,13 @@ public final class RxBlePhyOptionImpl implements RxBlePhyOption {
                 + '}';
     }
 
-    public static boolean isBuiltInValue(RxBlePhyOption phy) {
-        return BUILTIN_VALUES.contains(phy);
+    public static RxBlePhyOptionImpl fromInterface(RxBlePhyOption phyOption) {
+        int phyOptionsValue = phyOption.getValue();
+        if (!BUILTIN_VALUES.contains(phyOption)) {
+            RxBleLog.w("Using a custom RxBlePhyOption with value=%d. Please consider making a PR to the library.", phyOptionsValue);
+        }
+        return phyOption.getClass() == RxBlePhyOptionImpl.class
+                ? (RxBlePhyOptionImpl) phyOption
+                : new RxBlePhyOptionImpl(null, phyOptionsValue);
     }
 }

@@ -595,15 +595,16 @@ public interface RxBleConnection {
     /**
      * Performs set preferred PHY request.
      *
-     * @param txPhy Sets the preferred transmitter (Tx) PHY. Use static values from RxBlePhy.
-     * @param rxPhy Sets the preferred receiver (Rx) PHY. Use static values from RxBlePhy.
-     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY. Use one of static values from
-     *                   RxBlePhyOption.
+     * @param txPhy Sets the preferred transmitter (Tx) PHY. Use static values defined by the library, e.g. {@link RxBlePhy#PHY_1M}.
+     * @param rxPhy Sets the preferred receiver (Rx) PHY. Use static values defined by the library, e.g. {@link RxBlePhy#PHY_1M}.
+     * @param phyOptions Sets the preferred coding to use when transmitting on the LE Coded PHY. Use static values defined by the library,
+     *                   e.g. {@link RxBlePhyOption}.
      * @return Observable emitting negotiated PHY values pair.
      * @throws BleGattException in case of GATT operation error with {@link BleGattOperationType#PHY_UPDATE} type.
      * @implNote In case the library is outdated and does not implement expected pre-defined static objects to use, one can implement their
      *           own objects and pass as parameters which should unblock the use-case. In this case please consider making a PR to the
-     *           library.
+     *           library. Please keep in mind that passing custom implementations of RxBlePhy or RxBlePhyOption is permitted for unblocking,
+     *           it is also considered an undefined behaviour and may break with subsequent releases.
      */
     @RequiresApi(26 /* Build.VERSION_CODES.O */)
     Single<PhyPair> setPreferredPhy(Set<RxBlePhy> txPhy, Set<RxBlePhy> rxPhy, RxBlePhyOption phyOptions);
