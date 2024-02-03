@@ -11,23 +11,25 @@ class MtuBasedPayloadSizeLimitTest extends Specification {
 
     MtuBasedPayloadSizeLimit objectUnderTest
 
-    private void prepareObjectUnderTest(int gattWriteMtuOverhead) {
-        objectUnderTest = new MtuBasedPayloadSizeLimit(mockBleConnection, gattWriteMtuOverhead)
+    private void prepareObjectUnderTest(int gattWriteMtuOverhead, int maxAttributeLength) {
+        objectUnderTest = new MtuBasedPayloadSizeLimit(mockBleConnection, gattWriteMtuOverhead, maxAttributeLength)
     }
 
     @Unroll
-    def "should return current MTU decreased by the write MTU overhead"() {
+    def "should return current MTU decreased by the write MTU overhead but no more than the maxAttributeLength"() {
 
         given:
-        prepareObjectUnderTest(gattWriteMtuOverhead)
+        prepareObjectUnderTest(gattWriteMtuOverhead, maxAttributeLength)
         mockBleConnection.getMtu() >> currentMtu
 
         expect:
         objectUnderTest.getPayloadSizeLimit() == expectedValue
 
         where:
-        currentMtu | gattWriteMtuOverhead | expectedValue
-        10         | 2                    | 8
-        2000       | 32                   | 1968
+        currentMtu | gattWriteMtuOverhead | maxAttributeLength | expectedValue
+        10         | 2                    | 2000               | 8
+        2000       | 32                   | 2000               | 1968
+        10         | 2                    | 512                | 8
+        2000       | 32                   | 512                | 512
     }
 }

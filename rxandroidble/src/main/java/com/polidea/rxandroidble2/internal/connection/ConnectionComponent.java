@@ -21,6 +21,7 @@ public interface ConnectionComponent {
     class NamedInts {
         static final String GATT_WRITE_MTU_OVERHEAD = "GATT_WRITE_MTU_OVERHEAD";
         static final String GATT_MTU_MINIMUM = "GATT_MTU_MINIMUM";
+        static final String GATT_MAX_ATTR_LENGTH = "GATT_MAX_ATTR_LENGTH";
         private NamedInts() { }
     }
 

@@ -22,11 +22,17 @@ import bleshadow.javax.inject.Provider;
 import io.reactivex.Scheduler;
 
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedBooleans.SUPPRESS_OPERATION_CHECKS;
+import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_MAX_ATTR_LENGTH;
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_MTU_MINIMUM;
 import static com.polidea.rxandroidble2.internal.connection.ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD;
 
 @Module
 public abstract class ConnectionModule {
+
+    /** {@see https://issuetracker.google.com/issues/307234027} */
+    private static final int GATT_MAX_ATTRIBUTE_LENGTH = 600;
+    /** {@see https://issuetracker.google.com/issues/307234027} */
+    private static final int GATT_MAX_ATTRIBUTE_LENGTH_API_33 = 512;
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
 
@@ -73,6 +79,15 @@ public abstract class ConnectionModule {
     @Named(GATT_MTU_MINIMUM)
     static int minimumMtu() {
         return RxBleConnection.GATT_MTU_MINIMUM;
+    }
+
+    @Provides
+    @Named(GATT_MAX_ATTR_LENGTH)
+    static int maxAttributeLength(@Named(ClientComponent.PlatformConstants.INT_DEVICE_SDK) int deviceSdk) {
+        if (deviceSdk >= 33 /* Build.VERSION_CODES.TIRAMISU / Android 13 */) {
+            return GATT_MAX_ATTRIBUTE_LENGTH_API_33;
+        }
+        return GATT_MAX_ATTRIBUTE_LENGTH;
     }
 
     @Provides
