@@ -14,16 +14,21 @@ class MtuBasedPayloadSizeLimit implements PayloadSizeLimitProvider {
 
     private final RxBleConnection rxBleConnection;
     private final int gattWriteMtuOverhead;
+    private final int maxAttributeLength;
 
     @Inject
     MtuBasedPayloadSizeLimit(RxBleConnection rxBleConnection,
-                             @Named(ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD) int gattWriteMtuOverhead) {
+                             @Named(ConnectionComponent.NamedInts.GATT_WRITE_MTU_OVERHEAD) int gattWriteMtuOverhead,
+                             @Named(ConnectionComponent.NamedInts.GATT_MAX_ATTR_LENGTH) int maxAttributeLength) {
         this.rxBleConnection = rxBleConnection;
         this.gattWriteMtuOverhead = gattWriteMtuOverhead;
+        this.maxAttributeLength = maxAttributeLength;
     }
 
     @Override
     public int getPayloadSizeLimit() {
-        return rxBleConnection.getMtu() - gattWriteMtuOverhead;
+        int maxWritePayloadForMtu = rxBleConnection.getMtu() - gattWriteMtuOverhead;
+        // See https://issuetracker.google.com/issues/307234027}
+        return Math.min(maxWritePayloadForMtu, maxAttributeLength);
     }
 }
