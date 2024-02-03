@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.18.1
+* Fixed `CharacteristicLongWriteOperation` defaults for API 33 (Android 13) (https://github.com/dariuszseweryn/RxAndroidBle/pull/847)
+
 Version 1.18.0
 * Added `RxBleConnection#readPhy` and `RxBleConnection#setPreferredPhy`, thanks @JamesDougherty (https://github.com/dariuszseweryn/RxAndroidBle/pull/840)
 
