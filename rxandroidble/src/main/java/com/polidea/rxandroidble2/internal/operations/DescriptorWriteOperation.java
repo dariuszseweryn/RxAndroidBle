@@ -69,7 +69,7 @@ public class DescriptorWriteOperation extends SingleResponseOperation<byte[]> {
     public String toString() {
         return "DescriptorWriteOperation{"
                 + super.toString()
-                + ", descriptor=" + new LoggerUtil.AttributeLogWrapper(bluetoothGattDescriptor.getUuid(), data, true)
+                + ", descriptor=" + new LoggerUtil.AttributeLogWrapper(bluetoothGattDescriptor.getUuid(), data)
                 + '}';
     }
 }

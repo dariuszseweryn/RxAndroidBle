@@ -110,20 +110,21 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            LoggerUtil.logCallback("onCharacteristicRead", gatt, status, characteristic, true);
+            byte[] characteristicValue = characteristic.getValue();
+            LoggerUtil.logCallback("onCharacteristicRead", gatt, status, characteristic, characteristicValue);
             nativeCallbackDispatcher.notifyNativeReadCallback(gatt, characteristic, status);
             super.onCharacteristicRead(gatt, characteristic, status);
 
             if (readCharacteristicOutput.hasObservers() && !propagateErrorIfOccurred(
                     readCharacteristicOutput, gatt, characteristic, status, BleGattOperationType.CHARACTERISTIC_READ
             )) {
-                readCharacteristicOutput.valueRelay.accept(new ByteAssociation<>(characteristic.getUuid(), characteristic.getValue()));
+                readCharacteristicOutput.valueRelay.accept(new ByteAssociation<>(characteristic.getUuid(), characteristicValue));
             }
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            LoggerUtil.logCallback("onCharacteristicWrite", gatt, status, characteristic, false);
+            LoggerUtil.logCallback("onCharacteristicWrite", gatt, status, characteristic, null);
             nativeCallbackDispatcher.notifyNativeWriteCallback(gatt, characteristic, status);
             super.onCharacteristicWrite(gatt, characteristic, status);
 
@@ -136,7 +137,8 @@ public class RxBleGattCallback {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            LoggerUtil.logCallback("onCharacteristicChanged", gatt, characteristic, true);
+            byte[] characteristicValue = characteristic.getValue();
+            LoggerUtil.logCallback("onCharacteristicChanged", gatt, characteristic, characteristicValue);
             nativeCallbackDispatcher.notifyNativeChangedCallback(gatt, characteristic);
             super.onCharacteristicChanged(gatt, characteristic);
 
@@ -150,7 +152,7 @@ public class RxBleGattCallback {
                         new CharacteristicChangedEvent(
                                 characteristic.getUuid(),
                                 characteristic.getInstanceId(),
-                                characteristic.getValue()
+                                characteristicValue
                         )
                 );
             }
@@ -158,19 +160,20 @@ public class RxBleGattCallback {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            LoggerUtil.logCallback("onDescriptorRead", gatt, status, descriptor, true);
+            byte[] descriptorValue = descriptor.getValue();
+            LoggerUtil.logCallback("onDescriptorRead", gatt, status, descriptor, descriptorValue);
             nativeCallbackDispatcher.notifyNativeDescriptorReadCallback(gatt, descriptor, status);
             super.onDescriptorRead(gatt, descriptor, status);
 
             if (readDescriptorOutput.hasObservers()
                     && !propagateErrorIfOccurred(readDescriptorOutput, gatt, descriptor, status, BleGattOperationType.DESCRIPTOR_READ)) {
-                readDescriptorOutput.valueRelay.accept(new ByteAssociation<>(descriptor, descriptor.getValue()));
+                readDescriptorOutput.valueRelay.accept(new ByteAssociation<>(descriptor, descriptorValue));
             }
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            LoggerUtil.logCallback("onDescriptorWrite", gatt, status, descriptor, false);
+            LoggerUtil.logCallback("onDescriptorWrite", gatt, status, descriptor, null);
             nativeCallbackDispatcher.notifyNativeDescriptorWriteCallback(gatt, descriptor, status);
             super.onDescriptorWrite(gatt, descriptor, status);
 

@@ -48,7 +48,7 @@ public class CharacteristicWriteOperation extends SingleResponseOperation<byte[]
     public String toString() {
         return "CharacteristicWriteOperation{"
                 + super.toString()
-                + ", characteristic=" + new LoggerUtil.AttributeLogWrapper(bluetoothGattCharacteristic.getUuid(), data, true)
+                + ", characteristic=" + new LoggerUtil.AttributeLogWrapper(bluetoothGattCharacteristic.getUuid(), data)
                 + '}';
     }
 }

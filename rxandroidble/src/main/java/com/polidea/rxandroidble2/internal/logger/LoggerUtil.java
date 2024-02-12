@@ -3,6 +3,9 @@ package com.polidea.rxandroidble2.internal.logger;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+
+import androidx.annotation.Nullable;
+
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.internal.RxBleLog;
 import com.polidea.rxandroidble2.internal.operations.Operation;
@@ -94,30 +97,30 @@ public class LoggerUtil {
     }
 
     public static void logCallback(String callbackName, BluetoothGatt gatt, int status, BluetoothGattCharacteristic characteristic,
-                                   boolean valueMatters) {
+                                   @Nullable byte[] valueBytes) {
         if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
             return;
         }
-        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), characteristic.getValue(), valueMatters);
+        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), valueBytes);
         RxBleLog.i(commonMacMessage(gatt) + commonCallbackMessage() + commonStatusMessage() + commonValueMessage(),
                 callbackName, status, value);
     }
 
     public static void logCallback(String callbackName, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic,
-                                   boolean valueMatters) {
+                                   @Nullable byte[] valueBytes) {
         if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
             return;
         }
-        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), characteristic.getValue(), valueMatters);
+        AttributeLogWrapper value = new AttributeLogWrapper(characteristic.getUuid(), valueBytes);
         RxBleLog.i(commonMacMessage(gatt) + commonCallbackMessage() + commonValueMessage(), callbackName, value);
     }
 
     public static void logCallback(String callbackName, BluetoothGatt gatt, int status, BluetoothGattDescriptor descriptor,
-                                   boolean valueMatters) {
+                                   byte[] valueBytes) {
         if (!RxBleLog.isAtLeast(LogConstants.INFO)) {
             return;
         }
-        AttributeLogWrapper value = new AttributeLogWrapper(descriptor.getUuid(), descriptor.getValue(), valueMatters);
+        AttributeLogWrapper value = new AttributeLogWrapper(descriptor.getUuid(), valueBytes);
         RxBleLog.i(commonMacMessage(gatt) + commonCallbackMessage() + commonStatusMessage() + commonValueMessage(),
                 callbackName, status, value);
     }
@@ -188,12 +191,12 @@ public class LoggerUtil {
         return ", value=%s";
     }
 
-    public static AttributeLogWrapper wrap(BluetoothGattCharacteristic characteristic, boolean valueMatters) {
-        return new AttributeLogWrapper(characteristic.getUuid(), characteristic.getValue(), valueMatters);
+    public static AttributeLogWrapper wrap(BluetoothGattCharacteristic characteristic, @Nullable byte[] characteristicValue) {
+        return new AttributeLogWrapper(characteristic.getUuid(), characteristicValue);
     }
 
-    public static AttributeLogWrapper wrap(BluetoothGattDescriptor descriptor, boolean valueMatters) {
-        return new AttributeLogWrapper(descriptor.getUuid(), descriptor.getValue(), valueMatters);
+    public static AttributeLogWrapper wrap(BluetoothGattDescriptor descriptor, @Nullable byte[] descriptorValue) {
+        return new AttributeLogWrapper(descriptor.getUuid(), descriptorValue);
     }
 
     public static String getUuidToLog(UUID uuid) {
@@ -218,19 +221,17 @@ public class LoggerUtil {
     public static class AttributeLogWrapper {
 
         private final UUID uuid;
-        private final byte[] value;
-        private final boolean valueMatters;
+        private final @Nullable byte[] value;
 
-        public AttributeLogWrapper(UUID uuid, byte[] value, boolean valueMatters) {
+        public AttributeLogWrapper(UUID uuid, @Nullable byte[] value) {
             this.uuid = uuid;
             this.value = value;
-            this.valueMatters = valueMatters;
         }
 
         @Override
         public String toString() {
             return "[uuid='" + getUuidToLog(uuid)
-                    + (valueMatters ? ("', hexValue=" + bytesToHex(value)) : "'")
+                    + (value != null ? ("', hexValue=" + bytesToHex(value)) : "'")
                     + ']';
         }
     }
