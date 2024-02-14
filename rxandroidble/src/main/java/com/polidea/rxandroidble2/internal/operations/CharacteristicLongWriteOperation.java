@@ -294,7 +294,7 @@ public class CharacteristicLongWriteOperation extends QueueOperation<byte[]> {
     public String toString() {
         return "CharacteristicLongWriteOperation{"
                 + LoggerUtil.commonMacMessage(bluetoothGatt)
-                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, false)
+                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, null)
                 + ", maxBatchSize=" + batchSizeProvider.getPayloadSizeLimit()
                 + '}';
     }

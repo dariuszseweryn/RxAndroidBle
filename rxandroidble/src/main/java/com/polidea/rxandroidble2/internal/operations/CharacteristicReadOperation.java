@@ -45,7 +45,7 @@ public class CharacteristicReadOperation extends SingleResponseOperation<byte[]>
     public String toString() {
         return "CharacteristicReadOperation{"
                 + super.toString()
-                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, false)
+                + ", characteristic=" + LoggerUtil.wrap(bluetoothGattCharacteristic, null)
                 + '}';
     }
 }

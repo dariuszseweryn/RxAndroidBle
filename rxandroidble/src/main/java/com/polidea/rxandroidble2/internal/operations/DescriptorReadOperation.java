@@ -46,7 +46,7 @@ public class DescriptorReadOperation extends SingleResponseOperation<ByteAssocia
     public String toString() {
         return "DescriptorReadOperation{"
                 + super.toString()
-                + ", descriptor=" + LoggerUtil.wrap(bluetoothGattDescriptor, false)
+                + ", descriptor=" + LoggerUtil.wrap(bluetoothGattDescriptor, null)
                 + '}';
     }
 }
