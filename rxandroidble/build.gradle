@@ -65,6 +65,8 @@ dependencies {
 
     // Test dependencies
     testImplementation rootProject.ext.libs.junit
+    testImplementation platform(rootProject.ext.libs.junit_platform)
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
+    testRuntimeOnly rootProject.ext.libs.junit_runtime
 }
