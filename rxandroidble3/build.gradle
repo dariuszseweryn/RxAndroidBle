@@ -68,6 +68,8 @@ dependencies {
     // Test dependencies
     testImplementation files(tasks.getByPath(':dagger-library-shadow:shadowJar').archiveFile)
     testImplementation rootProject.ext.libs.junit
+    testImplementation platform(rootProject.ext.libs.junit_platform)
     testImplementation rootProject.ext.libs.groovy
     testImplementation rootProject.ext.libs.spock
+    testRuntimeOnly rootProject.ext.libs.junit_runtime
 }

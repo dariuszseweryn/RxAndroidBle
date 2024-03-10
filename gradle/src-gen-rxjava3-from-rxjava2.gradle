@@ -1,4 +1,4 @@
-// generates sources compatible with RxJava 2 to RxJava 3
+// copies and transforms sources compatible with RxJava 2 to RxJava 3
 
 copy {
     from "../${project.name.substring(0, project.name.length() - 1)}/src"
