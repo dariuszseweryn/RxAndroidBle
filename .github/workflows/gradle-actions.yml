@@ -25,9 +25,13 @@ jobs:
           java-package: jdk
       - name: "Run Checkstyle"
         run: ./gradlew checkstyle
-      - name: "Run Unit Tests — RxAndroidBle"
+      - name: "Run Unit Tests — RxAndroidBle: RxJava2"
         run: ./gradlew :rxandroidble:testReleaseUnitTest
-      - name: "Run Unit Tests — MockClient"
+      - name: "Run Unit Tests — MockClient: RxJava2"
         run: ./gradlew :mockrxandroidble:testReleaseUnitTest
+      - name: "Run Unit Tests — RxAndroidBle: RxJava3"
+        run: ./gradlew :rxandroidble3:testReleaseUnitTest
+      - name: "Run Unit Tests — MockClient: RxJava3"
+        run: ./gradlew :mockrxandroidble3:testReleaseUnitTest
       - name: "Run Unit Tests — Sample Kotlin"
         run: ./gradlew :sample-kotlin:testReleaseUnitTest
