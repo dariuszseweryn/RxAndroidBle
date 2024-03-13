@@ -12,6 +12,6 @@ public class BleScanExceptionTest {
         BleScanException out = new BleScanException(BleScanException.BLUETOOTH_DISABLED);
 
         // expect
-        assertEquals(out.toString(), "sscom.polidea.rxandroidble2.exceptions.BleScanException: Bluetooth disabled (code 1)");
+        assertEquals(out.toString(), "com.polidea.rxandroidble2.exceptions.BleScanException: Bluetooth disabled (code 1)");
     }
 }
