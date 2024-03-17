@@ -14,7 +14,7 @@ ext {
             rxandroid             : 'io.reactivex.rxjava2:rxandroid:2.1.1',
             rxrelay2              : 'com.jakewharton.rxrelay2:rxrelay:2.1.1',
             rxrelay3              : 'com.jakewharton.rxrelay3:rxrelay:3.0.1',
-            junit                 : "org.junit.jupiter:junit-jupiter:$junitVersion",
+            junit                 : ["org.junit.jupiter:junit-jupiter:$junitVersion", "org.mockito:mockito-junit-jupiter:5.11.0"],
             junit_platform        : "org.junit:junit-bom:$junitVersion",
             junit_runtime         : 'org.junit.platform:junit-platform-launcher',
             groovy                : ['org.codehaus.groovy:groovy:3.0.9', 'org.codehaus.groovy:groovy-test:3.0.9'],
