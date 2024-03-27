@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
 
-public class ScanResult {
+public class ScanResult implements Serializable{
 
     private final RxBleDevice bleDevice;
     private final int rssi;
