@@ -10,8 +10,8 @@ import com.polidea.rxandroidble2.scan.ScanResult;
 public class RxBleScanResultMock extends ScanResult implements ScanResultInterface {
     public RxBleScanResultMock(RxBleDevice bleDevice, int rssi, long timestampNanos,
                                ScanCallbackType callbackType, ScanRecord scanRecord,
-                               IsConnectable isConnectable) {
-        super(bleDevice, rssi, timestampNanos, callbackType, scanRecord, isConnectable);
+                               IsConnectable isConnectable, Integer advertisingSid) {
+        super(bleDevice, rssi, timestampNanos, callbackType, scanRecord, isConnectable, advertisingSid);
     }
 
     public String getAddress() {

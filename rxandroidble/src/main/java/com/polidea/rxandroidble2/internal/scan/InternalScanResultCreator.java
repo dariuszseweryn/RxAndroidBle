@@ -9,6 +9,7 @@ import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_UNKN
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
@@ -36,21 +37,23 @@ public class InternalScanResultCreator {
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
         final ScanRecord scanRecordObj = scanRecordParser.parseFromBytes(scanRecord);
         return new RxBleInternalScanResult(bluetoothDevice, rssi, System.nanoTime(), scanRecordObj,
-                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, IsConnectable.LEGACY_UNKNOWN);
+                ScanCallbackType.CALLBACK_TYPE_UNSPECIFIED, IsConnectable.LEGACY_UNKNOWN, null);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
+        final Integer advertisingSid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? result.getAdvertisingSid() : null;
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                ScanCallbackType.CALLBACK_TYPE_BATCH, isConnectableChecker.check(result));
+                ScanCallbackType.CALLBACK_TYPE_BATCH, isConnectableChecker.check(result), advertisingSid);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(int callbackType, ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
+        final Integer advertisingSid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? result.getAdvertisingSid() : null;
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                toScanCallbackType(callbackType), isConnectableChecker.check(result));
+                toScanCallbackType(callbackType), isConnectableChecker.check(result), advertisingSid);
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
