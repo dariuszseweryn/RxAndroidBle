@@ -33,4 +33,9 @@ public interface ScanResultInterface {
      * Get the type of scan callback
      */
     ScanCallbackType getScanCallbackType();
+
+    /**
+     * Get the advertising set id
+     */
+    Integer getAdvertisingSid();
 }

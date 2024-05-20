@@ -383,7 +383,8 @@ public class RxBleClientMock extends RxBleClient {
                 System.currentTimeMillis() * 1000000,
                 ScanCallbackType.CALLBACK_TYPE_FIRST_MATCH,
                 scanRecord,
-                IsConnectable.LEGACY_UNKNOWN
+                IsConnectable.LEGACY_UNKNOWN,
+                255
         );
     }
 

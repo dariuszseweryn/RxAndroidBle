@@ -15,15 +15,17 @@ public class RxBleInternalScanResult implements ScanResultInterface {
     private final ScanRecord scanRecord;
     private final ScanCallbackType scanCallbackType;
     private final IsConnectable isConnectable;
+    private final Integer advertisingSid;
 
     public RxBleInternalScanResult(BluetoothDevice bluetoothDevice, int rssi, long timestampNanos, ScanRecord scanRecord,
-                                   ScanCallbackType scanCallbackType, IsConnectable isConnectable) {
+                                   ScanCallbackType scanCallbackType, IsConnectable isConnectable, Integer advertisingSid) {
         this.bluetoothDevice = bluetoothDevice;
         this.rssi = rssi;
         this.timestampNanos = timestampNanos;
         this.scanRecord = scanRecord;
         this.scanCallbackType = scanCallbackType;
         this.isConnectable = isConnectable;
+        this.advertisingSid = advertisingSid;
     }
 
     public BluetoothDevice getBluetoothDevice() {
@@ -63,5 +65,10 @@ public class RxBleInternalScanResult implements ScanResultInterface {
 
     public IsConnectable isConnectable() {
         return isConnectable;
+    }
+
+    @Override
+    public Integer getAdvertisingSid() {
+        return advertisingSid;
     }
 }
