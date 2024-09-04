@@ -18,6 +18,9 @@ import androidx.annotation.RestrictTo;
 import com.polidea.rxandroidble2.helpers.LocationServicesOkObservable;
 import com.polidea.rxandroidble2.internal.DeviceComponent;
 import com.polidea.rxandroidble2.internal.RxBleLog;
+import com.polidea.rxandroidble2.internal.scan.AdvertisingSidExtractor;
+import com.polidea.rxandroidble2.internal.scan.AdvertisingSidExtractorApi18;
+import com.polidea.rxandroidble2.internal.scan.AdvertisingSidExtractorApi26;
 import com.polidea.rxandroidble2.internal.scan.BackgroundScannerImpl;
 import com.polidea.rxandroidble2.internal.scan.InternalToExternalScanResultConverter;
 import com.polidea.rxandroidble2.internal.scan.IsConnectableChecker;
@@ -356,6 +359,19 @@ public interface ClientComponent {
                 return isConnectableCheckerApi18.get();
             }
             return isConnectableCheckerApi26.get();
+        }
+
+        @Provides
+        @ClientScope
+        static AdvertisingSidExtractor provideAdvertisingSidExtractor(
+                @Named(PlatformConstants.INT_DEVICE_SDK) int deviceSdk,
+                Provider<AdvertisingSidExtractorApi18> advertisingSidExtractorApi18,
+                Provider<AdvertisingSidExtractorApi26> advertisingSidExtractorApi26
+        ) {
+            if (deviceSdk < Build.VERSION_CODES.O) {
+                return advertisingSidExtractorApi18.get();
+            }
+            return advertisingSidExtractorApi26.get();
         }
 
         @Provides

@@ -9,7 +9,6 @@ import static com.polidea.rxandroidble2.scan.ScanCallbackType.CALLBACK_TYPE_UNKN
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
@@ -27,11 +26,14 @@ public class InternalScanResultCreator {
 
     private final ScanRecordParser scanRecordParser;
     private final IsConnectableChecker isConnectableChecker;
+    private final AdvertisingSidExtractor advertisingSidExtractor;
 
     @Inject
-    public InternalScanResultCreator(ScanRecordParser scanRecordParser, IsConnectableChecker isConnectableChecker) {
+    public InternalScanResultCreator(ScanRecordParser scanRecordParser, IsConnectableChecker isConnectableChecker,
+                                     AdvertisingSidExtractor advertisingSidExtractor) {
         this.scanRecordParser = scanRecordParser;
         this.isConnectableChecker = isConnectableChecker;
+        this.advertisingSidExtractor = advertisingSidExtractor;
     }
 
     public RxBleInternalScanResult create(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
@@ -43,17 +45,15 @@ public class InternalScanResultCreator {
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
-        final Integer advertisingSid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? result.getAdvertisingSid() : null;
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                ScanCallbackType.CALLBACK_TYPE_BATCH, isConnectableChecker.check(result), advertisingSid);
+                ScanCallbackType.CALLBACK_TYPE_BATCH, isConnectableChecker.check(result), advertisingSidExtractor.extract(result));
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public RxBleInternalScanResult create(int callbackType, ScanResult result) {
         final ScanRecordImplNativeWrapper scanRecord = new ScanRecordImplNativeWrapper(result.getScanRecord(), scanRecordParser);
-        final Integer advertisingSid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? result.getAdvertisingSid() : null;
         return new RxBleInternalScanResult(result.getDevice(), result.getRssi(), result.getTimestampNanos(), scanRecord,
-                toScanCallbackType(callbackType), isConnectableChecker.check(result), advertisingSid);
+                toScanCallbackType(callbackType), isConnectableChecker.check(result), advertisingSidExtractor.extract(result));
     }
 
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)

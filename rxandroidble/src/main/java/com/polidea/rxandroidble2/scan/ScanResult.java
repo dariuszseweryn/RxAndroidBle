@@ -1,6 +1,7 @@
 package com.polidea.rxandroidble2.scan;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
 
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.internal.logger.LoggerUtil;
@@ -15,6 +16,18 @@ public class ScanResult {
     private final IsConnectable isConnectable;
     private final Integer advertisingSid;
 
+    public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType,
+                      ScanRecord scanRecord, IsConnectable isConnectable) {
+        this.bleDevice = bleDevice;
+        this.rssi = rssi;
+        this.timestampNanos = timestampNanos;
+        this.callbackType = callbackType;
+        this.scanRecord = scanRecord;
+        this.isConnectable = isConnectable;
+        this.advertisingSid = null;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public ScanResult(RxBleDevice bleDevice, int rssi, long timestampNanos, ScanCallbackType callbackType,
                       ScanRecord scanRecord, IsConnectable isConnectable, Integer advertisingSid) {
         this.bleDevice = bleDevice;
