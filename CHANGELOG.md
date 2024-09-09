@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.19.0
+* Added `ScanResult#getAdvertisingSid`, thanks @KrzysztofMamak (https://github.com/dariuszseweryn/RxAndroidBle/pull/856)
+
 Version 1.18.1
 * Fixed `CharacteristicLongWriteOperation` defaults for API 33 (Android 13) (https://github.com/dariuszseweryn/RxAndroidBle/pull/847)
 
