@@ -240,7 +240,7 @@ class DisconnectionRouterTest extends Specification {
     }
 
     @Unroll
-    def "should unsubscribe from adapterStateObservable if it emits STATE_OFF/STATE_TURNING_* or if .on*Exception() is called"() {
+    def "should unsubscribe from adapterStateObservable if it emits STATE_OFF/STATE_TURNING_* or .on*Exception()/.close() is called"() {
 
         given:
         createObjectUnderTest(true)
@@ -267,6 +267,9 @@ class DisconnectionRouterTest extends Specification {
                 },
                 { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
                     objectUnderTest.onDisconnectedException(new BleDisconnectedException("test"))
+                },
+                { PublishSubject<RxBleAdapterStateObservable.BleAdapterState> mockAdapterStateSubject, DisconnectionRouter objectUnderTest ->
+                    objectUnderTest.close()
                 },
         ]
     }

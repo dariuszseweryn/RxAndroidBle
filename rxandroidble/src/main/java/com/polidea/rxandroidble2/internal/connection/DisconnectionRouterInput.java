@@ -24,4 +24,9 @@ interface DisconnectionRouterInput {
      * @param disconnectedGattException the exception that happened
      */
     void onGattConnectionStateException(BleGattException disconnectedGattException);
+
+    /**
+     * Method to be called when no other calls are expected. Used for cleanup.
+     */
+    void close();
 }
