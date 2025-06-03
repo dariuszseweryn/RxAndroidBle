@@ -34,7 +34,7 @@ class ByteArrayBatchObservableTest {
 
         TestSubscriber<byte[]> testObserver = objectUnderTest.test();
 
-        assertEquals(valuesCount, testObserver.valueCount());
+        assertEquals(valuesCount, testObserver.values().size());
         testObserver.assertComplete();
     }
 
@@ -72,7 +72,7 @@ class ByteArrayBatchObservableTest {
 
         TestSubscriber<byte[]> testObserver = objectUnderTest.test();
 
-        assertEquals(lastBatchSize, testObserver.values().get(testObserver.valueCount() - 1).length);
+        assertEquals(lastBatchSize, testObserver.values().get(testObserver.values().size() - 1).length);
     }
 
     @Test
@@ -95,7 +95,7 @@ class ByteArrayBatchObservableTest {
 
         TestSubscriber<byte[]> testObserver = objectUnderTest.test();
 
-        assertEquals(1, testObserver.valueCount());
+        assertEquals(1, testObserver.values().size());
         assertArrayEquals(expectedBytes, testObserver.values().get(0));
     }
 
