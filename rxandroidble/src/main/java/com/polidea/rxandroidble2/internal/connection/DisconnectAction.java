@@ -5,18 +5,23 @@ import com.polidea.rxandroidble2.internal.serialization.ClientOperationQueue;
 
 import bleshadow.javax.inject.Inject;
 
-import io.reactivex.internal.functions.Functions;
+import io.reactivex.functions.Action;
 
 @ConnectionScope
 class DisconnectAction implements ConnectionSubscriptionWatcher {
 
     private final ClientOperationQueue clientOperationQueue;
     private final DisconnectOperation operationDisconnect;
+    private final DisconnectionRouterInput disconnectionRouterInput;
 
     @Inject
-    DisconnectAction(ClientOperationQueue clientOperationQueue, DisconnectOperation operationDisconnect) {
+    DisconnectAction(
+            ClientOperationQueue clientOperationQueue,
+            DisconnectOperation operationDisconnect,
+            DisconnectionRouterInput disconnectionRouterInput) {
         this.clientOperationQueue = clientOperationQueue;
         this.operationDisconnect = operationDisconnect;
+        this.disconnectionRouterInput = disconnectionRouterInput;
     }
 
     @Override
@@ -28,9 +33,13 @@ class DisconnectAction implements ConnectionSubscriptionWatcher {
     public void onConnectionUnsubscribed() {
         clientOperationQueue
                 .queue(operationDisconnect)
-                .subscribe(
-                        Functions.emptyConsumer(),
-                        Functions.emptyConsumer()
-                );
+                .ignoreElements()
+                .onErrorComplete()
+                .subscribe(new Action() {
+                    @Override
+                    public void run() {
+                        disconnectionRouterInput.close();
+                    }
+                });
     }
 }
