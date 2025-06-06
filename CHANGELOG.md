@@ -1,5 +1,8 @@
 Change Log
 ==========
+Version 1.19.1
+* Fixed `BluetoothAdapter.ACTION_STATE_CHANGED` BroadcastReceiver leak (https://github.com/dariuszseweryn/RxAndroidBle/pull/864)
+
 Version 1.19.0
 * Added `ScanResult#getAdvertisingSid`, thanks @KrzysztofMamak (https://github.com/dariuszseweryn/RxAndroidBle/pull/856)
 
